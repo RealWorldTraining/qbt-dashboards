@@ -1,0 +1,339 @@
+{
+  "name": "Monthly P&L Recap Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtMonth": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "triggerAtDayOfMonth": 3,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Monthly Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "notes": "Runs on the 3rd of each month at 9 AM"
+    },
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "notes": "Click to generate report on-demand"
+    },
+    {
+      "parameters": {},
+      "id": "merge-triggers",
+      "name": "Merge Triggers",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        220,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1hMprZQev8sFG1E7Y2xJy3ucg0BgIE_BxYHXyaGGf7NA"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "David Summary"
+        },
+        "options": {
+          "returnAllMatches": true
+        }
+      },
+      "id": "read-data",
+      "name": "Read David Summary",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "taqd6xFnJvZP72WF",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Reads monthly metrics from David Summary tab"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1hMprZQev8sFG1E7Y2xJy3ucg0BgIE_BxYHXyaGGf7NA"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Comments"
+        },
+        "options": {
+          "returnAllMatches": true
+        }
+      },
+      "id": "read-comments",
+      "name": "Read Comments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        440,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "taqd6xFnJvZP72WF",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Reads section comments from Comments tab"
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "id": "merge-data",
+      "name": "Merge Data & Comments",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        660,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// Monthly P&L Recap - \"How We're Doing\" Generator\n// Updated with all design changes\n// ============================================\n\nconst allItems = $input.all();\n\n// Simple filter: items with MONTH column are data, items with section are comments\nconst dataItems = allItems.filter(item => item.json.MONTH);\nconst commentItems = allItems.filter(item => item.json.section || item.json.Section);\n\n// Build comments object - preserve paragraph breaks\nconst comments = {};\ncommentItems.forEach(item => {\n  const section = (item.json.section || item.json.Section || '').toLowerCase().replace(/\\s+/g, '_');\n  if (section) {\n    const rawComment = item.json.comment || item.json.Comment || '';\n    const paragraphs = rawComment.split(/\\n\\n+/).filter(p => p.trim());\n    comments[section] = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');\n  }\n});\n\n// Helper to parse numbers\nconst parseNum = (val) => {\n  if (typeof val === 'number') return val;\n  if (!val) return 0;\n  return parseFloat(String(val).replace(/[$,]/g, '')) || 0;\n};\n\n// Build data arrays from sheet - use MONTH column directly as string\nconst months = [], profitShare = [], trainingPlans = [], renewals = [];\nconst subscribers = [], newVisitors = [], paidVisitors = [], cpc = [];\nconst refundPct = [], intuitSales = [], refundDollars = [], chargebackDollars = [];\nconst learnerUnits = [], certUnits = [], teamUnits = [];\n\n// Sort by date: parse M/YY format\nconst sortedData = dataItems\n  .map(item => item.json)\n  .filter(row => row.MONTH && String(row.MONTH).includes('/'))\n  .sort((a, b) => {\n    const [aMonth, aYear] = String(a.MONTH).split('/').map(Number);\n    const [bMonth, bYear] = String(b.MONTH).split('/').map(Number);\n    // Compare year first (as 2-digit), then month\n    if (aYear !== bYear) return aYear - bYear;\n    return aMonth - bMonth;\n  });\n\n// Use all sorted data (should be 24 months)\nconst last24 = sortedData.slice(-24);\n\nlast24.forEach(row => {\n  // Use MONTH directly as string\n  months.push(String(row.MONTH));\n  profitShare.push(parseNum(row['Profit Share']));\n  trainingPlans.push(parseNum(row['Training Plans']));\n  renewals.push(parseNum(row.Renewals));\n  subscribers.push(parseNum(row.Subscribers));\n  newVisitors.push(parseNum(row['New Visitors']));\n  paidVisitors.push(parseNum(row.Visitors));\n  cpc.push(parseNum(row.CPC));\n  refundPct.push(parseNum(row['%']));\n  intuitSales.push(parseNum(row.Sales));\n  refundDollars.push(parseNum(row.Refunds));\n  chargebackDollars.push(parseNum(row.Chargebacks));\n  learnerUnits.push(parseNum(row.Learner));\n  certUnits.push(parseNum(row.Cert));\n  teamUnits.push(parseNum(row.Team));\n});\n\n// Current values\nconst currentMonth = months[months.length - 1] || 'N/A';\nconst [monthNum, yearNum] = currentMonth.split('/');\nconst monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];\nconst shortMonthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];\nconst displayMonth = monthNames[parseInt(monthNum) - 1] + ' 20' + yearNum;\nconst shortDisplayMonth = shortMonthNames[parseInt(monthNum) - 1] + \" '\" + yearNum;\n\n// Calculate metrics\nconst fmt = (n) => '$' + Math.round(n).toLocaleString();\nconst pct = (curr, prev) => prev > 0 ? ((curr - prev) / prev * 100).toFixed(1) : '0';\n\nconst currentPS = profitShare[profitShare.length - 1] || 0;\nconst lastYearPS = profitShare[profitShare.length - 13] || profitShare[0] || 0;\nconst psYoY = pct(currentPS, lastYearPS);\n\nconst currentSubs = subscribers[subscribers.length - 1] || 0;\nconst lastYearSubs = subscribers[subscribers.length - 13] || subscribers[0] || 0;\nconst subsYoY = pct(currentSubs, lastYearSubs);\n\nconst currentTP = trainingPlans[trainingPlans.length - 1] || 0;\nconst lastYearTP = trainingPlans[trainingPlans.length - 13] || trainingPlans[0] || 0;\nconst tpYoY = pct(currentTP, lastYearTP);\n\nconst currentRen = renewals[renewals.length - 1] || 0;\nconst lastYearRen = renewals[renewals.length - 13] || renewals[0] || 0;\nconst renYoY = pct(currentRen, lastYearRen);\n\nconst currentIntuit = intuitSales[intuitSales.length - 1] || 0;\nconst lastYearIntuit = intuitSales[intuitSales.length - 13] || intuitSales[0] || 0;\nconst intuitYoY = pct(currentIntuit, lastYearIntuit);\n\nconst currentRefund = refundPct[refundPct.length - 1] || 0;\nconst avgRefund = (refundPct.slice(-12).reduce((a, b) => a + b, 0) / 12).toFixed(2);\nconst avgIntuit = Math.round(intuitSales.slice(-12).reduce((a, b) => a + b, 0) / 12);\n\n// Calculate churn rate (6-month average)\nconst avgChurn = (subscribers.slice(-6).reduce((sum, s, i, arr) => {\n  if (i === 0) return sum;\n  const prevSubs = arr[i-1];\n  const churn = prevSubs > 0 ? ((prevSubs - s + 500) / prevSubs * 100) : 0; // Approximate churn\n  return sum + churn;\n}, 0) / 5).toFixed(2);\n\nconst currentRevenue = currentTP + currentRen;\nconst lastYearRevenue = lastYearTP + lastYearRen;\nconst revenueYoY = pct(currentRevenue, lastYearRevenue);\n\nconst currentNV = newVisitors[newVisitors.length - 1] || 0;\nconst lastYearNV = newVisitors[newVisitors.length - 13] || newVisitors[0] || 0;\nconst nvYoY = pct(currentNV, lastYearNV);\n\nconst currentPV = paidVisitors[paidVisitors.length - 1] || 0;\nconst lastYearPV = paidVisitors[paidVisitors.length - 13] || paidVisitors[0] || 0;\nconst pvYoY = pct(currentPV, lastYearPV);\n\nconst currentCPC = cpc[cpc.length - 1] || 0;\nconst lastYearCPC = cpc[cpc.length - 13] || cpc[0] || 0;\nconst cpcYoY = pct(currentCPC, lastYearCPC);\n\n// Total refunds + chargebacks\nconst totalRefundsChargebacks = refundDollars.map((r, i) => r + (chargebackDollars[i] || 0));\nconst currentTotalRC = totalRefundsChargebacks[totalRefundsChargebacks.length - 1] || 0;\nconst lastYearTotalRC = totalRefundsChargebacks[totalRefundsChargebacks.length - 13] || 0;\n\n// Units sold (last 6 months for pie chart)\nconst last6Learner = learnerUnits.slice(-6).reduce((a, b) => a + b, 0);\nconst last6Cert = certUnits.slice(-6).reduce((a, b) => a + b, 0);\nconst last6Team = teamUnits.slice(-6).reduce((a, b) => a + b, 0);\nconst totalUnits = last6Learner + last6Cert + last6Team;\nconst learnerPct = totalUnits > 0 ? Math.round(last6Learner / totalUnits * 100) : 0;\nconst certPct = totalUnits > 0 ? Math.round(last6Cert / totalUnits * 100) : 0;\nconst teamPct = totalUnits > 0 ? Math.round(last6Team / totalUnits * 100) : 0;\n\n// Revenue mix (last 6 months)\nconst t6 = trainingPlans.slice(-6).reduce((a, b) => a + b, 0);\nconst r6 = renewals.slice(-6).reduce((a, b) => a + b, 0);\n\n// Build available months for selector (build history forward from Dec '25)\nconst availableMonths = [currentMonth]; // Start with current month only, add more as time passes\n\n// Generate HTML\nconst html = `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>How We're Doing - ${shortDisplayMonth}</title>\n  <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n  <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap\" rel=\"stylesheet\">\n  <script src=\"https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js\"><\\/script>\n  <style>\n    :root { --bg-primary:#fff; --bg-secondary:#f5f5f7; --bg-tertiary:#fbfbfd; --text-primary:#1d1d1f; --text-secondary:#86868b; --text-tertiary:#6e6e73; --accent-green:#34c759; --accent-red:#ff3b30; --accent-blue:#007aff; --accent-purple:#af52de; --accent-orange:#ff9500; --accent-teal:#5ac8fa; --border-light:rgba(0,0,0,0.06); --shadow-md:0 4px 6px -1px rgba(0,0,0,0.05); --qb-green:#2CA01C; --sidebar-width:260px; }\n    * { margin:0; padding:0; box-sizing:border-box; }\n    body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg-secondary); color:var(--text-primary); line-height:1.5; -webkit-font-smoothing:antialiased; min-height:100vh; }\n    .header { background:var(--qb-green); color:#fff; padding:20px 32px; position:sticky; top:0; z-index:100; }\n    .header-top { display:flex; justify-content:space-between; align-items:center; }\n    .header-title { display:flex; flex-direction:column; gap:2px; }\n    .header-title h1 { font-size:28px; font-weight:700; letter-spacing:-0.02em; }\n    .header-subtitle { font-size:16px; font-weight:500; opacity:0.9; }\n    .header-logo { height:40px; }\n    .header-logo img { height:100%; width:auto; }\n    .month-selector { display:flex; gap:8px; margin-top:16px; }\n    .month-btn { background:rgba(255,255,255,0.2); border:none; color:#fff; padding:8px 16px; border-radius:100px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s ease; }\n    .month-btn:hover { background:rgba(255,255,255,0.3); }\n    .month-btn.active { background:#fff; color:var(--qb-green); }\n    .main-layout { display:flex; min-height:calc(100vh - 100px); }\n    .sidebar { width:var(--sidebar-width); background:var(--bg-primary); border-right:1px solid var(--border-light); padding:24px 0; position:sticky; top:100px; height:calc(100vh - 100px); overflow-y:auto; }\n    .sidebar-title { font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; padding:0 24px; margin-bottom:12px; }\n    .nav-item { display:flex; align-items:center; gap:12px; padding:14px 24px; cursor:pointer; transition:all 0.15s ease; border-left:3px solid transparent; color:var(--text-tertiary); }\n    .nav-item:hover { background:var(--bg-secondary); color:var(--text-primary); }\n    .nav-item.active { background:rgba(44,160,28,0.08); border-left-color:var(--qb-green); color:var(--qb-green); }\n    .nav-item-number { width:28px; height:28px; border-radius:8px; background:var(--bg-secondary); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; flex-shrink:0; }\n    .nav-item.active .nav-item-number { background:var(--qb-green); color:#fff; }\n    .nav-item-label { font-size:14px; font-weight:500; }\n    .content { flex:1; padding:32px 40px; max-width:calc(100% - var(--sidebar-width)); }\n    .section { display:none; animation:fadeIn 0.3s ease; }\n    .section.active { display:block; }\n    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }\n    .section-title { font-size:32px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px; }\n    .section-subtitle { font-size:15px; color:var(--text-secondary); margin-bottom:32px; }\n    .card { background:var(--bg-primary); border-radius:20px; padding:28px; box-shadow:var(--shadow-md); border:1px solid var(--border-light); margin-bottom:24px; }\n    .card-title { font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:8px; }\n    .card-description { font-size:13px; color:var(--text-secondary); margin-bottom:16px; }\n    .card-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }\n    .card-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }\n    .chart-container { position:relative; height:280px; width:100%; }\n    .chart-container-tall { position:relative; height:320px; width:100%; }\n    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px; }\n    .stats-row-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:24px; }\n    .stats-vertical { display:flex; flex-direction:column; gap:16px; }\n    .stat-item { text-align:center; padding:20px; background:var(--bg-tertiary); border-radius:16px; }\n    .stat-value { font-size:26px; font-weight:700; letter-spacing:-0.02em; margin-bottom:4px; }\n    .stat-value.positive { color:var(--accent-green); }\n    .stat-value.negative { color:var(--accent-red); }\n    .stat-label { font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; }\n    .comment-box { background:linear-gradient(135deg,var(--bg-tertiary) 0%,#f0f0f2 100%); border-radius:16px; padding:24px; margin-top:24px; border-left:4px solid var(--qb-green); }\n    .comment-box-title { font-size:12px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; }\n    .comment-box p { color:var(--text-primary); font-size:15px; line-height:1.7; margin-bottom:12px; }\n    .comment-box p:last-child { margin-bottom:0; }\n    .note-section { background:linear-gradient(135deg,#fafafa 0%,#f5f5f7 100%); border-radius:20px; padding:32px; border-left:5px solid var(--qb-green); }\n    .note-section p { color:var(--text-primary); font-size:16px; line-height:1.8; margin-bottom:16px; }\n    .note-section p:last-child { margin-bottom:0; }\n    .benchmark-table { width:100%; border-collapse:collapse; }\n    .benchmark-table th { text-align:left; padding:12px 16px; font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--border-light); }\n    .benchmark-table td { padding:14px 16px; font-size:14px; border-bottom:1px solid var(--border-light); }\n    .benchmark-table tr:last-child td { border-bottom:none; }\n    .benchmark-table .tier { font-weight:600; }\n    .benchmark-table .tier.excellent { color:var(--accent-green); }\n    .benchmark-table .tier.good { color:var(--accent-blue); }\n    .benchmark-table .tier.acceptable { color:var(--accent-orange); }\n    .benchmark-table .tier.concerning { color:var(--accent-red); }\n    .benchmark-table .highlight { background:rgba(44,160,28,0.08); }\n    .benchmark-table .highlight td { color:var(--qb-green); font-weight:600; }\n    .benchmark-description { font-size:13px; color:var(--text-secondary); margin-top:4px; margin-bottom:16px; }\n    .expense-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }\n    .expense-card { background:var(--bg-tertiary); border-radius:16px; padding:20px; border:1px solid var(--border-light); }\n    .expense-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }\n    .expense-name { font-size:15px; font-weight:600; }\n    .expense-amount { font-size:15px; font-weight:700; color:var(--accent-red); }\n    .expense-description { font-size:14px; color:var(--text-tertiary); line-height:1.6; }\n    .wrap-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }\n    .nav-footer { display:flex; justify-content:space-between; margin-top:40px; padding-top:24px; border-top:1px solid var(--border-light); }\n    .nav-btn { display:flex; align-items:center; gap:8px; padding:12px 20px; border-radius:12px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.15s ease; border:none; background:var(--bg-secondary); color:var(--text-primary); }\n    .nav-btn:hover { background:var(--bg-tertiary); transform:translateY(-1px); }\n    .nav-btn.primary { background:var(--qb-green); color:#fff; }\n    .nav-btn.primary:hover { background:#249116; }\n    .nav-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }\n    .yoy-stat-group { display:flex; flex-direction:column; gap:8px; }\n    .yoy-stat-title { font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:8px; }\n    .yoy-stat-row { display:flex; gap:16px; }\n    .yoy-stat-item { flex:1; text-align:center; padding:16px; background:var(--bg-tertiary); border-radius:12px; }\n    .yoy-stat-value { font-size:22px; font-weight:700; margin-bottom:2px; }\n    .yoy-stat-label { font-size:11px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.05em; }\n    @media (max-width:1024px) { .sidebar{width:220px} .content{padding:24px} }\n    @media (max-width:768px) { .sidebar{display:none} .content{max-width:100%} .card-grid{grid-template-columns:1fr} .stats-row{grid-template-columns:1fr} .expense-grid{grid-template-columns:1fr} }\n  </style>\n</head>\n<body>\n  <header class=\"header\">\n    <div class=\"header-top\">\n      <div class=\"header-title\">\n        <h1>How We're Doing</h1>\n        <span class=\"header-subtitle\">${shortDisplayMonth} Performance</span>\n      </div>\n      <div class=\"header-logo\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 157 40\" height=\"40\"><path fill=\"#fff\" d=\"M17.9997 36C27.9412 36 36 27.9412 36 17.9997 36 8.05883 27.9412 0 17.9997 0 8.05883 0 0 8.05883 0 17.9997 0 27.9412 8.05883 36 17.9997 36Z\"/><path fill=\"#2CA01C\" d=\"M11.9978 10.9986c-3.86819 0-6.99988 3.1364-6.99988 7.0005 0 3.8636 3.13169 6.9993 6.99988 6.9993h.9999v-2.5998h-1.0004c-1.1666-.0008-2.28518-.4646-3.11007-1.2895-.82488-.8249-1.28864-1.9434-1.28942-3.11 0-2.4279 1.97156-4.4006 4.39949-4.4006h2.4044v13.6003c.0002.6893.2741 1.3503.7615 1.8378.4875.4874 1.1485.7613 1.8378.7615V10.9992h-5.0037l.0005-.0006Zm12.0078 13.9998c3.8677 0 7-3.1357 7-6.9999 0-3.8635-3.1317-6.9993-7-6.9993h-.9998v2.5999h1.0004c2.4279 0 4.3995 1.9721 4.3995 4.4s-1.9716 4.4006-4.3995 4.4006h-2.4045V8.79889c-.0001-.68943-.2741-1.35058-.7617-1.83802-.4875-.48745-1.1487-.76129-1.8381-.76129V24.999h5.0043v-.0011l-.0006.0005Z\"/><path fill=\"#fff\" d=\"M52.6116 40h-2.7595v-6.9878h-.0463c-.7137 1.1014-2.1171 1.7913-3.6551 1.7913-3.3571 0-5.4261-2.6673-5.4261-5.8858 0-3.2191 2.2075-5.7948 5.3548-5.7948 2.0214 0 3.2661.9867 3.8168 1.8626h.0672v-1.542h2.6435v16.5559l.0047.0006Zm-5.9061-7.4957c2.0214 0 3.2417-1.8144 3.2417-3.5391 0-1.724-1.2168-3.5866-3.2417-3.5866-2.1363 0-3.171 1.8156-3.171 3.5397-.0041 1.724 1.0307 3.5872 3.171 3.5872v-.0012Zm18.2921 1.978h-2.6202v-1.7716h-.0476c-.4829 1.1015-1.7913 2.0928-3.4243 2.0928-2.8736 0-4.0708-2.2087-4.0708-4.4592v-6.8968h2.7589v6.116c0 1.3124.2974 2.9408 2.0684 2.9408 1.7716 0 2.5762-1.5176 2.5762-2.9884v-6.0684h2.7583v11.0348h.0011Zm2.7716-11.2759h2.7589v11.0348h-2.7589V23.2064Zm13.0725 3.2979c-.4359-.6226-1.3797-1.0823-2.2754-1.0823-2.0214 0-3.0359 1.8151-3.0359 3.5392 0 1.724 1.0348 3.5397 3.127 3.5397.8521 0 1.7913-.345 2.3228-.9867l1.7241 1.7478c-.92.9867-2.4382 1.5421-4.0707 1.5421-3.2661 0-5.9774-2.16-5.9774-5.8377 0-3.6783 2.6678-5.8394 5.9101-5.8394 1.6093 0 3.2858.6423 4.1612 1.724l-1.8858 1.6533Zm3.2481-9.4005h2.7583v10.9866h.0678l4.1849-4.6452h3.5397l-4.7802 4.9902L94.942 34.48h-3.6545l-4.3681-5.6562h-.0673V34.48h-2.7582V17.1038h-.0041Zm14.8684 0v7.7484h.0673c.575-.7131 1.6775-1.7241 3.7015-1.7241 3.151 0 5.355 2.5287 5.355 5.7948 0 3.2661-2.069 5.8864-5.426 5.8864-1.542 0-3.0363-.7131-3.7929-1.978h-.0475v1.6568h-2.6197V17.1038h2.7623Zm3.1508 8.2759c-2.022 0-3.2418 1.8626-3.2418 3.5867 0 1.724 1.2158 3.5397 3.2418 3.5397 2.137 0 3.17-1.8632 3.17-3.5878 0-1.7247-1.033-3.5386-3.17-3.5386Zm13.172-2.2527c3.333 0 6.001 2.3229 6.001 5.7947 0 3.4725-2.668 5.8864-6.001 5.8864-3.334 0-6.001-2.4139-6.001-5.8864 0-3.4718 2.667-5.7947 6.001-5.7947Zm0 9.3785c2.183 0 3.194-1.8626 3.194-3.5878 0-1.7247-1.011-3.5391-3.194-3.5391-2.184 0-3.195 1.8156-3.195 3.5391 0 1.724 1.011 3.5878 3.195 3.5878Zm13.204-9.3785c3.333 0 6.001 2.3229 6.001 5.7947 0 3.4725-2.668 5.8864-6.001 5.8864-3.334 0-6.001-2.4139-6.001-5.8864 0-3.4718 2.667-5.7947 6.001-5.7947Zm0 9.3785c2.184 0 3.194-1.8626 3.194-3.5878 0-1.7247-1.01-3.5391-3.194-3.5391s-3.195 1.8156-3.195 3.5391c-.004 1.724 1.011 3.5878 3.195 3.5878Zm7.67-15.4017h2.759v10.9866h.067l4.186-4.6452h3.539l-4.78 4.9902 5.081 6.0446h-3.654l-4.368-5.6562h-.067V34.48h-2.759V17.1038h-.004Zm18.379 9.2846c-.484-.6417-1.403-1.1965-2.413-1.1965-.872 0-1.773.3217-1.773 1.1971 0 .8753.853 1.0817 2.39 1.4464 1.634.3924 3.564 1.1258 3.564 3.2858 0 2.6916-2.184 3.6782-4.598 3.6782-1.7 0-3.472-.6417-4.53-1.8151l1.815-1.7008c.599.7808 1.634 1.3797 2.826 1.3797.805 0 1.772-.3218 1.772-1.3125 0-.9194-.853-1.1965-2.529-1.5855-1.633-.3924-3.266-1.058-3.266-3.1269 0-2.4615 2.208-3.5154 4.392-3.5154 1.585 0 3.242.5507 4.138 1.6765l-1.788 1.5896v-.0006ZM70.9466 8.38261c0 2.79769 2.2395 4.84289 5.0852 4.84289 2.8464 0 5.0893-2.0406 5.0893-4.84289V1.95769h-2.7582v6.09623c0 1.50956-1.0111 2.52058-2.3386 2.52058-1.3281 0-2.3391-1.01102-2.3391-2.52058V1.95769h-2.7548l.0162 6.42492Zm17.545-3.84463h3.2904v8.46492h2.7548V4.53798h3.2852V1.95769h-9.3304v2.58029Zm-1.7832-2.58029h-2.7548V13.0046h2.7548V1.95769ZM59.8191 4.53798h3.2899v8.46492h2.7547V4.53798h3.2858V1.95769h-9.3298V4.5374l-.0006.00058ZM45.3588 1.95769H42.604V13.0046h2.7548V1.95769Zm13.0081 4.62202c0-2.79768-2.2435-4.84289-5.0893-4.84289-2.8463 0-5.0892 2.04116-5.0892 4.84348v6.4249h2.7548V6.90899c0-1.51015 1.0104-2.52058 2.3385-2.52058 1.3275 0 2.3386 1.01043 2.3386 2.52058v6.09621h2.7547l-.0081-6.4249v-.00059Z\"/></svg>\n      </div>\n    </div>\n    <div class=\"month-selector\">\n      ${availableMonths.map((m, i) => {\n        const [mm, yy] = m.split('/');\n        const label = shortMonthNames[parseInt(mm) - 1] + \" '\" + yy;\n        return `<button class=\"month-btn${i === 0 ? ' active' : ''}\" data-month=\"${m}\">${label}</button>`;\n      }).join('')}\n    </div>\n  </header>\n\n  <div class=\"main-layout\">\n    <nav class=\"sidebar\">\n      <div class=\"sidebar-title\">Sections</div>\n      <div class=\"nav-item active\" data-section=\"0\"><span class=\"nav-item-number\">1</span><span class=\"nav-item-label\">A Note from David</span></div>\n      <div class=\"nav-item\" data-section=\"1\"><span class=\"nav-item-number\">2</span><span class=\"nav-item-label\">Profit Share</span></div>\n      <div class=\"nav-item\" data-section=\"2\"><span class=\"nav-item-number\">3</span><span class=\"nav-item-label\">Customer Revenue</span></div>\n      <div class=\"nav-item\" data-section=\"3\"><span class=\"nav-item-number\">4</span><span class=\"nav-item-label\">Subscribers</span></div>\n      <div class=\"nav-item\" data-section=\"4\"><span class=\"nav-item-number\">5</span><span class=\"nav-item-label\">New Website Visitors</span></div>\n      <div class=\"nav-item\" data-section=\"5\"><span class=\"nav-item-number\">6</span><span class=\"nav-item-label\">Refunds & Chargebacks</span></div>\n      <div class=\"nav-item\" data-section=\"6\"><span class=\"nav-item-number\">7</span><span class=\"nav-item-label\">Intuit Sales</span></div>\n      <div class=\"nav-item\" data-section=\"7\"><span class=\"nav-item-number\">8</span><span class=\"nav-item-label\">Expense Highlights</span></div>\n      <div class=\"nav-item\" data-section=\"8\"><span class=\"nav-item-number\">9</span><span class=\"nav-item-label\">Wrap-Up</span></div>\n    </nav>\n\n    <main class=\"content\">\n      <!-- Section 0: A Note from David -->\n      <div class=\"section active\" id=\"section-0\">\n        <h2 class=\"section-title\">A Note from David</h2>\n        <p class=\"section-subtitle\">Monthly reflection and team message</p>\n        <div class=\"note-section\">\n          ${comments.note_from_david || comments.wrap_up || '<p>No note available for this month.</p>'}\n        </div>\n        <div class=\"nav-footer\"><button class=\"nav-btn\" disabled>\u2190 Previous</button><button class=\"nav-btn primary\" onclick=\"goToSection(1)\">Next: Profit Share \u2192</button></div>\n      </div>\n\n      <!-- Section 1: Profit Share -->\n      <div class=\"section\" id=\"section-1\">\n        <h2 class=\"section-title\">Profit Share</h2>\n        <p class=\"section-subtitle\">Monthly profit share performance and year-over-year comparison</p>\n        <div class=\"card\">\n          <h3 class=\"card-title\">24-Month Trend</h3>\n          <div class=\"chart-container\"><canvas id=\"profitShareChart\"></canvas></div>\n          <div class=\"stats-row\">\n            <div class=\"stat-item\"><div class=\"stat-value\">${fmt(currentPS)}</div><div class=\"stat-label\">Current Month</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value\">${fmt(lastYearPS)}</div><div class=\"stat-label\">Same Month Last Year</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value ${currentPS >= lastYearPS ? 'positive' : 'negative'}\">${currentPS >= lastYearPS ? '+' : ''}${fmt(currentPS - lastYearPS)}</div><div class=\"stat-label\">YoY Change</div></div>\n          </div>\n        </div>\n        ${comments.profit_share ? `<div class=\"comment-box\"><div class=\"comment-box-title\">Analysis</div>${comments.profit_share}</div>` : ''}\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(0)\">\u2190 A Note from David</button><button class=\"nav-btn primary\" onclick=\"goToSection(2)\">Next: Customer Revenue \u2192</button></div>\n      </div>\n\n      <!-- Section 2: Customer Revenue -->\n      <div class=\"section\" id=\"section-2\">\n        <h2 class=\"section-title\">Customer Revenue</h2>\n        <p class=\"section-subtitle\">Training plans, renewals, and revenue mix breakdown</p>\n        \n        <div class=\"card\">\n          <h3 class=\"card-title\">Revenue by Source (24 Months)</h3>\n          <p class=\"card-description\">2-day class sales (to 3/25) included with Training Plans revenue.</p>\n          <div class=\"chart-container\"><canvas id=\"revenueChart\"></canvas></div>\n        </div>\n        \n        <div class=\"card\">\n          <div class=\"card-grid\">\n            <div class=\"yoy-stat-group\">\n              <div class=\"yoy-stat-title\">Training Plans YoY</div>\n              <div class=\"yoy-stat-row\">\n                <div class=\"yoy-stat-item\"><div class=\"yoy-stat-value\">${fmt(currentTP)}</div><div class=\"yoy-stat-label\">Current</div></div>\n                <div class=\"yoy-stat-item\"><div class=\"yoy-stat-value ${parseFloat(tpYoY) >= 0 ? 'positive' : 'negative'}\">${parseFloat(tpYoY) >= 0 ? '+' : ''}${tpYoY}%</div><div class=\"yoy-stat-label\">YoY Change</div></div>\n              </div>\n            </div>\n            <div class=\"yoy-stat-group\">\n              <div class=\"yoy-stat-title\">Renewals YoY</div>\n              <div class=\"yoy-stat-row\">\n                <div class=\"yoy-stat-item\"><div class=\"yoy-stat-value\">${fmt(currentRen)}</div><div class=\"yoy-stat-label\">Current</div></div>\n                <div class=\"yoy-stat-item\"><div class=\"yoy-stat-value ${parseFloat(renYoY) >= 0 ? 'positive' : 'negative'}\">${parseFloat(renYoY) >= 0 ? '+' : ''}${renYoY}%</div><div class=\"yoy-stat-label\">YoY Change</div></div>\n              </div>\n            </div>\n          </div>\n        </div>\n\n        <div class=\"card-grid\">\n          <div class=\"card\">\n            <h3 class=\"card-title\">Revenue Mix (Last 6 Months)</h3>\n            <div class=\"chart-container\"><canvas id=\"revenuePieChart\"></canvas></div>\n          </div>\n          <div class=\"card\">\n            <h3 class=\"card-title\">Units Sold (6 Mo)</h3>\n            <div class=\"chart-container\"><canvas id=\"unitsPieChart\"></canvas></div>\n          </div>\n        </div>\n        \n        ${comments.customer_revenue ? `<div class=\"comment-box\"><div class=\"comment-box-title\">Analysis</div>${comments.customer_revenue}</div>` : ''}\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(1)\">\u2190 Profit Share</button><button class=\"nav-btn primary\" onclick=\"goToSection(3)\">Next: Subscribers \u2192</button></div>\n      </div>\n\n      <!-- Section 3: Subscribers -->\n      <div class=\"section\" id=\"section-3\">\n        <h2 class=\"section-title\">Subscribers</h2>\n        <p class=\"section-subtitle\">Subscriber count and churn rate performance</p>\n        \n        <div class=\"card\">\n          <h3 class=\"card-title\"># of Subscribers (24 Months)</h3>\n          <div class=\"chart-container\"><canvas id=\"subscriberChart\"></canvas></div>\n        </div>\n        \n        <div class=\"card-grid\">\n          <div class=\"card\">\n            <div class=\"stats-vertical\">\n              <div class=\"stat-item\"><div class=\"stat-value\">${currentSubs.toLocaleString()}</div><div class=\"stat-label\">Current Month</div></div>\n              <div class=\"stat-item\"><div class=\"stat-value\">${lastYearSubs.toLocaleString()}</div><div class=\"stat-label\">Same Month Last Year</div></div>\n              <div class=\"stat-item\"><div class=\"stat-value ${parseFloat(subsYoY) >= 0 ? 'positive' : 'negative'}\">${parseFloat(subsYoY) >= 0 ? '+' : ''}${subsYoY}%</div><div class=\"stat-label\">YoY Change</div></div>\n            </div>\n          </div>\n          <div class=\"card\">\n            <h3 class=\"card-title\">EdTech Benchmark: Churn Rates</h3>\n            <p class=\"benchmark-description\">Percentage of subscriptions that cancel or don't renew each month</p>\n            <table class=\"benchmark-table\">\n              <thead><tr><th>Performance Tier</th><th>Monthly Churn</th><th>Description</th></tr></thead>\n              <tbody>\n                <tr><td class=\"tier excellent\">Excellent</td><td>&lt; 7%</td><td>Strong learner retention; churn primarily due to completion or fulfilled need</td></tr>\n                <tr><td class=\"tier good\">Good</td><td>7 - 9%</td><td>Typical for education subscriptions with episodic usage</td></tr>\n                <tr><td class=\"tier acceptable\">Acceptable</td><td>9 - 11%</td><td>Indicates some expectation or onboarding friction</td></tr>\n                <tr><td class=\"tier concerning\">Concerning</td><td>11%+</td><td>At or above EdTech industry average; warrants investigation</td></tr>\n                <tr class=\"highlight\"><td>QuickBooksTraining.com</td><td>${avgChurn}%</td><td>6-month average</td></tr>\n              </tbody>\n            </table>\n          </div>\n        </div>\n        \n        ${comments.subscribers ? `<div class=\"comment-box\"><div class=\"comment-box-title\">Analysis</div>${comments.subscribers}</div>` : ''}\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(2)\">\u2190 Customer Revenue</button><button class=\"nav-btn primary\" onclick=\"goToSection(4)\">Next: New Website Visitors \u2192</button></div>\n      </div>\n\n      <!-- Section 4: New Website Visitors -->\n      <div class=\"section\" id=\"section-4\">\n        <h2 class=\"section-title\">New Website Visitors</h2>\n        <p class=\"section-subtitle\">New visitors, paid traffic, and cost per click trends</p>\n        \n        <div class=\"card\">\n          <h3 class=\"card-title\">Visitor Trends (24 Months)</h3>\n          <div class=\"chart-container\"><canvas id=\"trafficChart\"></canvas></div>\n        </div>\n        \n        <div class=\"card\">\n          <h3 class=\"card-title\">Cost Per Click Trend (24 Months)</h3>\n          <div class=\"chart-container\"><canvas id=\"cpcChart\"></canvas></div>\n        </div>\n        \n        <div class=\"card\">\n          <div class=\"card-grid-3\">\n            <div class=\"yoy-stat-group\">\n              <div class=\"yoy-stat-title\">New Visitors</div>\n              <div class=\"stats-vertical\">\n                <div class=\"stat-item\"><div class=\"stat-value\">${currentNV.toLocaleString()}</div><div class=\"stat-label\">Current</div></div>\n                <div class=\"stat-item\"><div class=\"stat-value ${parseFloat(nvYoY) >= 0 ? 'positive' : 'negative'}\">${parseFloat(nvYoY) >= 0 ? '+' : ''}${nvYoY}%</div><div class=\"stat-label\">YoY Change</div></div>\n              </div>\n            </div>\n            <div class=\"yoy-stat-group\">\n              <div class=\"yoy-stat-title\">Paid Visitors</div>\n              <div class=\"stats-vertical\">\n                <div class=\"stat-item\"><div class=\"stat-value\">${currentPV.toLocaleString()}</div><div class=\"stat-label\">Current</div></div>\n                <div class=\"stat-item\"><div class=\"stat-value ${parseFloat(pvYoY) >= 0 ? 'positive' : 'negative'}\">${parseFloat(pvYoY) >= 0 ? '+' : ''}${pvYoY}%</div><div class=\"stat-label\">YoY Change</div></div>\n              </div>\n            </div>\n            <div class=\"yoy-stat-group\">\n              <div class=\"yoy-stat-title\">Cost Per Click</div>\n              <div class=\"stats-vertical\">\n                <div class=\"stat-item\"><div class=\"stat-value\">$${currentCPC.toFixed(2)}</div><div class=\"stat-label\">Current</div></div>\n                <div class=\"stat-item\"><div class=\"stat-value ${parseFloat(cpcYoY) <= 0 ? 'positive' : 'negative'}\">${parseFloat(cpcYoY) >= 0 ? '+' : ''}${cpcYoY}%</div><div class=\"stat-label\">YoY Change</div></div>\n              </div>\n            </div>\n          </div>\n        </div>\n        \n        ${comments.traffic || comments.website_traffic ? `<div class=\"comment-box\"><div class=\"comment-box-title\">Analysis</div>${comments.traffic || comments.website_traffic}</div>` : ''}\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(3)\">\u2190 Subscribers</button><button class=\"nav-btn primary\" onclick=\"goToSection(5)\">Next: Refunds & Chargebacks \u2192</button></div>\n      </div>\n\n      <!-- Section 5: Refunds & Chargebacks -->\n      <div class=\"section\" id=\"section-5\">\n        <h2 class=\"section-title\">Refunds & Chargebacks</h2>\n        <p class=\"section-subtitle\">Refunds are initiated by customers through us, while chargebacks are disputes initiated through their credit card issuer.</p>\n        \n        <div class=\"card\">\n          <h3 class=\"card-title\">Total Refunds & Chargebacks (24 Months)</h3>\n          <div class=\"chart-container\"><canvas id=\"refundDollarsChart\"></canvas></div>\n        </div>\n        \n        <div class=\"card\">\n          <h3 class=\"card-title\">Refund Rate Trend (24 Months)</h3>\n          <div class=\"chart-container\"><canvas id=\"refundChart\"></canvas></div>\n        </div>\n        \n        <div class=\"card-grid\">\n          <div class=\"card\">\n            <div class=\"stats-vertical\">\n              <div class=\"stat-item\"><div class=\"stat-value\">${currentRefund.toFixed(2)}%</div><div class=\"stat-label\">Current Month Refund Rate</div></div>\n              <div class=\"stat-item\"><div class=\"stat-value\">${avgRefund}%</div><div class=\"stat-label\">12-Month Average</div></div>\n            </div>\n          </div>\n          <div class=\"card\">\n            <h3 class=\"card-title\">EdTech Benchmark: Refund + Chargeback Rates</h3>\n            <table class=\"benchmark-table\">\n              <thead><tr><th>Performance Tier</th><th>Refund Rate</th><th>Description</th></tr></thead>\n              <tbody>\n                <tr><td class=\"tier excellent\">Excellent</td><td>&lt; 3%</td><td>High-ticket products with qualified buyers and strong product-market fit</td></tr>\n                <tr><td class=\"tier good\">Good</td><td>3 - 5%</td><td>Solid performance; typical for premium training with live support</td></tr>\n                <tr><td class=\"tier acceptable\">Acceptable</td><td>5 - 7%</td><td>General e-commerce benchmark; acceptable for most digital products</td></tr>\n                <tr><td class=\"tier concerning\">Concerning</td><td>8%+</td><td>May indicate price-value misalignment or acquisition channel issues</td></tr>\n                <tr class=\"highlight\"><td>QuickBooksTraining.com</td><td>${avgRefund}%</td><td>12-month average</td></tr>\n              </tbody>\n            </table>\n          </div>\n        </div>\n        \n        ${comments.refunds || comments.refunds_chargebacks ? `<div class=\"comment-box\"><div class=\"comment-box-title\">Analysis</div>${comments.refunds || comments.refunds_chargebacks}</div>` : ''}\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(4)\">\u2190 New Website Visitors</button><button class=\"nav-btn primary\" onclick=\"goToSection(6)\">Next: Intuit Sales \u2192</button></div>\n      </div>\n\n      <!-- Section 6: Intuit Sales -->\n      <div class=\"section\" id=\"section-6\">\n        <h2 class=\"section-title\">Intuit Sales</h2>\n        <p class=\"section-subtitle\">Intuit partnership revenue and IES program performance</p>\n        <div class=\"card\">\n          <h3 class=\"card-title\">Monthly Intuit Sales (24 Months)</h3>\n          <div class=\"chart-container\"><canvas id=\"intuitChart\"></canvas></div>\n          <div class=\"stats-row-2\">\n            <div class=\"stat-item\"><div class=\"stat-value\">${fmt(currentIntuit)}</div><div class=\"stat-label\">Current Month</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value\">${fmt(avgIntuit)}</div><div class=\"stat-label\">12-Month Average</div></div>\n          </div>\n        </div>\n        ${comments.intuit_sales ? `<div class=\"comment-box\"><div class=\"comment-box-title\">Analysis</div>${comments.intuit_sales}</div>` : ''}\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(5)\">\u2190 Refunds & Chargebacks</button><button class=\"nav-btn primary\" onclick=\"goToSection(7)\">Next: Expense Highlights \u2192</button></div>\n      </div>\n\n      <!-- Section 7: Expense Highlights -->\n      <div class=\"section\" id=\"section-7\">\n        <h2 class=\"section-title\">Expense Highlights</h2>\n        <p class=\"section-subtitle\">Notable expense variations for discussion</p>\n        <div class=\"card\">\n          <div class=\"expense-grid\" id=\"expense-list\">${comments.expenses || '<div class=\"expense-card\"><div class=\"expense-header\"><span class=\"expense-name\">No expenses noted</span></div><p class=\"expense-description\">No significant expense variations this month.</p></div>'}</div>\n        </div>\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(6)\">\u2190 Intuit Sales</button><button class=\"nav-btn primary\" onclick=\"goToSection(8)\">Next: Wrap-Up \u2192</button></div>\n      </div>\n\n      <!-- Section 8: Wrap-Up -->\n      <div class=\"section\" id=\"section-8\">\n        <h2 class=\"section-title\">Wrap-Up</h2>\n        <p class=\"section-subtitle\">Key metrics summary for ${displayMonth}</p>\n        <div class=\"card\">\n          <h3 class=\"card-title\">Key Metrics Summary</h3>\n          <div class=\"wrap-metrics\">\n            <div class=\"stat-item\"><div class=\"stat-value\">${fmt(currentRevenue)}</div><div class=\"stat-label\">Customer Revenue</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value\">${fmt(currentIntuit)}</div><div class=\"stat-label\">Intuit Revenue</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value\">${fmt(currentPS)}</div><div class=\"stat-label\">Profit Share</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value\">${currentSubs.toLocaleString()}</div><div class=\"stat-label\">Subscribers</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value\">${currentRefund.toFixed(2)}%</div><div class=\"stat-label\">Refund Rate</div></div>\n            <div class=\"stat-item\"><div class=\"stat-value\">${avgChurn}%</div><div class=\"stat-label\">Churn Rate (6-mo avg)</div></div>\n          </div>\n        </div>\n        <div class=\"nav-footer\"><button class=\"nav-btn\" onclick=\"goToSection(7)\">\u2190 Expense Highlights</button><button class=\"nav-btn primary\" disabled>Complete \u2713</button></div>\n      </div>\n    </main>\n  </div>\n\n  <script>\n    const DATA = {\n      months: ${JSON.stringify(months)},\n      profitShare: ${JSON.stringify(profitShare)},\n      trainingPlans: ${JSON.stringify(trainingPlans)},\n      renewals: ${JSON.stringify(renewals)},\n      subscribers: ${JSON.stringify(subscribers)},\n      newVisitors: ${JSON.stringify(newVisitors)},\n      paidVisitors: ${JSON.stringify(paidVisitors)},\n      cpc: ${JSON.stringify(cpc)},\n      refundPct: ${JSON.stringify(refundPct)},\n      intuitSales: ${JSON.stringify(intuitSales)},\n      totalRefundsChargebacks: ${JSON.stringify(totalRefundsChargebacks)},\n      learnerUnits: ${JSON.stringify(learnerUnits)},\n      certUnits: ${JSON.stringify(certUnits)},\n      teamUnits: ${JSON.stringify(teamUnits)}\n    };\n    \n    Chart.defaults.font.family = \"'Inter',-apple-system,sans-serif\";\n    Chart.defaults.color = '#86868b';\n    const colors = { green:'#2CA01C', blue:'#007aff', purple:'#af52de', orange:'#ff9500', teal:'#5ac8fa', red:'#ff3b30' };\n    const grid = { color:'rgba(0,0,0,0.04)', drawBorder:false };\n    let currentSection = 0;\n    const totalSections = 9;\n    const charts = {};\n    \n    function goToSection(index) {\n      if (index < 0 || index >= totalSections) return;\n      document.querySelectorAll('.nav-item').forEach((item, i) => item.classList.toggle('active', i === index));\n      document.querySelectorAll('.section').forEach((section, i) => section.classList.toggle('active', i === index));\n      currentSection = index;\n      initChartForSection(index);\n      window.scrollTo({ top: 0, behavior: 'smooth' });\n    }\n    \n    document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => goToSection(parseInt(item.dataset.section))));\n    \n    function initChartForSection(index) {\n      const configs = {\n        1: () => {\n          if (charts.profitShare) return;\n          charts.profitShare = new Chart(document.getElementById('profitShareChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[{ label:'Profit Share', data:DATA.profitShare, borderColor:colors.green, backgroundColor:'rgba(44,160,28,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.green }] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid }, y:{ grid, ticks:{ callback:v=>'$'+v.toLocaleString() } } } }\n          });\n        },\n        2: () => {\n          if (charts.revenue) return;\n          charts.revenue = new Chart(document.getElementById('revenueChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[\n              { label:'Training Plans', data:DATA.trainingPlans, borderColor:colors.blue, backgroundColor:'rgba(0,122,255,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.blue },\n              { label:'Renewals', data:DATA.renewals, borderColor:colors.green, backgroundColor:'rgba(44,160,28,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.green }\n            ] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top', labels:{ usePointStyle:true } } }, scales:{ x:{ grid }, y:{ grid, ticks:{ callback:v=>'$'+(v/1000).toFixed(0)+'K' } } } }\n          });\n          const t6=${t6}, r6=${r6};\n          charts.revenuePie = new Chart(document.getElementById('revenuePieChart'), {\n            type:'doughnut',\n            data:{ labels:['Training Plans','Renewals'], datasets:[{ data:[t6,r6], backgroundColor:[colors.blue,colors.green], borderWidth:0 }] },\n            options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true } } } }\n          });\n          const l6=${last6Learner}, c6=${last6Cert}, tm6=${last6Team};\n          charts.unitsPie = new Chart(document.getElementById('unitsPieChart'), {\n            type:'doughnut',\n            data:{ labels:['Learner (${learnerPct}%)','Cert (${certPct}%)','Team (${teamPct}%)'], datasets:[{ data:[l6,c6,tm6], backgroundColor:[colors.purple,colors.orange,colors.teal], borderWidth:0 }] },\n            options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true } } } }\n          });\n        },\n        3: () => {\n          if (charts.subscriber) return;\n          charts.subscriber = new Chart(document.getElementById('subscriberChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[{ label:'Subscribers', data:DATA.subscribers, borderColor:colors.purple, backgroundColor:'rgba(175,82,222,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.purple }] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid }, y:{ grid, min:5000, max:15000, ticks:{ callback:v=>v.toLocaleString() } } } }\n          });\n        },\n        4: () => {\n          if (charts.traffic) return;\n          charts.traffic = new Chart(document.getElementById('trafficChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[\n              { label:'New Visitors', data:DATA.newVisitors, borderColor:colors.teal, backgroundColor:'rgba(90,200,250,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.teal },\n              { label:'Paid Visitors', data:DATA.paidVisitors, borderColor:colors.orange, backgroundColor:'rgba(255,149,0,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.orange }\n            ] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'top', labels:{ usePointStyle:true } } }, scales:{ x:{ grid }, y:{ grid, ticks:{ callback:v=>(v/1000).toFixed(0)+'K' } } } }\n          });\n          charts.cpc = new Chart(document.getElementById('cpcChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[{ label:'Cost Per Click', data:DATA.cpc, borderColor:colors.orange, backgroundColor:'rgba(255,149,0,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.orange }] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid }, y:{ grid, ticks:{ callback:v=>'$'+v.toFixed(2) } } } }\n          });\n        },\n        5: () => {\n          if (charts.refund) return;\n          charts.refundDollars = new Chart(document.getElementById('refundDollarsChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[{ label:'Total Refunds + Chargebacks', data:DATA.totalRefundsChargebacks, borderColor:colors.red, backgroundColor:'rgba(255,59,48,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.red }] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid }, y:{ grid, ticks:{ callback:v=>'$'+(v/1000).toFixed(0)+'K' } } } }\n          });\n          charts.refund = new Chart(document.getElementById('refundChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[{ label:'Refund Rate', data:DATA.refundPct, borderColor:colors.red, backgroundColor:'rgba(255,59,48,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.red }] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid }, y:{ grid, min:0, max:5, ticks:{ stepSize:1, callback:v=>v+'%' } } } }\n          });\n        },\n        6: () => {\n          if (charts.intuit) return;\n          charts.intuit = new Chart(document.getElementById('intuitChart'), {\n            type:'line',\n            data:{ labels:DATA.months, datasets:[{ label:'Intuit Sales', data:DATA.intuitSales, borderColor:colors.blue, backgroundColor:'rgba(0,122,255,0.1)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:colors.blue }] },\n            options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ grid }, y:{ grid, ticks:{ callback:v=>'$'+(v/1000).toFixed(0)+'K' } } } }\n          });\n        }\n      };\n      if (configs[index]) configs[index]();\n    }\n    \n    // Initialize first chart-containing section when navigating\n    initChartForSection(0);\n  <\\/script>\n</body>\n</html>`;\n\nreturn [{ json: { html, displayMonth, currentRevenue, currentPS } }];"
+      },
+      "id": "generate-html",
+      "name": "Generate HTML Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        100
+      ],
+      "notes": "Transforms sheet data into tabbed HTML report with all design updates"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vercel.com/v13/deployments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"pl-monthly-recap-tabbed\",\n  \"files\": [\n    {\n      \"file\": \"index.html\",\n      \"data\": {{ JSON.stringify($json.html) }}\n    }\n  ],\n  \"projectSettings\": {\n    \"framework\": null\n  },\n  \"target\": \"production\"\n}"
+      },
+      "id": "deploy-vercel",
+      "name": "Deploy to Vercel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wOHIn81i1gm4FcP8",
+          "name": "Header Auth account 2"
+        }
+      },
+      "notes": "Deploys the HTML to Vercel (pl-monthly-recap-tabbed project)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "report-url",
+              "name": "reportUrl",
+              "value": "=https://recap.qbtraining.com",
+              "type": "string"
+            },
+            {
+              "id": "report-month",
+              "name": "reportMonth",
+              "value": "={{ $('Generate HTML Report').item.json.displayMonth }}",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "format-output",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1320,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Monthly Schedule": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Triggers": {
+      "main": [
+        [
+          {
+            "node": "Read David Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Comments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read David Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge Data & Comments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Comments": {
+      "main": [
+        [
+          {
+            "node": "Merge Data & Comments",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Data & Comments": {
+      "main": [
+        [
+          {
+            "node": "Generate HTML Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate HTML Report": {
+      "main": [
+        [
+          {
+            "node": "Deploy to Vercel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deploy to Vercel": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "Reports"
+    },
+    {
+      "name": "Monthly"
+    }
+  ],
+  "pinData": {}
+}

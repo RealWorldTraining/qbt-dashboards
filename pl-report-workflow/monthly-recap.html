@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monthly Performance Recap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f7;
+      --bg-tertiary: #fbfbfd;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --text-tertiary: #6e6e73;
+      --accent-green: #34c759;
+      --accent-red: #ff3b30;
+      --accent-blue: #007aff;
+      --accent-purple: #af52de;
+      --accent-orange: #ff9500;
+      --accent-teal: #5ac8fa;
+      --border-light: rgba(0,0,0,0.04);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+      --qb-green: #2CA01C;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Hero Header */
+    .hero {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white;
+      padding: 80px 0 120px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(44, 160, 28, 0.15) 0%, transparent 70%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .hero-badge svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .hero h1 {
+      font-size: clamp(40px, 8vw, 64px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      background: linear-gradient(to bottom, #ffffff 0%, #a1a1a6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 21px;
+      color: rgba(255,255,255,0.7);
+      font-weight: 400;
+      margin-bottom: 40px;
+    }
+
+    .hero-metrics {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+
+    .hero-metric {
+      text-align: center;
+    }
+
+    .hero-metric-value {
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .hero-metric-value.positive {
+      color: var(--accent-green);
+    }
+
+    .hero-metric-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Summary Cards */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-top: -60px;
+      margin-bottom: 48px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .summary-card {
+      background: var(--bg-primary);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-light);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+    }
+
+    .summary-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .summary-card-icon.green { background: rgba(52, 199, 89, 0.12); color: var(--accent-green); }
+    .summary-card-icon.blue { background: rgba(0, 122, 255, 0.12); color: var(--accent-blue); }
+    .summary-card-icon.purple { background: rgba(175, 82, 222, 0.12); color: var(--accent-purple); }
+    .summary-card-icon.orange { background: rgba(255, 149, 0, 0.12); color: var(--accent-orange); }
+    .summary-card-icon.teal { background: rgba(90, 200, 250, 0.12); color: var(--accent-teal); }
+
+    .summary-card-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .summary-card-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .summary-card-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .summary-card-change {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 100px;
+    }
+
+    .summary-card-change.positive {
+      background: rgba(52, 199, 89, 0.12);
+      color: var(--accent-green);
+    }
+
+    .summary-card-change.negative {
+      background: rgba(255, 59, 48, 0.12);
+      color: var(--accent-red);
+    }
+
+    /* Section Styling */
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .section-number {
+      width: 32px;
+      height: 32px;
+      background: var(--qb-green);
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-primary);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    /* Chart Containers */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    .chart-container.small {
+      height: 220px;
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 20px;
+      background: var(--bg-tertiary);
+      border-radius: 16px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Comment Box */
+    .comment-box {
+      background: linear-gradient(135deg, var(--bg-tertiary) 0%, #f0f0f2 100%);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+      border-left: 4px solid var(--qb-green);
+    }
+
+    .comment-box-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .comment-box p {
+      color: var(--text-primary);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* Benchmark Table */
+    .benchmark-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .benchmark-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .benchmark-table td {
+      padding: 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .benchmark-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .benchmark-table .tier {
+      font-weight: 600;
+    }
+
+    .benchmark-table .tier.excellent { color: var(--accent-green); }
+    .benchmark-table .tier.good { color: var(--accent-blue); }
+    .benchmark-table .tier.acceptable { color: var(--accent-orange); }
+    .benchmark-table .tier.concerning { color: var(--accent-red); }
+
+    .benchmark-table .highlight {
+      background: rgba(44, 160, 28, 0.08);
+      font-weight: 600;
+    }
+
+    .benchmark-table .highlight td {
+      color: var(--qb-green);
+    }
+
+    /* Expense Cards */
+    .expense-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .expense-card {
+      background: var(--bg-tertiary);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid var(--border-light);
+    }
+
+    .expense-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .expense-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .expense-amount {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-red);
+    }
+
+    .expense-amount.positive {
+      color: var(--accent-green);
+    }
+
+    .expense-description {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--text-primary);
+      color: rgba(255,255,255,0.6);
+      padding: 40px 0;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .footer-logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .footer-date {
+      font-size: 14px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .summary-cards { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 60px 0 100px; }
+      .hero h1 { font-size: 36px; }
+      .hero-metrics { gap: 24px; }
+      .hero-metric-value { font-size: 32px; }
+      .summary-cards { grid-template-columns: repeat(2, 1fr); }
+      .stats-row { grid-template-columns: 1fr; }
+      .card { padding: 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .summary-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span id="report-period">December 2025</span>
+      </div>
+      <h1>Monthly Recap</h1>
+      <p class="hero-subtitle">QuickBooksTraining.com Performance Summary</p>
+
+      <div class="hero-metrics">
+        <div class="hero-metric">
+          <div class="hero-metric-value" id="hero-revenue">$992,605</div>
+          <div class="hero-metric-label">Total Revenue</div>
+        </div>
+        <div class="hero-metric">
+          <div class="hero-metric-value positive" id="hero-yoy">+39.6%</div>
+          <div class="hero-metric-label">YoY Growth</div>
+        </div>
+        <div class="hero-metric">
+          <div class="hero-metric-value" id="hero-subscribers">10,114</div>
+          <div class="hero-metric-label">Subscribers</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card animate-in delay-1">
+        <div class="summary-card-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div class="summary-card-label">Profit Share</div>
+        <div class="summary-card-value" id="card-profit-share">$2,158</div>
+        <span class="summary-card-change positive" id="card-profit-change">+112.8% YoY</span>
+      </div>
+
+      <div class="summary-card animate-in delay-2">
+        <div class="summary-card-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="summary-card-label">Active Subscribers</div>
+        <div class="summary-card-value" id="card-subscribers">10,114</div>
+        <span class="summary-card-change positive" id="card-sub-change">+11.2% YoY</span>
+      </div>
+
+      <div class="summary-card animate-in delay-3">
+        <div class="summary-card-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        </div>
+        <div class="summary-card-label">Training Plans</div>
+        <div class="summary-card-value" id="card-training">$611,903</div>
+        <span class="summary-card-change positive" id="card-training-change">+49.5% YoY</span>
+      </div>
+
+      <div class="summary-card animate-in delay-4">
+        <div class="summary-card-icon orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="summary-card-label">Intuit Revenue</div>
+        <div class="summary-card-value" id="card-intuit">$242,024</div>
+        <span class="summary-card-change positive" id="card-intuit-change">+158% YoY</span>
+      </div>
+
+      <div class="summary-card animate-in delay-5">
+        <div class="summary-card-icon teal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="summary-card-label">Refund Rate</div>
+        <div class="summary-card-value" id="card-refund">3.36%</div>
+        <span class="summary-card-change positive">Excellent</span>
+      </div>
+    </div>
+
+    <!-- Section 1: Profit Share -->
+    <section class="section" id="section-profit">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <h2 class="section-title">Profit Share</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">24-Month Trend</h3>
+        <div class="chart-container">
+          <canvas id="profitShareChart"></canvas>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-current-profit">$2,158</div>
+            <div class="stat-label">Current Month</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-lastyear-profit">$1,014</div>
+            <div class="stat-label">Same Month Last Year</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" style="color: var(--accent-green)" id="stat-change-profit">+$1,144</div>
+            <div class="stat-label">YoY Change</div>
+          </div>
+        </div>
+
+        <div class="comment-box" id="comment-profit">
+          <div class="comment-box-title">Analysis</div>
+          <p>December significantly outperformed last year, which is especially meaningful because December has historically been our slowest month. This isn't a one-off anomaly — it reflects the cumulative impact of how we operate.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Customer Revenue -->
+    <section class="section" id="section-revenue">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <h2 class="section-title">Customer Revenue</h2>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <h3 class="card-title">Revenue Streams (24 Months)</h3>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Revenue Mix (Last 6 Months)</h3>
+          <div class="chart-container">
+            <canvas id="revenuePieChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-grid">
+          <div>
+            <h3 class="card-title">Training Plans YoY</h3>
+            <div class="stats-row" style="grid-template-columns: repeat(2, 1fr); margin-top: 0;">
+              <div class="stat-item">
+                <div class="stat-value" id="stat-training-current">$611,903</div>
+                <div class="stat-label">Current</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" style="color: var(--accent-green)" id="stat-training-change">+49.5%</div>
+                <div class="stat-label">YoY Change</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="card-title">Renewals YoY</h3>
+            <div class="stats-row" style="grid-template-columns: repeat(2, 1fr); margin-top: 0;">
+              <div class="stat-item">
+                <div class="stat-value" id="stat-renewals-current">$380,702</div>
+                <div class="stat-label">Current</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" style="color: var(--accent-green)" id="stat-renewals-change">+26.3%</div>
+                <div class="stat-label">YoY Change</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="comment-box" id="comment-revenue">
+          <div class="comment-box-title">Analysis</div>
+          <p>The top graph shows sales over the past 24 months. We continue to grow our subscriber base, and the steady upward trend reflects that momentum. What drove the exceptional results is the strength of the Training Plans themselves.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Subscribers -->
+    <section class="section" id="section-subscribers">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <h2 class="section-title">Subscribers</h2>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <h3 class="card-title">Subscriber Growth (24 Months)</h3>
+          <div class="chart-container">
+            <canvas id="subscriberChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">EdTech Benchmark: Churn Rates</h3>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Performance Tier</th>
+                <th>Monthly Churn</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tier excellent">Excellent</td>
+                <td>&lt; 7%</td>
+                <td>Strong learner retention</td>
+              </tr>
+              <tr>
+                <td class="tier good">Good</td>
+                <td>7 - 9%</td>
+                <td>Typical for education subscriptions</td>
+              </tr>
+              <tr>
+                <td class="tier acceptable">Acceptable</td>
+                <td>9 - 11%</td>
+                <td>Some onboarding friction</td>
+              </tr>
+              <tr>
+                <td class="tier concerning">Concerning</td>
+                <td>11%+</td>
+                <td>Above EdTech industry average</td>
+              </tr>
+              <tr class="highlight">
+                <td>QuickBooksTraining.com</td>
+                <td id="benchmark-churn">6.68%</td>
+                <td>6-month average</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comment-box" id="comment-subscribers" style="margin-top: 0;">
+          <div class="comment-box-title">Analysis</div>
+          <p>The subscriber base continues to grow. Subscriber attrition is a normal part of our model. Our goal is for customers to become proficient enough in QuickBooks that they no longer need ongoing help. What matters most is how well we manage that attrition, and at 6.68%, we're in the excellent range.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Traffic -->
+    <section class="section" id="section-traffic">
+      <div class="section-header">
+        <div class="section-number">4</div>
+        <h2 class="section-title">Website Traffic</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Visitor Trends (24 Months)</h3>
+        <div class="chart-container">
+          <canvas id="trafficChart"></canvas>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-new-visitors">37,856</div>
+            <div class="stat-label">New Visitors</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-paid-visitors">25,416</div>
+            <div class="stat-label">Paid Visitors</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" style="color: var(--accent-green)" id="stat-cpc">$2.74</div>
+            <div class="stat-label">Cost Per Click</div>
+          </div>
+        </div>
+
+        <div class="comment-box" id="comment-traffic">
+          <div class="comment-box-title">Analysis</div>
+          <p>Over the past year, we've worked deliberately to reduce our cost per click (CPC), and those efforts paid off. We're now able to acquire more highly qualified traffic for the same overall spend — meaning better visibility, better efficiency, and stronger leverage from each dollar we invest.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Refunds & Chargebacks -->
+    <section class="section" id="section-refunds">
+      <div class="section-header">
+        <div class="section-number">5</div>
+        <h2 class="section-title">Refunds & Chargebacks</h2>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <h3 class="card-title">Refund Rate Trend (24 Months)</h3>
+          <div class="chart-container">
+            <canvas id="refundChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Industry Benchmark</h3>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Performance Tier</th>
+                <th>Refund Rate</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tier excellent">Excellent</td>
+                <td>&lt; 3%</td>
+                <td>High-ticket products</td>
+              </tr>
+              <tr>
+                <td class="tier good">Good</td>
+                <td>3 - 5%</td>
+                <td>Premium training typical</td>
+              </tr>
+              <tr>
+                <td class="tier acceptable">Acceptable</td>
+                <td>5 - 7%</td>
+                <td>E-commerce benchmark</td>
+              </tr>
+              <tr>
+                <td class="tier concerning">Concerning</td>
+                <td>8%+</td>
+                <td>Price-value misalignment</td>
+              </tr>
+              <tr class="highlight">
+                <td>QuickBooksTraining.com</td>
+                <td id="benchmark-refund">2.78%</td>
+                <td>12-month average</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="comment-box" id="comment-refunds" style="margin-top: 0;">
+          <div class="comment-box-title">Analysis</div>
+          <p>Refunds and chargebacks naturally increase as sales volume increases. The more meaningful measure is how our refund and chargeback levels compare to similar companies. On that basis, our performance is excellent.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Intuit Sales -->
+    <section class="section" id="section-intuit">
+      <div class="section-header">
+        <div class="section-number">6</div>
+        <h2 class="section-title">Intuit Sales</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Monthly Intuit Sales (24 Months)</h3>
+        <div class="chart-container">
+          <canvas id="intuitChart"></canvas>
+        </div>
+
+        <div class="stats-row" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-intuit-current">$242,024</div>
+            <div class="stat-label">Current Month</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-intuit-avg">$169,900</div>
+            <div class="stat-label">12-Month Average</div>
+          </div>
+        </div>
+
+        <div class="comment-box" id="comment-intuit">
+          <div class="comment-box-title">Analysis</div>
+          <p>The big change starts in July 2025 when Intuit made a contracted payment covering the first six months of the IES program. Since July, our monthly revenue has effectively moved up, and we're now consistently earning over $100K per month for IES alone.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Expense Call-outs -->
+    <section class="section" id="section-expenses">
+      <div class="section-header">
+        <div class="section-number">7</div>
+        <h2 class="section-title">Expense Call-outs</h2>
+      </div>
+
+      <div class="card">
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">Notable expense variations for discussion</p>
+
+        <div class="expense-grid" id="expense-list">
+          <div class="expense-card">
+            <div class="expense-header">
+              <span class="expense-name">Web Search Engines</span>
+              <span class="expense-amount">+$20K</span>
+            </div>
+            <p class="expense-description">We continue to use Google Ads strategically to drive qualified traffic to the site.</p>
+          </div>
+
+          <div class="expense-card">
+            <div class="expense-header">
+              <span class="expense-name">Accounting Fees</span>
+              <span class="expense-amount">+$7K</span>
+            </div>
+            <p class="expense-description">We file tax returns in a large number of states, which adds complexity and cost.</p>
+          </div>
+
+          <div class="expense-card">
+            <div class="expense-header">
+              <span class="expense-name">Employment Advertising</span>
+              <span class="expense-amount">+$3K</span>
+            </div>
+            <p class="expense-description">As we continue to grow, we are investing in hiring and recruiting platforms.</p>
+          </div>
+
+          <div class="expense-card">
+            <div class="expense-header">
+              <span class="expense-name">Sales Tax Software</span>
+              <span class="expense-amount">+$13K</span>
+            </div>
+            <p class="expense-description">Avalara fees for sales tax calculation and filing across jurisdictions.</p>
+          </div>
+
+          <div class="expense-card">
+            <div class="expense-header">
+              <span class="expense-name">Health Insurance</span>
+              <span class="expense-amount">+$5K</span>
+            </div>
+            <p class="expense-description">Provider increased rates from ~$13K to ~$18K per month.</p>
+          </div>
+
+          <div class="expense-card">
+            <div class="expense-header">
+              <span class="expense-name">Corporate Taxes</span>
+              <span class="expense-amount">+$58K</span>
+            </div>
+            <p class="expense-description">Year-end accrual for estimated annual tax obligations across jurisdictions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 8: Wrap-Up -->
+    <section class="section" id="section-wrapup">
+      <div class="section-header">
+        <div class="section-number">8</div>
+        <h2 class="section-title">Wrap-Up</h2>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Key Metrics Summary</h3>
+        <div class="stats-row" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+          <div class="stat-item">
+            <div class="stat-value" id="wrap-revenue">$992,605</div>
+            <div class="stat-label">Customer Revenue</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="wrap-intuit">$242,024</div>
+            <div class="stat-label">Intuit Revenue</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="wrap-profit">$2,158</div>
+            <div class="stat-label">Profit Share</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="wrap-subs">10,114</div>
+            <div class="stat-label">Subscribers</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="wrap-refund">3.36%</div>
+            <div class="stat-label">Refund Rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="wrap-attrition">7.14%</div>
+            <div class="stat-label">Attrition Rate</div>
+          </div>
+        </div>
+
+        <div class="comment-box" id="comment-wrapup" style="margin-top: 32px;">
+          <div class="comment-box-title">Final Thoughts</div>
+          <p id="wrapup-text">I love what I do. It is fun, and it is hard. Things are moving fast, and just keeping up with what truly matters can feel like a full-time job on its own. Months like this one feel like a quiet reminder that the work we do every day matters to our customers. They value it. They trust it. And they are willing to pay for the time, care, and expertise we bring to it. Thank you for the effort, focus, and care you bring to this work. It shows, and it matters.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-logo">QuickBooksTraining.com</div>
+    <div class="footer-date" id="generated-date">Generated January 23, 2026</div>
+  </footer>
+
+  <script>
+    // === DATA (This section will be replaced by n8n with actual Google Sheets data) ===
+    const DATA = {
+      months: ['1/24','2/24','3/24','4/24','5/24','6/24','7/24','8/24','9/24','10/24','11/24','12/24','1/25','2/25','3/25','4/25','5/25','6/25','7/25','8/25','9/25','10/25','11/25','12/25'],
+      profitShare: [1948,1389,1334,1538,1416,1127,1727,1407,1312,1719,1417,1014,1800,1421,979,1350,1960,1743,2271,1772,1954,2140,1936,2158],
+      trainingPlans: [603316,549795,476314,496968,505428,453457,454364,515067,443398,463975,439808,409415,564937,453545,432366,392229,607648,478505,498628,454419,530555,531079,520697,611903],
+      renewals: [243259,248690,257224,260078,283795,271996,279182,282337,288559,293762,297554,301434,306973,311058,315601,321757,325820,333758,342383,345206,349758,361979,369094,380702],
+      subscribers: [8087,8289,8546,8656,8782,8856,8924,8907,8990,9025,9060,9099,9689,9693,9735,9078,9809,9880,9905,9855,9894,9932,10001,10114],
+      newVisitors: [32527,33146,31054,30188,29078,25328,26832,28433,26877,28594,25575,23357,30338,27482,28916,28067,29109,26320,30575,31566,32477,34927,31145,37856],
+      paidVisitors: [12042,12096,10554,10694,11643,9885,11138,12104,10911,9774,7534,8017,8592,9621,12127,12045,13985,12767,17421,16716,18623,20770,22200,25416],
+      cpc: [6.27,6.14,5.95,6.27,6.48,7.93,6.95,6.48,5.92,4.66,4.05,4.02,3.55,6.27,6.44,6.12,4.60,2.58,2.41,2.12,2.50,2.58,2.75,2.74],
+      refundPct: [2.96,2.70,2.55,2.68,2.32,2.02,3.05,2.17,2.84,1.96,2.60,2.80,2.63,2.83,3.01,3.20,2.75,2.32,2.84,2.07,3.18,2.75,2.37,3.36],
+      intuitSales: [204832,84298,82298,128784,83048,75298,178284,86553,94803,157247,85803,93803,126247,119803,85303,142497,104803,140803,324247,147724,168674,254695,181974,242024]
+    };
+
+    // Chart.js configuration
+    Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+    Chart.defaults.color = '#86868b';
+
+    const chartColors = {
+      green: '#34c759',
+      blue: '#007aff',
+      purple: '#af52de',
+      orange: '#ff9500',
+      teal: '#5ac8fa',
+      red: '#ff3b30',
+      gray: '#8e8e93'
+    };
+
+    const gridConfig = {
+      color: 'rgba(0,0,0,0.04)',
+      drawBorder: false
+    };
+
+    // Profit Share Chart
+    new Chart(document.getElementById('profitShareChart'), {
+      type: 'line',
+      data: {
+        labels: DATA.months,
+        datasets: [{
+          label: 'Profit Share',
+          data: DATA.profitShare,
+          borderColor: chartColors.green,
+          backgroundColor: 'rgba(52, 199, 89, 0.1)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHoverRadius: 6,
+          pointHoverBackgroundColor: chartColors.green
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1d1d1f',
+            titleFont: { weight: '600' },
+            callbacks: {
+              label: (ctx) => `$${ctx.raw.toLocaleString()}`
+            }
+          }
+        },
+        scales: {
+          x: { grid: gridConfig },
+          y: {
+            grid: gridConfig,
+            ticks: { callback: (v) => `$${v.toLocaleString()}` }
+          }
+        }
+      }
+    });
+
+    // Revenue Chart
+    new Chart(document.getElementById('revenueChart'), {
+      type: 'line',
+      data: {
+        labels: DATA.months,
+        datasets: [
+          {
+            label: 'Training Plans',
+            data: DATA.trainingPlans,
+            borderColor: chartColors.blue,
+            backgroundColor: 'rgba(0, 122, 255, 0.1)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0
+          },
+          {
+            label: 'Renewals',
+            data: DATA.renewals,
+            borderColor: chartColors.green,
+            backgroundColor: 'rgba(52, 199, 89, 0.1)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { usePointStyle: true, padding: 20 }
+          },
+          tooltip: {
+            backgroundColor: '#1d1d1f',
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: $${(ctx.raw/1000).toFixed(0)}K`
+            }
+          }
+        },
+        scales: {
+          x: { grid: gridConfig },
+          y: {
+            grid: gridConfig,
+            ticks: { callback: (v) => `$${(v/1000).toFixed(0)}K` }
+          }
+        }
+      }
+    });
+
+    // Revenue Pie Chart
+    const last6Training = DATA.trainingPlans.slice(-6).reduce((a,b) => a+b, 0);
+    const last6Renewals = DATA.renewals.slice(-6).reduce((a,b) => a+b, 0);
+
+    new Chart(document.getElementById('revenuePieChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Training Plans', 'Renewals'],
+        datasets: [{
+          data: [last6Training, last6Renewals],
+          backgroundColor: [chartColors.blue, chartColors.green],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { usePointStyle: true, padding: 20 }
+          },
+          tooltip: {
+            backgroundColor: '#1d1d1f',
+            callbacks: {
+              label: (ctx) => {
+                const pct = ((ctx.raw / (last6Training + last6Renewals)) * 100).toFixed(0);
+                return `${ctx.label}: ${pct}%`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Subscriber Chart
+    new Chart(document.getElementById('subscriberChart'), {
+      type: 'line',
+      data: {
+        labels: DATA.months,
+        datasets: [{
+          label: 'Subscribers',
+          data: DATA.subscribers,
+          borderColor: chartColors.purple,
+          backgroundColor: 'rgba(175, 82, 222, 0.1)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1d1d1f',
+            callbacks: {
+              label: (ctx) => ctx.raw.toLocaleString()
+            }
+          }
+        },
+        scales: {
+          x: { grid: gridConfig },
+          y: {
+            grid: gridConfig,
+            ticks: { callback: (v) => v.toLocaleString() }
+          }
+        }
+      }
+    });
+
+    // Traffic Chart
+    new Chart(document.getElementById('trafficChart'), {
+      type: 'line',
+      data: {
+        labels: DATA.months,
+        datasets: [
+          {
+            label: 'New Visitors',
+            data: DATA.newVisitors,
+            borderColor: chartColors.teal,
+            backgroundColor: 'rgba(90, 200, 250, 0.1)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0
+          },
+          {
+            label: 'Paid Visitors',
+            data: DATA.paidVisitors,
+            borderColor: chartColors.orange,
+            backgroundColor: 'rgba(255, 149, 0, 0.1)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { usePointStyle: true, padding: 20 }
+          },
+          tooltip: { backgroundColor: '#1d1d1f' }
+        },
+        scales: {
+          x: { grid: gridConfig },
+          y: {
+            grid: gridConfig,
+            ticks: { callback: (v) => (v/1000).toFixed(0) + 'K' }
+          }
+        }
+      }
+    });
+
+    // Refund Chart
+    new Chart(document.getElementById('refundChart'), {
+      type: 'line',
+      data: {
+        labels: DATA.months,
+        datasets: [{
+          label: 'Refund Rate',
+          data: DATA.refundPct,
+          borderColor: chartColors.red,
+          backgroundColor: 'rgba(255, 59, 48, 0.1)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1d1d1f',
+            callbacks: {
+              label: (ctx) => `${ctx.raw}%`
+            }
+          }
+        },
+        scales: {
+          x: { grid: gridConfig },
+          y: {
+            grid: gridConfig,
+            min: 0,
+            max: 5,
+            ticks: { callback: (v) => `${v}%` }
+          }
+        }
+      }
+    });
+
+    // Intuit Sales Chart
+    new Chart(document.getElementById('intuitChart'), {
+      type: 'line',
+      data: {
+        labels: DATA.months,
+        datasets: [{
+          label: 'Intuit Sales',
+          data: DATA.intuitSales,
+          borderColor: chartColors.blue,
+          backgroundColor: 'rgba(0, 122, 255, 0.1)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1d1d1f',
+            callbacks: {
+              label: (ctx) => `$${ctx.raw.toLocaleString()}`
+            }
+          }
+        },
+        scales: {
+          x: { grid: gridConfig },
+          y: {
+            grid: gridConfig,
+            ticks: { callback: (v) => `$${(v/1000).toFixed(0)}K` }
+          }
+        }
+      }
+    });
+
+    // Set generated date
+    document.getElementById('generated-date').textContent =
+      `Generated ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+  </script>
+</body>
+</html>
