@@ -285,7 +285,7 @@ function TodayCombinedBox({
   return (
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
       <div className="h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500" />
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <div className="flex-1 flex flex-col items-center justify-start pt-4 pb-6 px-6">
         {/* TODAY @ time at top */}
         <div className="text-zinc-400 text-3xl font-medium uppercase tracking-wider">Today @</div>
         <div className="text-white text-7xl font-bold mt-1">{timeStr}</div>
