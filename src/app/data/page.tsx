@@ -157,7 +157,7 @@ export default function DataDashboard() {
       </header>
 
       {/* Main Grid - 4 rows x 2 columns */}
-      <main className="flex-1 p-4 grid grid-cols-2 grid-rows-4 gap-4">
+      <main className="flex-1 p-4 grid grid-cols-2 grid-rows-3 gap-4">
         {loading ? (
           <div className="col-span-2 row-span-4 flex items-center justify-center">
             <Loader2 className="h-16 w-16 animate-spin text-zinc-600" />
@@ -183,23 +183,7 @@ export default function DataDashboard() {
             {/* Row 2: Week Forecast (full width) */}
             <WeekForecastBox forecast={weekForecast} fullWidth />
 
-            {/* Row 3: Yesterday & MTD */}
-            <SalesBox
-              title="Yesterday"
-              qty={metrics.yesterday.direct_qty}
-              pyQty={metrics.yesterday.py_qty}
-              changePct={metrics.yesterday.qty_change_pct}
-              color="blue"
-            />
-            <SalesBox
-              title="Month to Date"
-              qty={metrics.this_month.direct_qty}
-              pyQty={metrics.this_month.py_qty}
-              changePct={metrics.this_month.qty_change_pct}
-              color="amber"
-            />
-
-            {/* Row 4: January Forecast (full width) */}
+            {/* Row 3: January Forecast (full width) */}
             <MonthForecastBox forecast={eomForecast} fullWidth />
           </>
         ) : (
