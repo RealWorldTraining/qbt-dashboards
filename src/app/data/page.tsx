@@ -164,7 +164,7 @@ export default function DataDashboard() {
           </div>
         ) : metrics ? (
           <>
-            {/* Row 1: Today Combined & Yesterday */}
+            {/* Row 1: Today Combined & This Week */}
             <TodayCombinedBox
               currentTime={currentTime}
               todaySales={metrics.today.direct_qty}
@@ -173,23 +173,23 @@ export default function DataDashboard() {
               threeWASales={getSalesAtHour("3 Weeks Ago")}
             />
             <SalesBox
-              title="Yesterday"
-              qty={metrics.yesterday.direct_qty}
-              pyQty={metrics.yesterday.py_qty}
-              changePct={metrics.yesterday.qty_change_pct}
-              color="blue"
-            />
-
-            {/* Row 2: Week Forecast (full width) */}
-            <WeekForecastBox forecast={weekForecast} fullWidth />
-
-            {/* Row 3: This Week & MTD */}
-            <SalesBox
               title="This Week"
               qty={metrics.this_week.direct_qty}
               pyQty={metrics.this_week.py_qty}
               changePct={metrics.this_week.qty_change_pct}
               color="purple"
+            />
+
+            {/* Row 2: Week Forecast (full width) */}
+            <WeekForecastBox forecast={weekForecast} fullWidth />
+
+            {/* Row 3: Yesterday & MTD */}
+            <SalesBox
+              title="Yesterday"
+              qty={metrics.yesterday.direct_qty}
+              pyQty={metrics.yesterday.py_qty}
+              changePct={metrics.yesterday.qty_change_pct}
+              color="blue"
             />
             <SalesBox
               title="Month to Date"
