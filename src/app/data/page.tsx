@@ -313,7 +313,7 @@ function TodayForecastBox({
             <div className="text-zinc-500 uppercase text-2xl mt-2">Actual</div>
           </div>
           <div className="text-center">
-            <div className="text-[7rem] font-bold text-white leading-none">{expectedAtTime ?? '—'}</div>
+            <div className="text-[7rem] font-bold text-cyan-400 leading-none">{expectedAtTime ?? '—'}</div>
             <div className="text-zinc-500 uppercase text-2xl mt-2">Expected</div>
           </div>
           <div className="text-center">
@@ -477,7 +477,7 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
             <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Actual</div>
           </div>
           <div className="text-center">
-            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
+            <div className={`font-bold text-cyan-400 leading-none ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
             <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Expected</div>
           </div>
           <div className="text-center">
@@ -579,7 +579,7 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
               <div className="text-zinc-500 uppercase text-2xl mt-2">WTD Actual</div>
             </div>
             <div className="text-center">
-              <div className="text-[7rem] font-bold text-white leading-none">{wtdExpected}</div>
+              <div className="text-[7rem] font-bold text-cyan-400 leading-none">{wtdExpected}</div>
               <div className="text-zinc-500 uppercase text-2xl mt-2">WTD Expected</div>
             </div>
             <div className="text-center">
