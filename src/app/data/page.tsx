@@ -480,7 +480,7 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
   return (
     <div className={`bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden ${fullWidth ? 'col-span-2' : ''}`}>
       <div className="h-1.5 bg-gradient-to-r from-violet-600 to-violet-500" />
-      <div className={`flex-1 flex flex-col items-center justify-center p-4`}>
+      <div className={`flex-1 flex flex-col items-center ${fullWidth ? 'justify-start' : 'justify-center'} p-4`}>
         {/* Title + subtitle - match Week Forecast exactly */}
         <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.month_name} Forecast</div>
         <div className={`text-zinc-500 ${fullWidth ? 'text-xl' : 'text-lg'}`}>{forecast.days_remaining}d left</div>
@@ -582,7 +582,7 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
     return (
       <div className="col-span-2 bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
         <div className="h-1.5 bg-gradient-to-r from-pink-600 to-pink-500" />
-        <div className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="flex-1 flex flex-col items-center justify-start p-4">
           {/* Title + date at top */}
           <div className="text-zinc-400 text-2xl font-medium uppercase tracking-wider">Week Forecast</div>
           <div className="text-zinc-500 text-xl">{forecast.week_start_date} - {forecast.week_end_date}</div>
