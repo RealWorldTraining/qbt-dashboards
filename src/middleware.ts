@@ -30,6 +30,12 @@ export const config = {
   matcher: [
     '/recap/:path*',
     '/recap',
+    '/data/:path*',
+    '/data',
+    '/sales/:path*',
+    '/sales',
+    '/team/:path*',
+    '/team',
     '/api/recap/:path*',
     '/api/recap',
   ],
