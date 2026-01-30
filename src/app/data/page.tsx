@@ -457,7 +457,7 @@ function MonthForecastBox({ forecast, fullWidth = false }: { forecast: EOMForeca
   return (
     <div className={`bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden ${fullWidth ? 'col-span-2' : ''}`}>
       <div className="h-1.5 bg-gradient-to-r from-violet-600 to-violet-500" />
-      <div className={`flex-1 flex flex-col items-center ${fullWidth ? 'justify-start pt-4 pb-6' : 'justify-center p-6'}`}>
+      <div className={`flex-1 flex flex-col items-center ${fullWidth ? 'justify-center p-6' : 'justify-center p-6'}`}>
         <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-3xl' : 'text-2xl'}`}>{forecast.month_name} Forecast</div>
         <div className={`text-zinc-500 ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.days_remaining}d left</div>
         <div className={`text-white font-bold mt-2 ${fullWidth ? 'text-[12rem] leading-none' : 'text-8xl'}`}>
