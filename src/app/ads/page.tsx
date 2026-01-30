@@ -1,13 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { TrendingUp, TrendingDown, Minus, RefreshCw, DollarSign, MousePointerClick, Eye, Target, BarChart3 } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 
 // Types for Google Ads data
 interface WeeklyMetrics {
@@ -31,22 +25,17 @@ interface AdsData {
   last_updated: string
 }
 
-// Initial loading state placeholder
+// Initial loading state
 const LOADING_DATA: AdsData = {
-  this_week: { week_label: "This Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-  last_week: { week_label: "Last Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-  two_weeks_ago: { week_label: "2 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-  three_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  this_week: { week_label: "Last Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
   last_updated: new Date().toISOString()
 }
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
+  return "$" + new Intl.NumberFormat("en-US").format(Math.round(value))
 }
 
 function formatNumber(value: number): string {
@@ -54,162 +43,62 @@ function formatNumber(value: number): string {
 }
 
 function formatPercent(value: number): string {
-  return `${value.toFixed(2)}%`
+  return `${value.toFixed(1)}%`
 }
 
-function getChangeIndicator(current: number, previous: number, inverse: boolean = false) {
-  const change = ((current - previous) / previous) * 100
-  const isPositive = inverse ? change < 0 : change > 0
-  const isNegative = inverse ? change > 0 : change < 0
-  
-  if (Math.abs(change) < 0.5) {
-    return { icon: Minus, color: "text-gray-400", change: 0 }
-  }
-  
-  return {
-    icon: isPositive ? TrendingUp : TrendingDown,
-    color: isPositive ? "text-green-500" : "text-red-500",
-    change: change
-  }
-}
-
-interface MetricCardProps {
+// Hero Card Component - Mission Control Style
+interface HeroCardProps {
   title: string
-  icon: React.ElementType
-  thisWeek: number
-  lastWeek: number
-  twoWeeksAgo: number
-  threeWeeksAgo: number
-  format: (v: number) => string
+  value: string | number
+  subtitle?: string
+  accentColor: string
+  comparisons: {
+    label: string
+    value: number
+    change: number
+    changeAbs: number
+  }[]
+  format?: (v: number) => string
   inverse?: boolean
-  iconColor: string
 }
 
-function formatAbsChange(current: number, previous: number, formatter: (v: number) => string): string {
-  const diff = current - previous
-  const prefix = diff > 0 ? "+" : ""
-  return prefix + formatter(Math.abs(diff))
-}
-
-function MetricCard({ title, icon: Icon, thisWeek, lastWeek, twoWeeksAgo, threeWeeksAgo, format, inverse = false, iconColor }: MetricCardProps) {
-  const vsLastWeek = getChangeIndicator(thisWeek, lastWeek, inverse)
-  const vsTwoWeeks = getChangeIndicator(thisWeek, twoWeeksAgo, inverse)
-  const vsThreeWeeks = getChangeIndicator(thisWeek, threeWeeksAgo, inverse)
-  
-  // Absolute differences
-  const diffLastWeek = thisWeek - lastWeek
-  const diffTwoWeeks = thisWeek - twoWeeksAgo
-  const diffThreeWeeks = thisWeek - threeWeeksAgo
-  
+function HeroCard({ title, value, subtitle, accentColor, comparisons, format = formatNumber, inverse = false }: HeroCardProps) {
   return (
-    <Card className="border-0 shadow-sm bg-white">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-[#6E6E73]">{title}</CardTitle>
-          <Icon className={`h-5 w-5 ${iconColor}`} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold text-[#1D1D1F] mb-4">{format(thisWeek)}</div>
+    <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+      {/* Accent bar */}
+      <div className={`h-1 ${accentColor}`} />
+      
+      <div className="p-6">
+        {/* Title */}
+        <div className="text-gray-400 text-sm mb-2">{title}</div>
         
-        <div className="space-y-2">
-          {/* vs 2 Weeks Ago (was Last Week) */}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6E6E73]">vs 2 Weeks</span>
-            <div className="flex items-center gap-2">
-              <span className={vsLastWeek.color}>
-                {diffLastWeek >= 0 ? "+" : ""}{format(Math.abs(diffLastWeek))}
-              </span>
-              <div className="flex items-center gap-1">
-                <vsLastWeek.icon className={`h-3 w-3 ${vsLastWeek.color}`} />
-                <span className={`${vsLastWeek.color} text-xs`}>
-                  {vsLastWeek.change > 0 ? "+" : ""}{vsLastWeek.change.toFixed(0)}%
-                </span>
+        {/* Hero number */}
+        <div className="text-white text-5xl font-bold mb-1">{value}</div>
+        
+        {/* Subtitle */}
+        {subtitle && <div className="text-gray-500 text-sm mb-4">{subtitle}</div>}
+        
+        {/* Comparisons */}
+        <div className="mt-4 space-y-2">
+          {comparisons.map((comp, i) => {
+            const isPositive = inverse ? comp.change < 0 : comp.change > 0
+            const isNegative = inverse ? comp.change > 0 : comp.change < 0
+            const color = isPositive ? "text-green-500" : isNegative ? "text-red-500" : "text-gray-400"
+            const sign = comp.changeAbs >= 0 ? "+" : ""
+            
+            return (
+              <div key={i} className="flex justify-between items-center text-sm">
+                <span className="text-gray-500">{comp.label}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-300">{format(comp.value)}</span>
+                  <span className={`${color} font-medium`}>
+                    {sign}{comp.change.toFixed(0)}% ({sign}{format(Math.abs(comp.changeAbs))})
+                  </span>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          {/* vs 3 Weeks Ago (was 2 Weeks) */}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6E6E73]">vs 3 Weeks</span>
-            <div className="flex items-center gap-2">
-              <span className={vsTwoWeeks.color}>
-                {diffTwoWeeks >= 0 ? "+" : ""}{format(Math.abs(diffTwoWeeks))}
-              </span>
-              <div className="flex items-center gap-1">
-                <vsTwoWeeks.icon className={`h-3 w-3 ${vsTwoWeeks.color}`} />
-                <span className={`${vsTwoWeeks.color} text-xs`}>
-                  {vsTwoWeeks.change > 0 ? "+" : ""}{vsTwoWeeks.change.toFixed(0)}%
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          {/* vs 4 Weeks Ago (was 3 Weeks) */}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6E6E73]">vs 4 Weeks</span>
-            <div className="flex items-center gap-2">
-              <span className={vsThreeWeeks.color}>
-                {diffThreeWeeks >= 0 ? "+" : ""}{format(Math.abs(diffThreeWeeks))}
-              </span>
-              <div className="flex items-center gap-1">
-                <vsThreeWeeks.icon className={`h-3 w-3 ${vsThreeWeeks.color}`} />
-                <span className={`${vsThreeWeeks.color} text-xs`}>
-                  {vsThreeWeeks.change > 0 ? "+" : ""}{vsThreeWeeks.change.toFixed(0)}%
-                </span>
-              </div>
-            </div>
-          </div>
+            )
+          })}
         </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-// Weekly Comparison Row Component
-interface WeekRowProps {
-  data: WeeklyMetrics
-  isCurrentWeek?: boolean
-}
-
-function WeekRow({ data, isCurrentWeek = false }: WeekRowProps) {
-  return (
-    <div className={`grid grid-cols-9 gap-4 py-4 px-4 ${isCurrentWeek ? 'bg-blue-50 rounded-lg' : 'border-b border-[#E5E5E7]'}`}>
-      <div className="col-span-1">
-        <div className={`font-semibold ${isCurrentWeek ? 'text-blue-700' : 'text-[#1D1D1F]'}`}>{data.week_label}</div>
-        <div className="text-xs text-[#6E6E73]">{data.date_range}</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{formatCurrency(data.spend)}</div>
-        <div className="text-xs text-[#6E6E73]">Spend</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{formatNumber(data.impressions)}</div>
-        <div className="text-xs text-[#6E6E73]">Impr</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{formatNumber(data.clicks)}</div>
-        <div className="text-xs text-[#6E6E73]">Clicks</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{formatPercent(data.ctr)}</div>
-        <div className="text-xs text-[#6E6E73]">CTR</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{data.conversions}</div>
-        <div className="text-xs text-[#6E6E73]">Conv</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{formatPercent(data.conversion_rate)}</div>
-        <div className="text-xs text-[#6E6E73]">Conv %</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{formatCurrency(data.cpa)}</div>
-        <div className="text-xs text-[#6E6E73]">CPA</div>
-      </div>
-      <div className="text-right">
-        <div className="font-medium text-[#1D1D1F]">{data.roas.toFixed(2)}x</div>
-        <div className="text-xs text-[#6E6E73]">ROAS</div>
       </div>
     </div>
   )
@@ -238,150 +127,125 @@ export default function AdsPage() {
     }
   }
 
-  // Initial fetch + auto-refresh every 5 minutes
   useEffect(() => {
     fetchData()
     const interval = setInterval(fetchData, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
-  const handleRefresh = () => {
-    fetchData()
+  const handleRefresh = () => fetchData()
+
+  // Build comparison data
+  const buildComparisons = (metric: keyof WeeklyMetrics, format: (v: number) => string = formatNumber) => {
+    const current = data.this_week[metric] as number
+    return [
+      {
+        label: data.last_week.week_label,
+        value: data.last_week[metric] as number,
+        change: ((current - (data.last_week[metric] as number)) / (data.last_week[metric] as number)) * 100,
+        changeAbs: current - (data.last_week[metric] as number)
+      },
+      {
+        label: data.two_weeks_ago.week_label,
+        value: data.two_weeks_ago[metric] as number,
+        change: ((current - (data.two_weeks_ago[metric] as number)) / (data.two_weeks_ago[metric] as number)) * 100,
+        changeAbs: current - (data.two_weeks_ago[metric] as number)
+      },
+      {
+        label: data.three_weeks_ago.week_label,
+        value: data.three_weeks_ago[metric] as number,
+        change: ((current - (data.three_weeks_ago[metric] as number)) / (data.three_weeks_ago[metric] as number)) * 100,
+        changeAbs: current - (data.three_weeks_ago[metric] as number)
+      }
+    ]
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] p-6">
-      <div className="max-w-[1920px] mx-auto space-y-6">
+    <div className="min-h-screen bg-black p-6">
+      <div className="max-w-[1920px] mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-[#1D1D1F]">Google Ads Performance</h1>
-            <p className="text-[#6E6E73] mt-1">Account-level metrics • Week-over-week comparison</p>
-          </div>
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="text-right text-sm">
-              <div className="text-[#6E6E73]">Last updated</div>
-              <div className="font-medium text-[#1D1D1F]">
-                {lastRefresh.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            </div>
+            <h1 className="text-white text-xl font-medium">Google Ads</h1>
+            <span className="text-gray-500 text-sm">
+              Updated {lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-sm">{data.this_week.date_range}</span>
             <button 
               onClick={handleRefresh}
               disabled={loading}
-              className="p-2 rounded-lg bg-white border border-[#D2D2D7] hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="p-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`h-5 w-5 text-[#6E6E73] ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
-        {/* Key Metrics Cards - 2 rows of 4 */}
-        <div className="grid grid-cols-4 gap-4">
-          <MetricCard
-            title="Spend"
-            icon={DollarSign}
-            iconColor="text-green-500"
-            thisWeek={data.this_week.spend}
-            lastWeek={data.last_week.spend}
-            twoWeeksAgo={data.two_weeks_ago.spend}
-            threeWeeksAgo={data.three_weeks_ago.spend}
-            format={formatCurrency}
+        {/* Grid of Hero Cards - 2 rows of 4 */}
+        <div className="grid grid-cols-4 gap-4 mb-4">
+          <HeroCard
+            title="SPEND"
+            value={formatCurrency(data.this_week.spend)}
+            accentColor="bg-green-500"
+            comparisons={buildComparisons('spend', formatCurrency)}
           />
-          <MetricCard
-            title="Impressions"
-            icon={Eye}
-            iconColor="text-blue-500"
-            thisWeek={data.this_week.impressions}
-            lastWeek={data.last_week.impressions}
-            twoWeeksAgo={data.two_weeks_ago.impressions}
-            threeWeeksAgo={data.three_weeks_ago.impressions}
-            format={formatNumber}
+          <HeroCard
+            title="IMPRESSIONS"
+            value={formatNumber(data.this_week.impressions)}
+            accentColor="bg-blue-500"
+            comparisons={buildComparisons('impressions')}
           />
-          <MetricCard
-            title="Clicks"
-            icon={MousePointerClick}
-            iconColor="text-purple-500"
-            thisWeek={data.this_week.clicks}
-            lastWeek={data.last_week.clicks}
-            twoWeeksAgo={data.two_weeks_ago.clicks}
-            threeWeeksAgo={data.three_weeks_ago.clicks}
-            format={formatNumber}
+          <HeroCard
+            title="CLICKS"
+            value={formatNumber(data.this_week.clicks)}
+            accentColor="bg-purple-500"
+            comparisons={buildComparisons('clicks')}
           />
-          <MetricCard
+          <HeroCard
             title="CTR"
-            icon={BarChart3}
-            iconColor="text-cyan-500"
-            thisWeek={data.this_week.ctr}
-            lastWeek={data.last_week.ctr}
-            twoWeeksAgo={data.two_weeks_ago.ctr}
-            threeWeeksAgo={data.three_weeks_ago.ctr}
-            format={formatPercent}
+            value={formatPercent(data.this_week.ctr)}
+            accentColor="bg-cyan-500"
+            comparisons={buildComparisons('ctr', formatPercent)}
           />
         </div>
 
         <div className="grid grid-cols-4 gap-4">
-          <MetricCard
-            title="Conversions"
-            icon={Target}
-            iconColor="text-orange-500"
-            thisWeek={data.this_week.conversions}
-            lastWeek={data.last_week.conversions}
-            twoWeeksAgo={data.two_weeks_ago.conversions}
-            threeWeeksAgo={data.three_weeks_ago.conversions}
-            format={(v) => v.toString()}
+          <HeroCard
+            title="CONVERSIONS"
+            value={data.this_week.conversions}
+            accentColor="bg-orange-500"
+            comparisons={buildComparisons('conversions')}
           />
-          <MetricCard
-            title="Conversion Rate"
-            icon={TrendingUp}
-            iconColor="text-emerald-500"
-            thisWeek={data.this_week.conversion_rate}
-            lastWeek={data.last_week.conversion_rate}
-            twoWeeksAgo={data.two_weeks_ago.conversion_rate}
-            threeWeeksAgo={data.three_weeks_ago.conversion_rate}
-            format={formatPercent}
+          <HeroCard
+            title="CONV RATE"
+            value={formatPercent(data.this_week.conversion_rate)}
+            accentColor="bg-emerald-500"
+            comparisons={buildComparisons('conversion_rate', formatPercent)}
           />
-          <MetricCard
-            title="Cost Per Acquisition"
-            icon={DollarSign}
-            iconColor="text-red-500"
-            thisWeek={data.this_week.cpa}
-            lastWeek={data.last_week.cpa}
-            twoWeeksAgo={data.two_weeks_ago.cpa}
-            threeWeeksAgo={data.three_weeks_ago.cpa}
-            format={formatCurrency}
+          <HeroCard
+            title="CPA"
+            value={formatCurrency(data.this_week.cpa)}
+            accentColor="bg-red-500"
+            comparisons={buildComparisons('cpa', formatCurrency)}
             inverse={true}
           />
-          <MetricCard
+          <HeroCard
             title="ROAS"
-            icon={TrendingUp}
-            iconColor="text-indigo-500"
-            thisWeek={data.this_week.roas}
-            lastWeek={data.last_week.roas}
-            twoWeeksAgo={data.two_weeks_ago.roas}
-            threeWeeksAgo={data.three_weeks_ago.roas}
-            format={(v) => `${v.toFixed(2)}x`}
+            value={`${data.this_week.roas.toFixed(2)}x`}
+            accentColor="bg-pink-500"
+            comparisons={buildComparisons('roas', (v) => `${v.toFixed(2)}x`)}
           />
         </div>
 
-        {/* Weekly Comparison Table */}
-        <Card className="border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Weekly Comparison</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              <WeekRow data={data.this_week} isCurrentWeek={true} />
-              <WeekRow data={data.last_week} />
-              <WeekRow data={data.two_weeks_ago} />
-              <WeekRow data={data.three_weeks_ago} />
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Footer */}
-        <div className="text-center text-sm text-[#6E6E73]">
-          <p>Data provided by Vision 🔮 • Dashboard by Professor 🎓</p>
-          <p className="mt-1">QuickBooks Training • qbtraining.ai/ads</p>
+        <div className="mt-6 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-gray-500 text-xs">Live</span>
+          </div>
+          <p className="text-gray-600 text-xs mt-2">QuickBooks Training • Google Ads Dashboard</p>
         </div>
       </div>
     </div>
