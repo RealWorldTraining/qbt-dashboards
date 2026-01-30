@@ -164,13 +164,13 @@ export default function DataDashboard() {
           </div>
         ) : metrics ? (
           <>
-            {/* Row 1: Today & Yesterday */}
-            <SalesBox
-              title="Today"
-              qty={metrics.today.direct_qty}
-              pyQty={metrics.today.py_qty}
-              changePct={metrics.today.qty_change_pct}
-              color="emerald"
+            {/* Row 1: Today Combined & Yesterday */}
+            <TodayCombinedBox
+              currentTime={currentTime}
+              todaySales={metrics.today.direct_qty}
+              lwSales={getSalesAtHour("1 Week Ago")}
+              twoWASales={getSalesAtHour("2 Weeks Ago")}
+              threeWASales={getSalesAtHour("3 Weeks Ago")}
             />
             <SalesBox
               title="Yesterday"
@@ -196,14 +196,8 @@ export default function DataDashboard() {
               color="amber"
             />
 
-            {/* Row 3: Today @ Time & EOD Forecast */}
-            <TodayAtTimeBox
-              currentTime={currentTime}
-              todaySales={getSalesAtHour("Today")}
-              lwSales={getSalesAtHour("1 Week Ago")}
-              twoWASales={getSalesAtHour("2 Weeks Ago")}
-              threeWASales={getSalesAtHour("3 Weeks Ago")}
-            />
+            {/* Row 3: Placeholder & EOD Forecast */}
+            <PlaceholderBox />
             <EODForecastBox forecast={eodForecast} hourlyComparison={hourlyComparison} />
 
             {/* Row 4: January Forecast & Week Forecast */}
@@ -273,7 +267,61 @@ function SalesBox({
   )
 }
 
-// Today @ Time Box
+// Today Combined Box (time + sales + weekly comparison)
+function TodayCombinedBox({
+  currentTime,
+  todaySales,
+  lwSales,
+  twoWASales,
+  threeWASales
+}: {
+  currentTime: Date
+  todaySales: number
+  lwSales: number | null
+  twoWASales: number | null
+  threeWASales: number | null
+}) {
+  const timeStr = currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()
+  
+  return (
+    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
+      <div className="h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500" />
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        {/* TODAY @ time at top */}
+        <div className="text-zinc-400 text-2xl font-medium uppercase tracking-wider">Today @</div>
+        <div className="text-white text-5xl font-bold mt-1">{timeStr}</div>
+        
+        {/* Big sales number in middle */}
+        <div className="text-zinc-400 text-xl font-medium mt-6">Today</div>
+        <div className="text-white text-[8rem] font-bold tabular-nums leading-none">
+          {new Intl.NumberFormat("en-US").format(todaySales)}
+        </div>
+        
+        {/* 2x2 comparison grid at bottom */}
+        <div className="mt-6 grid grid-cols-2 gap-x-16 gap-y-3 text-2xl">
+          <div className="flex justify-between gap-6">
+            <span className="text-zinc-500">Today</span>
+            <span className="text-white font-bold">{todaySales}</span>
+          </div>
+          <div className="flex justify-between gap-6">
+            <span className="text-zinc-500">LW</span>
+            <span className="text-white font-bold">{lwSales ?? '—'}</span>
+          </div>
+          <div className="flex justify-between gap-6">
+            <span className="text-zinc-500">2WA</span>
+            <span className="text-white font-bold">{twoWASales ?? '—'}</span>
+          </div>
+          <div className="flex justify-between gap-6">
+            <span className="text-zinc-500">3WA</span>
+            <span className="text-white font-bold">{threeWASales ?? '—'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Today @ Time Box (legacy - can be removed)
 function TodayAtTimeBox({
   currentTime,
   todaySales,
