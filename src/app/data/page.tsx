@@ -328,25 +328,25 @@ function ThisWeekBox({
   return (
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
       <div className="h-1.5 bg-gradient-to-r from-purple-600 to-purple-500" />
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="text-zinc-400 text-3xl font-medium">This Week</div>
-        <div className="text-white text-[10rem] font-bold tabular-nums leading-none">
+      <div className="flex-1 flex flex-col items-center justify-center p-3">
+        <div className="text-zinc-400 text-2xl font-medium">This Week</div>
+        <div className="text-white text-8xl font-bold tabular-nums leading-none">
           {new Intl.NumberFormat("en-US").format(qty)}
         </div>
-        <div className="mt-4 text-center">
-          <div className="text-zinc-500 text-2xl">
+        <div className="mt-2 text-center">
+          <div className="text-zinc-500 text-xl">
             Prior Year: {new Intl.NumberFormat("en-US").format(pyQty)}
           </div>
-          <div className={`text-3xl font-semibold mt-1 ${changePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+          <div className={`text-2xl font-semibold mt-1 ${changePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
             {changePct >= 0 ? "+" : ""}{changePct}% ({diff >= 0 ? "+" : ""}{diff})
           </div>
         </div>
         
         {/* Week Prediction */}
         {weekPrediction && (
-          <div className="mt-4 text-center">
-            <span className="text-zinc-500 text-2xl">Week Forecast: </span>
-            <span className="text-pink-400 text-2xl font-bold">{weekPrediction}</span>
+          <div className="mt-2 text-center">
+            <span className="text-zinc-500 text-xl">Week Forecast: </span>
+            <span className="text-pink-400 text-xl font-bold">{weekPrediction}</span>
           </div>
         )}
       </div>
