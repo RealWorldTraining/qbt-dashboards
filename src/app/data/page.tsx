@@ -566,13 +566,13 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
             </table>
             <div className="flex justify-center mt-4 text-xl px-4">
               <div className="flex items-center gap-6">
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-blue-400">
                   <span className="w-4 h-4 bg-blue-400 rounded" /> Predicted
                 </span>
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-white">
                   <span className="w-4 h-4 bg-white rounded" /> Actual
                 </span>
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-emerald-400">
                   <span className="w-4 h-4 bg-emerald-400 rounded" /> Variance
                 </span>
               </div>
@@ -636,11 +636,11 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
           </table>
           <div className="flex justify-between mt-2 text-xs px-2">
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1 text-blue-400">
                 <span className="w-2 h-2 bg-blue-400 rounded" /> Predicted
               </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-emerald-400 rounded" /> Actual
+              <span className="flex items-center gap-1 text-white">
+                <span className="w-2 h-2 bg-white rounded" /> Actual
               </span>
             </div>
             <span className={`font-semibold ${totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
