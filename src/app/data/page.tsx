@@ -547,26 +547,40 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
                   ))}
                   <td className="px-4 py-1 border-l border-zinc-700">{forecast.predicted_sales}</td>
                 </tr>
-                <tr className={totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}>
+                <tr className="text-white">
                   {forecast.daily_breakdown.map(d => (
                     <td key={d.day} className="px-4 py-1 font-semibold">{d.actual ?? '—'}</td>
                   ))}
                   <td className="px-4 py-1 border-l border-zinc-700 font-semibold">{forecast.current_week_sales}</td>
                 </tr>
+                <tr>
+                  {forecast.daily_breakdown.map(d => {
+                    if (d.actual === null) return <td key={d.day} className="px-4 py-1 text-zinc-600">—</td>
+                    const dayVar = d.actual - d.predicted
+                    return (
+                      <td key={d.day} className={`px-4 py-1 ${dayVar >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        {dayVar >= 0 ? "+" : ""}{dayVar}
+                      </td>
+                    )
+                  })}
+                  <td className={`px-4 py-1 border-l border-zinc-700 font-semibold ${totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    {totalVariance >= 0 ? "+" : ""}{totalVariance}
+                  </td>
+                </tr>
               </tbody>
             </table>
-            <div className="flex justify-between mt-4 text-xl px-4">
+            <div className="flex justify-center mt-4 text-xl px-4">
               <div className="flex items-center gap-6">
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 bg-blue-400 rounded" /> Predicted
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 bg-emerald-400 rounded" /> Actual
+                  <span className="w-4 h-4 bg-white rounded" /> Actual
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 bg-emerald-400 rounded" /> Variance
                 </span>
               </div>
-              <span className={`font-semibold ${totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                {totalVariance >= 0 ? "+" : ""}{totalVariance} variance
-              </span>
             </div>
           </div>
         </div>
