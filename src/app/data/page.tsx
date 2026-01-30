@@ -179,28 +179,22 @@ export default function DataDashboard() {
         </div>
       </header>
 
-      {/* Main Grid - 3 rows: compact top row, larger bottom rows */}
-      <main className="flex-1 p-4 grid grid-cols-2 gap-4" style={{ gridTemplateRows: '0.7fr 1.1fr 1.2fr' }}>
+      {/* Main Grid - 3 rows: all forecast boxes */}
+      <main className="flex-1 p-4 grid grid-cols-2 gap-4" style={{ gridTemplateRows: '0.9fr 1.1fr 1fr' }}>
         {loading ? (
           <div className="col-span-2 row-span-4 flex items-center justify-center">
             <Loader2 className="h-16 w-16 animate-spin text-zinc-600" />
           </div>
         ) : metrics ? (
           <>
-            {/* Row 1: Today Combined & This Week */}
-            <TodayCombinedBox
+            {/* Row 1: Today (full width) */}
+            <TodayForecastBox
               currentTime={currentTime}
               todaySales={metrics.today.direct_qty}
               lwSales={getSalesAtHour("1 Week Ago")}
               twoWASales={getSalesAtHour("2 Weeks Ago")}
               threeWASales={getSalesAtHour("3 Weeks Ago")}
               eodPrediction={eodForecast?.predicted_sales ?? null}
-            />
-            <ThisWeekBox
-              qty={metrics.this_week.direct_qty}
-              pyQty={metrics.this_week.py_qty}
-              changePct={metrics.this_week.qty_change_pct}
-              weekPrediction={weekForecast?.predicted_sales ?? null}
             />
 
             {/* Row 2: Week Forecast (full width) */}
@@ -272,8 +266,8 @@ function SalesBox({
   )
 }
 
-// Today Combined Box (time + sales + weekly comparison + EOD prediction)
-function TodayCombinedBox({
+// Today Forecast Box (full width, matches Week/Month layout)
+function TodayForecastBox({
   currentTime,
   todaySales,
   lwSales,
@@ -290,88 +284,79 @@ function TodayCombinedBox({
 }) {
   const timeStr = currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()
   
+  // Calculate expected at current time based on EOD forecast
+  // Business hours: 8am-11pm (15 hours)
+  const hour = currentTime.getHours()
+  const minute = currentTime.getMinutes()
+  const startHour = 8
+  const endHour = 23
+  const totalHours = endHour - startHour // 15 hours
+  const hoursElapsed = Math.max(0, Math.min(totalHours, (hour - startHour) + (minute / 60)))
+  const expectedAtTime = eodPrediction ? Math.round(eodPrediction * (hoursElapsed / totalHours)) : null
+  
+  // Calculate variance
+  const variance = expectedAtTime ? todaySales - expectedAtTime : null
+  const variancePct = expectedAtTime && expectedAtTime > 0 ? Math.round((variance! / expectedAtTime) * 100) : null
+
   return (
-    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
+    <div className="col-span-2 bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
       <div className="h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500" />
-      <div className="flex-1 flex flex-col items-center justify-center p-2">
-        {/* "Today @ 1:20 pm" label above big number */}
-        <div className="text-zinc-400 text-3xl font-medium">Today @ {timeStr}</div>
+      <div className="flex-1 flex flex-col items-center justify-start p-4">
+        {/* Title */}
+        <div className="text-zinc-400 text-2xl font-medium uppercase tracking-wider">Today Forecast</div>
+        <div className="text-zinc-500 text-xl">@ {timeStr}</div>
         
-        {/* Big sales number */}
-        <div className="text-white text-[7rem] font-bold tabular-nums leading-none">
-          {new Intl.NumberFormat("en-US").format(todaySales)}
-        </div>
-        
-        {/* 2x2 comparison grid */}
-        <div className="mt-2 grid grid-cols-2 gap-x-14 gap-y-1 text-3xl">
-          <div className="flex justify-between gap-5">
-            <span className="text-zinc-500">Today</span>
-            <span className="text-white font-bold">{todaySales}</span>
+        {/* Main stats - match Week/Month layout */}
+        <div className="flex gap-16 text-xl mt-4 mb-4">
+          <div className="text-center">
+            <div className="text-[7rem] font-bold text-white leading-none">{todaySales}</div>
+            <div className="text-zinc-500 uppercase text-2xl mt-2">Actual</div>
           </div>
-          <div className="flex justify-between gap-5">
-            <span className="text-zinc-500">LW</span>
-            <span className="text-white font-bold">{lwSales ?? '—'}</span>
+          <div className="text-center">
+            <div className="text-[7rem] font-bold text-white leading-none">{expectedAtTime ?? '—'}</div>
+            <div className="text-zinc-500 uppercase text-2xl mt-2">Expected</div>
           </div>
-          <div className="flex justify-between gap-5">
-            <span className="text-zinc-500">2WA</span>
-            <span className="text-white font-bold">{twoWASales ?? '—'}</span>
-          </div>
-          <div className="flex justify-between gap-5">
-            <span className="text-zinc-500">3WA</span>
-            <span className="text-white font-bold">{threeWASales ?? '—'}</span>
+          <div className="text-center">
+            <div className={`text-[7rem] font-bold leading-none ${variancePct !== null ? (variancePct >= 0 ? "text-emerald-400" : "text-red-400") : "text-zinc-600"}`}>
+              {variancePct !== null ? `${variancePct >= 0 ? "+" : ""}${variancePct}%` : '—'}
+            </div>
+            <div className="text-zinc-500 uppercase text-2xl mt-2">Variance</div>
           </div>
         </div>
-        
-        {/* EOD Prediction */}
-        {eodPrediction && (
-          <div className="mt-1 text-center">
-            <span className="text-zinc-500 text-2xl">EOD Forecast: </span>
-            <span className="text-cyan-400 text-2xl font-bold">{eodPrediction}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
-// This Week Box (sales + PY comparison + week prediction)
-function ThisWeekBox({
-  qty,
-  pyQty,
-  changePct,
-  weekPrediction
-}: {
-  qty: number
-  pyQty: number
-  changePct: number
-  weekPrediction: number | null
-}) {
-  const diff = qty - pyQty
-
-  return (
-    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
-      <div className="h-1.5 bg-gradient-to-r from-purple-600 to-purple-500" />
-      <div className="flex-1 flex flex-col items-center justify-center p-2">
-        <div className="text-zinc-400 text-3xl font-medium">This Week</div>
-        <div className="text-white text-[7rem] font-bold tabular-nums leading-none">
-          {new Intl.NumberFormat("en-US").format(qty)}
+        {/* Comparison table */}
+        <div className="w-full max-w-3xl">
+          <table className="w-full text-center text-3xl">
+            <thead>
+              <tr className="text-zinc-500">
+                <th className="font-normal px-4 pb-2">Today</th>
+                <th className="font-normal px-4 pb-2">LW</th>
+                <th className="font-normal px-4 pb-2">2WA</th>
+                <th className="font-normal px-4 pb-2">3WA</th>
+                <th className="font-semibold px-4 pb-2 border-l border-zinc-700">EOD Fcst</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="text-white">
+                <td className="px-4 py-1 font-semibold">{todaySales}</td>
+                <td className="px-4 py-1 font-semibold">{lwSales ?? '—'}</td>
+                <td className="px-4 py-1 font-semibold">{twoWASales ?? '—'}</td>
+                <td className="px-4 py-1 font-semibold">{threeWASales ?? '—'}</td>
+                <td className="px-4 py-1 border-l border-zinc-700 text-cyan-400 font-semibold">{eodPrediction ?? '—'}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div className="flex justify-center mt-4 text-xl px-4">
+            <div className="flex items-center gap-6">
+              <span className="flex items-center gap-2 text-white">
+                <span className="w-4 h-4 bg-white rounded" /> @ {timeStr}
+              </span>
+              <span className="flex items-center gap-2 text-cyan-400">
+                <span className="w-4 h-4 bg-cyan-400 rounded" /> EOD Forecast
+              </span>
+            </div>
+          </div>
         </div>
-        <div className="mt-2 text-center">
-          <div className="text-zinc-500 text-2xl">
-            Prior Year: {new Intl.NumberFormat("en-US").format(pyQty)}
-          </div>
-          <div className={`text-3xl font-semibold mt-1 ${changePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            {changePct >= 0 ? "+" : ""}{changePct}% ({diff >= 0 ? "+" : ""}{diff})
-          </div>
-        </div>
-        
-        {/* Week Prediction */}
-        {weekPrediction && (
-          <div className="mt-1 text-center">
-            <span className="text-zinc-500 text-2xl">Week Forecast: </span>
-            <span className="text-pink-400 text-2xl font-bold">{weekPrediction}</span>
-          </div>
-        )}
       </div>
     </div>
   )
