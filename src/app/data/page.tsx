@@ -58,6 +58,24 @@ interface HourlyComparison {
   periods: HourlyPeriod[]
 }
 
+interface MonthWeeklyBreakdown {
+  week_number: number
+  week_label: string
+  forecast: number
+  actual: number | null
+  variance: number | null
+  variance_pct: number | null
+}
+
+interface MonthWeekly {
+  month_name: string
+  weeks: MonthWeeklyBreakdown[]
+  total_forecast: number
+  total_actual: number
+  total_variance: number
+  total_variance_pct: number
+}
+
 const PROPHET_API_URL = "https://qbtraining-site-production.up.railway.app"
 
 export default function DataDashboard() {
@@ -70,16 +88,18 @@ export default function DataDashboard() {
   const [eomForecast, setEomForecast] = useState<EOMForecast | null>(null)
   const [weekForecast, setWeekForecast] = useState<WeekForecast | null>(null)
   const [hourlyComparison, setHourlyComparison] = useState<HourlyComparison | null>(null)
+  const [monthWeekly, setMonthWeekly] = useState<MonthWeekly | null>(null)
 
   const fetchData = useCallback(async () => {
     setRefreshing(true)
     try {
-      const [metricsRes, eodRes, eomRes, weekRes, hourlyRes] = await Promise.allSettled([
+      const [metricsRes, eodRes, eomRes, weekRes, hourlyRes, monthWeeklyRes] = await Promise.allSettled([
         fetch(`${PROPHET_API_URL}/metrics`),
         fetch(`${PROPHET_API_URL}/eod-forecast`),
         fetch(`${PROPHET_API_URL}/eom-forecast`),
         fetch(`${PROPHET_API_URL}/this-week-forecast`),
         fetch(`${PROPHET_API_URL}/hourly-comparison`),
+        fetch(`${PROPHET_API_URL}/month-weekly`),
       ])
 
       if (metricsRes.status === 'fulfilled' && metricsRes.value.ok) {
@@ -96,6 +116,9 @@ export default function DataDashboard() {
       }
       if (hourlyRes.status === 'fulfilled' && hourlyRes.value.ok) {
         setHourlyComparison(await hourlyRes.value.json())
+      }
+      if (monthWeeklyRes.status === 'fulfilled' && monthWeeklyRes.value.ok) {
+        setMonthWeekly(await monthWeeklyRes.value.json())
       }
       setLastUpdated(new Date())
     } catch (error) {
@@ -184,7 +207,7 @@ export default function DataDashboard() {
             <WeekForecastBox forecast={weekForecast} fullWidth />
 
             {/* Row 3: January Forecast (full width) */}
-            <MonthForecastBox forecast={eomForecast} fullWidth />
+            <MonthForecastBox forecast={eomForecast} monthWeekly={monthWeekly} fullWidth />
           </>
         ) : (
           <div className="col-span-2 row-span-4 flex items-center justify-center text-zinc-500">
@@ -443,7 +466,7 @@ function EODForecastBox({
 }
 
 // Month Forecast Box
-function MonthForecastBox({ forecast, fullWidth = false }: { forecast: EOMForecast | null, fullWidth?: boolean }) {
+function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { forecast: EOMForecast | null, monthWeekly?: MonthWeekly | null, fullWidth?: boolean }) {
   if (!forecast) return <PlaceholderBox />
   
   // Calculate expected MTD based on progress
@@ -460,23 +483,80 @@ function MonthForecastBox({ forecast, fullWidth = false }: { forecast: EOMForeca
       <div className={`flex-1 flex flex-col items-center justify-center p-4`}>
         <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.month_name} Forecast</div>
         <div className={`text-zinc-500 ${fullWidth ? 'text-xl' : 'text-lg'}`}>{forecast.days_remaining}d left</div>
-        {/* Removed big number - just show MTD stats */}
-        <div className={`mt-4 flex ${fullWidth ? 'gap-16' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-lg'}`}>
+        
+        {/* MTD stats - smaller to make room for weekly breakdown */}
+        <div className={`mt-3 flex ${fullWidth ? 'gap-12' : 'gap-6'} ${fullWidth ? 'text-lg' : 'text-base'}`}>
           <div className="text-center">
-            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-3xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Actual</div>
+            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-5xl' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>MTD Actual</div>
           </div>
           <div className="text-center">
-            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-3xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Expected</div>
+            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-5xl' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>MTD Expected</div>
           </div>
           <div className="text-center">
-            <div className={`font-bold leading-none ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-[7rem]' : 'text-3xl'}`}>
+            <div className={`font-bold leading-none ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-5xl' : 'text-2xl'}`}>
               {variancePct >= 0 ? "+" : ""}{variancePct}%
             </div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>Variance</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>Variance</div>
           </div>
         </div>
+
+        {/* Weekly breakdown table */}
+        {fullWidth && monthWeekly && monthWeekly.weeks.length > 0 && (
+          <div className="mt-4 w-full max-w-3xl">
+            <table className="w-full text-center text-2xl">
+              <thead>
+                <tr className="text-zinc-500">
+                  {monthWeekly.weeks.map(w => (
+                    <th key={w.week_number} className="font-normal px-3 pb-1">{w.week_label}</th>
+                  ))}
+                  <th className="font-semibold px-3 pb-1 border-l border-zinc-700">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="text-blue-400">
+                  {monthWeekly.weeks.map(w => (
+                    <td key={w.week_number} className="px-3 py-1">{w.forecast}</td>
+                  ))}
+                  <td className="px-3 py-1 border-l border-zinc-700">{monthWeekly.total_forecast}</td>
+                </tr>
+                <tr className="text-white">
+                  {monthWeekly.weeks.map(w => (
+                    <td key={w.week_number} className="px-3 py-1 font-semibold">{w.actual ?? '—'}</td>
+                  ))}
+                  <td className="px-3 py-1 border-l border-zinc-700 font-semibold">{monthWeekly.total_actual}</td>
+                </tr>
+                <tr>
+                  {monthWeekly.weeks.map(w => {
+                    if (w.variance === null) return <td key={w.week_number} className="px-3 py-1 text-zinc-600">—</td>
+                    return (
+                      <td key={w.week_number} className={`px-3 py-1 ${w.variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        {w.variance >= 0 ? "+" : ""}{w.variance}
+                      </td>
+                    )
+                  })}
+                  <td className={`px-3 py-1 border-l border-zinc-700 font-semibold ${monthWeekly.total_variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    {monthWeekly.total_variance >= 0 ? "+" : ""}{monthWeekly.total_variance}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div className="flex justify-center mt-2 text-lg px-4">
+              <div className="flex items-center gap-6">
+                <span className="flex items-center gap-2 text-blue-400">
+                  <span className="w-3 h-3 bg-blue-400 rounded" /> Forecast
+                </span>
+                <span className="flex items-center gap-2 text-white">
+                  <span className="w-3 h-3 bg-white rounded" /> Actual
+                </span>
+                <span className="flex items-center gap-2 text-emerald-400">
+                  <span className="w-3 h-3 bg-emerald-400 rounded" /> Variance
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
