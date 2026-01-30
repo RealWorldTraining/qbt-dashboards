@@ -199,9 +199,8 @@ export default function DataDashboard() {
               color="amber"
             />
 
-            {/* Row 4: January Forecast & EOD Forecast */}
-            <MonthForecastBox forecast={eomForecast} />
-            <EODForecastBox forecast={eodForecast} hourlyComparison={hourlyComparison} />
+            {/* Row 4: January Forecast (full width) */}
+            <MonthForecastBox forecast={eomForecast} fullWidth />
           </>
         ) : (
           <div className="col-span-2 row-span-4 flex items-center justify-center text-zinc-500">
@@ -460,7 +459,7 @@ function EODForecastBox({
 }
 
 // Month Forecast Box
-function MonthForecastBox({ forecast }: { forecast: EOMForecast | null }) {
+function MonthForecastBox({ forecast, fullWidth = false }: { forecast: EOMForecast | null, fullWidth?: boolean }) {
   if (!forecast) return <PlaceholderBox />
   
   // Calculate expected MTD based on progress
@@ -472,28 +471,28 @@ function MonthForecastBox({ forecast }: { forecast: EOMForecast | null }) {
   const variancePct = mtdExpected > 0 ? Math.round((variance / mtdExpected) * 100) : 0
 
   return (
-    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
+    <div className={`bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden ${fullWidth ? 'col-span-2' : ''}`}>
       <div className="h-1.5 bg-gradient-to-r from-violet-600 to-violet-500" />
       <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="text-zinc-400 text-2xl font-medium uppercase tracking-wider">{forecast.month_name} Forecast</div>
-        <div className="text-zinc-500 text-xl">{forecast.days_remaining}d left</div>
-        <div className="text-white text-8xl font-bold mt-2">
+        <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-3xl' : 'text-2xl'}`}>{forecast.month_name} Forecast</div>
+        <div className={`text-zinc-500 ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.days_remaining}d left</div>
+        <div className={`text-white font-bold mt-2 ${fullWidth ? 'text-[12rem] leading-none' : 'text-8xl'}`}>
           {new Intl.NumberFormat("en-US").format(forecast.predicted_sales)}
         </div>
-        <div className="mt-6 flex gap-8 text-xl">
+        <div className={`mt-6 flex ${fullWidth ? 'gap-16' : 'gap-8'} ${fullWidth ? 'text-2xl' : 'text-xl'}`}>
           <div className="text-center">
-            <div className="text-4xl font-bold text-white">{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
-            <div className="text-zinc-500 uppercase text-sm">MTD Actual</div>
+            <div className={`font-bold text-white ${fullWidth ? 'text-6xl' : 'text-4xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-xl mt-1' : 'text-sm'}`}>MTD Actual</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-white">{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
-            <div className="text-zinc-500 uppercase text-sm">MTD Expected</div>
+            <div className={`font-bold text-white ${fullWidth ? 'text-6xl' : 'text-4xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-xl mt-1' : 'text-sm'}`}>MTD Expected</div>
           </div>
           <div className="text-center">
-            <div className={`text-4xl font-bold ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            <div className={`font-bold ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-6xl' : 'text-4xl'}`}>
               {variancePct >= 0 ? "+" : ""}{variancePct}%
             </div>
-            <div className="text-zinc-500 uppercase text-sm">Variance</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-xl mt-1' : 'text-sm'}`}>Variance</div>
           </div>
         </div>
       </div>
