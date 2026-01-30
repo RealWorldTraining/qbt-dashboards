@@ -156,8 +156,8 @@ export default function DataDashboard() {
         </div>
       </header>
 
-      {/* Main Grid - 4 rows x 2 columns */}
-      <main className="flex-1 p-4 grid grid-cols-2 grid-rows-3 gap-4">
+      {/* Main Grid - 3 rows: compact top row, larger bottom rows */}
+      <main className="flex-1 p-4 grid grid-cols-2 gap-4" style={{ gridTemplateRows: '0.7fr 1.1fr 1.2fr' }}>
         {loading ? (
           <div className="col-span-2 row-span-4 flex items-center justify-center">
             <Loader2 className="h-16 w-16 animate-spin text-zinc-600" />
@@ -270,30 +270,30 @@ function TodayCombinedBox({
   return (
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
       <div className="h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500" />
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-3">
         {/* "Today @ 1:20 pm" label above big number */}
-        <div className="text-zinc-400 text-3xl font-medium">Today @ {timeStr}</div>
+        <div className="text-zinc-400 text-2xl font-medium">Today @ {timeStr}</div>
         
         {/* Big sales number */}
-        <div className="text-white text-[10rem] font-bold tabular-nums leading-none">
+        <div className="text-white text-8xl font-bold tabular-nums leading-none">
           {new Intl.NumberFormat("en-US").format(todaySales)}
         </div>
         
         {/* 2x2 comparison grid */}
-        <div className="mt-4 grid grid-cols-2 gap-x-16 gap-y-3 text-3xl">
-          <div className="flex justify-between gap-6">
+        <div className="mt-2 grid grid-cols-2 gap-x-12 gap-y-1 text-2xl">
+          <div className="flex justify-between gap-4">
             <span className="text-zinc-500">Today</span>
             <span className="text-white font-bold">{todaySales}</span>
           </div>
-          <div className="flex justify-between gap-6">
+          <div className="flex justify-between gap-4">
             <span className="text-zinc-500">LW</span>
             <span className="text-white font-bold">{lwSales ?? '—'}</span>
           </div>
-          <div className="flex justify-between gap-6">
+          <div className="flex justify-between gap-4">
             <span className="text-zinc-500">2WA</span>
             <span className="text-white font-bold">{twoWASales ?? '—'}</span>
           </div>
-          <div className="flex justify-between gap-6">
+          <div className="flex justify-between gap-4">
             <span className="text-zinc-500">3WA</span>
             <span className="text-white font-bold">{threeWASales ?? '—'}</span>
           </div>
@@ -301,9 +301,9 @@ function TodayCombinedBox({
         
         {/* EOD Prediction */}
         {eodPrediction && (
-          <div className="mt-4 text-center">
-            <span className="text-zinc-500 text-2xl">EOD Forecast: </span>
-            <span className="text-cyan-400 text-2xl font-bold">{eodPrediction}</span>
+          <div className="mt-2 text-center">
+            <span className="text-zinc-500 text-xl">EOD Forecast: </span>
+            <span className="text-cyan-400 text-xl font-bold">{eodPrediction}</span>
           </div>
         )}
       </div>

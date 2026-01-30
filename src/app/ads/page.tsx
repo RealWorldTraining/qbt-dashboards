@@ -31,62 +31,14 @@ interface AdsData {
   last_updated: string
 }
 
-// Sample data - Vision will replace with real API/Sheet data
-const SAMPLE_DATA: AdsData = {
-  this_week: {
-    week_label: "This Week",
-    date_range: "Jan 27 - Feb 2",
-    spend: 4250.00,
-    impressions: 125000,
-    clicks: 3200,
-    ctr: 2.56,
-    conversions: 48,
-    conversion_rate: 1.50,
-    cpa: 88.54,
-    roas: 4.2
-  },
-  last_week: {
-    week_label: "Last Week",
-    date_range: "Jan 20 - Jan 26",
-    spend: 4100.00,
-    impressions: 118000,
-    clicks: 2950,
-    ctr: 2.50,
-    conversions: 42,
-    conversion_rate: 1.42,
-    cpa: 97.62,
-    roas: 3.8
-  },
-  two_weeks_ago: {
-    week_label: "2 Weeks Ago",
-    date_range: "Jan 13 - Jan 19",
-    spend: 3950.00,
-    impressions: 112000,
-    clicks: 2800,
-    ctr: 2.50,
-    conversions: 38,
-    conversion_rate: 1.36,
-    cpa: 103.95,
-    roas: 3.5
-  },
-  three_weeks_ago: {
-    week_label: "3 Weeks Ago",
-    date_range: "Jan 6 - Jan 12",
-    spend: 4000.00,
-    impressions: 115000,
-    clicks: 2900,
-    ctr: 2.52,
-    conversions: 40,
-    conversion_rate: 1.38,
-    cpa: 100.00,
-    roas: 3.6
-  },
+// Initial loading state placeholder
+const LOADING_DATA: AdsData = {
+  this_week: { week_label: "This Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  last_week: { week_label: "Last Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  two_weeks_ago: { week_label: "2 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  three_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
   last_updated: new Date().toISOString()
 }
-
-// Google Sheet URL - Vision will provide this
-const SHEET_ID = "YOUR_SHEET_ID_HERE"
-const SHEET_API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -238,27 +190,37 @@ function WeekRow({ data, isCurrentWeek = false }: WeekRowProps) {
 }
 
 export default function AdsPage() {
-  const [data, setData] = useState<AdsData>(SAMPLE_DATA)
-  const [loading, setLoading] = useState(false)
+  const [data, setData] = useState<AdsData>(LOADING_DATA)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
-  // Auto-refresh every 5 minutes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // TODO: Fetch real data from Vision's API/Sheet
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/ads')
+      if (!res.ok) throw new Error('Failed to fetch data')
+      const json = await res.json()
+      setData(json)
       setLastRefresh(new Date())
-    }, 5 * 60 * 1000)
-    
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+      console.error('Error fetching ads data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Initial fetch + auto-refresh every 5 minutes
+  useEffect(() => {
+    fetchData()
+    const interval = setInterval(fetchData, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
   const handleRefresh = () => {
-    setLoading(true)
-    // TODO: Fetch real data
-    setTimeout(() => {
-      setLastRefresh(new Date())
-      setLoading(false)
-    }, 1000)
+    fetchData()
   }
 
   return (
