@@ -171,13 +171,13 @@ export default function DataDashboard() {
               lwSales={getSalesAtHour("1 Week Ago")}
               twoWASales={getSalesAtHour("2 Weeks Ago")}
               threeWASales={getSalesAtHour("3 Weeks Ago")}
+              eodPrediction={eodForecast?.predicted_sales ?? null}
             />
-            <SalesBox
-              title="This Week"
+            <ThisWeekBox
               qty={metrics.this_week.direct_qty}
               pyQty={metrics.this_week.py_qty}
               changePct={metrics.this_week.qty_change_pct}
-              color="purple"
+              weekPrediction={weekForecast?.predicted_sales ?? null}
             />
 
             {/* Row 2: Week Forecast (full width) */}
@@ -266,19 +266,21 @@ function SalesBox({
   )
 }
 
-// Today Combined Box (time + sales + weekly comparison)
+// Today Combined Box (time + sales + weekly comparison + EOD prediction)
 function TodayCombinedBox({
   currentTime,
   todaySales,
   lwSales,
   twoWASales,
-  threeWASales
+  threeWASales,
+  eodPrediction
 }: {
   currentTime: Date
   todaySales: number
   lwSales: number | null
   twoWASales: number | null
   threeWASales: number | null
+  eodPrediction: number | null
 }) {
   const timeStr = currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase()
   
@@ -290,29 +292,80 @@ function TodayCombinedBox({
         <div className="text-zinc-400 text-3xl font-medium">Today @ {timeStr}</div>
         
         {/* Big sales number */}
-        <div className="text-white text-[12rem] font-bold tabular-nums leading-none">
+        <div className="text-white text-[10rem] font-bold tabular-nums leading-none">
           {new Intl.NumberFormat("en-US").format(todaySales)}
         </div>
         
         {/* 2x2 comparison grid */}
-        <div className="mt-6 grid grid-cols-2 gap-x-20 gap-y-4 text-4xl">
-          <div className="flex justify-between gap-8">
+        <div className="mt-4 grid grid-cols-2 gap-x-16 gap-y-3 text-3xl">
+          <div className="flex justify-between gap-6">
             <span className="text-zinc-500">Today</span>
             <span className="text-white font-bold">{todaySales}</span>
           </div>
-          <div className="flex justify-between gap-8">
+          <div className="flex justify-between gap-6">
             <span className="text-zinc-500">LW</span>
             <span className="text-white font-bold">{lwSales ?? '—'}</span>
           </div>
-          <div className="flex justify-between gap-8">
+          <div className="flex justify-between gap-6">
             <span className="text-zinc-500">2WA</span>
             <span className="text-white font-bold">{twoWASales ?? '—'}</span>
           </div>
-          <div className="flex justify-between gap-8">
+          <div className="flex justify-between gap-6">
             <span className="text-zinc-500">3WA</span>
             <span className="text-white font-bold">{threeWASales ?? '—'}</span>
           </div>
         </div>
+        
+        {/* EOD Prediction */}
+        {eodPrediction && (
+          <div className="mt-4 text-center">
+            <span className="text-zinc-500 text-2xl">EOD Forecast: </span>
+            <span className="text-cyan-400 text-2xl font-bold">{eodPrediction}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// This Week Box (sales + PY comparison + week prediction)
+function ThisWeekBox({
+  qty,
+  pyQty,
+  changePct,
+  weekPrediction
+}: {
+  qty: number
+  pyQty: number
+  changePct: number
+  weekPrediction: number | null
+}) {
+  const diff = qty - pyQty
+
+  return (
+    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
+      <div className="h-1.5 bg-gradient-to-r from-purple-600 to-purple-500" />
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="text-zinc-400 text-3xl font-medium">This Week</div>
+        <div className="text-white text-[10rem] font-bold tabular-nums leading-none">
+          {new Intl.NumberFormat("en-US").format(qty)}
+        </div>
+        <div className="mt-4 text-center">
+          <div className="text-zinc-500 text-2xl">
+            Prior Year: {new Intl.NumberFormat("en-US").format(pyQty)}
+          </div>
+          <div className={`text-3xl font-semibold mt-1 ${changePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            {changePct >= 0 ? "+" : ""}{changePct}% ({diff >= 0 ? "+" : ""}{diff})
+          </div>
+        </div>
+        
+        {/* Week Prediction */}
+        {weekPrediction && (
+          <div className="mt-4 text-center">
+            <span className="text-zinc-500 text-2xl">Week Forecast: </span>
+            <span className="text-pink-400 text-2xl font-bold">{weekPrediction}</span>
+          </div>
+        )}
       </div>
     </div>
   )
