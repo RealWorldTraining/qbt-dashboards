@@ -285,38 +285,32 @@ function TodayCombinedBox({
   return (
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
       <div className="h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500" />
-      <div className="flex-1 flex flex-col items-center justify-between pt-4 pb-6 px-6">
-        {/* TODAY @ time at top */}
-        <div className="text-center">
-          <div className="text-zinc-400 text-3xl font-medium uppercase tracking-wider">Today @</div>
-          <div className="text-white text-7xl font-bold mt-1">{timeStr}</div>
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        {/* "Today @ 1:20 pm" label above big number */}
+        <div className="text-zinc-400 text-3xl font-medium">Today @ {timeStr}</div>
+        
+        {/* Big sales number */}
+        <div className="text-white text-[12rem] font-bold tabular-nums leading-none">
+          {new Intl.NumberFormat("en-US").format(todaySales)}
         </div>
         
-        {/* Big sales number + comparison grid at bottom */}
-        <div className="text-center">
-          <div className="text-zinc-400 text-2xl font-medium">Today</div>
-          <div className="text-white text-[12rem] font-bold tabular-nums leading-none">
-            {new Intl.NumberFormat("en-US").format(todaySales)}
+        {/* 2x2 comparison grid */}
+        <div className="mt-6 grid grid-cols-2 gap-x-20 gap-y-4 text-4xl">
+          <div className="flex justify-between gap-8">
+            <span className="text-zinc-500">Today</span>
+            <span className="text-white font-bold">{todaySales}</span>
           </div>
-          
-          {/* 2x2 comparison grid */}
-          <div className="mt-4 grid grid-cols-2 gap-x-20 gap-y-4 text-4xl">
-            <div className="flex justify-between gap-8">
-              <span className="text-zinc-500">Today</span>
-              <span className="text-white font-bold">{todaySales}</span>
-            </div>
-            <div className="flex justify-between gap-8">
-              <span className="text-zinc-500">LW</span>
-              <span className="text-white font-bold">{lwSales ?? '—'}</span>
-            </div>
-            <div className="flex justify-between gap-8">
-              <span className="text-zinc-500">2WA</span>
-              <span className="text-white font-bold">{twoWASales ?? '—'}</span>
-            </div>
-            <div className="flex justify-between gap-8">
-              <span className="text-zinc-500">3WA</span>
-              <span className="text-white font-bold">{threeWASales ?? '—'}</span>
-            </div>
+          <div className="flex justify-between gap-8">
+            <span className="text-zinc-500">LW</span>
+            <span className="text-white font-bold">{lwSales ?? '—'}</span>
+          </div>
+          <div className="flex justify-between gap-8">
+            <span className="text-zinc-500">2WA</span>
+            <span className="text-white font-bold">{twoWASales ?? '—'}</span>
+          </div>
+          <div className="flex justify-between gap-8">
+            <span className="text-zinc-500">3WA</span>
+            <span className="text-white font-bold">{threeWASales ?? '—'}</span>
           </div>
         </div>
       </div>
