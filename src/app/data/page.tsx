@@ -303,8 +303,8 @@ function TodayForecastBox({
       <div className="h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500" />
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {/* Title */}
-        <div className="text-zinc-400 text-2xl font-medium uppercase tracking-wider">Today Forecast</div>
-        <div className="text-zinc-500 text-xl">@ {timeStr}</div>
+        <div className="text-zinc-400 text-[2rem] font-medium uppercase tracking-wider">Today Forecast</div>
+        <div className="text-zinc-500 text-[1.625rem]">@ {timeStr}</div>
         
         {/* Main stats - match Week/Month layout */}
         <div className="flex gap-16 text-xl mt-4 mb-4">
@@ -467,8 +467,8 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
       <div className="h-1.5 bg-gradient-to-r from-violet-600 to-violet-500" />
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {/* Title + subtitle - match Week Forecast exactly */}
-        <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.month_name} Forecast</div>
-        <div className={`text-zinc-500 ${fullWidth ? 'text-xl' : 'text-lg'}`}>{forecast.days_remaining}d left</div>
+        <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-[2rem]' : 'text-xl'}`}>{forecast.month_name} Forecast</div>
+        <div className={`text-zinc-500 ${fullWidth ? 'text-[1.625rem]' : 'text-lg'}`}>{forecast.days_remaining}d left</div>
         
         {/* MTD stats - match Week Forecast sizing */}
         <div className={`flex ${fullWidth ? 'gap-16' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-base'} mt-4 mb-4`}>
@@ -569,8 +569,8 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
         <div className="h-1.5 bg-gradient-to-r from-pink-600 to-pink-500" />
         <div className="flex-1 flex flex-col items-center justify-center p-4">
           {/* Title + date at top */}
-          <div className="text-zinc-400 text-2xl font-medium uppercase tracking-wider">Week Forecast</div>
-          <div className="text-zinc-500 text-xl">{forecast.week_start_date} - {forecast.week_end_date}</div>
+          <div className="text-zinc-400 text-[2rem] font-medium uppercase tracking-wider">Week Forecast</div>
+          <div className="text-zinc-500 text-[1.625rem]">{forecast.week_start_date} - {forecast.week_end_date}</div>
           
           {/* WTD stats - moved up, no big number */}
           <div className="flex gap-16 text-xl mt-4 mb-4">
