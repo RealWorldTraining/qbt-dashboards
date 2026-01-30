@@ -484,28 +484,28 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
         <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.month_name} Forecast</div>
         <div className={`text-zinc-500 ${fullWidth ? 'text-xl' : 'text-lg'}`}>{forecast.days_remaining}d left</div>
         
-        {/* MTD stats - smaller to make room for weekly breakdown */}
-        <div className={`mt-3 flex ${fullWidth ? 'gap-12' : 'gap-6'} ${fullWidth ? 'text-lg' : 'text-base'}`}>
+        {/* MTD stats - match Week Forecast sizing */}
+        <div className={`mt-4 flex ${fullWidth ? 'gap-16' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-base'} mb-4`}>
           <div className="text-center">
-            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-5xl' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>MTD Actual</div>
+            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Actual</div>
           </div>
           <div className="text-center">
-            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-5xl' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>MTD Expected</div>
+            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Expected</div>
           </div>
           <div className="text-center">
-            <div className={`font-bold leading-none ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-5xl' : 'text-2xl'}`}>
+            <div className={`font-bold leading-none ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>
               {variancePct >= 0 ? "+" : ""}{variancePct}%
             </div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>Variance</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>Variance</div>
           </div>
         </div>
 
         {/* Weekly breakdown table */}
         {fullWidth && monthWeekly && monthWeekly.weeks.length > 0 && (
-          <div className="mt-4 w-full max-w-3xl">
-            <table className="w-full text-center text-2xl">
+          <div className="w-full max-w-4xl">
+            <table className="w-full text-center text-3xl">
               <thead>
                 <tr className="text-zinc-500">
                   {monthWeekly.weeks.map(w => (
