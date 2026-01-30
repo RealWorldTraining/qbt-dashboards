@@ -481,11 +481,12 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
     <div className={`bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden ${fullWidth ? 'col-span-2' : ''}`}>
       <div className="h-1.5 bg-gradient-to-r from-violet-600 to-violet-500" />
       <div className={`flex-1 flex flex-col items-center justify-center p-4`}>
+        {/* Title + subtitle - match Week Forecast exactly */}
         <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.month_name} Forecast</div>
         <div className={`text-zinc-500 ${fullWidth ? 'text-xl' : 'text-lg'}`}>{forecast.days_remaining}d left</div>
         
         {/* MTD stats - match Week Forecast sizing */}
-        <div className={`mt-4 flex ${fullWidth ? 'gap-16' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-base'} mb-4`}>
+        <div className={`flex ${fullWidth ? 'gap-16' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-base'} mt-4 mb-4`}>
           <div className="text-center">
             <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
             <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Actual</div>
@@ -509,49 +510,49 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
               <thead>
                 <tr className="text-zinc-500">
                   {monthWeekly.weeks.map(w => (
-                    <th key={w.week_number} className="font-normal px-3 pb-1">{w.week_label}</th>
+                    <th key={w.week_number} className="font-normal px-4 pb-2">{w.week_label}</th>
                   ))}
-                  <th className="font-semibold px-3 pb-1 border-l border-zinc-700">Total</th>
+                  <th className="font-semibold px-4 pb-2 border-l border-zinc-700">Total</th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="text-blue-400">
                   {monthWeekly.weeks.map(w => (
-                    <td key={w.week_number} className="px-3 py-1">{w.forecast}</td>
+                    <td key={w.week_number} className="px-4 py-1">{w.forecast}</td>
                   ))}
-                  <td className="px-3 py-1 border-l border-zinc-700">{monthWeekly.total_forecast}</td>
+                  <td className="px-4 py-1 border-l border-zinc-700">{monthWeekly.total_forecast}</td>
                 </tr>
                 <tr className="text-white">
                   {monthWeekly.weeks.map(w => (
-                    <td key={w.week_number} className="px-3 py-1 font-semibold">{w.actual ?? '—'}</td>
+                    <td key={w.week_number} className="px-4 py-1 font-semibold">{w.actual ?? '—'}</td>
                   ))}
-                  <td className="px-3 py-1 border-l border-zinc-700 font-semibold">{monthWeekly.total_actual}</td>
+                  <td className="px-4 py-1 border-l border-zinc-700 font-semibold">{monthWeekly.total_actual}</td>
                 </tr>
                 <tr>
                   {monthWeekly.weeks.map(w => {
-                    if (w.variance === null) return <td key={w.week_number} className="px-3 py-1 text-zinc-600">—</td>
+                    if (w.variance === null) return <td key={w.week_number} className="px-4 py-1 text-zinc-600">—</td>
                     return (
-                      <td key={w.week_number} className={`px-3 py-1 ${w.variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      <td key={w.week_number} className={`px-4 py-1 ${w.variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                         {w.variance >= 0 ? "+" : ""}{w.variance}
                       </td>
                     )
                   })}
-                  <td className={`px-3 py-1 border-l border-zinc-700 font-semibold ${monthWeekly.total_variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                  <td className={`px-4 py-1 border-l border-zinc-700 font-semibold ${monthWeekly.total_variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                     {monthWeekly.total_variance >= 0 ? "+" : ""}{monthWeekly.total_variance}
                   </td>
                 </tr>
               </tbody>
             </table>
-            <div className="flex justify-center mt-2 text-lg px-4">
+            <div className="flex justify-center mt-4 text-xl px-4">
               <div className="flex items-center gap-6">
                 <span className="flex items-center gap-2 text-blue-400">
-                  <span className="w-3 h-3 bg-blue-400 rounded" /> Forecast
+                  <span className="w-4 h-4 bg-blue-400 rounded" /> Forecast
                 </span>
                 <span className="flex items-center gap-2 text-white">
-                  <span className="w-3 h-3 bg-white rounded" /> Actual
+                  <span className="w-4 h-4 bg-white rounded" /> Actual
                 </span>
                 <span className="flex items-center gap-2 text-emerald-400">
-                  <span className="w-3 h-3 bg-emerald-400 rounded" /> Variance
+                  <span className="w-4 h-4 bg-emerald-400 rounded" /> Variance
                 </span>
               </div>
             </div>
