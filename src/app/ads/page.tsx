@@ -162,7 +162,7 @@ function TrafficCard({ title, accentColor, users, purchases, convRate, compariso
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div>
             <div className="text-white text-2xl font-bold">{formatNumber(users)}</div>
-            <div className="text-gray-500 text-xs">Users</div>
+            <div className="text-gray-500 text-xs">New Visitors</div>
           </div>
           <div>
             <div className="text-white text-2xl font-bold">{purchases}</div>
@@ -192,7 +192,7 @@ function TrafficCard({ title, accentColor, users, purchases, convRate, compariso
                 <span className="text-gray-600">{comp.label}</span>
                 <div className="flex gap-4">
                   <span className={userColor}>
-                    {userChange >= 0 ? "+" : ""}{userChange.toFixed(0)}% U
+                    {userChange >= 0 ? "+" : ""}{userChange.toFixed(0)}% V
                   </span>
                   <span className={purchaseColor}>
                     {purchaseChange >= 0 ? "+" : ""}{purchaseChange.toFixed(0)}% P
