@@ -44,8 +44,8 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(value)
 }
 
@@ -85,10 +85,21 @@ interface MetricCardProps {
   iconColor: string
 }
 
+function formatAbsChange(current: number, previous: number, formatter: (v: number) => string): string {
+  const diff = current - previous
+  const prefix = diff > 0 ? "+" : ""
+  return prefix + formatter(Math.abs(diff))
+}
+
 function MetricCard({ title, icon: Icon, thisWeek, lastWeek, twoWeeksAgo, threeWeeksAgo, format, inverse = false, iconColor }: MetricCardProps) {
   const vsLastWeek = getChangeIndicator(thisWeek, lastWeek, inverse)
   const vsTwoWeeks = getChangeIndicator(thisWeek, twoWeeksAgo, inverse)
   const vsThreeWeeks = getChangeIndicator(thisWeek, threeWeeksAgo, inverse)
+  
+  // Absolute differences
+  const diffLastWeek = thisWeek - lastWeek
+  const diffTwoWeeks = thisWeek - twoWeeksAgo
+  const diffThreeWeeks = thisWeek - threeWeeksAgo
   
   return (
     <Card className="border-0 shadow-sm bg-white">
@@ -102,36 +113,51 @@ function MetricCard({ title, icon: Icon, thisWeek, lastWeek, twoWeeksAgo, threeW
         <div className="text-3xl font-bold text-[#1D1D1F] mb-4">{format(thisWeek)}</div>
         
         <div className="space-y-2">
-          {/* vs Last Week */}
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6E6E73]">vs Last Week</span>
-            <div className="flex items-center gap-1">
-              <vsLastWeek.icon className={`h-4 w-4 ${vsLastWeek.color}`} />
-              <span className={vsLastWeek.color}>
-                {vsLastWeek.change > 0 ? "+" : ""}{vsLastWeek.change.toFixed(1)}%
-              </span>
-            </div>
-          </div>
-          
-          {/* vs 2 Weeks Ago */}
+          {/* vs 2 Weeks Ago (was Last Week) */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-[#6E6E73]">vs 2 Weeks</span>
-            <div className="flex items-center gap-1">
-              <vsTwoWeeks.icon className={`h-4 w-4 ${vsTwoWeeks.color}`} />
-              <span className={vsTwoWeeks.color}>
-                {vsTwoWeeks.change > 0 ? "+" : ""}{vsTwoWeeks.change.toFixed(1)}%
+            <div className="flex items-center gap-2">
+              <span className={vsLastWeek.color}>
+                {diffLastWeek >= 0 ? "+" : ""}{format(Math.abs(diffLastWeek))}
               </span>
+              <div className="flex items-center gap-1">
+                <vsLastWeek.icon className={`h-3 w-3 ${vsLastWeek.color}`} />
+                <span className={`${vsLastWeek.color} text-xs`}>
+                  {vsLastWeek.change > 0 ? "+" : ""}{vsLastWeek.change.toFixed(0)}%
+                </span>
+              </div>
             </div>
           </div>
           
-          {/* vs 3 Weeks Ago */}
+          {/* vs 3 Weeks Ago (was 2 Weeks) */}
           <div className="flex items-center justify-between text-sm">
             <span className="text-[#6E6E73]">vs 3 Weeks</span>
-            <div className="flex items-center gap-1">
-              <vsThreeWeeks.icon className={`h-4 w-4 ${vsThreeWeeks.color}`} />
-              <span className={vsThreeWeeks.color}>
-                {vsThreeWeeks.change > 0 ? "+" : ""}{vsThreeWeeks.change.toFixed(1)}%
+            <div className="flex items-center gap-2">
+              <span className={vsTwoWeeks.color}>
+                {diffTwoWeeks >= 0 ? "+" : ""}{format(Math.abs(diffTwoWeeks))}
               </span>
+              <div className="flex items-center gap-1">
+                <vsTwoWeeks.icon className={`h-3 w-3 ${vsTwoWeeks.color}`} />
+                <span className={`${vsTwoWeeks.color} text-xs`}>
+                  {vsTwoWeeks.change > 0 ? "+" : ""}{vsTwoWeeks.change.toFixed(0)}%
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          {/* vs 4 Weeks Ago (was 3 Weeks) */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-[#6E6E73]">vs 4 Weeks</span>
+            <div className="flex items-center gap-2">
+              <span className={vsThreeWeeks.color}>
+                {diffThreeWeeks >= 0 ? "+" : ""}{format(Math.abs(diffThreeWeeks))}
+              </span>
+              <div className="flex items-center gap-1">
+                <vsThreeWeeks.icon className={`h-3 w-3 ${vsThreeWeeks.color}`} />
+                <span className={`${vsThreeWeeks.color} text-xs`}>
+                  {vsThreeWeeks.change > 0 ? "+" : ""}{vsThreeWeeks.change.toFixed(0)}%
+                </span>
+              </div>
             </div>
           </div>
         </div>

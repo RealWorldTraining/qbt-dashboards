@@ -461,20 +461,20 @@ function MonthForecastBox({ forecast, fullWidth = false }: { forecast: EOMForeca
         <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-2xl' : 'text-xl'}`}>{forecast.month_name} Forecast</div>
         <div className={`text-zinc-500 ${fullWidth ? 'text-xl' : 'text-lg'}`}>{forecast.days_remaining}d left</div>
         {/* Removed big number - just show MTD stats */}
-        <div className={`mt-4 flex ${fullWidth ? 'gap-12' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-lg'}`}>
+        <div className={`mt-4 flex ${fullWidth ? 'gap-16' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-lg'}`}>
           <div className="text-center">
-            <div className={`font-bold text-white ${fullWidth ? 'text-5xl' : 'text-3xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>MTD Actual</div>
+            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-3xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Actual</div>
           </div>
           <div className="text-center">
-            <div className={`font-bold text-white ${fullWidth ? 'text-5xl' : 'text-3xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>MTD Expected</div>
+            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-3xl'}`}>{new Intl.NumberFormat("en-US").format(mtdExpected)}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Expected</div>
           </div>
           <div className="text-center">
-            <div className={`font-bold ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-5xl' : 'text-3xl'}`}>
+            <div className={`font-bold leading-none ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-[7rem]' : 'text-3xl'}`}>
               {variancePct >= 0 ? "+" : ""}{variancePct}%
             </div>
-            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-sm'}`}>Variance</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>Variance</div>
           </div>
         </div>
       </div>
@@ -507,20 +507,20 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
           <div className="text-zinc-500 text-xl">{forecast.week_start_date} - {forecast.week_end_date}</div>
           
           {/* WTD stats - moved up, no big number */}
-          <div className="flex gap-12 text-xl mt-4 mb-4">
+          <div className="flex gap-16 text-xl mt-4 mb-4">
             <div className="text-center">
-              <div className="text-5xl font-bold text-white">{forecast.current_week_sales}</div>
-              <div className="text-zinc-500 uppercase text-lg">WTD Actual</div>
+              <div className="text-[7rem] font-bold text-white leading-none">{forecast.current_week_sales}</div>
+              <div className="text-zinc-500 uppercase text-2xl mt-2">WTD Actual</div>
             </div>
             <div className="text-center">
-              <div className="text-5xl font-bold text-white">{wtdExpected}</div>
-              <div className="text-zinc-500 uppercase text-lg">WTD Expected</div>
+              <div className="text-[7rem] font-bold text-white leading-none">{wtdExpected}</div>
+              <div className="text-zinc-500 uppercase text-2xl mt-2">WTD Expected</div>
             </div>
             <div className="text-center">
-              <div className={`text-5xl font-bold ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              <div className={`text-[7rem] font-bold leading-none ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                 {variancePct >= 0 ? "+" : ""}{variancePct}%
               </div>
-              <div className="text-zinc-500 uppercase text-lg">Variance</div>
+              <div className="text-zinc-500 uppercase text-2xl mt-2">Variance</div>
             </div>
           </div>
 

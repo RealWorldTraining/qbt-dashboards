@@ -82,13 +82,14 @@ export async function GET() {
       conv_value: parseNumber(row[13]),
     }))
 
-    // Get last 4 weeks (most recent at the end)
-    const last4 = allWeeks.slice(-4).reverse() // [this_week, last_week, 2_weeks, 3_weeks]
+    // Get last 5 weeks (most recent at the end)
+    // Skip "this week" (incomplete) - use last_week as primary
+    const last5 = allWeeks.slice(-5).reverse() // [this_week, last_week, 2_weeks, 3_weeks, 4_weeks]
 
     const formatWeek = (w: WeeklyRow, label: string) => ({
       week_label: label,
       date_range: formatDateRange(w.week_start, w.week_end),
-      spend: w.spend,
+      spend: Math.round(w.spend), // Whole numbers per Aaron
       impressions: w.impressions,
       clicks: w.clicks,
       ctr: w.ctr,
@@ -98,11 +99,12 @@ export async function GET() {
       roas: w.conv_value / w.spend,
     })
 
+    // Shift: last_week becomes primary (this_week is incomplete)
     const data = {
-      this_week: formatWeek(last4[0], 'This Week'),
-      last_week: formatWeek(last4[1], 'Last Week'),
-      two_weeks_ago: formatWeek(last4[2], '2 Weeks Ago'),
-      three_weeks_ago: formatWeek(last4[3], '3 Weeks Ago'),
+      this_week: formatWeek(last5[1], 'Last Week'),      // Most recent complete week
+      last_week: formatWeek(last5[2], '2 Weeks Ago'),
+      two_weeks_ago: formatWeek(last5[3], '3 Weeks Ago'),
+      three_weeks_ago: formatWeek(last5[4], '4 Weeks Ago'),
       last_updated: new Date().toISOString(),
     }
 
