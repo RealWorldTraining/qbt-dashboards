@@ -180,7 +180,10 @@ export default function DataDashboard() {
               color="blue"
             />
 
-            {/* Row 2: This Week & MTD */}
+            {/* Row 2: Week Forecast (full width) */}
+            <WeekForecastBox forecast={weekForecast} fullWidth />
+
+            {/* Row 3: This Week & MTD */}
             <SalesBox
               title="This Week"
               qty={metrics.this_week.direct_qty}
@@ -196,13 +199,9 @@ export default function DataDashboard() {
               color="amber"
             />
 
-            {/* Row 3: Placeholder & EOD Forecast */}
-            <PlaceholderBox />
-            <EODForecastBox forecast={eodForecast} hourlyComparison={hourlyComparison} />
-
-            {/* Row 4: January Forecast & Week Forecast */}
+            {/* Row 4: January Forecast & EOD Forecast */}
             <MonthForecastBox forecast={eomForecast} />
-            <WeekForecastBox forecast={weekForecast} />
+            <EODForecastBox forecast={eodForecast} hourlyComparison={hourlyComparison} />
           </>
         ) : (
           <div className="col-span-2 row-span-4 flex items-center justify-center text-zinc-500">
@@ -452,7 +451,7 @@ function MonthForecastBox({ forecast }: { forecast: EOMForecast | null }) {
 }
 
 // Week Forecast Box
-function WeekForecastBox({ forecast }: { forecast: WeekForecast | null }) {
+function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForecast | null, fullWidth?: boolean }) {
   if (!forecast) return <PlaceholderBox />
   
   // Calculate WTD expected
@@ -467,63 +466,67 @@ function WeekForecastBox({ forecast }: { forecast: WeekForecast | null }) {
     .reduce((sum, d) => sum + d.predicted, 0)
 
   return (
-    <div className="bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden">
+    <div className={`bg-zinc-900 rounded-2xl border border-zinc-800 flex flex-col overflow-hidden ${fullWidth ? 'col-span-2' : ''}`}>
       <div className="h-1.5 bg-gradient-to-r from-pink-600 to-pink-500" />
-      <div className="flex-1 flex flex-col items-center justify-center p-4">
-        <div className="text-zinc-400 text-xl font-medium uppercase tracking-wider">Week Forecast</div>
-        <div className="text-zinc-500 text-lg">{forecast.week_start_date} - {forecast.week_end_date}</div>
-        <div className="text-white text-7xl font-bold mt-1">{forecast.predicted_sales}</div>
+      <div className={`flex-1 flex ${fullWidth ? 'flex-row items-center justify-around' : 'flex-col items-center justify-center'} p-6`}>
+        {/* Left side: Title, date range, and big number */}
+        <div className={`${fullWidth ? 'text-center' : ''}`}>
+          <div className={`text-zinc-400 font-medium uppercase tracking-wider ${fullWidth ? 'text-3xl' : 'text-xl'}`}>Week Forecast</div>
+          <div className={`text-zinc-500 ${fullWidth ? 'text-2xl' : 'text-lg'}`}>{forecast.week_start_date} - {forecast.week_end_date}</div>
+          <div className={`text-white font-bold mt-2 ${fullWidth ? 'text-[10rem] leading-none' : 'text-7xl'}`}>{forecast.predicted_sales}</div>
+        </div>
         
-        <div className="mt-4 flex gap-6 text-lg">
+        {/* Middle: WTD stats */}
+        <div className={`${fullWidth ? 'flex gap-12' : 'mt-4 flex gap-6'} ${fullWidth ? 'text-2xl' : 'text-lg'}`}>
           <div className="text-center">
-            <div className="text-3xl font-bold text-white">{forecast.current_week_sales}</div>
-            <div className="text-zinc-500 uppercase text-xs">WTD Actual</div>
+            <div className={`font-bold text-white ${fullWidth ? 'text-5xl' : 'text-3xl'}`}>{forecast.current_week_sales}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-xs'}`}>WTD Actual</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-white">{wtdExpected}</div>
-            <div className="text-zinc-500 uppercase text-xs">WTD Expected</div>
+            <div className={`font-bold text-white ${fullWidth ? 'text-5xl' : 'text-3xl'}`}>{wtdExpected}</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-xs'}`}>WTD Expected</div>
           </div>
           <div className="text-center">
-            <div className={`text-3xl font-bold ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            <div className={`font-bold ${variancePct >= 0 ? "text-emerald-400" : "text-red-400"} ${fullWidth ? 'text-5xl' : 'text-3xl'}`}>
               {variancePct >= 0 ? "+" : ""}{variancePct}%
             </div>
-            <div className="text-zinc-500 uppercase text-xs">Variance</div>
+            <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-lg' : 'text-xs'}`}>Variance</div>
           </div>
         </div>
 
-        {/* Daily breakdown */}
-        <div className="mt-4 w-full">
-          <table className="w-full text-center text-sm">
+        {/* Right side: Daily breakdown table */}
+        <div className={`${fullWidth ? 'w-auto' : 'mt-4 w-full'}`}>
+          <table className={`text-center ${fullWidth ? 'text-2xl' : 'text-sm'}`}>
             <thead>
               <tr className="text-zinc-500">
                 {forecast.daily_breakdown.map(d => (
-                  <th key={d.day} className="font-normal px-1">{d.day}</th>
+                  <th key={d.day} className={`font-normal ${fullWidth ? 'px-4' : 'px-1'}`}>{d.day}</th>
                 ))}
-                <th className="font-semibold px-1 border-l border-zinc-700">Total</th>
+                <th className={`font-semibold border-l border-zinc-700 ${fullWidth ? 'px-4' : 'px-1'}`}>Total</th>
               </tr>
             </thead>
             <tbody>
               <tr className="text-blue-400">
                 {forecast.daily_breakdown.map(d => (
-                  <td key={d.day} className="px-1">{d.predicted}</td>
+                  <td key={d.day} className={fullWidth ? 'px-4' : 'px-1'}>{d.predicted}</td>
                 ))}
-                <td className="px-1 border-l border-zinc-700">{forecast.predicted_sales}</td>
+                <td className={`border-l border-zinc-700 ${fullWidth ? 'px-4' : 'px-1'}`}>{forecast.predicted_sales}</td>
               </tr>
               <tr className={totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}>
                 {forecast.daily_breakdown.map(d => (
-                  <td key={d.day} className="px-1 font-semibold">{d.actual ?? '—'}</td>
+                  <td key={d.day} className={`font-semibold ${fullWidth ? 'px-4' : 'px-1'}`}>{d.actual ?? '—'}</td>
                 ))}
-                <td className="px-1 border-l border-zinc-700 font-semibold">{forecast.current_week_sales}</td>
+                <td className={`border-l border-zinc-700 font-semibold ${fullWidth ? 'px-4' : 'px-1'}`}>{forecast.current_week_sales}</td>
               </tr>
             </tbody>
           </table>
-          <div className="flex justify-between mt-2 text-xs px-2">
+          <div className={`flex justify-between mt-3 ${fullWidth ? 'text-lg px-4' : 'text-xs px-2'}`}>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-blue-400 rounded" /> Predicted
+                <span className={`${fullWidth ? 'w-3 h-3' : 'w-2 h-2'} bg-blue-400 rounded`} /> Predicted
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 bg-emerald-400 rounded" /> Actual
+                <span className={`${fullWidth ? 'w-3 h-3' : 'w-2 h-2'} bg-emerald-400 rounded`} /> Actual
               </span>
             </div>
             <span className={`font-semibold ${totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
