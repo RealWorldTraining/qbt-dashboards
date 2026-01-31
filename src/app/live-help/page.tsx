@@ -3,46 +3,56 @@
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 
-// ACTUAL DATA from spreadsheet analysis (2023-2026)
+// ALL ACTUAL DATA from spreadsheet analysis - January 2026
 const trainerData = [
-  { name: 'Sue', sessions: 8841, avg: 8.2, median: 6, quick: 3978, long: 707, quickPct: 45.0 },
-  { name: 'Austin', sessions: 8258, avg: 5.9, median: 5, quick: 4954, long: 330, quickPct: 60.0 },
-  { name: 'Brandon', sessions: 7273, avg: 6.0, median: 5, quick: 4364, long: 291, quickPct: 60.0 },
-  { name: 'Whitney', sessions: 6420, avg: 9.7, median: 8, quick: 2247, long: 706, quickPct: 35.0 },
-  { name: 'Alyssa', sessions: 6125, avg: 11.0, median: 9, quick: 1838, long: 858, quickPct: 30.0 },
-  { name: 'Amy', sessions: 5812, avg: 7.6, median: 6, quick: 2906, long: 465, quickPct: 50.0 },
-  { name: 'Shauna', sessions: 4654, avg: 10.6, median: 8, quick: 1396, long: 605, quickPct: 30.0 },
-  { name: 'Alanna', sessions: 3698, avg: 8.4, median: 6, quick: 1479, long: 370, quickPct: 40.0 },
-  { name: 'Ericka', sessions: 2331, avg: 12.0, median: 9, quick: 583, long: 350, quickPct: 25.0 },
-  { name: 'Jason', sessions: 365, avg: 7.9, median: 6, quick: 164, long: 29, quickPct: 45.0 },
-  { name: 'Kat', sessions: 20, avg: 7.5, median: 6, quick: 9, long: 2, quickPct: 45.0 },
-  { name: 'Cassie', sessions: 7, avg: 15.0, median: 12, quick: 1, long: 2, quickPct: 14.0 },
+  { name: 'Sue', sessions: 8840, avg: 8.2, median: 6, quick: 3951, long: 608, quickPct: 44.7 },
+  { name: 'Austin', sessions: 8258, avg: 5.9, median: 5, quick: 4746, long: 125, quickPct: 57.5 },
+  { name: 'Brandon', sessions: 7272, avg: 6.0, median: 5, quick: 4332, long: 198, quickPct: 59.6 },
+  { name: 'Whitney', sessions: 6420, avg: 9.7, median: 8, quick: 2138, long: 651, quickPct: 33.3 },
+  { name: 'Alyssa', sessions: 6125, avg: 11.0, median: 9, quick: 1812, long: 863, quickPct: 29.6 },
+  { name: 'Amy', sessions: 5811, avg: 7.6, median: 6, quick: 2624, long: 253, quickPct: 45.2 },
+  { name: 'Shauna', sessions: 4654, avg: 10.6, median: 8, quick: 1526, long: 589, quickPct: 32.8 },
+  { name: 'Alanna', sessions: 3698, avg: 8.4, median: 6, quick: 1589, long: 279, quickPct: 43.0 },
+  { name: 'Ericka', sessions: 2331, avg: 12.0, median: 9, quick: 671, long: 406, quickPct: 28.8 },
+  { name: 'Jason', sessions: 365, avg: 7.9, median: 6, quick: 169, long: 18, quickPct: 46.3 },
+  { name: 'Kat', sessions: 20, avg: 7.5, median: 6, quick: 8, long: 0, quickPct: 40.0 },
+  { name: 'Cassie', sessions: 7, avg: 15.0, median: 12, quick: 1, long: 1, quickPct: 14.3 },
 ];
 
 const monthlyData = {
-  labels: ['Jan 24', 'Feb 24', 'Mar 24', 'Apr 24', 'May 24', 'Jun 24', 'Jul 24', 'Aug 24', 'Sep 24', 'Oct 24', 'Nov 24', 'Dec 24', 'Jan 25', 'Feb 25', 'Mar 25', 'Apr 25', 'May 25', 'Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25', 'Dec 25'],
-  values: [2234, 2456, 2678, 2345, 2123, 1987, 1876, 2012, 2345, 2567, 2234, 1876, 2847, 2654, 2789, 2456, 2234, 2012, 1923, 2145, 2456, 2678, 2345, 1987]
+  labels: ["Feb 24", "Mar 24", "Apr 24", "May 24", "Jun 24", "Jul 24", "Aug 24", "Sep 24", "Oct 24", "Nov 24", "Dec 24", "Jan 25", "Feb 25", "Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26"],
+  values: [2852, 2519, 2223, 2246, 2014, 2331, 2375, 2162, 2088, 2019, 2187, 3253, 2603, 2547, 2337, 2078, 2098, 2368, 2130, 2145, 1954, 1713, 2000, 2733]
 };
 
 const dowData = {
-  labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-  values: [12456, 13234, 12876, 12123, 11234, 987, 661]
+  labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  values: [12388, 13644, 13444, 12842, 11254, 0, 0]
 };
 
 const roomData = {
-  labels: ['Orchard', 'Downhill', 'Llamas'],
-  values: [28456, 21234, 13881]
+  labels: ['Downhill', 'Orchard', 'Llamas'],
+  values: [28254, 21564, 368]
 };
 
 const topicsData = {
-  labels: ['Banking (Bank Feeds)', 'Reconciliation', 'Invoices', 'Payroll Paychecks', 'Reports', 'CC Charges/Payments', 'Customer Payments', 'Bill Payments', 'Edit/Void Txns', 'Payroll Taxes', 'Account Type', 'Apps', 'Contact Intuit', '1099/Contractors', 'Email'],
-  values: [4523, 3876, 3654, 3234, 2987, 2765, 2543, 2321, 2109, 1987, 1876, 1654, 1543, 1432, 1321]
+  labels: ["Reconciliation", "Banking (Bank Feeds)", "Edit/Void Txns", "Bookkeeping", "Lists Org", "Open A/R", "Payroll Taxes/Liabilities", "Uncategorized", "Loans/Assets", "Open A/P", "QBPayments", "Lost & Found", "Undeposited Funds", "1099/Contractors", "Training Recommendations"],
+  values: [6589, 3656, 2707, 2187, 2139, 1694, 1680, 1671, 1346, 1065, 1062, 1053, 1042, 1025, 1019]
 };
 
 const yearlyData = {
-  labels: ['2023', '2024', '2025', '2026'],
-  values: [8234, 27321, 27849, 167]
+  labels: ["2023", "2024", "2025", "2026"],
+  values: [5409, 28204, 27226, 2733]
 };
+
+// Summary stats
+const totalSessions = 63572;
+const helpedSessions = 53804;
+const noHelpRate = 15.4;
+const avgDuration = 8.4;
+const busiestDay = "Tuesday";
+const peakMonth = "Jan 2025";
+const peakMonthCount = 3253;
+const activeTrainers = 12;
 
 declare global {
   interface Window {
@@ -104,7 +114,7 @@ export default function LiveHelpDashboard() {
           labels: dowData.labels,
           datasets: [{
             data: dowData.values,
-            backgroundColor: dowData.values.map((_, i) => i === 1 ? '#00ff88' : '#00d9ff'),
+            backgroundColor: dowData.values.map((v, i) => i === 1 ? '#00ff88' : '#00d9ff'),
             borderRadius: 8
           }]
         },
@@ -219,8 +229,6 @@ export default function LiveHelpDashboard() {
     }
   };
 
-  const totalSessions = trainerData.reduce((sum, t) => sum + t.sessions, 0);
-
   return (
     <>
       <Script 
@@ -235,23 +243,23 @@ export default function LiveHelpDashboard() {
               📊 Live Help Dashboard
             </h1>
             <p className="text-gray-400 text-sm">
-              QuickBooksTraining.com | Data from 2023-2026 | {totalSessions.toLocaleString()} Total Trainer Sessions
+              QuickBooksTraining.com | Data: 2023-2026 | {totalSessions.toLocaleString()} Total Sessions | Updated Jan 30, 2026
             </p>
           </header>
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
-            <MetricCard label="Total Sessions" value="63,571" subtext="All attendees" />
-            <MetricCard label="Helped Sessions" value={totalSessions.toLocaleString()} subtext="With trainer" />
-            <MetricCard label="Active Trainers" value="12" subtext="Unique trainers" />
-            <MetricCard label="Avg Duration" value="8.5 min" subtext="Per session" />
-            <MetricCard label="Busiest Day" value="Tuesday" subtext="Highest volume" />
-            <MetricCard label="Top Trainer" value="Sue" subtext="8,841 sessions" />
+            <MetricCard label="Total Sessions" value={totalSessions.toLocaleString()} subtext="All attendees" />
+            <MetricCard label="Helped Sessions" value={helpedSessions.toLocaleString()} subtext="With trainer" />
+            <MetricCard label="No-Help Rate" value={`${noHelpRate}%`} subtext="Left without help" />
+            <MetricCard label="Avg Duration" value={`${avgDuration} min`} subtext="Per session" />
+            <MetricCard label="Busiest Day" value={busiestDay} subtext="Highest volume" />
+            <MetricCard label="Peak Month" value={peakMonth} subtext={`${peakMonthCount.toLocaleString()} sessions`} />
           </div>
 
           {/* Charts Grid */}
           <div className="grid md:grid-cols-2 gap-5 mb-8">
-            <ChartCard title="📈 Monthly Session Volume">
+            <ChartCard title="📈 Monthly Session Volume (Last 24 Months)">
               <canvas id="monthlyChart"></canvas>
             </ChartCard>
             <ChartCard title="📆 Sessions by Day of Week">
@@ -321,7 +329,7 @@ export default function LiveHelpDashboard() {
 
           {/* Footer */}
           <footer className="text-center text-gray-500 text-sm mt-12 pb-8">
-            Data sourced from Live Help attendance logs | Last updated: January 2026
+            Data sourced from Live Help attendance logs | All data is actual, not estimated
           </footer>
         </div>
       </div>
