@@ -26,19 +26,23 @@ interface AdsData {
 }
 
 // Types for Organic data
-interface SourceMetrics {
+interface ChannelMetrics {
   users: number
   purchases: number
   conv_rate: number
+  pct_of_users: number
+  pct_of_purchases: number
 }
 
 interface OrganicWeek {
   week_label: string
   date_range: string
-  google_organic: SourceMetrics
-  direct: SourceMetrics
-  bing_organic: SourceMetrics
-  qb_intuit: SourceMetrics
+  totals: { users: number; purchases: number }
+  google_ads: ChannelMetrics
+  google_organic: ChannelMetrics
+  direct: ChannelMetrics
+  bing_organic: ChannelMetrics
+  qb_intuit: ChannelMetrics
 }
 
 interface OrganicData {
@@ -58,12 +62,12 @@ const LOADING_ADS: AdsData = {
   last_updated: new Date().toISOString()
 }
 
-const LOADING_SOURCE: SourceMetrics = { users: 0, purchases: 0, conv_rate: 0 }
+const LOADING_CHANNEL: ChannelMetrics = { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 }
 const LOADING_ORGANIC: OrganicData = {
-  this_week: { week_label: "Last Week", date_range: "Loading...", google_organic: LOADING_SOURCE, direct: LOADING_SOURCE, bing_organic: LOADING_SOURCE, qb_intuit: LOADING_SOURCE },
-  last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", google_organic: LOADING_SOURCE, direct: LOADING_SOURCE, bing_organic: LOADING_SOURCE, qb_intuit: LOADING_SOURCE },
-  two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", google_organic: LOADING_SOURCE, direct: LOADING_SOURCE, bing_organic: LOADING_SOURCE, qb_intuit: LOADING_SOURCE },
-  three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", google_organic: LOADING_SOURCE, direct: LOADING_SOURCE, bing_organic: LOADING_SOURCE, qb_intuit: LOADING_SOURCE },
+  this_week: { week_label: "Last Week", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
+  last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
+  two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
+  three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
   last_updated: new Date().toISOString()
 }
 
@@ -79,55 +83,32 @@ function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`
 }
 
-// Hero Card Component - Mission Control Style
-interface HeroCardProps {
+// Google Ads Hero Card
+interface AdsCardProps {
   title: string
   value: string | number
-  subtitle?: string
   accentColor: string
-  comparisons: {
-    label: string
-    value: number
-    change: number
-    changeAbs: number
-  }[]
+  comparisons: { label: string; value: number; change: number }[]
   format?: (v: number) => string
   inverse?: boolean
 }
 
-function HeroCard({ title, value, subtitle, accentColor, comparisons, format = formatNumber, inverse = false }: HeroCardProps) {
+function AdsCard({ title, value, accentColor, comparisons, format = formatNumber, inverse = false }: AdsCardProps) {
   return (
     <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
-      {/* Accent bar */}
       <div className={`h-1 ${accentColor}`} />
-      
-      <div className="p-6">
-        {/* Title */}
-        <div className="text-gray-400 text-sm mb-2">{title}</div>
-        
-        {/* Hero number */}
-        <div className="text-white text-5xl font-bold mb-1">{value}</div>
-        
-        {/* Subtitle */}
-        {subtitle && <div className="text-gray-500 text-sm mb-4">{subtitle}</div>}
-        
-        {/* Comparisons */}
-        <div className="mt-4 space-y-2">
+      <div className="p-4">
+        <div className="text-gray-400 text-xs mb-1">{title}</div>
+        <div className="text-white text-3xl font-bold mb-3">{value}</div>
+        <div className="space-y-1">
           {comparisons.map((comp, i) => {
-            const isPositive = inverse ? comp.change < 0 : comp.change > 0
-            const isNegative = inverse ? comp.change > 0 : comp.change < 0
-            const color = isPositive ? "text-green-500" : isNegative ? "text-red-500" : "text-gray-400"
-            const sign = comp.changeAbs >= 0 ? "+" : ""
-            
+            const isPos = inverse ? comp.change < 0 : comp.change > 0
+            const isNeg = inverse ? comp.change > 0 : comp.change < 0
+            const color = isPos ? "text-green-500" : isNeg ? "text-red-500" : "text-gray-400"
             return (
-              <div key={i} className="flex justify-between items-center text-sm">
+              <div key={i} className="flex justify-between text-xs">
                 <span className="text-gray-500">{comp.label}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-300">{format(comp.value)}</span>
-                  <span className={`${color} font-medium`}>
-                    {sign}{comp.change.toFixed(0)}% ({sign}{format(Math.abs(comp.changeAbs))})
-                  </span>
-                </div>
+                <span className={color}>{comp.change >= 0 ? "+" : ""}{comp.change.toFixed(0)}%</span>
               </div>
             )
           })}
@@ -137,66 +118,75 @@ function HeroCard({ title, value, subtitle, accentColor, comparisons, format = f
   )
 }
 
-// Traffic Source Card - Compact version for organic section
-interface TrafficCardProps {
-  title: string
+// Traffic Channel Card - Redesigned
+interface ChannelCardProps {
+  name: string
   accentColor: string
-  users: number
-  purchases: number
-  convRate: number
-  comparisons: {
-    label: string
-    users: number
-    purchases: number
-  }[]
+  current: ChannelMetrics
+  weeks: { label: string; data: ChannelMetrics }[]
 }
 
-function TrafficCard({ title, accentColor, users, purchases, convRate, comparisons }: TrafficCardProps) {
+function ChannelCard({ name, accentColor, current, weeks }: ChannelCardProps) {
   return (
     <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
       <div className={`h-1 ${accentColor}`} />
       <div className="p-4">
-        <div className="text-gray-400 text-xs mb-3">{title}</div>
+        {/* Channel name */}
+        <div className="text-gray-400 text-xs font-medium mb-3">{name}</div>
         
-        {/* Main metrics row */}
-        <div className="grid grid-cols-3 gap-2 mb-3">
+        {/* Main metrics - 2x2 grid */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
-            <div className="text-white text-2xl font-bold">{formatNumber(users)}</div>
+            <div className="text-white text-2xl font-bold">{formatNumber(current.users)}</div>
             <div className="text-gray-500 text-xs">New Visitors</div>
           </div>
           <div>
-            <div className="text-white text-2xl font-bold">{purchases}</div>
+            <div className="text-cyan-400 text-2xl font-bold">{formatPercent(current.pct_of_users)}</div>
+            <div className="text-gray-500 text-xs">% of Total</div>
+          </div>
+          <div>
+            <div className="text-white text-2xl font-bold">{current.purchases}</div>
             <div className="text-gray-500 text-xs">Purchases</div>
           </div>
           <div>
-            <div className="text-white text-2xl font-bold">{formatPercent(convRate)}</div>
-            <div className="text-gray-500 text-xs">Conv Rate</div>
+            <div className="text-orange-400 text-2xl font-bold">{formatPercent(current.pct_of_purchases)}</div>
+            <div className="text-gray-500 text-xs">% of Total</div>
           </div>
         </div>
         
-        {/* Comparisons */}
-        <div className="space-y-1 border-t border-gray-800 pt-2">
-          {comparisons.map((comp, i) => {
-            const userChange = users > 0 && comp.users > 0 
-              ? ((users - comp.users) / comp.users * 100) 
-              : 0
-            const purchaseChange = purchases > 0 && comp.purchases > 0 
-              ? ((purchases - comp.purchases) / comp.purchases * 100) 
-              : 0
+        {/* Conversion rate */}
+        <div className="mb-3 pb-3 border-b border-gray-800">
+          <span className="text-gray-500 text-xs">Conv Rate: </span>
+          <span className="text-white text-sm font-medium">{formatPercent(current.conv_rate)}</span>
+        </div>
+        
+        {/* Week comparisons - Cleaner layout */}
+        <div className="space-y-2">
+          {weeks.map((week, i) => {
+            const userChange = current.users > 0 && week.data.users > 0 
+              ? ((current.users - week.data.users) / week.data.users * 100) : 0
+            const purchaseChange = current.purchases > 0 && week.data.purchases > 0 
+              ? ((current.purchases - week.data.purchases) / week.data.purchases * 100) : 0
             
-            const userColor = userChange > 0 ? "text-green-500" : userChange < 0 ? "text-red-500" : "text-gray-400"
-            const purchaseColor = purchaseChange > 0 ? "text-green-500" : purchaseChange < 0 ? "text-red-500" : "text-gray-400"
+            const userColor = userChange > 0 ? "text-green-500" : userChange < 0 ? "text-red-500" : "text-gray-500"
+            const purchaseColor = purchaseChange > 0 ? "text-green-500" : purchaseChange < 0 ? "text-red-500" : "text-gray-500"
             
             return (
-              <div key={i} className="flex justify-between items-center text-xs">
-                <span className="text-gray-600">{comp.label}</span>
+              <div key={i} className="flex items-center justify-between text-xs">
+                <span className="text-gray-600 w-20">{week.label}</span>
                 <div className="flex gap-4">
-                  <span className={userColor}>
-                    {userChange >= 0 ? "+" : ""}{userChange.toFixed(0)}% V
-                  </span>
-                  <span className={purchaseColor}>
-                    {purchaseChange >= 0 ? "+" : ""}{purchaseChange.toFixed(0)}% P
-                  </span>
+                  <div className="text-right w-16">
+                    <span className="text-gray-400">{formatNumber(week.data.users)}</span>
+                    <span className={`ml-1 ${userColor}`}>
+                      ({userChange >= 0 ? "+" : ""}{userChange.toFixed(0)}%)
+                    </span>
+                  </div>
+                  <div className="text-right w-16">
+                    <span className="text-gray-400">{week.data.purchases}</span>
+                    <span className={`ml-1 ${purchaseColor}`}>
+                      ({purchaseChange >= 0 ? "+" : ""}{purchaseChange.toFixed(0)}%)
+                    </span>
+                  </div>
                 </div>
               </div>
             )
@@ -221,15 +211,8 @@ export default function AdsPage() {
         fetch('/api/organic')
       ])
       
-      if (adsRes.ok) {
-        const adsJson = await adsRes.json()
-        setAdsData(adsJson)
-      }
-      
-      if (organicRes.ok) {
-        const organicJson = await organicRes.json()
-        setOrganicData(organicJson)
-      }
+      if (adsRes.ok) setAdsData(await adsRes.json())
+      if (organicRes.ok) setOrganicData(await organicRes.json())
       
       setLastRefresh(new Date())
     } catch (err) {
@@ -245,182 +228,114 @@ export default function AdsPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleRefresh = () => fetchData()
-
-  // Build comparison data for ads
-  const buildAdsComparisons = (metric: keyof WeeklyMetrics, format: (v: number) => string = formatNumber) => {
+  // Build ads comparisons
+  const buildAdsComparisons = (metric: keyof WeeklyMetrics) => {
     const current = adsData.this_week[metric] as number
     return [
-      {
-        label: adsData.last_week.week_label,
-        value: adsData.last_week[metric] as number,
-        change: ((current - (adsData.last_week[metric] as number)) / (adsData.last_week[metric] as number)) * 100,
-        changeAbs: current - (adsData.last_week[metric] as number)
-      },
-      {
-        label: adsData.two_weeks_ago.week_label,
-        value: adsData.two_weeks_ago[metric] as number,
-        change: ((current - (adsData.two_weeks_ago[metric] as number)) / (adsData.two_weeks_ago[metric] as number)) * 100,
-        changeAbs: current - (adsData.two_weeks_ago[metric] as number)
-      },
-      {
-        label: adsData.three_weeks_ago.week_label,
-        value: adsData.three_weeks_ago[metric] as number,
-        change: ((current - (adsData.three_weeks_ago[metric] as number)) / (adsData.three_weeks_ago[metric] as number)) * 100,
-        changeAbs: current - (adsData.three_weeks_ago[metric] as number)
-      }
+      { label: "2 wks", value: adsData.last_week[metric] as number, change: ((current - (adsData.last_week[metric] as number)) / (adsData.last_week[metric] as number)) * 100 },
+      { label: "3 wks", value: adsData.two_weeks_ago[metric] as number, change: ((current - (adsData.two_weeks_ago[metric] as number)) / (adsData.two_weeks_ago[metric] as number)) * 100 },
+      { label: "4 wks", value: adsData.three_weeks_ago[metric] as number, change: ((current - (adsData.three_weeks_ago[metric] as number)) / (adsData.three_weeks_ago[metric] as number)) * 100 },
     ]
   }
 
-  // Build traffic comparisons for organic
-  type SourceKey = 'google_organic' | 'direct' | 'bing_organic' | 'qb_intuit'
+  // Build channel weeks data
+  type ChannelKey = 'google_ads' | 'google_organic' | 'direct' | 'bing_organic' | 'qb_intuit'
   
-  const buildTrafficComparisons = (source: SourceKey) => [
-    {
-      label: organicData.last_week.week_label,
-      users: organicData.last_week[source].users,
-      purchases: organicData.last_week[source].purchases
-    },
-    {
-      label: organicData.two_weeks_ago.week_label,
-      users: organicData.two_weeks_ago[source].users,
-      purchases: organicData.two_weeks_ago[source].purchases
-    },
-    {
-      label: organicData.three_weeks_ago.week_label,
-      users: organicData.three_weeks_ago[source].users,
-      purchases: organicData.three_weeks_ago[source].purchases
-    }
+  const buildChannelWeeks = (channel: ChannelKey) => [
+    { label: "2 wks ago", data: organicData.last_week[channel] },
+    { label: "3 wks ago", data: organicData.two_weeks_ago[channel] },
+    { label: "4 wks ago", data: organicData.three_weeks_ago[channel] },
   ]
 
   return (
-    <div className="min-h-screen bg-black p-6">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-[1920px] mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
-            <h1 className="text-white text-xl font-medium">Marketing Dashboard</h1>
-            <span className="text-gray-500 text-sm">
-              Updated {lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+            <h1 className="text-white text-lg font-medium">Marketing Dashboard</h1>
+            <span className="text-gray-500 text-xs">
+              {lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-sm">{adsData.this_week.date_range}</span>
-            <button 
-              onClick={handleRefresh}
-              disabled={loading}
-              className="p-2 rounded hover:bg-gray-800 transition-colors disabled:opacity-50"
-            >
+            <span className="text-gray-400 text-sm">{adsData.this_week.date_range}</span>
+            <button onClick={fetchData} disabled={loading} className="p-1.5 rounded hover:bg-gray-800">
               <RefreshCw className={`h-4 w-4 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
-        {/* Section: Google Ads */}
-        <div className="mb-6">
-          <h2 className="text-gray-400 text-sm font-medium mb-3 uppercase tracking-wide">Google Ads</h2>
-          <div className="grid grid-cols-4 gap-4 mb-4">
-            <HeroCard
-              title="SPEND"
-              value={formatCurrency(adsData.this_week.spend)}
-              accentColor="bg-green-500"
-              comparisons={buildAdsComparisons('spend', formatCurrency)}
-            />
-            <HeroCard
-              title="IMPRESSIONS"
-              value={formatNumber(adsData.this_week.impressions)}
-              accentColor="bg-blue-500"
-              comparisons={buildAdsComparisons('impressions')}
-            />
-            <HeroCard
-              title="CLICKS"
-              value={formatNumber(adsData.this_week.clicks)}
-              accentColor="bg-purple-500"
-              comparisons={buildAdsComparisons('clicks')}
-            />
-            <HeroCard
-              title="CTR"
-              value={formatPercent(adsData.this_week.ctr)}
-              accentColor="bg-cyan-500"
-              comparisons={buildAdsComparisons('ctr', formatPercent)}
-            />
+        {/* Totals Banner */}
+        <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 flex justify-center gap-12">
+          <div className="text-center">
+            <div className="text-white text-3xl font-bold">{formatNumber(organicData.this_week.totals.users)}</div>
+            <div className="text-gray-500 text-xs">Total New Visitors</div>
           </div>
+          <div className="text-center">
+            <div className="text-white text-3xl font-bold">{organicData.this_week.totals.purchases}</div>
+            <div className="text-gray-500 text-xs">Total Purchases</div>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-4 gap-4">
-            <HeroCard
-              title="CONVERSIONS"
-              value={adsData.this_week.conversions}
-              accentColor="bg-orange-500"
-              comparisons={buildAdsComparisons('conversions')}
+        {/* Traffic Channels - 5 columns */}
+        <div className="mb-6">
+          <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Traffic by Channel</h2>
+          <div className="grid grid-cols-5 gap-3">
+            <ChannelCard
+              name="GOOGLE ADS"
+              accentColor="bg-green-500"
+              current={organicData.this_week.google_ads}
+              weeks={buildChannelWeeks('google_ads')}
             />
-            <HeroCard
-              title="CONV RATE"
-              value={formatPercent(adsData.this_week.conversion_rate)}
+            <ChannelCard
+              name="GOOGLE ORGANIC"
+              accentColor="bg-blue-500"
+              current={organicData.this_week.google_organic}
+              weeks={buildChannelWeeks('google_organic')}
+            />
+            <ChannelCard
+              name="DIRECT"
+              accentColor="bg-gray-500"
+              current={organicData.this_week.direct}
+              weeks={buildChannelWeeks('direct')}
+            />
+            <ChannelCard
+              name="BING ORGANIC"
+              accentColor="bg-teal-500"
+              current={organicData.this_week.bing_organic}
+              weeks={buildChannelWeeks('bing_organic')}
+            />
+            <ChannelCard
+              name="QB INTUIT REFERRAL"
               accentColor="bg-emerald-500"
-              comparisons={buildAdsComparisons('conversion_rate', formatPercent)}
-            />
-            <HeroCard
-              title="CPA"
-              value={formatCurrency(adsData.this_week.cpa)}
-              accentColor="bg-red-500"
-              comparisons={buildAdsComparisons('cpa', formatCurrency)}
-              inverse={true}
-            />
-            <HeroCard
-              title="ROAS"
-              value={`${adsData.this_week.roas.toFixed(2)}x`}
-              accentColor="bg-pink-500"
-              comparisons={buildAdsComparisons('roas', (v) => `${v.toFixed(2)}x`)}
+              current={organicData.this_week.qb_intuit}
+              weeks={buildChannelWeeks('qb_intuit')}
             />
           </div>
         </div>
 
-        {/* Section: Organic Traffic */}
-        <div className="mb-6">
-          <h2 className="text-gray-400 text-sm font-medium mb-3 uppercase tracking-wide">Organic & Direct Traffic</h2>
-          <div className="grid grid-cols-4 gap-4">
-            <TrafficCard
-              title="GOOGLE ORGANIC"
-              accentColor="bg-blue-400"
-              users={organicData.this_week.google_organic.users}
-              purchases={organicData.this_week.google_organic.purchases}
-              convRate={organicData.this_week.google_organic.conv_rate}
-              comparisons={buildTrafficComparisons('google_organic')}
-            />
-            <TrafficCard
-              title="DIRECT"
-              accentColor="bg-gray-400"
-              users={organicData.this_week.direct.users}
-              purchases={organicData.this_week.direct.purchases}
-              convRate={organicData.this_week.direct.conv_rate}
-              comparisons={buildTrafficComparisons('direct')}
-            />
-            <TrafficCard
-              title="BING ORGANIC"
-              accentColor="bg-teal-400"
-              users={organicData.this_week.bing_organic.users}
-              purchases={organicData.this_week.bing_organic.purchases}
-              convRate={organicData.this_week.bing_organic.conv_rate}
-              comparisons={buildTrafficComparisons('bing_organic')}
-            />
-            <TrafficCard
-              title="QB INTUIT REFERRAL"
-              accentColor="bg-green-400"
-              users={organicData.this_week.qb_intuit.users}
-              purchases={organicData.this_week.qb_intuit.purchases}
-              convRate={organicData.this_week.qb_intuit.conv_rate}
-              comparisons={buildTrafficComparisons('qb_intuit')}
-            />
+        {/* Google Ads Performance - 2 rows of 4 */}
+        <div className="mb-4">
+          <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Google Ads Performance</h2>
+          <div className="grid grid-cols-8 gap-3">
+            <AdsCard title="SPEND" value={formatCurrency(adsData.this_week.spend)} accentColor="bg-green-500" comparisons={buildAdsComparisons('spend')} />
+            <AdsCard title="IMPRESSIONS" value={formatNumber(adsData.this_week.impressions)} accentColor="bg-blue-500" comparisons={buildAdsComparisons('impressions')} />
+            <AdsCard title="CLICKS" value={formatNumber(adsData.this_week.clicks)} accentColor="bg-purple-500" comparisons={buildAdsComparisons('clicks')} />
+            <AdsCard title="CTR" value={formatPercent(adsData.this_week.ctr)} accentColor="bg-cyan-500" comparisons={buildAdsComparisons('ctr')} />
+            <AdsCard title="CONVERSIONS" value={adsData.this_week.conversions} accentColor="bg-orange-500" comparisons={buildAdsComparisons('conversions')} />
+            <AdsCard title="CONV RATE" value={formatPercent(adsData.this_week.conversion_rate)} accentColor="bg-emerald-500" comparisons={buildAdsComparisons('conversion_rate')} />
+            <AdsCard title="CPA" value={formatCurrency(adsData.this_week.cpa)} accentColor="bg-red-500" comparisons={buildAdsComparisons('cpa')} inverse={true} />
+            <AdsCard title="ROAS" value={`${adsData.this_week.roas.toFixed(2)}x`} accentColor="bg-pink-500" comparisons={buildAdsComparisons('roas')} />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
+        <div className="text-center">
           <div className="flex items-center justify-center gap-2">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             <span className="text-gray-500 text-xs">Live</span>
           </div>
-          <p className="text-gray-600 text-xs mt-2">QuickBooks Training • Marketing Dashboard</p>
         </div>
       </div>
     </div>

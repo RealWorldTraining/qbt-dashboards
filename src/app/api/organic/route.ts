@@ -2,21 +2,8 @@ import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
 const SHEET_ID = '1SvvnNc32S7jSW1GP1bonJAoW0bTuNgHh9ERQo6RgcEY'
-const RANGE = 'First User Source Medium!A:N'
-
-interface WeeklyRow {
-  week_code: string // e.g., "202601"
-  google_organic_users: number
-  google_organic_purchases: number
-  direct_users: number
-  direct_purchases: number
-  qb_intuit_users: number
-  qb_intuit_purchases: number
-  bing_organic_users: number
-  bing_organic_purchases: number
-  bing_cpc_users: number
-  bing_cpc_purchases: number
-}
+const SOURCE_MEDIUM_RANGE = 'First User Source Medium!A:N'
+const CHANNEL_GROUP_RANGE = 'First User Default Channel Group!A:N'
 
 function parseNumber(val: string): number {
   if (!val) return 0
@@ -25,11 +12,9 @@ function parseNumber(val: string): number {
 }
 
 function weekCodeToDateRange(weekCode: string): string {
-  // Convert "202604" to date range like "Jan 19 - Jan 25"
   const year = parseInt(weekCode.substring(0, 4))
   const week = parseInt(weekCode.substring(4))
   
-  // Calculate the first day of the ISO week
   const jan4 = new Date(year, 0, 4)
   const dayOfWeek = jan4.getDay() || 7
   const firstMonday = new Date(jan4)
@@ -63,26 +48,33 @@ export async function GET() {
 
     const sheets = google.sheets({ version: 'v4', auth })
     
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEET_ID,
-      range: RANGE,
-    })
+    // Fetch both tabs
+    const [sourceMediumRes, channelGroupRes] = await Promise.all([
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID,
+        range: SOURCE_MEDIUM_RANGE,
+      }),
+      sheets.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID,
+        range: CHANNEL_GROUP_RANGE,
+      })
+    ])
 
-    const rows = response.data.values
-    if (!rows || rows.length < 2) {
-      return NextResponse.json({ error: 'No data found' }, { status: 404 })
+    const sourceMediumRows = sourceMediumRes.data.values
+    const channelGroupRows = channelGroupRes.data.values
+    
+    if (!sourceMediumRows || sourceMediumRows.length < 2) {
+      return NextResponse.json({ error: 'No source medium data found' }, { status: 404 })
     }
 
-    // Skip header row, parse data
-    // Columns: A=week, B/C=?, D=?, E=Direct Users, F=Direct Purchases, 
+    // Parse Source Medium data (granular sources)
+    // Columns: A=week, E=Direct Users, F=Direct Purchases, 
     // G=Google Organic Users, H=Google Organic Purchases,
     // I=QB Intuit Users, J=QB Intuit Purchases,
     // K=Bing Organic Users, L=Bing Organic Purchases,
     // M=Bing CPC Users, N=Bing CPC Purchases
-    const dataRows = rows.slice(1)
-    
-    const allWeeks: WeeklyRow[] = dataRows
-      .filter(row => row[0] && /^\d{6}$/.test(row[0])) // Filter valid week codes
+    const sourceData = sourceMediumRows.slice(1)
+      .filter(row => row[0] && /^\d{6}$/.test(row[0]))
       .map(row => ({
         week_code: row[0],
         direct_users: parseNumber(row[4]),
@@ -93,53 +85,91 @@ export async function GET() {
         qb_intuit_purchases: parseNumber(row[9]),
         bing_organic_users: parseNumber(row[10]),
         bing_organic_purchases: parseNumber(row[11]),
-        bing_cpc_users: parseNumber(row[12]),
-        bing_cpc_purchases: parseNumber(row[13]),
       }))
       .sort((a, b) => a.week_code.localeCompare(b.week_code))
 
-    // Get last 5 weeks (skip current incomplete week)
-    const last5 = allWeeks.slice(-5).reverse()
+    // Parse Channel Group data (totals + paid)
+    // Need to find columns for: Total Users, Total Purchases, Paid Users, Paid Purchases
+    // Based on Vision's data: Total Users=12807, Paid=4905
+    // Assuming columns: A=week, B=Total Users, C=Total Purchases, D=Paid Users, E=Paid Purchases
+    const channelData = channelGroupRows ? channelGroupRows.slice(1)
+      .filter(row => row[0] && /^\d{6}$/.test(row[0]))
+      .map(row => ({
+        week_code: row[0],
+        total_users: parseNumber(row[1]),
+        total_purchases: parseNumber(row[2]),
+        paid_users: parseNumber(row[3]),
+        paid_purchases: parseNumber(row[4]),
+      }))
+      .sort((a, b) => a.week_code.localeCompare(b.week_code)) : []
 
-    const formatWeek = (w: WeeklyRow, label: string) => ({
-      week_label: label,
-      date_range: weekCodeToDateRange(w.week_code),
-      google_organic: {
-        users: w.google_organic_users,
-        purchases: w.google_organic_purchases,
-        conv_rate: w.google_organic_users > 0 
-          ? (w.google_organic_purchases / w.google_organic_users * 100) 
-          : 0
-      },
-      direct: {
-        users: w.direct_users,
-        purchases: w.direct_purchases,
-        conv_rate: w.direct_users > 0 
-          ? (w.direct_purchases / w.direct_users * 100) 
-          : 0
-      },
-      bing_organic: {
-        users: w.bing_organic_users,
-        purchases: w.bing_organic_purchases,
-        conv_rate: w.bing_organic_users > 0 
-          ? (w.bing_organic_purchases / w.bing_organic_users * 100) 
-          : 0
-      },
-      qb_intuit: {
-        users: w.qb_intuit_users,
-        purchases: w.qb_intuit_purchases,
-        conv_rate: w.qb_intuit_users > 0 
-          ? (w.qb_intuit_purchases / w.qb_intuit_users * 100) 
-          : 0
+    // Get last 5 weeks
+    const last5Source = sourceData.slice(-5).reverse()
+    const last5Channel = channelData.slice(-5).reverse()
+
+    const formatWeek = (sourceRow: typeof sourceData[0], channelRow: typeof channelData[0] | undefined, label: string) => {
+      const totalUsers = channelRow?.total_users || 1
+      const totalPurchases = channelRow?.total_purchases || 1
+      const paidUsers = channelRow?.paid_users || 0
+      const paidPurchases = channelRow?.paid_purchases || 0
+
+      return {
+        week_label: label,
+        date_range: weekCodeToDateRange(sourceRow.week_code),
+        totals: {
+          users: totalUsers,
+          purchases: totalPurchases
+        },
+        google_ads: {
+          users: paidUsers,
+          purchases: paidPurchases,
+          conv_rate: paidUsers > 0 ? (paidPurchases / paidUsers * 100) : 0,
+          pct_of_users: (paidUsers / totalUsers * 100),
+          pct_of_purchases: (paidPurchases / totalPurchases * 100)
+        },
+        google_organic: {
+          users: sourceRow.google_organic_users,
+          purchases: sourceRow.google_organic_purchases,
+          conv_rate: sourceRow.google_organic_users > 0 
+            ? (sourceRow.google_organic_purchases / sourceRow.google_organic_users * 100) : 0,
+          pct_of_users: (sourceRow.google_organic_users / totalUsers * 100),
+          pct_of_purchases: (sourceRow.google_organic_purchases / totalPurchases * 100)
+        },
+        direct: {
+          users: sourceRow.direct_users,
+          purchases: sourceRow.direct_purchases,
+          conv_rate: sourceRow.direct_users > 0 
+            ? (sourceRow.direct_purchases / sourceRow.direct_users * 100) : 0,
+          pct_of_users: (sourceRow.direct_users / totalUsers * 100),
+          pct_of_purchases: (sourceRow.direct_purchases / totalPurchases * 100)
+        },
+        bing_organic: {
+          users: sourceRow.bing_organic_users,
+          purchases: sourceRow.bing_organic_purchases,
+          conv_rate: sourceRow.bing_organic_users > 0 
+            ? (sourceRow.bing_organic_purchases / sourceRow.bing_organic_users * 100) : 0,
+          pct_of_users: (sourceRow.bing_organic_users / totalUsers * 100),
+          pct_of_purchases: (sourceRow.bing_organic_purchases / totalPurchases * 100)
+        },
+        qb_intuit: {
+          users: sourceRow.qb_intuit_users,
+          purchases: sourceRow.qb_intuit_purchases,
+          conv_rate: sourceRow.qb_intuit_users > 0 
+            ? (sourceRow.qb_intuit_purchases / sourceRow.qb_intuit_users * 100) : 0,
+          pct_of_users: (sourceRow.qb_intuit_users / totalUsers * 100),
+          pct_of_purchases: (sourceRow.qb_intuit_purchases / totalPurchases * 100)
+        }
       }
-    })
+    }
 
-    // Shift: last_week becomes primary (this_week is incomplete)
+    // Match source and channel data by week code, shift to skip incomplete week
+    const findChannel = (weekCode: string) => last5Channel.find(c => c.week_code === weekCode)
+
     const data = {
-      this_week: formatWeek(last5[1], 'Last Week'),
-      last_week: formatWeek(last5[2], '2 Weeks Ago'),
-      two_weeks_ago: formatWeek(last5[3], '3 Weeks Ago'),
-      three_weeks_ago: formatWeek(last5[4], '4 Weeks Ago'),
+      this_week: formatWeek(last5Source[1], findChannel(last5Source[1].week_code), 'Last Week'),
+      last_week: formatWeek(last5Source[2], findChannel(last5Source[2].week_code), '2 Weeks Ago'),
+      two_weeks_ago: formatWeek(last5Source[3], findChannel(last5Source[3].week_code), '3 Weeks Ago'),
+      three_weeks_ago: formatWeek(last5Source[4], findChannel(last5Source[4].week_code), '4 Weeks Ago'),
       last_updated: new Date().toISOString(),
     }
 
