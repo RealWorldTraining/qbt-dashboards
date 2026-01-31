@@ -201,7 +201,7 @@ export default function DataDashboard() {
             <WeekForecastBox forecast={weekForecast} fullWidth />
 
             {/* Row 3: January Forecast (full width) */}
-            <MonthForecastBox forecast={eomForecast} monthWeekly={monthWeekly} fullWidth />
+            <MonthForecastBox forecast={eomForecast} monthWeekly={monthWeekly} weekForecast={weekForecast} fullWidth />
           </>
         ) : (
           <div className="col-span-2 row-span-4 flex items-center justify-center text-zinc-500">
@@ -451,12 +451,12 @@ function EODForecastBox({
 }
 
 // Month Forecast Box
-function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { forecast: EOMForecast | null, monthWeekly?: MonthWeekly | null, fullWidth?: boolean }) {
+function MonthForecastBox({ forecast, monthWeekly, weekForecast, fullWidth = false }: { forecast: EOMForecast | null, monthWeekly?: MonthWeekly | null, weekForecast?: WeekForecast | null, fullWidth?: boolean }) {
   if (!forecast) return <PlaceholderBox />
   
-  // Use monthWeekly totals when available for consistency with table
+  // Use live data from forecast (more accurate than monthWeekly which reads stale daily sheet)
   const mtdExpected = monthWeekly?.total_forecast ?? forecast.predicted_sales
-  const mtdActual = monthWeekly?.total_actual ?? forecast.current_month_sales
+  const mtdActual = forecast.current_month_sales
   const variance = mtdActual - mtdExpected
   const variancePct = mtdExpected > 0 ? Math.round((variance / mtdExpected) * 100) : 0
 
@@ -506,23 +506,34 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
                   <td className="px-4 py-1 border-l border-zinc-700">{monthWeekly.total_forecast}</td>
                 </tr>
                 <tr className="text-white">
-                  {monthWeekly.weeks.map(w => (
-                    <td key={w.week_number} className="px-4 py-1 font-semibold">{w.actual ?? '—'}</td>
-                  ))}
-                  <td className="px-4 py-1 border-l border-zinc-700 font-semibold">{monthWeekly.total_actual}</td>
+                  {monthWeekly.weeks.map((w, idx) => {
+                    // Use live weekForecast data for current week (last in list)
+                    const isCurrentWeek = idx === monthWeekly.weeks.length - 1
+                    const actual = isCurrentWeek && weekForecast ? weekForecast.current_week_sales : w.actual
+                    return <td key={w.week_number} className="px-4 py-1 font-semibold">{actual ?? '—'}</td>
+                  })}
+                  <td className="px-4 py-1 border-l border-zinc-700 font-semibold">{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</td>
                 </tr>
                 <tr>
-                  {monthWeekly.weeks.map(w => {
-                    if (w.variance === null) return <td key={w.week_number} className="px-4 py-1 text-zinc-600">—</td>
+                  {monthWeekly.weeks.map((w, idx) => {
+                    const isCurrentWeek = idx === monthWeekly.weeks.length - 1
+                    const actual = isCurrentWeek && weekForecast ? weekForecast.current_week_sales : w.actual
+                    if (actual === null || actual === undefined) return <td key={w.week_number} className="px-4 py-1 text-zinc-600">—</td>
+                    const variance = actual - w.forecast
                     return (
-                      <td key={w.week_number} className={`px-4 py-1 ${w.variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                        {w.variance >= 0 ? "+" : ""}{w.variance}
+                      <td key={w.week_number} className={`px-4 py-1 ${variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        {variance >= 0 ? "+" : ""}{variance}
                       </td>
                     )
                   })}
-                  <td className={`px-4 py-1 border-l border-zinc-700 font-semibold ${monthWeekly.total_variance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                    {monthWeekly.total_variance >= 0 ? "+" : ""}{monthWeekly.total_variance}
-                  </td>
+                  {(() => {
+                    const totalVariance = forecast.current_month_sales - monthWeekly.total_forecast
+                    return (
+                      <td className={`px-4 py-1 border-l border-zinc-700 font-semibold ${totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        {totalVariance >= 0 ? "+" : ""}{totalVariance}
+                      </td>
+                    )
+                  })()}
                 </tr>
               </tbody>
             </table>
