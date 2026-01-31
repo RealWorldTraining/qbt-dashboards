@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 // Same sheet as ads data
 const SHEET_ID = '1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM'
-const RANGE = 'Campaign Performance!A:L'
+const RANGE = 'Campaign Performance!A:M'
 
 interface CampaignRow {
   week: string
@@ -16,6 +16,7 @@ interface CampaignRow {
   conversions: number
   conv_rate: number
   search_impression_share: number
+  search_top_impression_share: number
   search_abs_top_impression_share: number
   click_share: number
 }
@@ -64,7 +65,7 @@ export async function GET() {
 
     // Parse all rows (skip header)
     // Columns: A=Week, B=Campaign, C=Clicks, D=Impressions, E=CTR, F=Avg CPC,
-    // G=Cost, H=Conversions, I=Conv Rate, J=Search Impr Share, K=Search Abs Top, L=Click Share
+    // G=Cost, H=Conversions, I=Conv Rate, J=Search Impr Share, K=Search Top, L=Search Abs Top, M=Click Share
     const allData: CampaignRow[] = rows.slice(1)
       .filter(row => row[0] && row[1])
       .map(row => ({
@@ -78,8 +79,9 @@ export async function GET() {
         conversions: parseNumber(row[7]),
         conv_rate: parseNumber(row[8]),
         search_impression_share: parseNumber(row[9]),
-        search_abs_top_impression_share: parseNumber(row[10]),
-        click_share: parseNumber(row[11]),
+        search_top_impression_share: parseNumber(row[10]),
+        search_abs_top_impression_share: parseNumber(row[11]),
+        click_share: parseNumber(row[12]),
       }))
 
     // Get unique weeks and campaigns

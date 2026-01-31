@@ -66,6 +66,7 @@ interface CampaignMetrics {
   conversions: number
   conv_rate: number
   search_impression_share: number
+  search_top_impression_share: number
   search_abs_top_impression_share: number
   click_share: number
 }
@@ -402,7 +403,7 @@ export default function AdsPage() {
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-xs mb-2">
                         <div>
-                          <div className="text-white font-bold">{formatCurrency(current.avg_cpc)}</div>
+                          <div className="text-white font-bold">${current.avg_cpc.toFixed(2)}</div>
                           <div className="text-gray-500">Avg CPC</div>
                         </div>
                         <div>
@@ -414,10 +415,14 @@ export default function AdsPage() {
                           <div className="text-gray-500">Conv</div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-xs border-t border-gray-800 pt-2">
+                      <div className="grid grid-cols-4 gap-2 text-xs border-t border-gray-800 pt-2">
                         <div>
                           <div className="text-cyan-400 font-bold">{formatPercent(current.search_impression_share)}</div>
                           <div className="text-gray-500">Impr Share</div>
+                        </div>
+                        <div>
+                          <div className="text-yellow-400 font-bold">{formatPercent(current.search_top_impression_share)}</div>
+                          <div className="text-gray-500">Top</div>
                         </div>
                         <div>
                           <div className="text-orange-400 font-bold">{formatPercent(current.search_abs_top_impression_share)}</div>
@@ -425,7 +430,7 @@ export default function AdsPage() {
                         </div>
                         <div>
                           <div className="text-green-400 font-bold">{formatPercent(current.click_share)}</div>
-                          <div className="text-gray-500">Click Share</div>
+                          <div className="text-gray-500">Click Sh</div>
                         </div>
                       </div>
                     </div>
