@@ -76,8 +76,16 @@ function parseDuration(durationStr: string): number | null {
   return num;
 }
 
-async function fetchAllData(sheets: any): Promise<RawRow[]> {
+interface FetchResult {
+  rows: RawRow[];
+  errors: string[];
+  sheetCounts: Record<string, number>;
+}
+
+async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<FetchResult> {
   const allRows: RawRow[] = [];
+  const errors: string[] = [];
+  const sheetCounts: Record<string, number> = {};
   
   for (const sheetName of SHEETS_TO_FETCH) {
     try {
@@ -87,6 +95,7 @@ async function fetchAllData(sheets: any): Promise<RawRow[]> {
       });
       
       const rows = response.data.values || [];
+      let count = 0;
       
       // Skip header row
       for (let i = 1; i < rows.length; i++) {
@@ -105,13 +114,17 @@ async function fetchAllData(sheets: any): Promise<RawRow[]> {
         };
         
         allRows.push(rawRow);
+        count++;
       }
+      
+      sheetCounts[sheetName] = count;
     } catch (error) {
-      console.error(`Error fetching sheet ${sheetName}:`, error);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      errors.push(`${sheetName}: ${errMsg}`);
     }
   }
   
-  return allRows;
+  return { rows: allRows, errors, sheetCounts };
 }
 
 function getDateRange(preset: string, customStart?: string, customEnd?: string): { start: Date; end: Date } {
@@ -223,12 +236,26 @@ export async function GET(request: NextRequest) {
     const preset = searchParams.get('preset') || 'all-time';
     const customStart = searchParams.get('start') || undefined;
     const customEnd = searchParams.get('end') || undefined;
+    const debug = searchParams.get('debug') === 'true';
     
     const { start, end } = getDateRange(preset, customStart, customEnd);
     
+    // Check env vars
+    const envCheck = {
+      hasProjectId: !!process.env.GOOGLE_PROJECT_ID,
+      hasPrivateKey: !!process.env.GOOGLE_PRIVATE_KEY,
+      hasClientEmail: !!process.env.GOOGLE_CLIENT_EMAIL,
+      privateKeyLength: process.env.GOOGLE_PRIVATE_KEY?.length || 0,
+      privateKeyStart: process.env.GOOGLE_PRIVATE_KEY?.substring(0, 30),
+    };
+    
+    if (debug) {
+      return NextResponse.json({ envCheck, message: 'Debug mode - env vars check' });
+    }
+    
     const sheets = await getGoogleSheetsClient();
-    const rawData = await fetchAllData(sheets);
-    const trainerStats = aggregateByTrainer(rawData, start, end);
+    const fetchResult = await fetchAllData(sheets);
+    const trainerStats = aggregateByTrainer(fetchResult.rows, start, end);
     
     // Format output
     const trainerData = trainerStats
@@ -267,6 +294,11 @@ export async function GET(request: NextRequest) {
         start: start.toISOString(),
         end: end.toISOString(),
         preset
+      },
+      _debug: {
+        rawRowCount: fetchResult.rows.length,
+        sheetCounts: fetchResult.sheetCounts,
+        errors: fetchResult.errors,
       }
     });
     
