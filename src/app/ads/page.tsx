@@ -92,6 +92,23 @@ const LOADING_CAMPAIGNS: CampaignData = {
   campaigns: [],
   last_updated: new Date().toISOString()
 }
+
+// Bing Ads types (same structure as Google)
+interface BingAdsData {
+  this_week: WeeklyMetrics
+  last_week: WeeklyMetrics
+  two_weeks_ago: WeeklyMetrics
+  three_weeks_ago: WeeklyMetrics
+  last_updated: string
+}
+
+const LOADING_BING_ADS: BingAdsData = {
+  this_week: { week_label: "Last Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
+  last_updated: new Date().toISOString()
+}
 const LOADING_ORGANIC: OrganicData = {
   this_week: { week_label: "Last Week", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
@@ -230,21 +247,27 @@ export default function AdsPage() {
   const [adsData, setAdsData] = useState<AdsData>(LOADING_ADS)
   const [organicData, setOrganicData] = useState<OrganicData>(LOADING_ORGANIC)
   const [campaignData, setCampaignData] = useState<CampaignData>(LOADING_CAMPAIGNS)
+  const [bingAdsData, setBingAdsData] = useState<BingAdsData>(LOADING_BING_ADS)
+  const [bingCampaignData, setBingCampaignData] = useState<CampaignData>(LOADING_CAMPAIGNS)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [adsRes, organicRes, campaignRes] = await Promise.all([
+      const [adsRes, organicRes, campaignRes, bingAdsRes, bingCampaignRes] = await Promise.all([
         fetch('/api/ads'),
         fetch('/api/organic'),
-        fetch('/api/campaigns')
+        fetch('/api/campaigns'),
+        fetch('/api/bing-ads'),
+        fetch('/api/bing-campaigns')
       ])
       
       if (adsRes.ok) setAdsData(await adsRes.json())
       if (organicRes.ok) setOrganicData(await organicRes.json())
       if (campaignRes.ok) setCampaignData(await campaignRes.json())
+      if (bingAdsRes.ok) setBingAdsData(await bingAdsRes.json())
+      if (bingCampaignRes.ok) setBingCampaignData(await bingCampaignRes.json())
       
       setLastRefresh(new Date())
     } catch (err) {
@@ -267,6 +290,16 @@ export default function AdsPage() {
       { label: "2 wks", value: adsData.last_week[metric] as number, change: ((current - (adsData.last_week[metric] as number)) / (adsData.last_week[metric] as number)) * 100 },
       { label: "3 wks", value: adsData.two_weeks_ago[metric] as number, change: ((current - (adsData.two_weeks_ago[metric] as number)) / (adsData.two_weeks_ago[metric] as number)) * 100 },
       { label: "4 wks", value: adsData.three_weeks_ago[metric] as number, change: ((current - (adsData.three_weeks_ago[metric] as number)) / (adsData.three_weeks_ago[metric] as number)) * 100 },
+    ]
+  }
+
+  // Build Bing ads comparisons
+  const buildBingComparisons = (metric: keyof WeeklyMetrics) => {
+    const current = bingAdsData.this_week[metric] as number
+    return [
+      { label: "2 wks", value: bingAdsData.last_week[metric] as number, change: ((current - (bingAdsData.last_week[metric] as number)) / (bingAdsData.last_week[metric] as number)) * 100 },
+      { label: "3 wks", value: bingAdsData.two_weeks_ago[metric] as number, change: ((current - (bingAdsData.two_weeks_ago[metric] as number)) / (bingAdsData.two_weeks_ago[metric] as number)) * 100 },
+      { label: "4 wks", value: bingAdsData.three_weeks_ago[metric] as number, change: ((current - (bingAdsData.three_weeks_ago[metric] as number)) / (bingAdsData.three_weeks_ago[metric] as number)) * 100 },
     ]
   }
 
@@ -468,6 +501,105 @@ export default function AdsPage() {
                 if (!current) return null
                 
                 const colors = ['bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-cyan-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500', 'bg-yellow-500']
+                const accentColor = colors[idx % colors.length]
+                
+                return (
+                  <div key={campaign.name} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+                    <div className={`h-1 ${accentColor}`} />
+                    <div className="p-3">
+                      <div className="text-gray-400 text-xs font-medium mb-2 truncate" title={campaign.name}>
+                        {campaign.name.replace(/-/g, ' ').toUpperCase()}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-2">
+                        <div>
+                          <div className="text-white font-bold">{formatNumber(current.clicks)}</div>
+                          <div className="text-gray-500">Clicks</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{formatNumber(current.impressions)}</div>
+                          <div className="text-gray-500">Impr</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{formatPercent(current.ctr)}</div>
+                          <div className="text-gray-500">CTR</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-2">
+                        <div>
+                          <div className="text-white font-bold">${current.avg_cpc.toFixed(2)}</div>
+                          <div className="text-gray-500">Avg CPC</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{formatCurrency(current.cost)}</div>
+                          <div className="text-gray-500">Cost</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{current.conversions}</div>
+                          <div className="text-gray-500">Conv</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-xs border-t border-gray-800 pt-2">
+                        <div>
+                          <div className="text-cyan-400 font-bold">{formatPercent(current.search_impression_share)}</div>
+                          <div className="text-gray-500">Impr Share</div>
+                        </div>
+                        <div>
+                          <div className="text-yellow-400 font-bold">{formatPercent(current.search_top_impression_share)}</div>
+                          <div className="text-gray-500">Top</div>
+                        </div>
+                        <div>
+                          <div className="text-orange-400 font-bold">{formatPercent(current.search_abs_top_impression_share)}</div>
+                          <div className="text-gray-500">Abs Top</div>
+                        </div>
+                        <div>
+                          <div className="text-green-400 font-bold">{formatPercent(current.click_share)}</div>
+                          <div className="text-gray-500">Click Sh</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )})()}
+
+        {/* Bing Ads Performance */}
+        <div className="mb-4">
+          <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Bing Ads Performance</h2>
+          <div className="grid grid-cols-8 gap-3">
+            <AdsCard title="SPEND" value={formatCurrency(bingAdsData.this_week.spend)} accentColor="bg-teal-500" comparisons={buildBingComparisons('spend')} />
+            <AdsCard title="IMPRESSIONS" value={formatNumber(bingAdsData.this_week.impressions)} accentColor="bg-blue-400" comparisons={buildBingComparisons('impressions')} />
+            <AdsCard title="CLICKS" value={formatNumber(bingAdsData.this_week.clicks)} accentColor="bg-indigo-500" comparisons={buildBingComparisons('clicks')} />
+            <AdsCard title="CTR" value={formatPercent(bingAdsData.this_week.ctr)} accentColor="bg-cyan-400" comparisons={buildBingComparisons('ctr')} />
+            <AdsCard title="CONVERSIONS" value={bingAdsData.this_week.conversions} accentColor="bg-amber-500" comparisons={buildBingComparisons('conversions')} />
+            <AdsCard title="CONV RATE" value={formatPercent(bingAdsData.this_week.conversion_rate)} accentColor="bg-lime-500" comparisons={buildBingComparisons('conversion_rate')} />
+            <AdsCard title="CPA" value={formatCurrency(bingAdsData.this_week.cpa)} accentColor="bg-rose-500" comparisons={buildBingComparisons('cpa')} inverse={true} />
+            <AdsCard title="ROAS" value={`${bingAdsData.this_week.roas.toFixed(2)}x`} accentColor="bg-fuchsia-500" comparisons={buildBingComparisons('roas')} />
+          </div>
+        </div>
+
+        {/* Bing Campaign Performance */}
+        {bingCampaignData.campaigns.length > 0 && (() => {
+          // Sort order: Certification, Training, Classes, Courses (all Desktop)
+          const bingOrder = ['Certification-Desktop', 'Training-Desktop', 'Classes-Desktop', 'Courses-Desktop']
+          const sortedBingCampaigns = [...bingCampaignData.campaigns].sort((a, b) => {
+            const aIdx = bingOrder.findIndex(name => a.name.includes(name.split('-')[0]))
+            const bIdx = bingOrder.findIndex(name => b.name.includes(name.split('-')[0]))
+            if (aIdx === -1) return 1
+            if (bIdx === -1) return -1
+            return aIdx - bIdx
+          })
+          
+          return (
+          <div className="mb-4">
+            <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Bing Ads Campaign Performance (Last Week)</h2>
+            <div className="grid grid-cols-4 gap-3">
+              {sortedBingCampaigns.map((campaign, idx) => {
+                const current = campaign.data[0]
+                if (!current) return null
+                
+                const colors = ['bg-teal-500', 'bg-blue-400', 'bg-indigo-500', 'bg-cyan-400']
                 const accentColor = colors[idx % colors.length]
                 
                 return (
