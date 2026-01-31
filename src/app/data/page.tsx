@@ -201,7 +201,7 @@ export default function DataDashboard() {
             <WeekForecastBox forecast={weekForecast} fullWidth />
 
             {/* Row 3: January Forecast (full width) */}
-            <MonthForecastBox forecast={eomForecast} monthWeekly={monthWeekly} weekForecast={weekForecast} fullWidth />
+            <MonthForecastBox forecast={eomForecast} monthWeekly={monthWeekly} weekForecast={weekForecast} metrics={metrics} fullWidth />
           </>
         ) : (
           <div className="col-span-2 row-span-4 flex items-center justify-center text-zinc-500">
@@ -451,12 +451,12 @@ function EODForecastBox({
 }
 
 // Month Forecast Box
-function MonthForecastBox({ forecast, monthWeekly, weekForecast, fullWidth = false }: { forecast: EOMForecast | null, monthWeekly?: MonthWeekly | null, weekForecast?: WeekForecast | null, fullWidth?: boolean }) {
+function MonthForecastBox({ forecast, monthWeekly, weekForecast, metrics, fullWidth = false }: { forecast: EOMForecast | null, monthWeekly?: MonthWeekly | null, weekForecast?: WeekForecast | null, metrics?: MetricsResponse | null, fullWidth?: boolean }) {
   if (!forecast) return <PlaceholderBox />
   
-  // Use live data from forecast (more accurate than monthWeekly which reads stale daily sheet)
+  // Use live metrics data (includes today's sales) for MTD actual
   const mtdExpected = monthWeekly?.total_forecast ?? forecast.predicted_sales
-  const mtdActual = forecast.current_month_sales
+  const mtdActual = metrics?.this_month?.direct_qty ?? forecast.current_month_sales
   const variance = mtdActual - mtdExpected
   const variancePct = mtdExpected > 0 ? Math.round((variance / mtdExpected) * 100) : 0
 
