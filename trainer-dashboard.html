@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        header { text-align: center; padding: 30px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 30px; }
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        header p { color: #888; font-size: 0.9rem; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .metric-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-card:hover { transform: translateY(-4px); box-shadow: 0 10px 40px rgba(0,217,255,0.2); }
+        .metric-card .label { font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .metric-card .value {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .metric-card .subtext { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .chart-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.1); }
+        .chart-card h3 { font-size: 1.1rem; margin-bottom: 20px; color: #fff; }
+        .chart-container { position: relative; height: 300px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,217,255,0.1); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #00d9ff; }
+        tr:hover { background: rgba(255,255,255,0.05); }
+        .rank-1 { color: #ffd700; } .rank-2 { color: #c0c0c0; } .rank-3 { color: #cd7f32; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .badge-fast { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .badge-slow { background: rgba(255,107,107,0.2); color: #ff6b6b; }
+        .section-title { font-size: 1.5rem; margin: 40px 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid rgba(0,217,255,0.3); }
+        @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } .chart-container { height: 250px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Trainer Performance Dashboard</h1>
+            <p>QuickBooksTraining.com | Data from 2023-2026 | 63,571 Total Sessions | Generated 2026-01-30 23:34</p>
+        </header>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="label">Total Sessions</div>
+                <div class="value">63,571</div>
+                <div class="subtext">All time</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Active Trainers</div>
+                <div class="value">15</div>
+                <div class="subtext">Unique trainers</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Avg Duration</div>
+                <div class="value">8.4 min</div>
+                <div class="subtext">Per session</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">No-Help Rate</div>
+                <div class="value">15.4%</div>
+                <div class="subtext">Left without help</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Busiest Day</div>
+                <div class="value">Tuesday</div>
+                <div class="subtext">Highest volume</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Peak Month</div>
+                <div class="value">Jan 2025</div>
+                <div class="subtext">3,253 sessions</div>
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📈 Monthly Session Volume</h3>
+                <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>📆 Sessions by Day of Week</h3>
+                <div class="chart-container"><canvas id="dowChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>🏠 Sessions by Room</h3>
+                <div class="chart-container"><canvas id="roomChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>👥 Top Trainers by Volume</h3>
+                <div class="chart-container"><canvas id="trainerChart"></canvas></div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">👥 Trainer Performance Rankings</h2>
+        <div class="chart-card">
+            <table>
+                <thead>
+                    <tr><th>Rank</th><th>Trainer</th><th>Sessions</th><th>Avg Duration</th><th>Median</th><th>Quick (&lt;5m)</th><th>Long (&gt;20m)</th><th>Efficiency</th></tr>
+                </thead>
+                <tbody id="trainerTable"></tbody>
+            </table>
+        </div>
+        
+        <h2 class="section-title">🏷️ Top Question Topics</h2>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-container" style="height: 400px;"><canvas id="topicsChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>📅 Yearly Comparison</h3>
+                <div class="chart-container"><canvas id="yearlyChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const trainerData = [{"name": "Sue", "sessions": 8840, "avg": 8.2, "median": 6.0, "quick": 3951, "long": 608, "quickPct": 44.7}, {"name": "Austin", "sessions": 8258, "avg": 5.9, "median": 5.0, "quick": 4746, "long": 125, "quickPct": 57.5}, {"name": "Brandon", "sessions": 7272, "avg": 6.0, "median": 5.0, "quick": 4332, "long": 198, "quickPct": 59.6}, {"name": "Whitney", "sessions": 6420, "avg": 9.7, "median": 8.0, "quick": 2138, "long": 651, "quickPct": 33.3}, {"name": "Alyssa", "sessions": 6125, "avg": 11.0, "median": 9.0, "quick": 1812, "long": 863, "quickPct": 29.6}, {"name": "Amy", "sessions": 5811, "avg": 7.6, "median": 6.0, "quick": 2624, "long": 253, "quickPct": 45.2}, {"name": "Shauna", "sessions": 4654, "avg": 10.6, "median": 8.0, "quick": 1526, "long": 589, "quickPct": 32.8}, {"name": "Alanna", "sessions": 3698, "avg": 8.4, "median": 6.0, "quick": 1589, "long": 279, "quickPct": 43.0}, {"name": "Ericka", "sessions": 2331, "avg": 12.0, "median": 9.0, "quick": 671, "long": 406, "quickPct": 28.8}, {"name": "Jason", "sessions": 365, "avg": 7.9, "median": 6.0, "quick": 169, "long": 18, "quickPct": 46.3}, {"name": "Kat", "sessions": 20, "avg": 7.5, "median": 6.0, "quick": 8, "long": 0, "quickPct": 40.0}, {"name": "Cassie", "sessions": 7, "avg": 15.0, "median": 12.0, "quick": 1, "long": 1, "quickPct": 14.3}, {"name": "Nancy Mattar", "sessions": 1, "avg": 23.0, "median": 23.0, "quick": 0, "long": 1, "quickPct": 0.0}, {"name": "sue", "sessions": 1, "avg": 12.0, "median": 12.0, "quick": 0, "long": 0, "quickPct": 0.0}, {"name": "Jenna", "sessions": 1, "avg": 9.0, "median": 9.0, "quick": 0, "long": 0, "quickPct": 0.0}];
+        const monthlyData = { labels: ["Feb 24", "Mar 24", "Apr 24", "May 24", "Jun 24", "Jul 24", "Aug 24", "Sep 24", "Oct 24", "Nov 24", "Dec 24", "Jan 25", "Feb 25", "Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26"], values: [2852, 2519, 2223, 2246, 2013, 2331, 2375, 2162, 2088, 2019, 2187, 3253, 2603, 2547, 2337, 2078, 2098, 2368, 2130, 2145, 1954, 1713, 2000, 2733] };
+        const dowData = { labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], values: [12388, 13643, 13444, 12842, 11254, 0, 0] };
+        const roomData = { labels: ["Llamas", "Downhill", "Orchard", " "], values: [368, 28254, 21563, 3] };
+        const topicsData = { labels: ["Reconciliation", "Banking (Bank Feeds)", "Edit/Void Txns", "Bookkeeping", "Lists Org", "Open A/R", "Payroll Taxes/Liabilities", "Uncategorized", "Loans/Assets", "Open A/P", "QBPayments", "Lost & Found", "Undeposited Funds", "1099/Contractors", "Training Recommendations"], values: [6589, 3656, 2707, 2187, 2139, 1694, 1680, 1671, 1346, 1065, 1062, 1053, 1042, 1025, 1019] };
+        const yearlyData = { labels: ["2023", "2024", "2025", "2026"], values: [5409, 28203, 27226, 2733] };
+        
+        const chartColors = { primary: '#00d9ff', secondary: '#00ff88', tertiary: '#ff6b6b', quaternary: '#ffd700' };
+        Chart.defaults.color = '#888';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+        
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'line',
+            data: { labels: monthlyData.labels, datasets: [{ label: 'Sessions', data: monthlyData.values, borderColor: chartColors.primary, backgroundColor: 'rgba(0,217,255,0.1)', fill: true, tension: 0.4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+        });
+        
+        new Chart(document.getElementById('dowChart'), {
+            type: 'bar',
+            data: { labels: dowData.labels, datasets: [{ data: dowData.values, backgroundColor: chartColors.primary, borderRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+        
+        new Chart(document.getElementById('roomChart'), {
+            type: 'doughnut',
+            data: { labels: roomData.labels, datasets: [{ data: roomData.values, backgroundColor: [chartColors.primary, chartColors.secondary, chartColors.quaternary], borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+        
+        new Chart(document.getElementById('trainerChart'), {
+            type: 'bar',
+            data: { labels: trainerData.slice(0,10).map(t => t.name), datasets: [{ data: trainerData.slice(0,10).map(t => t.sessions), backgroundColor: chartColors.primary, borderRadius: 8 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+        
+        new Chart(document.getElementById('topicsChart'), {
+            type: 'bar',
+            data: { labels: topicsData.labels, datasets: [{ data: topicsData.values, backgroundColor: chartColors.secondary, borderRadius: 8 }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+        
+        new Chart(document.getElementById('yearlyChart'), {
+            type: 'bar',
+            data: { labels: yearlyData.labels, datasets: [{ data: yearlyData.values, backgroundColor: [chartColors.tertiary, chartColors.primary, chartColors.secondary, chartColors.quaternary], borderRadius: 8 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+        
+        const tableBody = document.getElementById('trainerTable');
+        trainerData.forEach((t, i) => {
+            const rankClass = i < 3 ? 'rank-' + (i + 1) : '';
+            const effBadge = t.avg < 8 ? '<span class="badge badge-fast">Fast</span>' : (t.avg > 10 ? '<span class="badge badge-slow">Slow</span>' : '');
+            tableBody.innerHTML += '<tr><td class="' + rankClass + '">' + (i+1) + '</td><td><strong>' + t.name + '</strong></td><td>' + t.sessions.toLocaleString() + '</td><td>' + t.avg + ' min</td><td>' + t.median + ' min</td><td>' + t.quick.toLocaleString() + ' (' + t.quickPct + '%)</td><td>' + t.long.toLocaleString() + '</td><td>' + effBadge + '</td></tr>';
+        });
+    </script>
+</body>
+</html>
