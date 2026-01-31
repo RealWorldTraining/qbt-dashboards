@@ -89,17 +89,17 @@ export async function GET() {
       .sort((a, b) => a.week_code.localeCompare(b.week_code))
 
     // Parse Channel Group data (totals + paid)
-    // Need to find columns for: Total Users, Total Purchases, Paid Users, Paid Purchases
-    // Based on Vision's data: Total Users=12807, Paid=4905
-    // Assuming columns: A=week, B=Total Users, C=Total Purchases, D=Paid Users, E=Paid Purchases
+    // Columns: A=week, B=week_start, C=Organic users, D=Organic purchases,
+    // E=Direct users, F=Direct purchases, G=Referral users, H=Referral purchases,
+    // I=Paid users, J=Paid purchases, K=Total Users, L=Total Purchases
     const channelData = channelGroupRows ? channelGroupRows.slice(1)
       .filter(row => row[0] && /^\d{6}$/.test(row[0]))
       .map(row => ({
         week_code: row[0],
-        total_users: parseNumber(row[1]),
-        total_purchases: parseNumber(row[2]),
-        paid_users: parseNumber(row[3]),
-        paid_purchases: parseNumber(row[4]),
+        total_users: parseNumber(row[10]),      // Column K
+        total_purchases: parseNumber(row[11]),  // Column L
+        paid_users: parseNumber(row[8]),        // Column I
+        paid_purchases: parseNumber(row[9]),    // Column J
       }))
       .sort((a, b) => a.week_code.localeCompare(b.week_code)) : []
 
