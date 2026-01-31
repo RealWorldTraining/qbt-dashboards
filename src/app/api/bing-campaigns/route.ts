@@ -63,24 +63,24 @@ export async function GET() {
     }
 
     // Parse all rows (skip header)
-    // Columns: A=Week, B=Campaign, C=Clicks, D=Impressions, E=CTR, F=Avg CPC,
-    // G=Cost, H=Conversions, I=Conv Rate, J=Search Impr Share, K=Search Top, L=Search Abs Top, M=Click Share
+    // Columns: A=Week, B=Account, C=Campaign, D=Ad dist, E=Quality score,
+    // F=Impressions, G=Clicks, H=CTR, I=Avg CPC, J=Spend, K=Avg pos, L=Conversions, M=Conv Rate, N=CPA
     const allData: CampaignRow[] = rows.slice(1)
-      .filter(row => row[0] && row[1])
+      .filter(row => row[0] && row[2]) // Filter by week and campaign
       .map(row => ({
         week: row[0],
-        campaign: row[1],
-        clicks: parseNumber(row[2]),
-        impressions: parseNumber(row[3]),
-        ctr: parseNumber(row[4]),
-        avg_cpc: parseNumber(row[5]),
-        cost: parseNumber(row[6]),
-        conversions: parseNumber(row[7]),
-        conv_rate: parseNumber(row[8]),
-        search_impression_share: parseNumber(row[9]),
-        search_top_impression_share: parseNumber(row[10]),
-        search_abs_top_impression_share: parseNumber(row[11]),
-        click_share: parseNumber(row[12]),
+        campaign: row[2], // Column C
+        clicks: parseNumber(row[6]), // Column G
+        impressions: parseNumber(row[5]), // Column F
+        ctr: parseNumber(row[7]), // Column H
+        avg_cpc: parseNumber(row[8]), // Column I
+        cost: parseNumber(row[9]), // Column J
+        conversions: parseNumber(row[11]), // Column L
+        conv_rate: parseNumber(row[12]), // Column M
+        search_impression_share: 0, // Not in this sheet
+        search_top_impression_share: 0,
+        search_abs_top_impression_share: 0,
+        click_share: 0,
       }))
 
     // Get unique weeks and campaigns

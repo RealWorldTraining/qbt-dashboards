@@ -637,22 +637,14 @@ export default function AdsPage() {
                           <div className="text-gray-500">Conv</div>
                         </div>
                       </div>
-                      <div className="grid grid-cols-4 gap-2 text-xs border-t border-gray-800 pt-2">
+                      <div className="grid grid-cols-2 gap-2 text-xs border-t border-gray-800 pt-2">
                         <div>
-                          <div className="text-cyan-400 font-bold">{formatPercent(current.search_impression_share)}</div>
-                          <div className="text-gray-500">Impr Share</div>
+                          <div className="text-cyan-400 font-bold">{formatPercent(current.conv_rate)}</div>
+                          <div className="text-gray-500">Conv Rate</div>
                         </div>
                         <div>
-                          <div className="text-yellow-400 font-bold">{formatPercent(current.search_top_impression_share)}</div>
-                          <div className="text-gray-500">Top</div>
-                        </div>
-                        <div>
-                          <div className="text-orange-400 font-bold">{formatPercent(current.search_abs_top_impression_share)}</div>
-                          <div className="text-gray-500">Abs Top</div>
-                        </div>
-                        <div>
-                          <div className="text-green-400 font-bold">{formatPercent(current.click_share)}</div>
-                          <div className="text-gray-500">Click Sh</div>
+                          <div className="text-orange-400 font-bold">{current.cost > 0 && current.conversions > 0 ? formatCurrency(current.cost / current.conversions) : '$0'}</div>
+                          <div className="text-gray-500">CPA</div>
                         </div>
                       </div>
                     </div>
