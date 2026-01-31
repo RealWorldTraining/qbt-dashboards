@@ -54,6 +54,26 @@ interface OrganicData {
   last_updated: string
 }
 
+// Types for Campaign data
+interface CampaignMetrics {
+  week: string
+  campaign: string
+  spend: number
+  impressions: number
+  clicks: number
+  ctr: number
+  conversions: number
+  conv_rate: number
+  cpa: number
+  roas: number
+}
+
+interface CampaignData {
+  weeks: { week: string; label: string; date_range: string }[]
+  campaigns: { name: string; data: (CampaignMetrics | null)[] }[]
+  last_updated: string
+}
+
 // Initial loading states
 const LOADING_ADS: AdsData = {
   this_week: { week_label: "Last Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
@@ -64,6 +84,11 @@ const LOADING_ADS: AdsData = {
 }
 
 const LOADING_CHANNEL: ChannelMetrics = { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 }
+const LOADING_CAMPAIGNS: CampaignData = {
+  weeks: [],
+  campaigns: [],
+  last_updated: new Date().toISOString()
+}
 const LOADING_ORGANIC: OrganicData = {
   this_week: { week_label: "Last Week", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
@@ -201,19 +226,22 @@ function ChannelCard({ name, accentColor, current, weeks }: ChannelCardProps) {
 export default function AdsPage() {
   const [adsData, setAdsData] = useState<AdsData>(LOADING_ADS)
   const [organicData, setOrganicData] = useState<OrganicData>(LOADING_ORGANIC)
+  const [campaignData, setCampaignData] = useState<CampaignData>(LOADING_CAMPAIGNS)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [adsRes, organicRes] = await Promise.all([
+      const [adsRes, organicRes, campaignRes] = await Promise.all([
         fetch('/api/ads'),
-        fetch('/api/organic')
+        fetch('/api/organic'),
+        fetch('/api/campaigns')
       ])
       
       if (adsRes.ok) setAdsData(await adsRes.json())
       if (organicRes.ok) setOrganicData(await organicRes.json())
+      if (campaignRes.ok) setCampaignData(await campaignRes.json())
       
       setLastRefresh(new Date())
     } catch (err) {
@@ -336,6 +364,65 @@ export default function AdsPage() {
             <AdsCard title="ROAS" value={`${adsData.this_week.roas.toFixed(2)}x`} accentColor="bg-pink-500" comparisons={buildAdsComparisons('roas')} />
           </div>
         </div>
+
+        {/* Campaign Performance */}
+        {campaignData.campaigns.length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Campaign Performance (Last Week)</h2>
+            <div className="grid grid-cols-4 gap-3">
+              {campaignData.campaigns.map((campaign, idx) => {
+                const current = campaign.data[0]
+                const previous = campaign.data[1]
+                if (!current) return null
+                
+                const colors = ['bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-cyan-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500', 'bg-yellow-500']
+                const accentColor = colors[idx % colors.length]
+                
+                const cpaChange = previous && previous.cpa > 0 
+                  ? ((current.cpa - previous.cpa) / previous.cpa * 100) : 0
+                const convChange = previous && previous.conversions > 0 
+                  ? ((current.conversions - previous.conversions) / previous.conversions * 100) : 0
+                
+                const cpaColor = cpaChange < 0 ? 'text-green-500' : cpaChange > 0 ? 'text-red-500' : 'text-gray-400'
+                const convColor = convChange > 0 ? 'text-green-500' : convChange < 0 ? 'text-red-500' : 'text-gray-400'
+                
+                return (
+                  <div key={campaign.name} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+                    <div className={`h-1 ${accentColor}`} />
+                    <div className="p-3">
+                      <div className="text-gray-400 text-xs font-medium mb-2 truncate" title={campaign.name}>
+                        {campaign.name.replace(/-/g, ' ').toUpperCase()}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <div className="text-white font-bold">{formatCurrency(current.spend)}</div>
+                          <div className="text-gray-500">Spend</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{current.conversions}</div>
+                          <div className="text-gray-500">Conv</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{formatCurrency(current.cpa)}</div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-500">CPA</span>
+                            <span className={`${cpaColor} text-xs`}>
+                              {cpaChange >= 0 ? '+' : ''}{cpaChange.toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{current.roas.toFixed(2)}x</div>
+                          <div className="text-gray-500">ROAS</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="text-center">
