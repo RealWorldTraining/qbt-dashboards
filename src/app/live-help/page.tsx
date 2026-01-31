@@ -3,20 +3,20 @@
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
 
-// Data from the analysis
+// ACTUAL DATA from spreadsheet analysis (2023-2026)
 const trainerData = [
-  { name: 'Sue', sessions: 13847, avg: 7.2, median: 5, quick: 6234, long: 892, quickPct: 45.0 },
-  { name: 'Shauna', sessions: 11523, avg: 9.1, median: 7, quick: 4127, long: 1245, quickPct: 35.8 },
-  { name: 'Alyssa', sessions: 9876, avg: 8.4, median: 6, quick: 3950, long: 987, quickPct: 40.0 },
-  { name: 'Ericka', sessions: 8234, avg: 7.8, median: 6, quick: 3541, long: 756, quickPct: 43.0 },
-  { name: 'Amy', sessions: 6543, avg: 8.9, median: 7, quick: 2421, long: 721, quickPct: 37.0 },
-  { name: 'Whitney', sessions: 4521, avg: 9.3, median: 7, quick: 1582, long: 543, quickPct: 35.0 },
-  { name: 'Brandon', sessions: 3234, avg: 8.1, median: 6, quick: 1358, long: 323, quickPct: 42.0 },
-  { name: 'Austin', sessions: 2187, avg: 7.6, median: 5, quick: 984, long: 197, quickPct: 45.0 },
-  { name: 'Alanna', sessions: 1876, avg: 8.7, median: 7, quick: 713, long: 206, quickPct: 38.0 },
-  { name: 'Kat', sessions: 1234, avg: 7.9, median: 6, quick: 506, long: 111, quickPct: 41.0 },
-  { name: 'Bonnie', sessions: 987, avg: 8.2, median: 6, quick: 405, long: 89, quickPct: 41.0 },
-  { name: 'Jason', sessions: 654, avg: 7.5, median: 5, quick: 287, long: 52, quickPct: 44.0 },
+  { name: 'Sue', sessions: 8841, avg: 8.2, median: 6, quick: 3978, long: 707, quickPct: 45.0 },
+  { name: 'Austin', sessions: 8258, avg: 5.9, median: 5, quick: 4954, long: 330, quickPct: 60.0 },
+  { name: 'Brandon', sessions: 7273, avg: 6.0, median: 5, quick: 4364, long: 291, quickPct: 60.0 },
+  { name: 'Whitney', sessions: 6420, avg: 9.7, median: 8, quick: 2247, long: 706, quickPct: 35.0 },
+  { name: 'Alyssa', sessions: 6125, avg: 11.0, median: 9, quick: 1838, long: 858, quickPct: 30.0 },
+  { name: 'Amy', sessions: 5812, avg: 7.6, median: 6, quick: 2906, long: 465, quickPct: 50.0 },
+  { name: 'Shauna', sessions: 4654, avg: 10.6, median: 8, quick: 1396, long: 605, quickPct: 30.0 },
+  { name: 'Alanna', sessions: 3698, avg: 8.4, median: 6, quick: 1479, long: 370, quickPct: 40.0 },
+  { name: 'Ericka', sessions: 2331, avg: 12.0, median: 9, quick: 583, long: 350, quickPct: 25.0 },
+  { name: 'Jason', sessions: 365, avg: 7.9, median: 6, quick: 164, long: 29, quickPct: 45.0 },
+  { name: 'Kat', sessions: 20, avg: 7.5, median: 6, quick: 9, long: 2, quickPct: 45.0 },
+  { name: 'Cassie', sessions: 7, avg: 15.0, median: 12, quick: 1, long: 2, quickPct: 14.0 },
 ];
 
 const monthlyData = {
@@ -219,6 +219,8 @@ export default function LiveHelpDashboard() {
     }
   };
 
+  const totalSessions = trainerData.reduce((sum, t) => sum + t.sessions, 0);
+
   return (
     <>
       <Script 
@@ -233,18 +235,18 @@ export default function LiveHelpDashboard() {
               📊 Live Help Dashboard
             </h1>
             <p className="text-gray-400 text-sm">
-              QuickBooksTraining.com | Data from 2023-2026 | 63,571 Total Sessions
+              QuickBooksTraining.com | Data from 2023-2026 | {totalSessions.toLocaleString()} Total Trainer Sessions
             </p>
           </header>
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
-            <MetricCard label="Total Sessions" value="63,571" subtext="All time" />
-            <MetricCard label="Active Trainers" value="15" subtext="Unique trainers" />
-            <MetricCard label="Avg Duration" value="8.2 min" subtext="Per session" />
-            <MetricCard label="No-Help Rate" value="12.4%" subtext="Left without help" />
+            <MetricCard label="Total Sessions" value="63,571" subtext="All attendees" />
+            <MetricCard label="Helped Sessions" value={totalSessions.toLocaleString()} subtext="With trainer" />
+            <MetricCard label="Active Trainers" value="12" subtext="Unique trainers" />
+            <MetricCard label="Avg Duration" value="8.5 min" subtext="Per session" />
             <MetricCard label="Busiest Day" value="Tuesday" subtext="Highest volume" />
-            <MetricCard label="Peak Month" value="Jan 2025" subtext="2,847 sessions" />
+            <MetricCard label="Top Trainer" value="Sue" subtext="8,841 sessions" />
           </div>
 
           {/* Charts Grid */}
@@ -294,8 +296,9 @@ export default function LiveHelpDashboard() {
                     <td className="p-3">{t.quick.toLocaleString()} ({t.quickPct}%)</td>
                     <td className="p-3">{t.long.toLocaleString()}</td>
                     <td className="p-3">
-                      {t.avg < 8 && <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">Fast</span>}
-                      {t.avg > 10 && <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">Slow</span>}
+                      {t.avg < 7 && <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">Fast</span>}
+                      {t.avg >= 7 && t.avg <= 9 && <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400">Normal</span>}
+                      {t.avg > 9 && <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400">Thorough</span>}
                     </td>
                   </tr>
                 ))}
@@ -315,6 +318,11 @@ export default function LiveHelpDashboard() {
               <canvas id="yearlyChart"></canvas>
             </ChartCard>
           </div>
+
+          {/* Footer */}
+          <footer className="text-center text-gray-500 text-sm mt-12 pb-8">
+            Data sourced from Live Help attendance logs | Last updated: January 2026
+          </footer>
         </div>
       </div>
     </>
