@@ -9,8 +9,8 @@ interface TrainerStats {
   sessions: number;
   totalDuration: number;
   durations: number[];
-  quick: number;  // <5 min
-  long: number;   // >20 min
+  quick: number;
+  long: number;
 }
 
 interface RawRow {
@@ -19,15 +19,33 @@ interface RawRow {
   attendee: string;
   trainer: string;
   duration: number | null;
+  topic: string;
+}
+
+interface FetchResult {
+  rows: RawRow[];
+  errors: string[];
+  sheetCounts: Record<string, number>;
 }
 
 async function getGoogleSheetsClient() {
-  // Use service account credentials from environment variables
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
+  
+  privateKey = privateKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  
+  if (privateKey.includes('\\n')) {
+    privateKey = privateKey.replace(/\\n/g, '\n');
+  }
+  
+  if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----\n`;
+  }
+  
   const credentials = {
     type: 'service_account',
     project_id: process.env.GOOGLE_PROJECT_ID,
     private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    private_key: privateKey,
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
     client_id: process.env.GOOGLE_CLIENT_ID,
     auth_uri: 'https://accounts.google.com/o/oauth2/auth',
@@ -45,20 +63,16 @@ async function getGoogleSheetsClient() {
 function parseDate(dateStr: string): Date | null {
   if (!dateStr) return null;
   
-  // Handle various date formats
-  // M/D/YYYY or MM/DD/YYYY
   const parts = dateStr.split('/');
   if (parts.length === 3) {
     const month = parseInt(parts[0], 10) - 1;
     const day = parseInt(parts[1], 10);
     let year = parseInt(parts[2], 10);
     
-    // Handle 2-digit years
     if (year < 100) {
       year += year < 50 ? 2000 : 1900;
     }
     
-    // Validate the date is reasonable (between 2020 and 2030)
     if (year < 2020 || year > 2030) return null;
     
     const date = new Date(year, month, day);
@@ -72,14 +86,8 @@ function parseDate(dateStr: string): Date | null {
 function parseDuration(durationStr: string): number | null {
   if (!durationStr) return null;
   const num = parseFloat(durationStr);
-  if (isNaN(num) || num < 0 || num > 480) return null; // Max 8 hours
+  if (isNaN(num) || num < 0 || num > 480) return null;
   return num;
-}
-
-interface FetchResult {
-  rows: RawRow[];
-  errors: string[];
-  sheetCounts: Record<string, number>;
 }
 
 async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<FetchResult> {
@@ -91,13 +99,12 @@ async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<F
     try {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `'${sheetName}'!A:F`,
+        range: `'${sheetName}'!A:G`,
       });
       
       const rows = response.data.values || [];
       let count = 0;
       
-      // Skip header row
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i];
         if (!row || row.length < 5) continue;
@@ -111,6 +118,7 @@ async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<F
           attendee: row[2]?.toString().trim() || '',
           trainer: trainer,
           duration: parseDuration(row[4]?.toString().trim() || ''),
+          topic: row[6]?.toString().trim() || '',
         };
         
         allRows.push(rawRow);
@@ -188,16 +196,20 @@ function getDateRange(preset: string, customStart?: string, customEnd?: string):
   }
 }
 
-function aggregateByTrainer(rows: RawRow[], start: Date, end: Date): TrainerStats[] {
+function filterByDateRange(rows: RawRow[], start: Date, end: Date): RawRow[] {
+  return rows.filter(row => {
+    if (!row.date) return false;
+    return row.date >= start && row.date <= end;
+  });
+}
+
+function aggregateByTrainer(rows: RawRow[]): TrainerStats[] {
   const trainerMap = new Map<string, TrainerStats>();
   
   for (const row of rows) {
-    // Filter by date
-    if (row.date) {
-      if (row.date < start || row.date > end) continue;
-    }
+    // Normalize trainer name: capitalize first letter (sue -> Sue)
+    const name = row.trainer.charAt(0).toUpperCase() + row.trainer.slice(1);
     
-    const name = row.trainer;
     if (!trainerMap.has(name)) {
       trainerMap.set(name, {
         name,
@@ -230,17 +242,111 @@ function calculateMedian(arr: number[]): number {
   return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
+function getDayOfWeekStats(rows: RawRow[]): number[] {
+  const counts = [0, 0, 0, 0, 0, 0, 0]; // Sun-Sat
+  for (const row of rows) {
+    if (row.date) {
+      counts[row.date.getDay()]++;
+    }
+  }
+  // Reorder to Mon-Sun
+  return [counts[1], counts[2], counts[3], counts[4], counts[5], counts[6], counts[0]];
+}
+
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
+function getDayOfWeekByYear(rows: RawRow[]): Record<string, number[]> {
+  // Get current week number
+  const now = new Date();
+  const currentWeek = getWeekNumber(now);
+  
+  const yearData: Record<string, number[]> = {
+    '2024': [0, 0, 0, 0, 0, 0, 0], // Mon-Sun
+    '2025': [0, 0, 0, 0, 0, 0, 0],
+    '2026': [0, 0, 0, 0, 0, 0, 0],
+  };
+  
+  for (const row of rows) {
+    if (row.date) {
+      const year = row.date.getFullYear().toString();
+      const weekNum = getWeekNumber(row.date);
+      
+      // Only include data from the same week number as current week
+      if (weekNum === currentWeek && yearData[year]) {
+        const dayOfWeek = row.date.getDay();
+        // Convert Sun(0) to index 6, Mon(1) to index 0, etc.
+        const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        yearData[year][dayIndex]++;
+      }
+    }
+  }
+  
+  return yearData;
+}
+
+function getTopicStats(rows: RawRow[]): { label: string; count: number }[] {
+  const topicMap = new Map<string, number>();
+  
+  for (const row of rows) {
+    if (row.topic && row.topic !== '') {
+      topicMap.set(row.topic, (topicMap.get(row.topic) || 0) + 1);
+    }
+  }
+  
+  return Array.from(topicMap.entries())
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 15);
+}
+
+function getMonthlyByYear(rows: RawRow[]): Record<string, number[]> {
+  const yearData: Record<string, number[]> = {
+    '2024': new Array(12).fill(0),
+    '2025': new Array(12).fill(0),
+    '2026': new Array(12).fill(0),
+  };
+  
+  for (const row of rows) {
+    if (row.date) {
+      const year = row.date.getFullYear().toString();
+      const month = row.date.getMonth();
+      if (yearData[year]) {
+        yearData[year][month]++;
+      }
+    }
+  }
+  
+  return yearData;
+}
+
+function getBusiestDay(rows: RawRow[]): string {
+  const dayCounts = getDayOfWeekStats(rows);
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  let maxIdx = 0;
+  for (let i = 1; i < dayCounts.length; i++) {
+    if (dayCounts[i] > dayCounts[maxIdx]) {
+      maxIdx = i;
+    }
+  }
+  return days[maxIdx];
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const preset = searchParams.get('preset') || 'all-time';
+    const preset = searchParams.get('preset') || 'this-week';
     const customStart = searchParams.get('start') || undefined;
     const customEnd = searchParams.get('end') || undefined;
     const debug = searchParams.get('debug') === 'true';
     
     const { start, end } = getDateRange(preset, customStart, customEnd);
     
-    // Check env vars
     const envCheck = {
       hasProjectId: !!process.env.GOOGLE_PROJECT_ID,
       hasPrivateKey: !!process.env.GOOGLE_PRIVATE_KEY,
@@ -255,12 +361,41 @@ export async function GET(request: NextRequest) {
     
     const sheets = await getGoogleSheetsClient();
     const fetchResult = await fetchAllData(sheets);
-    const trainerStats = aggregateByTrainer(fetchResult.rows, start, end);
     
-    // Format output
+    // Filter data by date range
+    const filteredRows = filterByDateRange(fetchResult.rows, start, end);
+    const trainerStats = aggregateByTrainer(filteredRows);
+    
+    // Calculate metrics
+    const totalSessions = filteredRows.length;
+    const sessionsWithDuration = filteredRows.filter(r => r.duration !== null);
+    const totalDuration = sessionsWithDuration.reduce((sum, r) => sum + (r.duration || 0), 0);
+    const avgDuration = sessionsWithDuration.length > 0 
+      ? Math.round((totalDuration / sessionsWithDuration.length) * 10) / 10 
+      : 0;
+    
+    // No-help rate (sessions without trainer interaction - approximated as very short durations)
+    const noHelpCount = filteredRows.filter(r => r.duration === null || r.duration === 0).length;
+    const noHelpRate = totalSessions > 0 
+      ? Math.round((noHelpCount / totalSessions) * 1000) / 10 
+      : 0;
+    
+    const helpedSessions = totalSessions - noHelpCount;
+    const busiestDay = getBusiestDay(filteredRows);
+    
+    // Excluded trainers (case-insensitive)
+    const EXCLUDED_TRAINERS = ['x', 'nancy mattar', 'jenna'];
+    
+    // Helper to normalize name (capitalize first letter)
+    const normalizeName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
+    
+    // Helper to check if trainer should be excluded
+    const isExcluded = (name: string) => EXCLUDED_TRAINERS.includes(name.toLowerCase());
+    
+    // Trainer data formatted (with exclusions and name normalization)
     const trainerData = trainerStats
       .map(stats => ({
-        name: stats.name,
+        name: normalizeName(stats.name),
         sessions: stats.sessions,
         avg: stats.durations.length > 0 
           ? Math.round((stats.totalDuration / stats.durations.length) * 10) / 10 
@@ -272,23 +407,55 @@ export async function GET(request: NextRequest) {
           ? Math.round((stats.quick / stats.sessions) * 1000) / 10 
           : 0,
       }))
-      .filter(t => t.sessions > 0)
+      .filter(t => t.sessions > 0 && !isExcluded(t.name))
       .sort((a, b) => b.sessions - a.sessions);
     
-    // Calculate totals
-    const totalSessions = trainerData.reduce((sum, t) => sum + t.sessions, 0);
-    const totalWithDuration = trainerStats.reduce((sum, t) => sum + t.durations.length, 0);
-    const totalDuration = trainerStats.reduce((sum, t) => sum + t.totalDuration, 0);
-    const avgDuration = totalWithDuration > 0 
-      ? Math.round((totalDuration / totalWithDuration) * 10) / 10 
-      : 0;
+    // Top trainer (fastest average time with minimum 5 sessions)
+    const qualifiedTrainers = trainerData.filter(t => t.sessions >= 5 && t.avg > 0);
+    const topTrainer = qualifiedTrainers.length > 0
+      ? qualifiedTrainers.reduce((best, t) => t.avg < best.avg ? t : best)
+      : null;
+    
+    // Day of week stats
+    const dayOfWeekStats = getDayOfWeekStats(filteredRows);
+    
+    // Day of week by year (for all data, not filtered)
+    const dayOfWeekByYear = getDayOfWeekByYear(fetchResult.rows);
+    
+    // Topic stats
+    const topicStats = getTopicStats(filteredRows);
+    
+    // Monthly by year (for all data, not filtered)
+    const monthlyByYear = getMonthlyByYear(fetchResult.rows);
+    
+    // Trainer comparison to average
+    const trainerComparison = trainerData
+      .filter(t => t.sessions >= 3 && t.avg > 0)
+      .map(t => ({
+        name: t.name,
+        avg: t.avg,
+        sessions: t.sessions,
+        diff: Math.round((t.avg - avgDuration) * 10) / 10,
+      }))
+      .sort((a, b) => a.avg - b.avg);
     
     return NextResponse.json({
-      data: trainerData,
+      trainerData,
       summary: {
         totalSessions,
+        helpedSessions,
+        noHelpRate,
         avgDuration,
+        busiestDay,
         trainerCount: trainerData.length,
+        topTrainer: topTrainer ? { name: topTrainer.name, avg: topTrainer.avg } : null,
+      },
+      charts: {
+        dayOfWeek: dayOfWeekStats,
+        dayOfWeekByYear,
+        topics: topicStats,
+        monthlyByYear,
+        trainerComparison,
       },
       dateRange: {
         start: start.toISOString(),
@@ -297,6 +464,7 @@ export async function GET(request: NextRequest) {
       },
       _debug: {
         rawRowCount: fetchResult.rows.length,
+        filteredRowCount: filteredRows.length,
         sheetCounts: fetchResult.sheetCounts,
         errors: fetchResult.errors,
       }
