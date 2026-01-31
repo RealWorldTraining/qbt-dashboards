@@ -445,11 +445,25 @@ export default function AdsPage() {
         </div>
 
         {/* Campaign Performance */}
-        {campaignData.campaigns.length > 0 && (
+        {campaignData.campaigns.length > 0 && (() => {
+          // Custom sort order: Desktop row then Mobile row
+          const campaignOrder = [
+            'Certification-Desktop', 'Training-Desktop', 'Classes-Desktop', 'Courses-Desktop',
+            'Certification-Mobile', 'Training-Mobile', 'Classes-Mobile', 'Courses-Mobile'
+          ]
+          const sortedCampaigns = [...campaignData.campaigns].sort((a, b) => {
+            const aIdx = campaignOrder.findIndex(name => a.name.includes(name.split('-')[0]) && a.name.includes(name.split('-')[1]))
+            const bIdx = campaignOrder.findIndex(name => b.name.includes(name.split('-')[0]) && b.name.includes(name.split('-')[1]))
+            if (aIdx === -1) return 1
+            if (bIdx === -1) return -1
+            return aIdx - bIdx
+          })
+          
+          return (
           <div className="mb-4">
-            <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Campaign Performance (Last Week)</h2>
+            <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Google Ads Campaign Performance (Last Week)</h2>
             <div className="grid grid-cols-4 gap-3">
-              {campaignData.campaigns.map((campaign, idx) => {
+              {sortedCampaigns.map((campaign, idx) => {
                 const current = campaign.data[0]
                 if (!current) return null
                 
@@ -515,7 +529,7 @@ export default function AdsPage() {
               })}
             </div>
           </div>
-        )}
+        )})()}
 
         {/* Footer */}
         <div className="text-center">
