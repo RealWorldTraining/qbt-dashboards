@@ -454,12 +454,10 @@ function EODForecastBox({
 function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { forecast: EOMForecast | null, monthWeekly?: MonthWeekly | null, fullWidth?: boolean }) {
   if (!forecast) return <PlaceholderBox />
   
-  // Calculate expected MTD based on progress
-  const daysInMonth = forecast.days_remaining + (forecast.current_month_sales > 0 ? 
-    Math.round((forecast.current_month_sales / forecast.predicted_sales) * (forecast.days_remaining + 29)) : 29)
-  const daysCompleted = daysInMonth - forecast.days_remaining
-  const mtdExpected = Math.round(forecast.predicted_sales * (daysCompleted / daysInMonth))
-  const variance = forecast.current_month_sales - mtdExpected
+  // Use monthWeekly totals when available for consistency with table
+  const mtdExpected = monthWeekly?.total_forecast ?? forecast.predicted_sales
+  const mtdActual = monthWeekly?.total_actual ?? forecast.current_month_sales
+  const variance = mtdActual - mtdExpected
   const variancePct = mtdExpected > 0 ? Math.round((variance / mtdExpected) * 100) : 0
 
   return (
@@ -473,7 +471,7 @@ function MonthForecastBox({ forecast, monthWeekly, fullWidth = false }: { foreca
         {/* MTD stats - match Week Forecast sizing */}
         <div className={`flex ${fullWidth ? 'gap-16' : 'gap-6'} ${fullWidth ? 'text-xl' : 'text-base'} mt-4 mb-4`}>
           <div className="text-center">
-            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(forecast.current_month_sales)}</div>
+            <div className={`font-bold text-white leading-none ${fullWidth ? 'text-[7rem]' : 'text-2xl'}`}>{new Intl.NumberFormat("en-US").format(mtdActual)}</div>
             <div className={`text-zinc-500 uppercase ${fullWidth ? 'text-2xl mt-2' : 'text-sm'}`}>MTD Actual</div>
           </div>
           <div className="text-center">
