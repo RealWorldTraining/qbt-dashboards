@@ -58,14 +58,16 @@ interface OrganicData {
 interface CampaignMetrics {
   week: string
   campaign: string
-  spend: number
-  impressions: number
   clicks: number
+  impressions: number
   ctr: number
+  avg_cpc: number
+  cost: number
   conversions: number
   conv_rate: number
-  cpa: number
-  roas: number
+  search_impression_share: number
+  search_abs_top_impression_share: number
+  click_share: number
 }
 
 interface CampaignData {
@@ -372,19 +374,10 @@ export default function AdsPage() {
             <div className="grid grid-cols-4 gap-3">
               {campaignData.campaigns.map((campaign, idx) => {
                 const current = campaign.data[0]
-                const previous = campaign.data[1]
                 if (!current) return null
                 
                 const colors = ['bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-cyan-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500', 'bg-yellow-500']
                 const accentColor = colors[idx % colors.length]
-                
-                const cpaChange = previous && previous.cpa > 0 
-                  ? ((current.cpa - previous.cpa) / previous.cpa * 100) : 0
-                const convChange = previous && previous.conversions > 0 
-                  ? ((current.conversions - previous.conversions) / previous.conversions * 100) : 0
-                
-                const cpaColor = cpaChange < 0 ? 'text-green-500' : cpaChange > 0 ? 'text-red-500' : 'text-gray-400'
-                const convColor = convChange > 0 ? 'text-green-500' : convChange < 0 ? 'text-red-500' : 'text-gray-400'
                 
                 return (
                   <div key={campaign.name} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
@@ -393,27 +386,46 @@ export default function AdsPage() {
                       <div className="text-gray-400 text-xs font-medium mb-2 truncate" title={campaign.name}>
                         {campaign.name.replace(/-/g, ' ').toUpperCase()}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-2">
                         <div>
-                          <div className="text-white font-bold">{formatCurrency(current.spend)}</div>
-                          <div className="text-gray-500">Spend</div>
+                          <div className="text-white font-bold">{formatNumber(current.clicks)}</div>
+                          <div className="text-gray-500">Clicks</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{formatNumber(current.impressions)}</div>
+                          <div className="text-gray-500">Impr</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{formatPercent(current.ctr)}</div>
+                          <div className="text-gray-500">CTR</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-2">
+                        <div>
+                          <div className="text-white font-bold">{formatCurrency(current.avg_cpc)}</div>
+                          <div className="text-gray-500">Avg CPC</div>
+                        </div>
+                        <div>
+                          <div className="text-white font-bold">{formatCurrency(current.cost)}</div>
+                          <div className="text-gray-500">Cost</div>
                         </div>
                         <div>
                           <div className="text-white font-bold">{current.conversions}</div>
                           <div className="text-gray-500">Conv</div>
                         </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs border-t border-gray-800 pt-2">
                         <div>
-                          <div className="text-white font-bold">{formatCurrency(current.cpa)}</div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-gray-500">CPA</span>
-                            <span className={`${cpaColor} text-xs`}>
-                              {cpaChange >= 0 ? '+' : ''}{cpaChange.toFixed(0)}%
-                            </span>
-                          </div>
+                          <div className="text-cyan-400 font-bold">{formatPercent(current.search_impression_share)}</div>
+                          <div className="text-gray-500">Impr Share</div>
                         </div>
                         <div>
-                          <div className="text-white font-bold">{current.roas.toFixed(2)}x</div>
-                          <div className="text-gray-500">ROAS</div>
+                          <div className="text-orange-400 font-bold">{formatPercent(current.search_abs_top_impression_share)}</div>
+                          <div className="text-gray-500">Abs Top</div>
+                        </div>
+                        <div>
+                          <div className="text-green-400 font-bold">{formatPercent(current.click_share)}</div>
+                          <div className="text-gray-500">Click Share</div>
                         </div>
                       </div>
                     </div>

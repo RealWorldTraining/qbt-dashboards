@@ -3,19 +3,21 @@ import { NextResponse } from 'next/server'
 
 // Same sheet as ads data
 const SHEET_ID = '1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM'
-const RANGE = 'Campaign Performance!A:J'
+const RANGE = 'Campaign Performance!A:L'
 
 interface CampaignRow {
   week: string
   campaign: string
-  spend: number
-  impressions: number
   clicks: number
+  impressions: number
   ctr: number
+  avg_cpc: number
+  cost: number
   conversions: number
   conv_rate: number
-  cpa: number
-  roas: number
+  search_impression_share: number
+  search_abs_top_impression_share: number
+  click_share: number
 }
 
 function parseNumber(val: string): number {
@@ -61,27 +63,31 @@ export async function GET() {
     }
 
     // Parse all rows (skip header)
+    // Columns: A=Week, B=Campaign, C=Clicks, D=Impressions, E=CTR, F=Avg CPC,
+    // G=Cost, H=Conversions, I=Conv Rate, J=Search Impr Share, K=Search Abs Top, L=Click Share
     const allData: CampaignRow[] = rows.slice(1)
       .filter(row => row[0] && row[1])
       .map(row => ({
         week: row[0],
         campaign: row[1],
-        spend: parseNumber(row[2]),
+        clicks: parseNumber(row[2]),
         impressions: parseNumber(row[3]),
-        clicks: parseNumber(row[4]),
-        ctr: parseNumber(row[5]),
-        conversions: parseNumber(row[6]),
-        conv_rate: parseNumber(row[7]),
-        cpa: parseNumber(row[8]),
-        roas: parseNumber(row[9]),
+        ctr: parseNumber(row[4]),
+        avg_cpc: parseNumber(row[5]),
+        cost: parseNumber(row[6]),
+        conversions: parseNumber(row[7]),
+        conv_rate: parseNumber(row[8]),
+        search_impression_share: parseNumber(row[9]),
+        search_abs_top_impression_share: parseNumber(row[10]),
+        click_share: parseNumber(row[11]),
       }))
 
     // Get unique weeks and campaigns
     const weeks = [...new Set(allData.map(r => r.week))].sort().reverse()
     const campaigns = [...new Set(allData.map(r => r.campaign))]
 
-    // Get last 4 weeks (skip current incomplete week)
-    const recentWeeks = weeks.slice(1, 5) // Skip most recent, take next 4
+    // Get last 4 weeks (skip current incomplete week if needed)
+    const recentWeeks = weeks.slice(0, 4)
     
     // Group by campaign, then by week
     const campaignData: Record<string, Record<string, CampaignRow>> = {}
