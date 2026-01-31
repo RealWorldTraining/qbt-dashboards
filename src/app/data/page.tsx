@@ -562,6 +562,8 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
   const totalVariance = forecast.current_week_sales - forecast.daily_breakdown
     .filter(d => d.actual !== null)
     .reduce((sum, d) => sum + d.predicted, 0)
+  // Sum of all daily predictions (for consistent Total column)
+  const totalPredicted = forecast.daily_breakdown.reduce((sum, d) => sum + d.predicted, 0)
 
   if (fullWidth) {
     return (
@@ -606,7 +608,7 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
                   {forecast.daily_breakdown.map(d => (
                     <td key={d.day} className="px-4 py-1">{d.predicted}</td>
                   ))}
-                  <td className="px-4 py-1 border-l border-zinc-700">{forecast.predicted_sales}</td>
+                  <td className="px-4 py-1 border-l border-zinc-700">{totalPredicted}</td>
                 </tr>
                 <tr className="text-white">
                   {forecast.daily_breakdown.map(d => (
@@ -690,7 +692,7 @@ function WeekForecastBox({ forecast, fullWidth = false }: { forecast: WeekForeca
                 {forecast.daily_breakdown.map(d => (
                   <td key={d.day} className="px-1">{d.predicted}</td>
                 ))}
-                <td className="px-1 border-l border-zinc-700">{forecast.predicted_sales}</td>
+                <td className="px-1 border-l border-zinc-700">{totalPredicted}</td>
               </tr>
               <tr className={totalVariance >= 0 ? "text-emerald-400" : "text-red-400"}>
                 {forecast.daily_breakdown.map(d => (
