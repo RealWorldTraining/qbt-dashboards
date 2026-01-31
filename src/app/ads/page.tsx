@@ -462,6 +462,9 @@ export default function AdsPage() {
           </div>
         </div>
 
+        {/* Section Divider */}
+        <div className="border-t-2 border-gray-700 mb-6" />
+
         {/* Google Ads Performance - 2 rows of 4 */}
         <div className="mb-4">
           <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Google Ads Performance</h2>
@@ -505,7 +508,6 @@ export default function AdsPage() {
                 
                 return (
                   <div key={campaign.name} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
-                    <div className={`h-1 ${accentColor}`} />
                     <div className="p-3">
                       <div className="text-gray-400 text-xs font-medium mb-2 truncate" title={campaign.name}>
                         {campaign.name.replace(/-/g, ' ').toUpperCase()}
@@ -564,18 +566,21 @@ export default function AdsPage() {
           </div>
         )})()}
 
+        {/* Section Divider */}
+        <div className="border-t-2 border-gray-700 mb-6" />
+
         {/* Bing Ads Performance */}
         <div className="mb-4">
           <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Bing Ads Performance</h2>
           <div className="grid grid-cols-8 gap-3">
-            <AdsCard title="SPEND" value={formatCurrency(bingAdsData.this_week.spend)} accentColor="bg-teal-500" comparisons={buildBingComparisons('spend')} />
-            <AdsCard title="IMPRESSIONS" value={formatNumber(bingAdsData.this_week.impressions)} accentColor="bg-blue-400" comparisons={buildBingComparisons('impressions')} />
-            <AdsCard title="CLICKS" value={formatNumber(bingAdsData.this_week.clicks)} accentColor="bg-indigo-500" comparisons={buildBingComparisons('clicks')} />
-            <AdsCard title="CTR" value={formatPercent(bingAdsData.this_week.ctr)} accentColor="bg-cyan-400" comparisons={buildBingComparisons('ctr')} />
-            <AdsCard title="CONVERSIONS" value={bingAdsData.this_week.conversions} accentColor="bg-amber-500" comparisons={buildBingComparisons('conversions')} />
-            <AdsCard title="CONV RATE" value={formatPercent(bingAdsData.this_week.conversion_rate)} accentColor="bg-lime-500" comparisons={buildBingComparisons('conversion_rate')} />
-            <AdsCard title="CPA" value={formatCurrency(bingAdsData.this_week.cpa)} accentColor="bg-rose-500" comparisons={buildBingComparisons('cpa')} inverse={true} />
-            <AdsCard title="ROAS" value={`${bingAdsData.this_week.roas.toFixed(2)}x`} accentColor="bg-fuchsia-500" comparisons={buildBingComparisons('roas')} />
+            <AdsCard title="SPEND" value={formatCurrency(bingAdsData.this_week.spend)} accentColor="bg-green-500" comparisons={buildBingComparisons('spend')} />
+            <AdsCard title="IMPRESSIONS" value={formatNumber(bingAdsData.this_week.impressions)} accentColor="bg-blue-500" comparisons={buildBingComparisons('impressions')} />
+            <AdsCard title="CLICKS" value={formatNumber(bingAdsData.this_week.clicks)} accentColor="bg-purple-500" comparisons={buildBingComparisons('clicks')} />
+            <AdsCard title="CTR" value={formatPercent(bingAdsData.this_week.ctr)} accentColor="bg-cyan-500" comparisons={buildBingComparisons('ctr')} />
+            <AdsCard title="CONVERSIONS" value={bingAdsData.this_week.conversions} accentColor="bg-orange-500" comparisons={buildBingComparisons('conversions')} />
+            <AdsCard title="CONV RATE" value={formatPercent(bingAdsData.this_week.conversion_rate)} accentColor="bg-emerald-500" comparisons={buildBingComparisons('conversion_rate')} />
+            <AdsCard title="CPA" value={formatCurrency(bingAdsData.this_week.cpa)} accentColor="bg-red-500" comparisons={buildBingComparisons('cpa')} inverse={true} />
+            <AdsCard title="ROAS" value={`${bingAdsData.this_week.roas.toFixed(2)}x`} accentColor="bg-pink-500" comparisons={buildBingComparisons('roas')} />
           </div>
         </div>
 
@@ -604,7 +609,6 @@ export default function AdsPage() {
                 
                 return (
                   <div key={campaign.name} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
-                    <div className={`h-1 ${accentColor}`} />
                     <div className="p-3">
                       <div className="text-gray-400 text-xs font-medium mb-2 truncate" title={campaign.name}>
                         {campaign.name.replace(/-/g, ' ').toUpperCase()}

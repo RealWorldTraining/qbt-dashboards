@@ -1,0 +1,4859 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ComposedChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LabelList,
+} from "recharts"
+import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
+import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone } from "lucide-react"
+
+// Always use Railway API (no local Python backend needed)
+const PROPHET_API_URL = "https://qbtraining-site-production.up.railway.app"
+
+// Sales interfaces
+interface PeriodMetrics {
+  label: string
+  date_range: string
+  direct_qty: number
+  direct_revenue: number
+  py_qty: number
+  py_revenue: number
+  qty_change_pct: number
+  revenue_change_pct: number
+  // Renewal metrics
+  renewal_qty: number
+  renewal_revenue: number
+  py_renewal_qty: number
+  py_renewal_revenue: number
+  renewal_qty_change_pct: number
+  renewal_revenue_change_pct: number
+  // Total gross revenue
+  total_gross_revenue: number
+  py_total_gross_revenue: number
+  total_gross_revenue_change_pct: number
+}
+
+interface MetricsResponse {
+  yesterday: PeriodMetrics
+  today: PeriodMetrics
+  this_week: PeriodMetrics
+  this_month: PeriodMetrics
+  avg_sale_price: number
+}
+
+interface HourlyPeriodData {
+  period_label: string
+  period_date: string
+  hourly_sales: { [hour: string]: number | null }
+  end_of_day: number | null
+}
+
+interface HourlyComparisonResponse {
+  periods: HourlyPeriodData[]
+  hours: string[]
+}
+
+interface WeeklyTrendRow {
+  week_label: string
+  week_start: string
+  daily_cumulative: { [day: string]: number | null }
+  week_total: number | null
+}
+
+interface WeeklyTrendsResponse {
+  weeks: WeeklyTrendRow[]
+  days: string[]
+}
+
+interface ExtendedWeeklyTrendRow {
+  week_label: string
+  week_start: string
+  daily_cumulative: { [day: string]: number | null }
+  week_total: number | null
+}
+
+interface ExtendedWeeklyTrendsResponse {
+  direct_qty: WeeklyTrendRow[]
+  direct_revenue: ExtendedWeeklyTrendRow[]
+  renewal_qty: WeeklyTrendRow[]
+  renewal_revenue: ExtendedWeeklyTrendRow[]
+  total_gross_revenue: ExtendedWeeklyTrendRow[]
+  days: string[]
+}
+
+interface ProductMixRow {
+  week_label: string
+  week_start: string
+  total: number
+  cert_pct: number
+  learner_pct: number
+  team_pct: number
+}
+
+interface ProductMixResponse {
+  weeks: ProductMixRow[]
+}
+
+interface WeeklyQtyYoYDataPoint {
+  week_num: number
+  week_label: string
+  y2024: number | null
+  y2025: number | null
+  y2026: number | null
+}
+
+interface WeeklyQtyYoYResponse {
+  data: WeeklyQtyYoYDataPoint[]
+  current_week: number
+}
+
+interface MonthlyQtyYoYDataPoint {
+  month_num: number
+  month_label: string
+  y2024: number | null
+  y2025: number | null
+  y2026: number | null
+}
+
+interface MonthlyQtyYoYResponse {
+  data: MonthlyQtyYoYDataPoint[]
+  current_month: number
+}
+
+interface EODForecastResponse {
+  predicted_sales: number
+  predicted_lower: number
+  predicted_upper: number
+  confidence_level: string
+  predicted_revenue: number
+  avg_order_value: number
+  current_sales: number
+  current_revenue: number
+  pace_indicator: string
+  pace_pct: number
+  progress_pct: number
+  // Expected at hour context for pace
+  expected_at_hour: number
+  current_hour: number
+  // Holiday awareness fields
+  is_holiday: boolean
+  is_holiday_adjacent: boolean
+  holiday_name: string | null
+  holiday_impact_factor: number
+  holiday_confidence: string
+}
+
+interface EODProjectionResponse {
+  current_time: string
+  current_hour: number
+  current_weekday: string
+  current_sales: number
+  projected_eod: number
+  projected_lower: number
+  projected_upper: number
+  pct_of_day_complete: number
+  confidence: string
+  vs_last_week: number
+  vs_two_weeks: number
+  last_week_eod: number
+  two_weeks_eod: number
+}
+
+interface EOWForecastResponse {
+  predicted_sales: number
+  predicted_lower: number
+  predicted_upper: number
+  confidence_level: string
+  predicted_revenue: number
+  avg_order_value: number
+  current_week_sales: number
+  current_week_revenue: number
+  pace_indicator: string
+  pace_pct: number
+  progress_pct: number
+  // Week context
+  week_start_date: string
+  week_end_date: string
+  days_completed: number
+  days_remaining: number
+  current_day_of_week: string
+  // Historical comparison
+  last_week_total: number
+  last_week_change_pct: number
+  avg_weekly_sales: number
+  // Holiday awareness
+  week_has_holiday: boolean
+  holiday_name: string | null
+  holiday_impact_factor: number
+}
+
+interface EOMForecastResponse {
+  predicted_sales: number
+  predicted_lower: number
+  predicted_upper: number
+  current_month_sales: number
+  days_completed: number
+  days_remaining: number
+  progress_pct: number
+  pace_pct: number
+  month_name: string
+  last_month_total: number
+  last_month_change_pct: number
+  py_month_total: number
+  py_change_pct: number
+}
+
+interface NextWeekPreviewResponse {
+  predicted_sales: number
+  predicted_lower: number
+  predicted_upper: number
+  week_start_date: string
+  week_end_date: string
+  vs_this_week_pct: number
+  vs_last_week_pct: number
+  has_holiday: boolean
+  holiday_name: string | null
+  daily_breakdown: Array<{
+    day: string
+    date: string
+    predicted: number
+  }>
+}
+
+interface ThisWeekForecastResponse {
+  predicted_sales: number
+  current_week_sales: number
+  week_start_date: string
+  week_end_date: string
+  days_completed: number
+  days_remaining: number
+  vs_last_week_pct: number
+  has_holiday: boolean
+  holiday_name: string | null
+  daily_breakdown: Array<{
+    day: string
+    date: string
+    predicted: number
+    actual: number | null
+  }>
+}
+
+// Traffic interfaces
+interface TrafficSourceMetrics {
+  sessions: number
+  conversions: number
+  conversion_rate: number
+}
+
+interface TrafficPeriodData {
+  label: string
+  date_range: string
+  gads_bing: TrafficSourceMetrics
+  organic: TrafficSourceMetrics
+  direct: TrafficSourceMetrics
+  referral: TrafficSourceMetrics
+  paid: TrafficSourceMetrics
+  total: TrafficSourceMetrics
+}
+
+interface TrafficResponse {
+  today: TrafficPeriodData
+  yesterday: TrafficPeriodData
+  this_week: TrafficPeriodData
+  mtd: TrafficPeriodData
+}
+
+// Weekly traffic by source (like Product Mix layout)
+interface TrafficBySourceWeekRow {
+  week_label: string
+  week_start: string
+  total_sessions: number
+  total_conversions: number
+  gads_bing_sessions: number
+  gads_bing_sessions_pct: number
+  organic_sessions: number
+  organic_sessions_pct: number
+  direct_sessions: number
+  direct_sessions_pct: number
+  referral_sessions: number
+  referral_sessions_pct: number
+  paid_sessions: number
+  paid_sessions_pct: number
+  gads_bing_conversions: number
+  gads_bing_conversions_pct: number
+  organic_conversions: number
+  organic_conversions_pct: number
+  direct_conversions: number
+  direct_conversions_pct: number
+  referral_conversions: number
+  referral_conversions_pct: number
+  paid_conversions: number
+  paid_conversions_pct: number
+}
+
+interface TrafficBySourceWeeklyResponse {
+  weeks: TrafficBySourceWeekRow[]
+}
+
+// Auction Insights interfaces
+interface AuctionInsightRow {
+  snapshot_week: string
+  competitor_domain: string
+  impression_share: number
+  overlap_rate: number
+  position_above_rate: number
+  outranking_share: number
+}
+
+interface CompetitorCard {
+  domain: string
+  display_name: string
+  is_you: boolean
+  current_metrics: {
+    impression_share: number
+    overlap_rate: number
+    position_above_rate: number
+    outranking_share: number
+  }
+  trend: "up" | "down" | "stable"
+  change_pct: number
+  weekly_data: Array<{
+    week: string
+    impression_share: number
+    position_above_rate: number
+    outranking_share: number
+  }>
+  forecast_next_week: number
+}
+
+interface AuctionInsightsResponse {
+  competitors: string[]
+  weeks: string[]
+  data: AuctionInsightRow[]
+  competitor_cards: CompetitorCard[]
+  trends_summary: {
+    aggressive: string[]
+    falling_back: string[]
+    stable: string[]
+  }
+}
+
+// Google Ads Performance interfaces
+interface AccountWeeklyMetrics {
+  week: string
+  spend: number
+  clicks: number
+  impressions: number
+  conversions: number
+  cpa: number
+  roas: number
+  ctr: number
+  conversion_rate: number
+}
+
+interface AccountPerformanceResponse {
+  current_week: AccountWeeklyMetrics
+  previous_week: AccountWeeklyMetrics
+  wow_change: {
+    spend: number
+    clicks: number
+    impressions: number
+    conversions: number
+    cpa: number
+    roas: number
+    ctr: number
+    conversion_rate: number
+  }
+  weekly_data: AccountWeeklyMetrics[]
+  forecast: {
+    spend: number
+    conversions: number
+  }
+}
+
+interface CampaignMetrics {
+  campaign_name: string
+  spend: number
+  clicks: number
+  impressions: number
+  conversions: number
+  cpa: number
+  roas: number
+  ctr: number
+  conversion_rate: number
+  trend: "up" | "down" | "stable"
+  change_pct: number
+  // Prior week data for comparison
+  prior_spend?: number
+  prior_clicks?: number
+  prior_conversions?: number
+  prior_cpa?: number
+  prior_ctr?: number
+}
+
+interface CampaignsResponse {
+  week: string
+  top_by_spend: CampaignMetrics[]
+  top_by_conversions: CampaignMetrics[]
+  all_campaigns: CampaignMetrics[]
+}
+
+interface CampaignWeekData {
+  week_label: string
+  week_start: string
+  spend: number
+  clicks: number
+  impressions: number
+  conversions: number
+  cpa: number
+  ctr: number
+  conversion_rate: number
+}
+
+interface CampaignWeeklyData {
+  campaign_name: string
+  weeks: CampaignWeekData[]
+}
+
+interface CampaignsWeeklyResponse {
+  campaigns: CampaignWeeklyData[]
+}
+
+interface KeywordMetrics {
+  keyword: string
+  campaign: string
+  match_type: string
+  spend: number
+  clicks: number
+  impressions: number
+  conversions: number
+  cpa: number
+  ctr: number
+  quality_score: number | null
+  avg_position: number | null
+}
+
+interface KeywordComparison {
+  keyword: string
+  campaign: string
+  match_type: string
+  last_week_conversions: number
+  last_week_spend: number
+  last_week_cpa: number
+  last_week_clicks: number
+  last_week_ctr: number
+  last_week_max_cpc?: number
+  last_week_avg_cpc?: number
+  last_week_search_impr_share?: number
+  last_week_click_share?: number
+  two_weeks_ago_conversions?: number
+  two_weeks_ago_spend?: number
+  two_weeks_ago_cpa?: number
+  two_weeks_ago_clicks?: number
+  two_weeks_ago_ctr?: number
+  two_weeks_ago_max_cpc?: number
+  two_weeks_ago_avg_cpc?: number
+  two_weeks_ago_search_impr_share?: number
+  two_weeks_ago_click_share?: number
+  conversion_change?: number
+  spend_change?: number
+}
+
+// N8n Keywords Weekly - from ADVERONIX sheet
+interface N8nKeywordWeeklyItem {
+  keyword: string
+  campaign: string
+  match_type: string
+  last_week_avg_cpc: number
+  last_week_conversions: number
+  last_week_cost: number
+  last_week_cpa: number
+  two_weeks_ago_avg_cpc?: number
+  two_weeks_ago_conversions?: number
+  two_weeks_ago_cost?: number
+  two_weeks_ago_cpa?: number
+}
+
+interface N8nKeywordsWeeklyResponse {
+  last_week: string
+  two_weeks_ago: string
+  keywords: N8nKeywordWeeklyItem[]
+}
+
+interface KeywordsResponse {
+  week: string
+  top_performing: KeywordMetrics[]
+  bottom_performing: KeywordMetrics[]
+  high_potential: KeywordMetrics[]
+  prior_week?: string
+  prior_top_performing?: KeywordMetrics[]
+  prior_bottom_performing?: KeywordMetrics[]
+  prior_high_potential?: KeywordMetrics[]
+  two_weeks_ago?: string
+  two_weeks_ago_top_performing?: KeywordMetrics[]
+  two_weeks_ago_bottom_performing?: KeywordMetrics[]
+  all_keywords_comparison?: KeywordComparison[]
+}
+
+// Jedi Council interfaces
+interface AIModelRecommendation {
+  model_name: string
+  summary: string
+  key_points: string[]
+  confidence?: number
+  focus_area?: string
+}
+
+interface BudgetMetricValue {
+  current: number | string
+  prior: number | string
+}
+
+interface BudgetCampaignMetrics {
+  clicks: BudgetMetricValue
+  ctr: BudgetMetricValue
+  conversions: BudgetMetricValue
+  cpa: BudgetMetricValue
+  avgCpc: BudgetMetricValue
+  spend: BudgetMetricValue
+}
+
+interface SynthesizedRecommendation {
+  title: string
+  priority: "high" | "medium" | "low"
+  category: string
+  consensus_level: "unanimous" | "majority" | "split"
+  action_items: string[]
+  rationale: string
+  expected_impact?: string
+  timeline?: string
+  // Individual LLM votes
+  gpt_vote?: string
+  claude_vote?: string
+  gemini_vote?: string
+  // Individual LLM reasoning (extracted from rationale or separate)
+  gpt_reasoning?: string
+  claude_reasoning?: string
+  gemini_reasoning?: string
+  // Campaign metrics with week-over-week comparison
+  campaignName?: string
+  decision?: string
+  metrics?: BudgetCampaignMetrics
+}
+
+interface CategoryInsight {
+  title: string
+  severity: "urgent" | "warning" | "opportunity" | "success"
+  description: string
+  metric?: string
+  recommendation?: string
+  impact?: string
+}
+
+interface CategoryAnalysis {
+  category: string
+  ai_source: string
+  confidence: number
+  insights: CategoryInsight[]
+  summary: string
+  data_points?: number
+}
+
+interface JediCouncilData {
+  generated_at: string
+  analysis_period?: string
+  ai_recommendations: AIModelRecommendation[]
+  synthesized: SynthesizedRecommendation[]
+  categories?: {
+    campaigns?: CategoryAnalysis
+    competitors?: CategoryAnalysis
+    budget?: CategoryAnalysis
+    assets?: CategoryAnalysis
+    keywords?: CategoryAnalysis
+  }
+  total_recommendations: number
+  high_priority_count: number
+  consensus_items: number
+  data_sources?: string[]
+  next_review?: string
+}
+
+interface JediCouncilResponse {
+  available: boolean
+  data?: JediCouncilData
+  last_updated?: string
+  message?: string
+}
+
+// Subscriptions interfaces
+interface SubscriptionMetrics {
+  total_subscriptions: number
+  active_subscriptions: number
+  cancelled_subscriptions: number
+  on_hold_subscriptions: number
+  other_status_count: number
+  mrr: number
+  avg_order_value: number
+  new_this_month: number
+  new_this_week: number
+  cancelled_this_month: number
+  cancelled_this_week: number
+}
+
+interface StatusBreakdown {
+  status: string
+  count: number
+  percentage: number
+  total_revenue: number
+}
+
+interface SubscriptionsResponse {
+  metrics: SubscriptionMetrics
+  status_breakdown: StatusBreakdown[]
+  last_updated: string
+}
+
+interface SubscriberMetricsData {
+  immediate_cancels_total: number
+  immediate_cancels_pct: number
+  immediate_cancels_avg_monthly: number
+  immediate_cancels_by_month: Record<string, number>
+  new_adds_by_month: Record<string, number>
+  immediate_cancel_rate_by_month: Record<string, number>
+  // Monthly averages
+  avg_churn_12mo: number
+  // Adjusted churn (excluding immediate cancels)
+  churn_by_month: Record<string, number>
+  immediate_by_churn_month: Record<string, number>
+  adjusted_churn_by_month: Record<string, number>
+  adjusted_churn_rate_by_month: Record<string, number>
+  avg_adjusted_churn_12mo: number
+  // Tier breakdown
+  tier_breakdown: {
+    tier_29: number
+    tier_40: number
+    tier_50_70: number
+    tier_90_plus: number
+  }
+  // Average renewal
+  current_avg_renewal: number
+  // Quarterly cohort retention
+  quarterly_cohort_retention: Record<string, { total_adds: number; still_active: number; retention_pct: number }>
+}
+
+interface SubscriberMetricsResponse {
+  available: boolean
+  data: SubscriberMetricsData | null
+  last_updated: string | null
+  message: string
+}
+
+type TabType = "sales" | "traffic" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions"
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+function formatCurrencyDecimal(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+function formatCurrencyCompact(value: number): string {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`
+  } else if (value >= 1000) {
+    return `$${Math.round(value / 1000)}k`
+  }
+  return `$${Math.round(value)}`
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat("en-US").format(value)
+}
+
+// Jedi Council Category Types - 5 main categories
+type JediCategory = "budget" | "bids" | "competitors" | "assets" | "search-terms"
+
+const categoryConfig = {
+  budget: {
+    label: "Budget & Spend",
+    icon: Wallet,
+    color: "from-green-500 to-emerald-500",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-200",
+    textColor: "text-green-700",
+    ai: "3-LLM Council",
+    description: "Campaign budget optimization recommendations"
+  },
+  bids: {
+    label: "Max CPC Bids",
+    icon: DollarSign,
+    color: "from-blue-500 to-indigo-500",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    textColor: "text-blue-700",
+    ai: "3-LLM Council",
+    description: "Keyword bid optimization recommendations"
+  },
+  competitors: {
+    label: "Competitor Landscape",
+    icon: Swords,
+    color: "from-orange-500 to-red-500",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-200",
+    textColor: "text-orange-700",
+    ai: "Coming Soon",
+    description: "Auction insights and competitive positioning"
+  },
+  assets: {
+    label: "Asset Performance",
+    icon: Image,
+    color: "from-purple-500 to-pink-500",
+    bgColor: "bg-purple-50",
+    borderColor: "border-purple-200",
+    textColor: "text-purple-700",
+    ai: "Coming Soon",
+    description: "Ad creative and asset performance analysis"
+  },
+  "search-terms": {
+    label: "Search Terms",
+    icon: Search,
+    color: "from-cyan-500 to-teal-500",
+    bgColor: "bg-cyan-50",
+    borderColor: "border-cyan-200",
+    textColor: "text-cyan-700",
+    ai: "Coming Soon",
+    description: "Search term analysis and optimization"
+  }
+}
+
+// Campaign Council Decisions Component - Shows individual campaign votes and reasoning
+function CampaignCouncilDecisions({ recommendations }: { recommendations: SynthesizedRecommendation[] }) {
+  // Filter to only campaign/budget recommendations
+  const campaignRecs = recommendations.filter(r =>
+    r.category.toLowerCase() === 'budget' ||
+    r.category.toLowerCase() === 'campaign' ||
+    r.category.toLowerCase() === 'campaigns'
+  )
+
+  if (campaignRecs.length === 0) return null
+
+  // Count stats
+  const unanimousCount = campaignRecs.filter(r => r.consensus_level === 'unanimous').length
+
+  // Extract campaign name from title (e.g., "MAINTAIN budget for Courses-Desktop" -> "Courses-Desktop")
+  const getCampaignName = (title: string) => {
+    const match = title.match(/for\s+(.+)$/i)
+    return match ? match[1] : title
+  }
+
+  // Define sort order for campaigns
+  const campaignOrder = [
+    'Certification-Desktop', 'Certification-Mobile',
+    'Training-Desktop', 'Training-Mobile',
+    'Courses-Desktop', 'Courses-Mobile',
+    'Classes-Desktop', 'Classes-Mobile'
+  ]
+
+  // Sort campaigns by the defined order
+  const sortedCampaignRecs = [...campaignRecs].sort((a, b) => {
+    const nameA = getCampaignName(a.title)
+    const nameB = getCampaignName(b.title)
+    const indexA = campaignOrder.findIndex(c => nameA.toLowerCase().includes(c.toLowerCase()))
+    const indexB = campaignOrder.findIndex(c => nameB.toLowerCase().includes(c.toLowerCase()))
+    // If not found in order, put at end
+    const orderA = indexA === -1 ? 999 : indexA
+    const orderB = indexB === -1 ? 999 : indexB
+    return orderA - orderB
+  })
+
+  // Extract decision from title
+  const getDecision = (title: string) => {
+    const decisions = ['INCREASE', 'DECREASE', 'MAINTAIN', 'PAUSE']
+    for (const d of decisions) {
+      if (title.toUpperCase().includes(d)) return d
+    }
+    return 'MAINTAIN'
+  }
+
+  // Get decision color
+  const getDecisionColor = (decision: string) => {
+    switch (decision) {
+      case 'INCREASE': return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200' }
+      case 'DECREASE': return { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-200' }
+      case 'PAUSE': return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200' }
+      default: return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' }
+    }
+  }
+
+  // Get vote color
+  const getVoteColor = (vote: string | undefined) => {
+    if (!vote || vote === 'N/A') return 'text-gray-400'
+    switch (vote.toUpperCase()) {
+      case 'INCREASE': return 'text-green-600'
+      case 'DECREASE': return 'text-yellow-600'
+      case 'PAUSE': return 'text-red-600'
+      default: return 'text-blue-600'
+    }
+  }
+
+  // Parse individual reasoning from rationale string
+  const parseReasoning = (rec: SynthesizedRecommendation) => {
+    // If we have explicit reasoning fields, use them
+    if (rec.gpt_reasoning || rec.claude_reasoning || rec.gemini_reasoning) {
+      return {
+        gpt: rec.gpt_reasoning || 'N/A',
+        claude: rec.claude_reasoning || 'N/A',
+        gemini: rec.gemini_reasoning || 'N/A'
+      }
+    }
+
+    // Otherwise try to parse from rationale string
+    const rationale = rec.rationale || ''
+    const gptMatch = rationale.match(/GPT-4o?:\s*([^.]+(?:\.[^.]+)?)\./i)
+    const claudeMatch = rationale.match(/Claude:\s*([^.]+(?:\.[^.]+)?)\./i)
+    const geminiMatch = rationale.match(/Gemini:\s*([^.]+(?:\.[^.]+)?)\./i)
+
+    return {
+      gpt: gptMatch ? gptMatch[1].trim() : 'N/A',
+      claude: claudeMatch ? claudeMatch[1].trim() : 'N/A',
+      gemini: geminiMatch ? geminiMatch[1].trim() : 'N/A'
+    }
+  }
+
+  return (
+    <Card className="border-0 shadow-sm mb-6">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-green-50">
+            <Target className="h-5 w-5 text-green-600" />
+          </div>
+          <div>
+            <CardTitle className="text-lg">Campaign Council Decisions</CardTitle>
+            <p className="text-sm text-[#6E6E73]">
+              {campaignRecs.length} campaigns analyzed • 3 AI models voted • {unanimousCount} unanimous decisions
+            </p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 md:grid-cols-2">
+          {sortedCampaignRecs.map((rec, idx) => {
+            const campaignName = getCampaignName(rec.title)
+            const decision = getDecision(rec.title)
+            const colors = getDecisionColor(decision)
+            const reasoning = parseReasoning(rec)
+
+            return (
+              <div
+                key={idx}
+                className={`rounded-xl border ${colors.border} bg-white overflow-hidden transition-all`}
+              >
+                {/* Campaign Header */}
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-[#1D1D1F]">{campaignName}</h4>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${colors.bg} ${colors.text}`}>
+                      {decision}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`text-xs px-2 py-0.5 rounded ${
+                      rec.consensus_level === 'unanimous' ? 'bg-green-100 text-green-700' :
+                      rec.consensus_level === 'majority' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {rec.consensus_level?.toUpperCase()}
+                    </span>
+                    <span className="text-xs text-[#6E6E73]">• {rec.expected_impact}</span>
+                  </div>
+
+                  {/* Campaign Metrics with Week-over-Week Comparison */}
+                  {rec.metrics && (
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {[
+                        { label: 'Clicks', key: 'clicks' as const, format: (v: number | string) => typeof v === 'number' ? v.toLocaleString() : v },
+                        { label: 'CTR', key: 'ctr' as const, format: (v: number | string) => v },
+                        { label: 'Convs', key: 'conversions' as const, format: (v: number | string) => typeof v === 'number' ? v.toFixed(1) : v },
+                        { label: 'CPA', key: 'cpa' as const, format: (v: number | string) => v },
+                        { label: 'Avg CPC', key: 'avgCpc' as const, format: (v: number | string) => v },
+                        { label: 'Spend', key: 'spend' as const, format: (v: number | string) => v },
+                      ].map(({ label, key, format }) => {
+                        const metric = rec.metrics![key]
+                        const current = metric?.current ?? 0
+                        const prior = metric?.prior ?? 0
+                        const currentNum = typeof current === 'number' ? current : parseFloat(String(current).replace(/[$,%]/g, '')) || 0
+                        const priorNum = typeof prior === 'number' ? prior : parseFloat(String(prior).replace(/[$,%]/g, '')) || 0
+                        const isUp = currentNum > priorNum
+                        const isDown = currentNum < priorNum
+                        return (
+                          <div key={key} className="bg-gray-50 rounded-lg p-2 text-center">
+                            <p className="text-[10px] text-[#6E6E73] uppercase tracking-wide">{label}</p>
+                            <p className="text-sm font-semibold text-[#1D1D1F]">{format(current)}</p>
+                            <div className="flex items-center justify-center gap-1">
+                              {isUp && <ArrowUp className="h-2.5 w-2.5 text-green-600" />}
+                              {isDown && <ArrowDown className="h-2.5 w-2.5 text-red-600" />}
+                              {!isUp && !isDown && <Minus className="h-2.5 w-2.5 text-gray-400" />}
+                              <span className="text-[10px] text-[#6E6E73]">{format(prior)}</span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* LLM Votes Row */}
+                  <div className="flex gap-2 mb-2">
+                    <div className="flex-1 bg-green-50 rounded-lg p-2 border border-green-100 text-center">
+                      <p className="text-[10px] font-medium text-green-700">GPT-4o</p>
+                      <span className={`text-xs font-bold ${getVoteColor(rec.gpt_vote)}`}>
+                        {rec.gpt_vote || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex-1 bg-orange-50 rounded-lg p-2 border border-orange-100 text-center">
+                      <p className="text-[10px] font-medium text-orange-700">Claude</p>
+                      <span className={`text-xs font-bold ${getVoteColor(rec.claude_vote)}`}>
+                        {rec.claude_vote || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex-1 bg-blue-50 rounded-lg p-2 border border-blue-100 text-center">
+                      <p className="text-[10px] font-medium text-blue-700">Gemini</p>
+                      <span className={`text-xs font-bold ${getVoteColor(rec.gemini_vote)}`}>
+                        {rec.gemini_vote || 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Keywords Council Data Interface
+interface KeywordsCouncilData {
+  type: string
+  generated_at: string
+  analysis_period: string
+  currentWeek: string
+  priorWeek: string
+  synthesized: KeywordBidRecommendation[]
+  total_keywords: number
+  increase_count: number
+  decrease_count: number
+  maintain_count: number
+  consensus_count: number
+}
+
+interface KeywordBidRecommendation {
+  id: number
+  action: string
+  priority: string
+  confidence: number
+  category: string
+  campaignName: string
+  keyword: string
+  decision: string
+  consensus: string
+  currentMaxCpc: string
+  imprTopPct: string
+  clickShare: string
+  searchImprShare: string
+  clicks: number
+  conversions: number
+  cpa: string
+  avgCpc: string
+  priorClicks: number
+  priorConversions: number
+  priorCpa: string
+  gptVote: string
+  claudeVote: string
+  geminiVote: string
+  gptReasoning: string
+  claudeReasoning: string
+  geminiReasoning: string
+}
+
+function JediCouncilSection({ jediCouncil }: { jediCouncil: JediCouncilResponse | null }) {
+  const [activeCategory, setActiveCategory] = useState<JediCategory>("budget")
+  const [keywordsCouncil, setKeywordsCouncil] = useState<KeywordsCouncilData | null>(null)
+  const [keywordsLoading, setKeywordsLoading] = useState(false)
+  const [expandedKeyword, setExpandedKeyword] = useState<string | null>(null)
+
+  // Fetch keywords council data when Bids tab is selected
+  // Uses localStorage cache for instant loading, then refreshes in background
+  useEffect(() => {
+    if (activeCategory === 'bids' && !keywordsCouncil) {
+      const CACHE_KEY = 'jedi-council-keywords'
+      const CACHE_TIMESTAMP_KEY = 'jedi-council-keywords-timestamp'
+
+      // Try to load from localStorage cache first for instant display
+      try {
+        const cached = localStorage.getItem(CACHE_KEY)
+        const cachedTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY)
+        if (cached && cachedTimestamp) {
+          const cacheAge = Date.now() - parseInt(cachedTimestamp)
+          // Use cache if less than 24 hours old
+          if (cacheAge < 24 * 60 * 60 * 1000) {
+            setKeywordsCouncil(JSON.parse(cached))
+            setKeywordsLoading(false)
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load keywords cache:', e)
+      }
+
+      // Always fetch fresh data in background (unless already loading)
+      if (!keywordsLoading) {
+        setKeywordsLoading(true)
+        fetch(`${PROPHET_API_URL}/jedi-council/keywords`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.available && data.data) {
+              setKeywordsCouncil(data.data)
+              // Save to localStorage for next visit
+              try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data.data))
+                localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString())
+              } catch (e) {
+                console.error('Failed to cache keywords:', e)
+              }
+            }
+          })
+          .catch(err => console.error('Failed to fetch keywords council:', err))
+          .finally(() => setKeywordsLoading(false))
+      }
+    }
+  }, [activeCategory, keywordsCouncil, keywordsLoading])
+
+  // Get category data from the API response
+  // Map UI categories to API category names
+  const categoryApiMapping: Record<string, keyof NonNullable<JediCouncilData['categories']>> = {
+    budget: 'budget',
+    bids: 'keywords', // bids maps to keywords in API
+    competitors: 'competitors',
+    assets: 'assets',
+    'search-terms': 'keywords' // search-terms also maps to keywords
+  }
+
+  const getCategoryData = (cat: keyof typeof categoryConfig): CategoryAnalysis | undefined => {
+    const apiKey = categoryApiMapping[cat]
+    return apiKey ? jediCouncil?.data?.categories?.[apiKey] : undefined
+  }
+
+  // Get recommendations filtered by category
+  const getRecommendationsForCategory = (cat: string) => {
+    return jediCouncil?.data?.synthesized.filter(r =>
+      r.category.toLowerCase() === cat.toLowerCase() ||
+      r.category.toLowerCase().includes(cat.slice(0, 5).toLowerCase())
+    ) || []
+  }
+
+  // Severity styling configuration
+  const severityConfig = {
+    urgent: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", icon: AlertTriangle },
+    warning: { bg: "bg-yellow-50", border: "border-yellow-200", text: "text-yellow-700", icon: AlertTriangle },
+    opportunity: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", icon: Lightbulb },
+    success: { bg: "bg-green-50", border: "border-green-200", text: "text-green-700", icon: CheckCircle2 }
+  }
+
+  const renderCategoryCard = (cat: keyof typeof categoryConfig) => {
+    const config = categoryConfig[cat]
+    const Icon = config.icon
+    const categoryData = getCategoryData(cat)
+    const recommendations = getRecommendationsForCategory(cat)
+
+    return (
+      <Card key={cat} className={`border-0 shadow-sm overflow-hidden`}>
+        <div className={`h-2 bg-gradient-to-r ${config.color}`} />
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${config.bgColor}`}>
+                <Icon className={`h-5 w-5 ${config.textColor}`} />
+              </div>
+              <div>
+                <CardTitle className="text-lg">{config.label}</CardTitle>
+                <p className="text-xs text-[#6E6E73]">{config.description}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className={`text-xs font-medium ${config.textColor} ${config.bgColor} px-2 py-1 rounded`}>
+                {categoryData?.ai_source || config.ai}
+              </span>
+              {categoryData?.confidence && (
+                <div className="text-xs text-[#6E6E73] mt-1">{categoryData.confidence}% confident</div>
+              )}
+              {categoryData?.data_points && (
+                <div className="text-xs text-[#6E6E73]">{categoryData.data_points} data points</div>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Category Summary */}
+          {categoryData?.summary && (
+            <div className={`${config.bgColor} rounded-lg p-3 border ${config.borderColor}`}>
+              <p className="text-sm text-[#1D1D1F]">{categoryData.summary}</p>
+            </div>
+          )}
+
+          {/* Category Insights */}
+          {categoryData?.insights && categoryData.insights.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-[#1D1D1F] flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-yellow-500" />
+                Key Insights
+              </h4>
+              <div className="space-y-2">
+                {categoryData.insights.slice(0, 5).map((insight, i) => {
+                  const severityStyle = severityConfig[insight.severity] || severityConfig.opportunity
+                  const SeverityIcon = severityStyle.icon
+                  return (
+                    <div key={i} className={`rounded-lg p-3 border ${severityStyle.border} ${severityStyle.bg}`}>
+                      <div className="flex items-start gap-2">
+                        <SeverityIcon className={`h-4 w-4 ${severityStyle.text} mt-0.5 flex-shrink-0`} />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-[#1D1D1F]">{insight.title}</span>
+                            {insight.metric && (
+                              <span className={`text-xs font-medium ${severityStyle.text}`}>{insight.metric}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#6E6E73]">{insight.description}</p>
+                          {insight.recommendation && (
+                            <div className="mt-2 pt-2 border-t border-[#E5E5E7]">
+                              <p className="text-xs text-[#1D1D1F]">
+                                <span className="font-medium">Action:</span> {insight.recommendation}
+                              </p>
+                            </div>
+                          )}
+                          {insight.impact && (
+                            <p className="text-xs text-[#6E6E73] mt-1">
+                              <span className="font-medium">Impact:</span> {insight.impact}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Action Items from Synthesized */}
+          {recommendations.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-[#E5E5E7]">
+              <h4 className="text-sm font-medium text-[#1D1D1F] flex items-center gap-2">
+                <Target className="h-4 w-4 text-red-500" />
+                Recommended Actions
+              </h4>
+              {recommendations.slice(0, 3).map((rec, idx) => (
+                <div key={idx} className={`rounded-lg p-3 border ${
+                  rec.priority === 'high' ? 'border-red-200 bg-red-50' :
+                  rec.priority === 'medium' ? 'border-yellow-200 bg-yellow-50' :
+                  'border-green-200 bg-green-50'
+                }`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                      rec.priority === 'high' ? 'bg-red-100 text-red-700' :
+                      rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {rec.priority.toUpperCase()}
+                    </span>
+                    {rec.timeline && (
+                      <span className="text-xs text-[#6E6E73]">{rec.timeline}</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-[#1D1D1F]">{rec.title}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {(!categoryData?.insights || categoryData.insights.length === 0) && recommendations.length === 0 && (
+            <div className="text-center py-6 text-[#6E6E73]">
+              <Icon className="h-8 w-8 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No insights available yet</p>
+              <p className="text-xs">Data will appear after the next analysis run</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Custom render for Campaigns tab - shows individual campaign cards with voting
+  const renderCampaignCards = () => {
+    const synthesized = jediCouncil?.data?.synthesized || []
+    const campaignInsights = jediCouncil?.data?.categories?.campaigns?.insights || []
+
+    if (synthesized.length === 0 && campaignInsights.length === 0) {
+      return (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="py-12 text-center">
+            <Target className="h-12 w-12 mx-auto mb-4 text-purple-300" />
+            <h3 className="text-lg font-medium text-[#1D1D1F] mb-2">No Campaign Data Yet</h3>
+            <p className="text-sm text-[#6E6E73]">Run the n8n Campaign Council workflow to see voting results</p>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    // Decision color mapping
+    const decisionStyles = {
+      INCREASE: { bg: "bg-green-50", border: "border-green-300", text: "text-green-700", badge: "bg-green-100" },
+      DECREASE: { bg: "bg-yellow-50", border: "border-yellow-300", text: "text-yellow-700", badge: "bg-yellow-100" },
+      MAINTAIN: { bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", badge: "bg-blue-100" },
+      PAUSE: { bg: "bg-red-50", border: "border-red-300", text: "text-red-700", badge: "bg-red-100" }
+    }
+
+    // Extract campaign info from synthesized recommendations
+    const campaigns = synthesized.map((rec: any) => {
+      // Parse decision and campaign name from title (e.g., "INCREASE budget for Courses-Desktop")
+      const titleMatch = rec.title.match(/^(INCREASE|DECREASE|MAINTAIN|PAUSE)\s+budget\s+for\s+(.+)$/i)
+      const decision = titleMatch ? titleMatch[1].toUpperCase() : "MAINTAIN"
+      const campaignName = titleMatch ? titleMatch[2] : rec.title
+
+      return {
+        name: campaignName,
+        decision: decision as keyof typeof decisionStyles,
+        consensus: rec.consensus_level || "unknown",
+        priority: rec.priority,
+        // Use direct vote fields from n8n workflow
+        gptVote: rec.gpt_vote || "N/A",
+        claudeVote: rec.claude_vote || "N/A",
+        geminiVote: rec.gemini_vote || "N/A",
+        actionItems: rec.action_items || [],
+        expectedImpact: rec.expected_impact
+      }
+    })
+
+    return (
+      <div className="space-y-4">
+        {/* Summary Header */}
+        <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+          <div className="flex items-center gap-3 mb-2">
+            <Target className="h-5 w-5 text-purple-600" />
+            <span className="font-medium text-purple-900">Campaign Council Decisions</span>
+          </div>
+          <p className="text-sm text-purple-700">
+            {campaigns.length} campaigns analyzed • 3 AI models voted • {campaigns.filter(c => c.consensus === "unanimous").length} unanimous decisions
+          </p>
+        </div>
+
+        {/* Campaign Cards Grid */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {campaigns.map((campaign, idx) => {
+            const style = decisionStyles[campaign.decision] || decisionStyles.MAINTAIN
+            return (
+              <Card key={idx} className={`border-2 ${style.border} ${style.bg} overflow-hidden`}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-semibold text-[#1D1D1F]">
+                      {campaign.name}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${style.badge} ${style.text}`}>
+                        {campaign.decision}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`text-xs px-2 py-0.5 rounded ${
+                      campaign.consensus === "unanimous" ? "bg-green-100 text-green-700" :
+                      campaign.consensus === "majority" ? "bg-yellow-100 text-yellow-700" :
+                      "bg-gray-100 text-gray-700"
+                    }`}>
+                      {campaign.consensus?.toUpperCase() || "UNKNOWN"}
+                    </span>
+                    {campaign.expectedImpact && (
+                      <span className="text-xs text-[#6E6E73]">• {campaign.expectedImpact}</span>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-3">
+                  {/* Voting Breakdown */}
+                  <div className="bg-white/60 rounded-lg p-3 space-y-2">
+                    <div className="text-xs font-medium text-[#6E6E73] mb-2">Council Votes</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { model: "GPT-4o", vote: campaign.gptVote, color: "text-emerald-600" },
+                        { model: "Claude", vote: campaign.claudeVote, color: "text-orange-600" },
+                        { model: "Gemini", vote: campaign.geminiVote, color: "text-blue-600" }
+                      ].map((v) => (
+                        <div key={v.model} className="text-center">
+                          <div className={`text-xs font-medium ${v.color}`}>{v.model}</div>
+                          <div className={`text-sm font-bold ${
+                            v.vote === "INCREASE" ? "text-green-600" :
+                            v.vote === "DECREASE" ? "text-yellow-600" :
+                            v.vote === "PAUSE" ? "text-red-600" :
+                            v.vote === "MAINTAIN" ? "text-blue-600" :
+                            "text-gray-400"
+                          }`}>
+                            {v.vote}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Items */}
+                  {campaign.actionItems.length > 0 && (
+                    <div className="space-y-1">
+                      <div className="text-xs font-medium text-[#6E6E73]">Recommended Actions</div>
+                      {campaign.actionItems.slice(0, 2).map((action: string, i: number) => (
+                        <div key={i} className="flex items-start gap-2 text-xs text-[#1D1D1F]">
+                          <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span>{action}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Clean Header Section */}
+      <div className="bg-white rounded-2xl p-6 border border-[#D2D2D7]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#F5F5F7] rounded-xl p-3 flex items-center gap-1.5">
+              {/* OpenAI */}
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
+                <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.8956zm16.0993 3.8558L12.6 8.3829l2.02-1.1638a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997z" fill="#10a37f"/>
+              </svg>
+              {/* Anthropic */}
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
+                <path d="M17.304 3.541h-3.672l6.696 16.918h3.672l-6.696-16.918zM6.696 3.541 0 20.459h3.672l1.344-3.541h6.792l1.344 3.541h3.672L10.128 3.541H6.696zm-.384 10.377 2.112-5.541 2.112 5.541H6.312z" fill="#D97757"/>
+              </svg>
+              {/* Google Gemini */}
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
+                <path d="M12 24C12 20.2 12.6 17.4 14 15.2C15.6 12.6 18.2 11 22 10V14C19.4 14.4 17.8 15.6 17 17.4C16.4 18.8 16 20.4 16 22H12V24Z" fill="#4285F4"/>
+                <path d="M12 24C12 20.2 11.4 17.4 10 15.2C8.4 12.6 5.8 11 2 10V14C4.6 14.4 6.2 15.6 7 17.4C7.6 18.8 8 20.4 8 22H12V24Z" fill="#34A853"/>
+                <path d="M12 0C12 3.8 12.6 6.6 14 8.8C15.6 11.4 18.2 13 22 14V10C19.4 9.6 17.8 8.4 17 6.6C16.4 5.2 16 3.6 16 2H12V0Z" fill="#EA4335"/>
+                <path d="M12 0C12 3.8 11.4 6.6 10 8.8C8.4 11.4 5.8 13 2 14V10C4.6 9.6 6.2 8.4 7 6.6C7.6 5.2 8 3.6 8 2H12V0Z" fill="#FBBC05"/>
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold text-[#1D1D1F]">Jedi Council</h2>
+              <p className="text-[#6E6E73] text-sm">3-LLM Strategic Analysis • Runs Mondays at 7am</p>
+            </div>
+          </div>
+          {jediCouncil?.last_updated && (
+            <div className="text-right">
+              <div className="text-xs text-[#6E6E73]">Last updated</div>
+              <div className="text-sm font-medium text-[#1D1D1F]">
+                {new Date(jediCouncil.last_updated).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Category Tabs - 5 categories, no "All" */}
+      <div className="flex flex-wrap gap-2 bg-[#F5F5F7] p-2 rounded-xl">
+        {(Object.keys(categoryConfig) as Array<keyof typeof categoryConfig>).map((cat) => {
+          const config = categoryConfig[cat]
+          const Icon = config.icon
+          return (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                activeCategory === cat
+                  ? `bg-white text-[#1D1D1F] shadow-sm`
+                  : "text-[#6E6E73] hover:text-[#1D1D1F]"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span className="hidden sm:inline">{config.label}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Show empty state only if no data available AND not on Bids tab with keywords data */}
+      {!jediCouncil?.available && !(activeCategory === 'bids' && (keywordsCouncil || keywordsLoading)) ? (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Brain className="h-16 w-16 text-[#D2D2D7] mb-4" />
+            <h3 className="text-xl font-semibold text-[#1D1D1F] mb-2">
+              Awaiting Analysis
+            </h3>
+            <p className="text-[#6E6E73] text-center max-w-md">
+              The Jedi Council convenes every Monday at 7:00 AM to analyze your marketing data.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Budget & Spend Section */}
+          {activeCategory === "budget" && jediCouncil?.data?.synthesized && jediCouncil.data.synthesized.length > 0 && (
+            <CampaignCouncilDecisions recommendations={jediCouncil.data.synthesized} />
+          )}
+
+          {/* Bids Section */}
+          {activeCategory === "bids" && (
+            <div className="space-y-6">
+              {keywordsLoading ? (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <div className="h-8 w-8 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4" />
+                    <p className="text-[#6E6E73]">Loading keyword bid recommendations...</p>
+                  </CardContent>
+                </Card>
+              ) : keywordsCouncil && keywordsCouncil.synthesized && keywordsCouncil.synthesized.length > 0 ? (
+                <>
+                  {/* Desktop Keywords - Grouped by Campaign */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <Monitor className="h-5 w-5 text-blue-600" />
+                      Desktop Keywords
+                    </h3>
+                    {/* Group by campaign */}
+                    {(() => {
+                      const desktopKeywords = keywordsCouncil.synthesized.filter((kw: KeywordBidRecommendation) => kw.campaignName?.toLowerCase().includes('desktop'))
+                      const campaigns = [...new Set(desktopKeywords.map((kw: KeywordBidRecommendation) => kw.campaignName))]
+                      return campaigns.map((campaign, cIdx) => (
+                        <div key={cIdx} className="mb-6">
+                          <h4 className="text-base font-semibold text-[#1D1D1F] mb-3 flex items-center gap-2 bg-slate-100 py-2 px-3 rounded-lg">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                            {campaign}
+                          </h4>
+                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            {desktopKeywords.filter((kw: KeywordBidRecommendation) => kw.campaignName === campaign).map((kw: KeywordBidRecommendation, idx: number) => {
+                              const cardKey = `${kw.campaignName}-${kw.keyword}`
+                              const isExpanded = expandedKeyword === cardKey
+                              return (
+                              <Card
+                                key={idx}
+                                className="border-0 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                                onClick={() => setExpandedKeyword(isExpanded ? null : cardKey)}
+                              >
+                                <div className={`h-1 ${kw.decision === 'INCREASE' ? 'bg-green-500' : kw.decision === 'DECREASE' ? 'bg-amber-500' : 'bg-blue-500'}`} />
+                                <CardContent className="p-3">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-medium text-[#1D1D1F] text-sm leading-tight">{kw.keyword}</h4>
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded whitespace-nowrap ml-2 ${
+                                      kw.decision === 'INCREASE' ? 'bg-green-100 text-green-700' :
+                                      kw.decision === 'DECREASE' ? 'bg-amber-100 text-amber-700' :
+                                      'bg-blue-100 text-blue-700'
+                                    }`}>
+                                      {kw.decision}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-4 gap-1 text-xs mb-2">
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">CPC</div>
+                                      <div className="font-semibold">${kw.currentMaxCpc}</div>
+                                    </div>
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">Top%</div>
+                                      <div className={`font-semibold ${parseFloat(kw.imprTopPct) < 90 ? 'text-red-600' : 'text-green-600'}`}>{kw.imprTopPct}</div>
+                                    </div>
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">Clicks</div>
+                                      <div className="font-semibold">{kw.clicks}</div>
+                                    </div>
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">Conv</div>
+                                      <div className="font-semibold">{kw.conversions}</div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1 items-center">
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.gptVote === kw.decision ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>G:{kw.gptVote?.charAt(0) || '?'}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.claudeVote === kw.decision ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>C:{kw.claudeVote?.charAt(0) || '?'}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.geminiVote === kw.decision ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>Ge:{kw.geminiVote?.charAt(0) || '?'}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.consensus === 'UNANIMOUS' ? 'bg-purple-100 text-purple-700' : kw.consensus === 'MAJORITY' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{kw.consensus}</span>
+                                    <ChevronDown className={`h-4 w-4 ml-auto text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                  </div>
+                                  {isExpanded && (
+                                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                                      <div className="bg-emerald-50 rounded p-2">
+                                        <div className="text-[10px] font-semibold text-emerald-700 mb-1">GPT-4o: {kw.gptVote || 'N/A'}</div>
+                                        <p className="text-xs text-emerald-900">{kw.gptReasoning || 'No reasoning provided'}</p>
+                                      </div>
+                                      <div className="bg-orange-50 rounded p-2">
+                                        <div className="text-[10px] font-semibold text-orange-700 mb-1">Claude: {kw.claudeVote || 'N/A'}</div>
+                                        <p className="text-xs text-orange-900">{kw.claudeReasoning || 'No reasoning provided'}</p>
+                                      </div>
+                                      <div className="bg-blue-50 rounded p-2">
+                                        <div className="text-[10px] font-semibold text-blue-700 mb-1">Gemini: {kw.geminiVote || 'N/A'}</div>
+                                        <p className="text-xs text-blue-900">{kw.geminiReasoning || 'No reasoning provided'}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            )})}
+                          </div>
+                        </div>
+                      ))
+                    })()}
+                  </div>
+                  {/* Mobile Keywords - Grouped by Campaign */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <Smartphone className="h-5 w-5 text-blue-600" />
+                      Mobile Keywords
+                    </h3>
+                    {(() => {
+                      const mobileKeywords = keywordsCouncil.synthesized.filter((kw: KeywordBidRecommendation) => kw.campaignName?.toLowerCase().includes('mobile'))
+                      const campaigns = [...new Set(mobileKeywords.map((kw: KeywordBidRecommendation) => kw.campaignName))]
+                      return campaigns.map((campaign, cIdx) => (
+                        <div key={cIdx} className="mb-6">
+                          <h4 className="text-base font-semibold text-[#1D1D1F] mb-3 flex items-center gap-2 bg-slate-100 py-2 px-3 rounded-lg">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                            {campaign}
+                          </h4>
+                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            {mobileKeywords.filter((kw: KeywordBidRecommendation) => kw.campaignName === campaign).map((kw: KeywordBidRecommendation, idx: number) => {
+                              const cardKey = `${kw.campaignName}-${kw.keyword}`
+                              const isExpanded = expandedKeyword === cardKey
+                              return (
+                              <Card
+                                key={idx}
+                                className="border-0 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                                onClick={() => setExpandedKeyword(isExpanded ? null : cardKey)}
+                              >
+                                <div className={`h-1 ${kw.decision === 'INCREASE' ? 'bg-green-500' : kw.decision === 'DECREASE' ? 'bg-amber-500' : 'bg-blue-500'}`} />
+                                <CardContent className="p-3">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-medium text-[#1D1D1F] text-sm leading-tight">{kw.keyword}</h4>
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded whitespace-nowrap ml-2 ${
+                                      kw.decision === 'INCREASE' ? 'bg-green-100 text-green-700' :
+                                      kw.decision === 'DECREASE' ? 'bg-amber-100 text-amber-700' :
+                                      'bg-blue-100 text-blue-700'
+                                    }`}>
+                                      {kw.decision}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-4 gap-1 text-xs mb-2">
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">CPC</div>
+                                      <div className="font-semibold">${kw.currentMaxCpc}</div>
+                                    </div>
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">Top%</div>
+                                      <div className={`font-semibold ${parseFloat(kw.imprTopPct) < 90 ? 'text-red-600' : 'text-green-600'}`}>{kw.imprTopPct}</div>
+                                    </div>
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">Clicks</div>
+                                      <div className="font-semibold">{kw.clicks}</div>
+                                    </div>
+                                    <div className="bg-[#F5F5F7] rounded p-1.5 text-center">
+                                      <div className="text-[#6E6E73] text-[10px]">Conv</div>
+                                      <div className="font-semibold">{kw.conversions}</div>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1 items-center">
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.gptVote === kw.decision ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>G:{kw.gptVote?.charAt(0) || '?'}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.claudeVote === kw.decision ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>C:{kw.claudeVote?.charAt(0) || '?'}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.geminiVote === kw.decision ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>Ge:{kw.geminiVote?.charAt(0) || '?'}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${kw.consensus === 'UNANIMOUS' ? 'bg-purple-100 text-purple-700' : kw.consensus === 'MAJORITY' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{kw.consensus}</span>
+                                    <ChevronDown className={`h-4 w-4 ml-auto text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                  </div>
+                                  {isExpanded && (
+                                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                                      <div className="bg-emerald-50 rounded p-2">
+                                        <div className="text-[10px] font-semibold text-emerald-700 mb-1">GPT-4o: {kw.gptVote || 'N/A'}</div>
+                                        <p className="text-xs text-emerald-900">{kw.gptReasoning || 'No reasoning provided'}</p>
+                                      </div>
+                                      <div className="bg-orange-50 rounded p-2">
+                                        <div className="text-[10px] font-semibold text-orange-700 mb-1">Claude: {kw.claudeVote || 'N/A'}</div>
+                                        <p className="text-xs text-orange-900">{kw.claudeReasoning || 'No reasoning provided'}</p>
+                                      </div>
+                                      <div className="bg-blue-50 rounded p-2">
+                                        <div className="text-[10px] font-semibold text-blue-700 mb-1">Gemini: {kw.geminiVote || 'N/A'}</div>
+                                        <p className="text-xs text-blue-900">{kw.geminiReasoning || 'No reasoning provided'}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            )})}
+                          </div>
+                        </div>
+                      ))
+                    })()}
+                  </div>
+                </>
+              ) : (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <DollarSign className="h-16 w-16 text-[#D2D2D7] mb-4" />
+                    <h3 className="text-xl font-semibold text-[#1D1D1F] mb-2">No Bid Recommendations</h3>
+                    <p className="text-[#6E6E73] text-center max-w-md">
+                      Keyword bid recommendations will appear here after the council runs on Monday at 7am.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Coming Soon Sections */}
+          {(activeCategory === "competitors" || activeCategory === "assets" || activeCategory === "search-terms") && (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                {activeCategory === "competitors" && <Swords className="h-16 w-16 text-[#D2D2D7] mb-4" />}
+                {activeCategory === "assets" && <Image className="h-16 w-16 text-[#D2D2D7] mb-4" />}
+                {activeCategory === "search-terms" && <Search className="h-16 w-16 text-[#D2D2D7] mb-4" />}
+                <h3 className="text-xl font-semibold text-[#1D1D1F] mb-2">
+                  {categoryConfig[activeCategory].label}
+                </h3>
+                <p className="text-[#6E6E73] text-center max-w-md mb-4">
+                  {categoryConfig[activeCategory].description}
+                </p>
+                <span className="text-sm font-medium text-purple-600 bg-purple-50 px-4 py-2 rounded-full">
+                  Coming Soon
+                </span>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Footer */}
+          <div className="text-center text-xs text-[#6E6E73] bg-[#F5F5F7] rounded-xl p-3">
+            <div className="flex items-center justify-center gap-2">
+              <Brain className="h-3 w-3" />
+              <span>3-LLM Voting: GPT-4o • Claude Sonnet • Gemini Pro</span>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// =============================================================================
+// CACHE UTILITIES - localStorage with stale-while-revalidate
+// =============================================================================
+const CACHE_PREFIX = 'dashboard_'
+const CACHE_VERSION = 'v4' // Increment this when data structure changes to invalidate old cache
+const CACHE_VERSION_KEY = 'dashboard_cache_version'
+
+const CACHE_TTL = {
+  sales: 5 * 60 * 1000,         // 5 minutes for realtime data
+  traffic: 24 * 60 * 60 * 1000, // 24 hours for traffic (updates daily)
+  googleAds: 24 * 60 * 60 * 1000, // 24 hours for Google Ads (updates daily)
+  bingAds: 24 * 60 * 60 * 1000,   // 24 hours for Bing Ads (updates daily)
+  subscriptions: 60 * 60 * 1000,  // 1 hour for subscriptions
+  jedi: 60 * 60 * 1000,           // 1 hour for jedi council
+}
+
+// Clear all dashboard cache when version changes
+function checkAndClearCacheVersion(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const storedVersion = localStorage.getItem(CACHE_VERSION_KEY)
+    if (storedVersion !== CACHE_VERSION) {
+      // Version mismatch - clear all dashboard cache
+      const keysToRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith(CACHE_PREFIX)) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key))
+      localStorage.setItem(CACHE_VERSION_KEY, CACHE_VERSION)
+      console.log(`[Cache] Cleared stale cache (${storedVersion} -> ${CACHE_VERSION})`)
+    }
+  } catch (e) {
+    console.warn('Failed to check cache version:', e)
+  }
+}
+
+// Initialize cache version check
+if (typeof window !== 'undefined') {
+  checkAndClearCacheVersion()
+}
+
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+  ttl: number
+  version: string // Track version in each entry for extra safety
+}
+
+function getFromCache<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const cached = localStorage.getItem(CACHE_PREFIX + key)
+    if (!cached) return null
+    const entry: CacheEntry<T> = JSON.parse(cached)
+    // Reject cache if version doesn't match (extra safety)
+    if (entry.version && entry.version !== CACHE_VERSION) {
+      localStorage.removeItem(CACHE_PREFIX + key)
+      return null
+    }
+    return entry.data
+  } catch {
+    return null
+  }
+}
+
+function setInCache<T>(key: string, data: T, ttl: number): void {
+  if (typeof window === 'undefined') return
+  try {
+    const entry: CacheEntry<T> = { data, timestamp: Date.now(), ttl, version: CACHE_VERSION }
+    localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(entry))
+  } catch (e) {
+    console.warn('Failed to cache data:', e)
+  }
+}
+
+function isCacheStale(key: string): boolean {
+  if (typeof window === 'undefined') return true
+  try {
+    const cached = localStorage.getItem(CACHE_PREFIX + key)
+    if (!cached) return true
+    const entry = JSON.parse(cached)
+    return Date.now() - entry.timestamp > entry.ttl
+  } catch {
+    return true
+  }
+}
+
+// Fetch with stale-while-revalidate pattern
+async function fetchWithCache<T>(
+  url: string,
+  cacheKey: string,
+  ttl: number,
+  setter: (data: T) => void
+): Promise<T | null> {
+  // Immediately return cached data if available
+  const cached = getFromCache<T>(cacheKey)
+  if (cached) {
+    setter(cached)
+  }
+
+  // Revalidate in background if stale (or no cache)
+  try {
+    const res = await fetch(url)
+    if (res.ok) {
+      const data = await res.json()
+      setInCache(cacheKey, data, ttl)
+      setter(data)
+      return data
+    }
+  } catch (e) {
+    console.error(`Failed to fetch ${cacheKey}:`, e)
+  }
+
+  return cached
+}
+
+
+export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState<TabType>("sales")
+
+  // Sales state
+  const [metrics, setMetrics] = useState<MetricsResponse | null>(null)
+  const [hourlyComparison, setHourlyComparison] = useState<HourlyComparisonResponse | null>(null)
+  const [weeklyTrends, setWeeklyTrends] = useState<WeeklyTrendsResponse | null>(null)
+  const [extendedWeeklyTrends, setExtendedWeeklyTrends] = useState<ExtendedWeeklyTrendsResponse | null>(null)
+  const [productMix, setProductMix] = useState<ProductMixResponse | null>(null)
+  const [weeklyQtyYoY, setWeeklyQtyYoY] = useState<WeeklyQtyYoYResponse | null>(null)
+  const [monthlyQtyYoY, setMonthlyQtyYoY] = useState<MonthlyQtyYoYResponse | null>(null)
+  const [eodForecast, setEodForecast] = useState<EODForecastResponse | null>(null)
+  const [eowForecast, setEowForecast] = useState<EOWForecastResponse | null>(null)
+  const [eodProjection, setEodProjection] = useState<EODProjectionResponse | null>(null)
+  const [eomForecast, setEomForecast] = useState<EOMForecastResponse | null>(null)
+  const [nextWeekPreview, setNextWeekPreview] = useState<NextWeekPreviewResponse | null>(null)
+  const [thisWeekForecast, setThisWeekForecast] = useState<ThisWeekForecastResponse | null>(null)
+
+  // Traffic state
+  const [traffic, setTraffic] = useState<TrafficResponse | null>(null)
+  const [trafficBySourceWeekly, setTrafficBySourceWeekly] = useState<TrafficBySourceWeeklyResponse | null>(null)
+
+  // Auction Insights state
+  const [auctionInsights, setAuctionInsights] = useState<AuctionInsightsResponse | null>(null)
+
+  // Google Ads Performance state
+  const [accountPerformance, setAccountPerformance] = useState<AccountPerformanceResponse | null>(null)
+  const [campaignsData, setCampaignsData] = useState<CampaignsResponse | null>(null)
+  const [keywordsData, setKeywordsData] = useState<KeywordsResponse | null>(null)
+  const [n8nKeywordsWeekly, setN8nKeywordsWeekly] = useState<N8nKeywordsWeeklyResponse | null>(null)
+
+  // Bing Ads Performance state
+  const [bingCampaignsData, setBingCampaignsData] = useState<CampaignsResponse | null>(null)
+  const [bingKeywordsData, setBingKeywordsData] = useState<KeywordsResponse | null>(null)
+  const [bingCampaignsWeekly, setBingCampaignsWeekly] = useState<CampaignsWeeklyResponse | null>(null)
+
+  // Google Ads Weekly state
+  const [googleCampaignsWeekly, setGoogleCampaignsWeekly] = useState<CampaignsWeeklyResponse | null>(null)
+
+  // Jedi Council state
+  const [jediCouncil, setJediCouncil] = useState<JediCouncilResponse | null>(null)
+
+  // Subscriptions state
+  const [subscriptions, setSubscriptions] = useState<SubscriptionsResponse | null>(null)
+  const [subscriberMetrics, setSubscriberMetrics] = useState<SubscriberMetricsResponse | null>(null)
+
+  // Loading states per tab
+  const [salesLoading, setSalesLoading] = useState(true)
+  const [trafficLoading, setTrafficLoading] = useState(true)
+  const [googleAdsLoading, setGoogleAdsLoading] = useState(true)
+  const [bingAdsLoading, setBingAdsLoading] = useState(true)
+  const [jediLoading, setJediLoading] = useState(true)
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(true)
+
+  // Track which tabs have been loaded
+  const [loadedTabs, setLoadedTabs] = useState<Set<TabType>>(new Set())
+
+  const [error, setError] = useState<string | null>(null)
+
+  // Derived loading state for backward compatibility
+  const loading = salesLoading
+
+  // Fetch Sales tab data (priority - load immediately)
+  const fetchSalesData = async () => {
+    setSalesLoading(true)
+    try {
+      // Load from cache immediately, then revalidate
+      await Promise.all([
+        fetchWithCache(`${PROPHET_API_URL}/metrics`, 'metrics', CACHE_TTL.sales, setMetrics),
+        fetchWithCache(`${PROPHET_API_URL}/hourly-comparison`, 'hourly', CACHE_TTL.sales, setHourlyComparison),
+        fetchWithCache(`${PROPHET_API_URL}/weekly-trends`, 'weekly', CACHE_TTL.sales, setWeeklyTrends),
+        fetchWithCache(`${PROPHET_API_URL}/weekly-trends-extended`, 'weeklyExtended', CACHE_TTL.sales, setExtendedWeeklyTrends),
+        fetchWithCache(`${PROPHET_API_URL}/product-mix`, 'productMix', CACHE_TTL.sales, setProductMix),
+        fetchWithCache(`${PROPHET_API_URL}/weekly-qty-yoy`, 'weeklyQtyYoY', CACHE_TTL.sales, setWeeklyQtyYoY),
+        fetchWithCache(`${PROPHET_API_URL}/monthly-qty-yoy`, 'monthlyQtyYoY', CACHE_TTL.sales, setMonthlyQtyYoY),
+        fetchWithCache(`${PROPHET_API_URL}/eod-forecast`, 'eod', CACHE_TTL.sales, setEodForecast),
+        fetchWithCache(`${PROPHET_API_URL}/eow-forecast`, 'eow', CACHE_TTL.sales, setEowForecast),
+        fetchWithCache(`${PROPHET_API_URL}/eod-projection`, 'eodProjection', CACHE_TTL.sales, setEodProjection),
+        fetchWithCache(`${PROPHET_API_URL}/eom-forecast`, 'eom', CACHE_TTL.sales, setEomForecast),
+        fetchWithCache(`${PROPHET_API_URL}/next-week-preview`, 'nextWeek', CACHE_TTL.sales, setNextWeekPreview),
+        fetchWithCache(`${PROPHET_API_URL}/this-week-forecast`, 'thisWeek', CACHE_TTL.sales, setThisWeekForecast),
+      ])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load sales data")
+    } finally {
+      setSalesLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'sales']))
+    }
+  }
+
+  // Fetch Traffic tab data (lazy load)
+  const fetchTrafficData = async () => {
+    const trafficStale = isCacheStale('traffic')
+    const trafficWeeklyStale = isCacheStale('trafficBySourceWeekly')
+    // Fetch if either cache is stale or missing
+    if (loadedTabs.has('traffic') && !trafficStale && !trafficWeeklyStale && trafficBySourceWeekly) return
+    setTrafficLoading(true)
+    try {
+      await Promise.all([
+        fetchWithCache(`${PROPHET_API_URL}/traffic`, 'traffic', CACHE_TTL.traffic, setTraffic),
+        fetchWithCache(`${PROPHET_API_URL}/traffic/by-source-weekly`, 'trafficBySourceWeekly', CACHE_TTL.traffic, setTrafficBySourceWeekly),
+      ])
+    } catch (err) {
+      console.error("Failed to load traffic data:", err)
+    } finally {
+      setTrafficLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'traffic']))
+    }
+  }
+
+  // Fetch Google Ads tab data (lazy load)
+  const fetchGoogleAdsData = async () => {
+    if (loadedTabs.has('google-ads') && !isCacheStale('googleAds')) return
+    setGoogleAdsLoading(true)
+    try {
+      await Promise.all([
+        fetchWithCache(`${PROPHET_API_URL}/auction-insights`, 'auction', CACHE_TTL.googleAds, setAuctionInsights),
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/account`, 'adsAccount', CACHE_TTL.googleAds, setAccountPerformance),
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/campaigns`, 'adsCampaigns', CACHE_TTL.googleAds, setCampaignsData),
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/keywords`, 'adsKeywords', CACHE_TTL.googleAds, setKeywordsData),
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/campaigns/weekly`, 'googleCampaignsWeekly', CACHE_TTL.googleAds, setGoogleCampaignsWeekly),
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/keywords/n8n-weekly`, 'n8nKeywordsWeekly', CACHE_TTL.googleAds, setN8nKeywordsWeekly),
+      ])
+    } catch (err) {
+      console.error("Failed to load Google Ads data:", err)
+    } finally {
+      setGoogleAdsLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'google-ads']))
+    }
+  }
+
+  // Fetch Bing Ads tab data (lazy load)
+  const fetchBingAdsData = async () => {
+    if (loadedTabs.has('bing-ads') && !isCacheStale('bingAds')) return
+    setBingAdsLoading(true)
+    try {
+      await Promise.all([
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/bing/campaigns`, 'bingCampaigns', CACHE_TTL.bingAds, setBingCampaignsData),
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/bing/keywords`, 'bingKeywords', CACHE_TTL.bingAds, setBingKeywordsData),
+        fetchWithCache(`${PROPHET_API_URL}/paid-ads/bing/campaigns/weekly`, 'bingCampaignsWeekly', CACHE_TTL.bingAds, setBingCampaignsWeekly),
+      ])
+    } catch (err) {
+      console.error("Failed to load Bing Ads data:", err)
+    } finally {
+      setBingAdsLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'bing-ads']))
+    }
+  }
+
+  // Fetch Jedi Council tab data (lazy load)
+  const fetchJediData = async () => {
+    if (loadedTabs.has('jedi-council') && !isCacheStale('jedi')) return
+    setJediLoading(true)
+    try {
+      await fetchWithCache(`${PROPHET_API_URL}/jedi-council`, 'jedi', CACHE_TTL.jedi, setJediCouncil)
+    } catch (err) {
+      console.error("Failed to load Jedi Council data:", err)
+    } finally {
+      setJediLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'jedi-council']))
+    }
+  }
+
+  const fetchSubscriptionsData = async () => {
+    if (loadedTabs.has('subscriptions') && !isCacheStale('subscriptions')) return
+    setSubscriptionsLoading(true)
+    try {
+      await Promise.all([
+        fetchWithCache(`${PROPHET_API_URL}/subscriptions`, 'subscriptions', CACHE_TTL.subscriptions, setSubscriptions),
+        fetchWithCache(`${PROPHET_API_URL}/subscriber/metrics`, 'subscriberMetrics', CACHE_TTL.subscriptions, setSubscriberMetrics)
+      ])
+    } catch (err) {
+      console.error("Failed to load Subscriptions data:", err)
+    } finally {
+      setSubscriptionsLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'subscriptions']))
+    }
+  }
+
+  // Initial load: Sales tab first (priority)
+  useEffect(() => {
+    // Clear old traffic cache to force fetch of new weekly data
+    if (typeof window !== 'undefined') {
+      const hasWeeklyCache = localStorage.getItem('dashboard_trafficBySourceWeekly')
+      if (!hasWeeklyCache) {
+        // Clear traffic tab caches to force re-fetch with new endpoint
+        localStorage.removeItem('dashboard_traffic')
+      }
+    }
+
+    // Load cached data immediately for instant display
+    const cachedMetrics = getFromCache<MetricsResponse>('metrics')
+    const cachedHourly = getFromCache<HourlyComparisonResponse>('hourly')
+    const cachedWeekly = getFromCache<WeeklyTrendsResponse>('weekly')
+    const cachedExtendedWeekly = getFromCache<ExtendedWeeklyTrendsResponse>('weeklyExtended')
+    const cachedProductMix = getFromCache<ProductMixResponse>('productMix')
+    const cachedWeeklyQtyYoY = getFromCache<WeeklyQtyYoYResponse>('weeklyQtyYoY')
+    const cachedMonthlyQtyYoY = getFromCache<MonthlyQtyYoYResponse>('monthlyQtyYoY')
+    const cachedEod = getFromCache<EODForecastResponse>('eod')
+    const cachedEow = getFromCache<EOWForecastResponse>('eow')
+    const cachedTrafficWeekly = getFromCache<TrafficBySourceWeeklyResponse>('trafficBySourceWeekly')
+
+    if (cachedMetrics) setMetrics(cachedMetrics)
+    if (cachedHourly) setHourlyComparison(cachedHourly)
+    if (cachedWeekly) setWeeklyTrends(cachedWeekly)
+    if (cachedExtendedWeekly) setExtendedWeeklyTrends(cachedExtendedWeekly)
+    if (cachedProductMix) setProductMix(cachedProductMix)
+    if (cachedWeeklyQtyYoY) setWeeklyQtyYoY(cachedWeeklyQtyYoY)
+    if (cachedMonthlyQtyYoY) setMonthlyQtyYoY(cachedMonthlyQtyYoY)
+    if (cachedEod) setEodForecast(cachedEod)
+    if (cachedEow) setEowForecast(cachedEow)
+    if (cachedTrafficWeekly) setTrafficBySourceWeekly(cachedTrafficWeekly)
+
+    // If we have cached data, show it immediately and mark as not loading
+    if (cachedMetrics && cachedHourly && cachedWeekly && cachedProductMix && cachedEow) {
+      setSalesLoading(false)
+    }
+
+    // Then fetch fresh data (revalidate)
+    fetchSalesData()
+
+    // Pre-fetch other tabs in background after a delay
+    const prefetchTimer = setTimeout(() => {
+      fetchTrafficData()
+      fetchGoogleAdsData()
+      fetchJediData()
+    }, 1000) // 1 second delay to not block initial render
+
+    return () => clearTimeout(prefetchTimer)
+  }, [])
+
+  // Lazy load tab data when tab changes
+  useEffect(() => {
+    if (activeTab === 'traffic') fetchTrafficData()
+    else if (activeTab === 'google-ads') fetchGoogleAdsData()
+    else if (activeTab === 'bing-ads') fetchBingAdsData()
+    else if (activeTab === 'jedi-council') fetchJediData()
+    else if (activeTab === 'subscriptions') fetchSubscriptionsData()
+  }, [activeTab])
+
+  // Auto-refresh sales data every 5 minutes when on sales tab
+  useEffect(() => {
+    if (activeTab !== 'sales') return
+
+    const refreshInterval = setInterval(() => {
+      console.log('[Auto-refresh] Refreshing sales data...')
+      fetchSalesData()
+    }, 5 * 60 * 1000) // 5 minutes
+
+    return () => clearInterval(refreshInterval)
+  }, [activeTab])
+
+  const tabs = [
+    { id: "sales" as TabType, label: "Sales", icon: DollarSign },
+    { id: "traffic" as TabType, label: "Traffic", icon: Users },
+    { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
+    { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
+    { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
+    { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
+  ]
+
+  return (
+    <div className="min-h-screen bg-[#F5F5F7]">
+      {/* Header */}
+      <header className="border-b border-[#D2D2D7] bg-white/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <h1 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight">
+              Dashboard
+            </h1>
+            {metrics && (
+              <span className="text-sm text-[#6E6E73]">
+                {metrics.today.date_range}
+              </span>
+            )}
+          </div>
+          {/* Tab Navigation */}
+          <div className="flex gap-1 -mb-px">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === tab.id
+                      ? "border-[#0066CC] text-[#0066CC]"
+                      : "border-transparent text-[#6E6E73] hover:text-[#1D1D1F] hover:border-[#D2D2D7]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        {/* Sales Tab */}
+        {activeTab === "sales" && (
+          <>
+            {/* TOP ROW - Simple KPI Cards */}
+            {loading && !metrics ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <CardSkeleton key={i} className="h-[100px]" />
+                ))}
+              </div>
+            ) : metrics ? (
+              <>
+              {/* Top Row - 4 Simple KPI Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {/* Today */}
+                <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                  <div className="text-lg font-medium text-white/70 mb-1">Today</div>
+                  <div className="text-7xl font-bold text-white">{formatNumber(metrics.today.direct_qty)}</div>
+                  <div className="mt-2 text-center">
+                    <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(metrics.today.py_qty)}</div>
+                    <div className={`text-lg font-semibold ${metrics.today.qty_change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                      {metrics.today.qty_change_pct >= 0 ? "+" : ""}{metrics.today.qty_change_pct}% ({metrics.today.direct_qty - metrics.today.py_qty >= 0 ? "+" : ""}{metrics.today.direct_qty - metrics.today.py_qty})
+                    </div>
+                  </div>
+                </div>
+                {/* Yesterday */}
+                <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                  <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
+                  <div className="text-7xl font-bold text-white">{formatNumber(metrics.yesterday.direct_qty)}</div>
+                  <div className="mt-2 text-center">
+                    <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(metrics.yesterday.py_qty)}</div>
+                    <div className={`text-lg font-semibold ${metrics.yesterday.qty_change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                      {metrics.yesterday.qty_change_pct >= 0 ? "+" : ""}{metrics.yesterday.qty_change_pct}% ({metrics.yesterday.direct_qty - metrics.yesterday.py_qty >= 0 ? "+" : ""}{metrics.yesterday.direct_qty - metrics.yesterday.py_qty})
+                    </div>
+                  </div>
+                </div>
+                {/* This Week */}
+                <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                  <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
+                  <div className="text-7xl font-bold text-white">{formatNumber(metrics.this_week.direct_qty)}</div>
+                  <div className="mt-2 text-center">
+                    <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(metrics.this_week.py_qty)}</div>
+                    <div className={`text-lg font-semibold ${metrics.this_week.qty_change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                      {metrics.this_week.qty_change_pct >= 0 ? "+" : ""}{metrics.this_week.qty_change_pct}% ({metrics.this_week.direct_qty - metrics.this_week.py_qty >= 0 ? "+" : ""}{metrics.this_week.direct_qty - metrics.this_week.py_qty})
+                    </div>
+                  </div>
+                </div>
+                {/* MTD */}
+                <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                  <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
+                  <div className="text-7xl font-bold text-white">{formatNumber(metrics.this_month.direct_qty)}</div>
+                  <div className="mt-2 text-center">
+                    <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(metrics.this_month.py_qty)}</div>
+                    <div className={`text-lg font-semibold ${metrics.this_month.qty_change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                      {metrics.this_month.qty_change_pct >= 0 ? "+" : ""}{metrics.this_month.qty_change_pct}% ({metrics.this_month.direct_qty - metrics.this_month.py_qty >= 0 ? "+" : ""}{metrics.this_month.direct_qty - metrics.this_month.py_qty})
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* MAIN SECTION - 2 Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+                {/* Left - Charts */}
+                <div className="lg:col-span-9 space-y-4">
+                  {/* Bar Chart - This Week vs Last Week Cumulative */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">This Week vs Last Week</CardTitle>
+                      <CardDescription className="text-sm text-[#6E6E73]">Cumulative daily sales by day</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {extendedWeeklyTrends ? (() => {
+                        const currentWeek = extendedWeeklyTrends.direct_qty.find(w => w.week_label === "Current Week")
+                        const lastWeek = extendedWeeklyTrends.direct_qty.find(w => w.week_label === "Last Week")
+                        const days = extendedWeeklyTrends.days || ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+                        const chartData = days.map(day => {
+                          const thisWeekVal = currentWeek?.daily_cumulative[day] ?? 0
+                          const lastWeekVal = lastWeek?.daily_cumulative[day] ?? 0
+                          const pctChange = lastWeekVal > 0 ? ((thisWeekVal - lastWeekVal) / lastWeekVal) * 100 : 0
+                          return {
+                            day,
+                            thisWeek: thisWeekVal,
+                            lastWeek: lastWeekVal,
+                            pctChange
+                          }
+                        })
+
+                        return (
+                          <div>
+                            <ResponsiveContainer width="100%" height={200}>
+                              <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E7" vertical={false} />
+                                <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#6E6E73' }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                  contentStyle={{ backgroundColor: 'white', border: '1px solid #E5E5E7', borderRadius: '8px', fontSize: '12px' }}
+                                  formatter={(value, name) => [value ?? 0, name === 'thisWeek' ? 'This Week' : 'Last Week']}
+                                />
+                                <Bar dataKey="lastWeek" fill="#D2D2D7" radius={[4, 4, 0, 0]} name="Last Week">
+                                  <LabelList dataKey="lastWeek" position="insideTop" fill="#6E6E73" fontSize={14} fontWeight={600} dy={6} />
+                                </Bar>
+                                <Bar dataKey="thisWeek" fill="#1D1D1F" radius={[4, 4, 0, 0]} name="This Week">
+                                  <LabelList dataKey="thisWeek" position="insideTop" fill="#FFFFFF" fontSize={14} fontWeight={600} dy={6} />
+                                </Bar>
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                            {/* Percentage change row - aligned with chart X-axis */}
+                            <div className="flex -mt-3" style={{ marginLeft: '58px', marginRight: '10px' }}>
+                              {chartData.map((d) => (
+                                <div key={d.day} className="flex-1 text-center">
+                                  <span className={`text-xs font-semibold ${d.pctChange >= 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                    {d.pctChange >= 0 ? '+' : ''}{d.pctChange.toFixed(0)}%
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })() : (
+                        <div className="h-[220px] flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Hourly Comparison Table */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-[#0066CC]" />
+                        Hourly Sales Comparison
+                      </CardTitle>
+                      <CardDescription className="text-sm text-[#6E6E73]">Comparing today to the same weekday across prior periods</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {loading ? (
+                        <div className="h-64 flex items-center justify-center">
+                          <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
+                        </div>
+                      ) : error ? (
+                        <div className="h-64 flex items-center justify-center text-[#FF3B30]">
+                          {error}
+                        </div>
+                      ) : hourlyComparison ? (
+                        <div>
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] sticky left-0 bg-white min-w-[90px]">
+                                  Period
+                                </th>
+                                {hourlyComparison.hours.map((hour) => (
+                                  <th key={hour} className="text-center py-2 px-0.5 font-medium text-[#6E6E73] whitespace-nowrap">
+                                    {hour.replace('am', 'a').replace('pm', 'p')}
+                                  </th>
+                                ))}
+                                <th className="text-center py-2 px-1 font-semibold text-[#1D1D1F] bg-[#F5F5F7] whitespace-nowrap">
+                                  EOD
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {hourlyComparison.periods.map((period) => {
+                                const isToday = period.period_label === "Today"
+                                const isShaded = period.period_label === "-1Y" || period.period_label.includes("Avg")
+                                const rowBg = isToday ? "bg-[#E8F4FF]" : isShaded ? "bg-[#F5F5F5]" : ""
+                                const cellBg = isToday ? "bg-[#E8F4FF]" : isShaded ? "bg-[#F5F5F5]" : "bg-white"
+                                return (
+                                  <tr
+                                    key={period.period_label}
+                                    className={`border-b border-[#E5E5E5] ${rowBg}`}
+                                  >
+                                    <td className={`py-2 px-1 sticky left-0 ${cellBg}`}>
+                                      <div className="font-medium text-[#1D1D1F] text-xs">{period.period_label}</div>
+                                      {period.period_date && (
+                                        <div className="text-[10px] text-[#6E6E73]">{period.period_date}</div>
+                                      )}
+                                    </td>
+                                    {hourlyComparison.hours.map((hour) => {
+                                      const value = period.hourly_sales[hour]
+                                      return (
+                                        <td
+                                          key={hour}
+                                          className={`text-center py-2 px-0.5 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}
+                                        >
+                                          {value === null ? "-" : value}
+                                        </td>
+                                      )
+                                    })}
+                                    <td className={`text-center py-2 px-1 font-semibold ${isShaded ? "bg-[#F5F5F5]" : "bg-[#F5F5F7]"} ${period.end_of_day === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}>
+                                      {period.end_of_day === null ? "-" : period.end_of_day}
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Right Sidebar - Combined Real-time & Forecasts */}
+                <div className="lg:col-span-3">
+                  <Card className="bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] border-0 shadow-sm h-full pt-2">
+                    <CardContent className="space-y-3 pt-0 px-3">
+                      {/* Header */}
+                      <div className="text-center pb-2">
+                        <span className="text-2xl font-bold uppercase tracking-[0.25em] text-white/60">The Prophet</span>
+                      </div>
+                      {/* Top Row - Today @ and EOD side by side */}
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Real-time Comparison */}
+                        {hourlyComparison ? (() => {
+                          const now = new Date()
+                          const hour = now.getHours()
+                          const minutes = now.getMinutes()
+                          const timeStr = `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${minutes.toString().padStart(2, '0')}${hour >= 12 ? 'pm' : 'am'}`
+                          const hourLabel = hour === 0 ? "12am" : hour < 12 ? `${hour}am` : hour === 12 ? "12pm" : `${hour - 12}pm`
+
+                          const todayData = hourlyComparison.periods.find(p => p.period_label === "Today")
+                          const lastWeekData = hourlyComparison.periods.find(p => p.period_label === "-1W")
+                          const twoWeeksData = hourlyComparison.periods.find(p => p.period_label === "-2W")
+                          const threeWeeksData = hourlyComparison.periods.find(p => p.period_label === "-3W")
+
+                          const todaySales = todayData?.hourly_sales[hourLabel] ?? 0
+                          const lastWeekSales = lastWeekData?.hourly_sales[hourLabel] ?? 0
+                          const twoWeeksSales = twoWeeksData?.hourly_sales[hourLabel] ?? 0
+                          const threeWeeksSales = threeWeeksData?.hourly_sales[hourLabel] ?? 0
+
+                          return (
+                            <div className="rounded-xl p-3 bg-gradient-to-br from-[#0066CC] to-[#0055AA]">
+                              <div className="text-center mb-2">
+                                <div className="text-[10px] font-medium text-white/70 uppercase tracking-wider">Today @</div>
+                                <div className="text-2xl font-bold text-white">{timeStr}</div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-white/80 text-left">Today</span>
+                                  <span className="text-xl font-bold text-white">{todaySales}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-white/60 text-left">LW</span>
+                                  <span className="text-lg font-semibold text-white/80">{lastWeekSales}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-white/60 text-left">2WA</span>
+                                  <span className="text-lg font-semibold text-white/80">{twoWeeksSales}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-white/60 text-left">3WA</span>
+                                  <span className="text-lg font-semibold text-white/80">{threeWeeksSales}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })() : (
+                          <div className="rounded-xl p-3 bg-gradient-to-br from-[#0066CC] to-[#0055AA] flex items-center justify-center">
+                            <Loader2 className="h-5 w-5 animate-spin text-white/50" />
+                          </div>
+                        )}
+
+                        {/* EOD Projection */}
+                        {eodProjection ? (
+                          <div className="rounded-xl p-4 bg-white/95 flex flex-col items-center justify-center">
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73] mb-1">
+                              EOD Forecast
+                            </div>
+                            <div className="text-5xl font-bold text-[#A78BFA]">{eodProjection.projected_eod}</div>
+                            <div className="text-sm text-[#8E8E93] mb-2">
+                              {eodProjection.projected_lower}-{eodProjection.projected_upper}
+                            </div>
+                            <div className="flex items-center justify-center gap-6 pt-2 border-t border-gray-100 w-full">
+                              <div className="text-center">
+                                <div className="text-[10px] uppercase text-[#8E8E93]">vs LW</div>
+                                <div className={`text-xl font-bold ${eodProjection.vs_last_week >= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
+                                  {eodProjection.vs_last_week >= 0 ? "+" : ""}{eodProjection.vs_last_week}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-[10px] uppercase text-[#8E8E93]">vs 2W</div>
+                                <div className={`text-xl font-bold ${eodProjection.vs_two_weeks >= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
+                                  {eodProjection.vs_two_weeks >= 0 ? "+" : ""}{eodProjection.vs_two_weeks}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="rounded-xl p-4 bg-white/95 flex items-center justify-center">
+                            <Loader2 className="h-5 w-5 animate-spin text-[#A78BFA]" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Holiday Indicator */}
+                      {eowForecast?.week_has_holiday && eowForecast.holiday_name && (
+                        <div className="rounded-xl p-3 bg-amber-500/20">
+                          <div className="text-[9px] font-semibold uppercase tracking-wider text-amber-400/70 mb-1 text-center">
+                            Forecast Adjusted For
+                          </div>
+                          <div className="text-sm font-medium text-amber-300 text-center">{eowForecast.holiday_name}</div>
+                        </div>
+                      )}
+
+                      {/* Monthly Forecast */}
+                      {eomForecast && (
+                        <div className="rounded-xl p-4 bg-white/95">
+                          <div className="text-center mb-1">
+                            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73]">{eomForecast.month_name} Forecast</span>
+                            <div className="text-xs text-[#8E8E93] mt-0.5">{eomForecast.days_remaining}d left</div>
+                            <div className="text-5xl font-bold text-[#A78BFA] mt-2">{formatNumber(eomForecast.predicted_sales)}</div>
+                          </div>
+                          {(() => {
+                            const totalDays = eomForecast.days_completed + 1 + eomForecast.days_remaining
+                            const daysSoFar = eomForecast.days_completed + 1
+                            const mtdExpected = Math.round(eomForecast.predicted_sales * (daysSoFar / totalDays))
+                            const variance = eomForecast.current_month_sales - mtdExpected
+                            const variancePct = Math.round((variance / mtdExpected) * 100)
+                            return (
+                              <div className="flex justify-between items-center text-sm mt-3 pt-2 border-t border-gray-100">
+                                <div className="text-center">
+                                  <div className="font-bold text-lg text-[#1D1D1F]">{formatNumber(eomForecast.current_month_sales)}</div>
+                                  <div className="text-[10px] text-[#8E8E93] uppercase">MTD Actual</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-bold text-lg text-[#8E8E93]">{formatNumber(mtdExpected)}</div>
+                                  <div className="text-[10px] text-[#8E8E93] uppercase">MTD Expected</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className={`font-bold text-lg ${variancePct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                    {variancePct >= 0 ? `+${variancePct}%` : `${variancePct}%`}
+                                  </div>
+                                  <div className="text-[10px] text-[#8E8E93] uppercase">Variance</div>
+                                </div>
+                              </div>
+                            )
+                          })()}
+                        </div>
+                      )}
+
+                      {/* This Week Forecast */}
+                      {thisWeekForecast && (
+                        <div className="rounded-xl p-4 bg-white/95">
+                          <div className="text-center mb-1">
+                            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73]">Week Forecast</span>
+                            <div className="text-xs text-[#8E8E93] mt-0.5">{thisWeekForecast.week_start_date} - {thisWeekForecast.week_end_date}</div>
+                            <div className="text-5xl font-bold text-[#A78BFA] mt-2">{formatNumber(thisWeekForecast.predicted_sales)}</div>
+                          </div>
+                          {thisWeekForecast.has_holiday && thisWeekForecast.holiday_name && (
+                            <div className="text-xs text-amber-600 text-center mb-2">
+                              ⚠️ {thisWeekForecast.holiday_name}
+                            </div>
+                          )}
+                          {/* MTD Actual vs Expected */}
+                          {(() => {
+                            const totalDays = 7
+                            const daysSoFar = thisWeekForecast.days_completed + 1
+                            const wtdExpected = Math.round(thisWeekForecast.predicted_sales * (daysSoFar / totalDays))
+                            const variance = thisWeekForecast.current_week_sales - wtdExpected
+                            const variancePct = Math.round((variance / wtdExpected) * 100)
+                            return (
+                              <div className="flex justify-between items-center text-sm mt-2 pt-2 border-t border-gray-100">
+                                <div className="text-center">
+                                  <div className="font-bold text-lg text-[#1D1D1F]">{formatNumber(thisWeekForecast.current_week_sales)}</div>
+                                  <div className="text-[10px] text-[#8E8E93] uppercase">WTD Actual</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="font-bold text-lg text-[#8E8E93]">{formatNumber(wtdExpected)}</div>
+                                  <div className="text-[10px] text-[#8E8E93] uppercase">WTD Expected</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className={`font-bold text-lg ${variancePct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                    {variancePct >= 0 ? `+${variancePct}%` : `${variancePct}%`}
+                                  </div>
+                                  <div className="text-[10px] text-[#8E8E93] uppercase">Variance</div>
+                                </div>
+                              </div>
+                            )
+                          })()}
+                          {/* Daily Breakdown */}
+                          {(() => {
+                            const totalPredicted = thisWeekForecast.daily_breakdown.reduce((sum, d) => sum + d.predicted, 0)
+                            const totalActual = thisWeekForecast.daily_breakdown.reduce((sum, d) => sum + (d.actual ?? 0), 0)
+                            const absoluteVariance = totalActual - totalPredicted
+                            return (
+                              <div className="mt-3 pt-2 border-t border-gray-100">
+                                <div className="grid grid-cols-8 gap-1">
+                                  {thisWeekForecast.daily_breakdown.map((day) => (
+                                    <div key={day.day} className="text-center">
+                                      <div className="text-[9px] text-[#8E8E93] font-medium">{day.day}</div>
+                                      <div className="text-xs font-semibold text-[#A78BFA]">{day.predicted}</div>
+                                      <div className={`text-xs font-bold ${day.actual !== null ? (day.actual >= day.predicted ? "text-[#34C759]" : "text-[#FF6B6B]") : "text-[#D2D2D7]"}`}>
+                                        {day.actual !== null ? day.actual : "-"}
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {/* Total Column */}
+                                  <div className="text-center border-l border-gray-200 pl-1">
+                                    <div className="text-[9px] text-[#1D1D1F] font-bold">Total</div>
+                                    <div className="text-xs font-semibold text-[#A78BFA]">{totalPredicted}</div>
+                                    <div className={`text-xs font-bold ${totalActual >= totalPredicted ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                      {totalActual}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
+                                  <div className="flex gap-4 text-[9px] text-[#8E8E93]">
+                                    <span><span className="text-[#A78BFA]">■</span> Predicted</span>
+                                    <span><span className="text-[#34C759]">■</span><span className="text-[#FF6B6B]">■</span> Actual</span>
+                                  </div>
+                                  <div className={`text-sm font-bold ${absoluteVariance >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                    {absoluteVariance >= 0 ? `+${absoluteVariance}` : absoluteVariance} variance
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })()}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+              </>
+            ) : null}
+
+            {/* Weekly Trends Section */}
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2 mb-4">
+                <Calendar className="h-5 w-5 text-[#0066CC]" />
+                Weekly Trends
+              </h2>
+
+              {/* Row 1: Direct QTY and Direct Revenue */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                {/* Direct QTY */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
+                  <CardHeader className="px-4 gap-0">
+                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                      Direct QTY
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 px-4">
+                    {loading ? (
+                      <div className="h-32 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                      </div>
+                    ) : extendedWeeklyTrends ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
+                              {extendedWeeklyTrends.days.map((day) => (
+                                <th key={day} className="text-center py-2 px-1 font-medium text-[#6E6E73]">{day}</th>
+                              ))}
+                              <th className="text-center py-2 px-1 font-semibold text-[#1D1D1F] bg-[#F5F5F7]">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {extendedWeeklyTrends.direct_qty.map((week) => {
+                              const isCurrentWeek = week.week_label === "Current Week"
+                              return (
+                                <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                  </td>
+                                  {extendedWeeklyTrends.days.map((day) => {
+                                    const value = week.daily_cumulative[day]
+                                    return (
+                                      <td key={day} className={`text-center py-2 px-1 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}>
+                                        {value === null ? "-" : value}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-2 px-1 font-semibold bg-[#F5F5F7] ${week.week_total === null ? "text-[#D2D2D7]" : "text-[#0066CC]"}`}>
+                                    {week.week_total === null ? "-" : week.week_total}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+
+                {/* Direct Revenue */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
+                  <CardHeader className="px-4 gap-0">
+                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                      Direct Revenue
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 px-4">
+                    {loading ? (
+                      <div className="h-32 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                      </div>
+                    ) : extendedWeeklyTrends ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
+                              {extendedWeeklyTrends.days.map((day) => (
+                                <th key={day} className="text-center py-2 px-1 font-medium text-[#6E6E73]">{day}</th>
+                              ))}
+                              <th className="text-center py-2 px-1 font-semibold text-[#1D1D1F] bg-[#F5F5F7]">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {extendedWeeklyTrends.direct_revenue.map((week) => {
+                              const isCurrentWeek = week.week_label === "Current Week"
+                              return (
+                                <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                  </td>
+                                  {extendedWeeklyTrends.days.map((day) => {
+                                    const value = week.daily_cumulative[day]
+                                    return (
+                                      <td key={day} className={`text-center py-2 px-1 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}>
+                                        {value === null ? "-" : value ? `$${Math.round(value / 1000)}k` : "$0"}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-2 px-1 font-semibold bg-[#F5F5F7] ${week.week_total === null ? "text-[#D2D2D7]" : "text-[#0066CC]"}`}>
+                                    {week.week_total === null ? "-" : `$${Math.round(week.week_total / 1000)}k`}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Row 2: Renewal QTY and Renewal Revenue */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                {/* Renewal QTY */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
+                  <CardHeader className="px-4 gap-0">
+                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                      Renewal QTY
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 px-4">
+                    {loading ? (
+                      <div className="h-32 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                      </div>
+                    ) : extendedWeeklyTrends ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
+                              {extendedWeeklyTrends.days.map((day) => (
+                                <th key={day} className="text-center py-2 px-1 font-medium text-[#6E6E73]">{day}</th>
+                              ))}
+                              <th className="text-center py-2 px-1 font-semibold text-[#1D1D1F] bg-[#F5F5F7]">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {extendedWeeklyTrends.renewal_qty.map((week) => {
+                              const isCurrentWeek = week.week_label === "Current Week"
+                              return (
+                                <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                  </td>
+                                  {extendedWeeklyTrends.days.map((day) => {
+                                    const value = week.daily_cumulative[day]
+                                    return (
+                                      <td key={day} className={`text-center py-2 px-1 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}>
+                                        {value === null ? "-" : value}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-2 px-1 font-semibold bg-[#F5F5F7] ${week.week_total === null ? "text-[#D2D2D7]" : "text-[#0066CC]"}`}>
+                                    {week.week_total === null ? "-" : week.week_total}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+
+                {/* Renewal Revenue */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
+                  <CardHeader className="px-4 gap-0">
+                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                      Renewal Revenue
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 px-4">
+                    {loading ? (
+                      <div className="h-32 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                      </div>
+                    ) : extendedWeeklyTrends ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
+                              {extendedWeeklyTrends.days.map((day) => (
+                                <th key={day} className="text-center py-2 px-1 font-medium text-[#6E6E73]">{day}</th>
+                              ))}
+                              <th className="text-center py-2 px-1 font-semibold text-[#1D1D1F] bg-[#F5F5F7]">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {extendedWeeklyTrends.renewal_revenue.map((week) => {
+                              const isCurrentWeek = week.week_label === "Current Week"
+                              return (
+                                <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                  </td>
+                                  {extendedWeeklyTrends.days.map((day) => {
+                                    const value = week.daily_cumulative[day]
+                                    return (
+                                      <td key={day} className={`text-center py-2 px-1 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}>
+                                        {value === null ? "-" : value ? `$${Math.round(value / 1000)}k` : "$0"}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-2 px-1 font-semibold bg-[#F5F5F7] ${week.week_total === null ? "text-[#D2D2D7]" : "text-[#0066CC]"}`}>
+                                    {week.week_total === null ? "-" : `$${Math.round(week.week_total / 1000)}k`}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Row 3: Total Gross Revenue and Product Mix */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Total Gross Revenue */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
+                  <CardHeader className="px-4 gap-0">
+                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                      Total Gross Revenue
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 px-4">
+                    {loading ? (
+                      <div className="h-32 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                      </div>
+                    ) : extendedWeeklyTrends ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
+                              {extendedWeeklyTrends.days.map((day) => (
+                                <th key={day} className="text-center py-2 px-1 font-medium text-[#6E6E73]">{day}</th>
+                              ))}
+                              <th className="text-center py-2 px-1 font-semibold text-[#1D1D1F] bg-[#F5F5F7]">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {extendedWeeklyTrends.total_gross_revenue.map((week) => {
+                              const isCurrentWeek = week.week_label === "Current Week"
+                              return (
+                                <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                  </td>
+                                  {extendedWeeklyTrends.days.map((day) => {
+                                    const value = week.daily_cumulative[day]
+                                    return (
+                                      <td key={day} className={`text-center py-2 px-1 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}>
+                                        {value === null ? "-" : value ? `$${Math.round(value / 1000)}k` : "$0"}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-2 px-1 font-semibold bg-[#F5F5F7] ${week.week_total === null ? "text-[#D2D2D7]" : "text-emerald-600"}`}>
+                                    {week.week_total === null ? "-" : `$${Math.round(week.week_total / 1000)}k`}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+
+              {/* Product Mix By Week Table */}
+              <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
+                <CardHeader className="px-4 gap-0">
+                  <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                    Product Mix By Week
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 px-4">
+                  {loading ? (
+                    <div className="h-32 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                    </div>
+                  ) : error ? (
+                    <div className="h-48 flex items-center justify-center text-[#FF3B30] text-sm">
+                      {error}
+                    </div>
+                  ) : productMix ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-[#D2D2D7]">
+                            <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                              Week
+                            </th>
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                              Total
+                            </th>
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                              Cert
+                            </th>
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                              Learner
+                            </th>
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                              Team
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {productMix.weeks.map((week) => {
+                            const isCurrentWeek = week.week_label === "Current Week"
+                            return (
+                              <tr
+                                key={week.week_label}
+                                className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}
+                              >
+                                <td className={`py-2 px-2 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
+                                  <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
+                                  <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                </td>
+                                <td className="text-center py-2 px-2 font-medium text-[#1D1D1F]">
+                                  {week.total}
+                                </td>
+                                <td className="text-center py-2 px-2 text-[#1D1D1F]">
+                                  {week.cert_pct}%
+                                </td>
+                                <td className="text-center py-2 px-2 text-[#1D1D1F]">
+                                  {week.learner_pct}%
+                                </td>
+                                <td className="text-center py-2 px-2 text-[#1D1D1F]">
+                                  {week.team_pct}%
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+              </div>
+            </div>
+
+            {/* Year-over-Year Weekly Sales Chart */}
+            <div className="mt-8">
+              <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-[#0066CC]" />
+                    Direct Qty Total by Week
+                  </CardTitle>
+                  <CardDescription className="text-sm text-[#6E6E73]">
+                    Year-over-year comparison of weekly direct sales
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  {loading ? (
+                    <div className="h-80 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                    </div>
+                  ) : error ? (
+                    <div className="h-80 flex items-center justify-center text-[#FF3B30] text-sm">
+                      {error}
+                    </div>
+                  ) : weeklyQtyYoY ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={weeklyQtyYoY.data}
+                          margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                          <XAxis
+                            dataKey="week_label"
+                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tickLine={{ stroke: '#D2D2D7' }}
+                            interval={3}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tickLine={{ stroke: '#D2D2D7' }}
+                            axisLine={{ stroke: '#D2D2D7' }}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: '#FFFFFF',
+                              border: '1px solid #D2D2D7',
+                              borderRadius: '8px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            }}
+                            labelStyle={{ color: '#1D1D1F', fontWeight: 600 }}
+                            formatter={(value, name) => {
+                              if (value === null || value === undefined) return ['-', String(name)]
+                              const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                              return [Number(value).toLocaleString(), yearLabel]
+                            }}
+                          />
+                          <Legend
+                            wrapperStyle={{ paddingTop: '10px' }}
+                            formatter={(value: string) => {
+                              if (value === 'y2024') return '2024'
+                              if (value === 'y2025') return '2025'
+                              if (value === 'y2026') return '2026'
+                              return value
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="y2024"
+                            stroke="#8E8E93"
+                            strokeWidth={2}
+                            dot={{ fill: '#8E8E93', strokeWidth: 2, r: 3 }}
+                            connectNulls
+                            name="y2024"
+                            label={{ position: 'top', fontSize: 9, fill: '#8E8E93' }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="y2025"
+                            stroke="#0066CC"
+                            strokeWidth={2}
+                            dot={{ fill: '#0066CC', strokeWidth: 2, r: 3 }}
+                            connectNulls
+                            name="y2025"
+                            label={{ position: 'top', fontSize: 9, fill: '#0066CC' }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="y2026"
+                            stroke="#34C759"
+                            strokeWidth={2}
+                            dot={{ fill: '#34C759', strokeWidth: 2, r: 4 }}
+                            connectNulls
+                            name="y2026"
+                            label={{ position: 'top', fontSize: 10, fill: '#34C759', fontWeight: 600 }}
+                          />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Year-over-Year Monthly Sales Chart */}
+            <div className="mt-8">
+              <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-[#0066CC]" />
+                    Direct Qty Total by Month
+                  </CardTitle>
+                  <CardDescription className="text-sm text-[#6E6E73]">
+                    Year-over-year comparison of monthly direct sales (YTD)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  {loading ? (
+                    <div className="h-80 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                    </div>
+                  ) : error ? (
+                    <div className="h-80 flex items-center justify-center text-[#FF3B30] text-sm">
+                      {error}
+                    </div>
+                  ) : monthlyQtyYoY ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={monthlyQtyYoY.data}
+                          margin={{ top: 20, right: 30, left: 0, bottom: 10 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                          <XAxis
+                            dataKey="month_label"
+                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tickLine={{ stroke: '#D2D2D7' }}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tickLine={{ stroke: '#D2D2D7' }}
+                            axisLine={{ stroke: '#D2D2D7' }}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: '#FFFFFF',
+                              border: '1px solid #D2D2D7',
+                              borderRadius: '8px',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            }}
+                            labelStyle={{ color: '#1D1D1F', fontWeight: 600 }}
+                            formatter={(value, name) => {
+                              if (value === null || value === undefined) return ['-', String(name)]
+                              const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                              return [Number(value).toLocaleString(), yearLabel]
+                            }}
+                          />
+                          <Legend
+                            wrapperStyle={{ paddingTop: '10px' }}
+                            formatter={(value: string) => {
+                              if (value === 'y2024') return '2024'
+                              if (value === 'y2025') return '2025'
+                              if (value === 'y2026') return '2026'
+                              return value
+                            }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="y2024"
+                            stroke="#8E8E93"
+                            strokeWidth={2}
+                            dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }}
+                            connectNulls
+                            name="y2024"
+                            label={{ position: 'top', fontSize: 10, fill: '#8E8E93' }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="y2025"
+                            stroke="#0066CC"
+                            strokeWidth={2}
+                            dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }}
+                            connectNulls
+                            name="y2025"
+                            label={{ position: 'top', fontSize: 10, fill: '#0066CC' }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="y2026"
+                            stroke="#34C759"
+                            strokeWidth={2}
+                            dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }}
+                            connectNulls
+                            name="y2026"
+                            label={{ position: 'top', fontSize: 11, fill: '#34C759', fontWeight: 600 }}
+                          />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {/* Traffic Tab */}
+        {activeTab === "traffic" && (
+          <>
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
+              </div>
+            ) : traffic ? (
+              <>
+                {/* Traffic KPI Cards */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {[traffic.yesterday, traffic.this_week, traffic.mtd].map((period) => (
+                      <Card
+                        key={period.label}
+                        className="bg-white border-[#D2D2D7] shadow-sm hover:shadow-md transition-shadow duration-200"
+                      >
+                        <CardHeader className="pb-1 gap-0">
+                          <CardTitle className="text-lg font-semibold leading-tight text-[#1D1D1F]">
+                            {period.label}
+                          </CardTitle>
+                          <CardDescription className="text-sm text-[#6E6E73]">
+                            {period.date_range}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div className="flex justify-between items-baseline">
+                            <span className="text-xs uppercase tracking-wide text-[#6E6E73]">
+                              Total Sessions
+                            </span>
+                            <span className="text-2xl font-semibold text-[#1D1D1F]">
+                              {formatNumber(period.total.sessions)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-baseline">
+                            <span className="text-xs uppercase tracking-wide text-[#6E6E73]">
+                              Conversions
+                            </span>
+                            <span className="text-xl font-semibold text-[#1D1D1F]">
+                              {formatNumber(period.total.conversions)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-baseline">
+                            <span className="text-xs uppercase tracking-wide text-[#6E6E73]">
+                              Conv. Rate
+                            </span>
+                            <span className="text-lg font-semibold text-[#34C759]">
+                              {period.total.conversion_rate}%
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+
+                {/* Traffic Breakdown - Weekly Tables (like Product Mix) */}
+                <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {!trafficBySourceWeekly ? (
+                    <>
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm p-8">
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                          <span className="ml-2 text-[#6E6E73]">Loading weekly data...</span>
+                        </div>
+                      </Card>
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm p-8">
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                          <span className="ml-2 text-[#6E6E73]">Loading weekly data...</span>
+                        </div>
+                      </Card>
+                    </>
+                  ) : (
+                    <>
+                    {/* New Visitors by Source - Weekly */}
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Users className="h-4 w-4 text-[#0066CC]" />
+                          New Visitors by Source
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Week</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Total</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Organic</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Direct</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Referral</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Paid</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {trafficBySourceWeekly.weeks.map((week, idx) => (
+                                <tr
+                                  key={week.week_label}
+                                  className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-[#E8F0FE]" : ""}`}
+                                >
+                                  <td className="py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{week.week_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                  </td>
+                                  <td className="text-center py-2 px-2 font-semibold text-[#1D1D1F]">
+                                    {formatNumber(week.total_sessions)}
+                                  </td>
+                                  <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                    {week.organic_sessions_pct.toFixed(0)}%
+                                  </td>
+                                  <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                    {week.direct_sessions_pct.toFixed(0)}%
+                                  </td>
+                                  <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                    {week.referral_sessions_pct.toFixed(0)}%
+                                  </td>
+                                  <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                    {week.paid_sessions_pct.toFixed(0)}%
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Conversions by Source - Weekly */}
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-[#0066CC]" />
+                          Conversions by Source
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Week</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Total</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Conv %</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">GADS+Bing</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Organic</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Direct</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Referral</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Paid</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {trafficBySourceWeekly.weeks.map((week, idx) => {
+                                const convRate = week.total_sessions > 0
+                                  ? ((week.total_conversions / week.total_sessions) * 100).toFixed(2)
+                                  : "0.00"
+                                return (
+                                  <tr
+                                    key={week.week_label}
+                                    className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-[#E8F0FE]" : ""}`}
+                                  >
+                                    <td className="py-2 px-2">
+                                      <div className="font-semibold text-[#1D1D1F]">{week.week_label}</div>
+                                      <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                    </td>
+                                    <td className="text-center py-2 px-2 font-semibold text-[#1D1D1F]">
+                                      {week.total_conversions}
+                                    </td>
+                                    <td className="text-center py-2 px-2 font-semibold text-[#34C759]">
+                                      {convRate}%
+                                    </td>
+                                    <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                      {week.gads_bing_conversions_pct.toFixed(0)}%
+                                    </td>
+                                    <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                      {week.organic_conversions_pct.toFixed(0)}%
+                                    </td>
+                                    <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                      {week.direct_conversions_pct.toFixed(0)}%
+                                    </td>
+                                    <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                      {week.referral_conversions_pct.toFixed(0)}%
+                                    </td>
+                                    <td className="text-center py-2 px-2 text-[#6E6E73]">
+                                      {week.paid_conversions_pct.toFixed(0)}%
+                                    </td>
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    </>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-[#6E6E73] py-12">
+                No traffic data available
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Google Ads Tab */}
+        {activeTab === "google-ads" && (
+          <>
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
+              </div>
+            ) : (
+              <>
+                {/* Account Performance Overview */}
+                {accountPerformance && (
+                  <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <DollarSign className="h-5 w-5 text-[#0066CC]" />
+                      Account Performance
+                      <span className="text-sm font-normal text-[#6E6E73]">Week of {new Date(accountPerformance.current_week.week).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                      {/* Spend */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardContent className="pt-4 pb-4">
+                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Weekly Spend</div>
+                          <div className="text-3xl font-bold text-[#1D1D1F]">{formatCurrency(Math.round(accountPerformance.current_week.spend))}</div>
+                          <div className="text-xs text-[#8E8E93] mt-1">LW: {formatCurrency(Math.round(accountPerformance.previous_week.spend))}</div>
+                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.spend <= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
+                            {accountPerformance.wow_change.spend >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.spend)}% ({accountPerformance.current_week.spend - accountPerformance.previous_week.spend >= 0 ? "+" : ""}{formatCurrency(Math.round(accountPerformance.current_week.spend - accountPerformance.previous_week.spend))})
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Conversions */}
+                      <Card className="bg-gradient-to-br from-[#0066CC] to-[#0055AA] text-white border-0 shadow-lg">
+                        <CardContent className="pt-4 pb-4">
+                          <div className="text-sm font-semibold uppercase tracking-wide text-white/70 mb-1">Conversions</div>
+                          <div className="text-3xl font-bold text-white">{Math.round(accountPerformance.current_week.conversions)}</div>
+                          <div className="text-xs text-white/60 mt-1">LW: {Math.round(accountPerformance.previous_week.conversions)}</div>
+                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.conversions >= 0 ? "text-green-300" : "text-red-300"}`}>
+                            {accountPerformance.wow_change.conversions >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.conversions)}% ({accountPerformance.current_week.conversions - accountPerformance.previous_week.conversions >= 0 ? "+" : ""}{Math.round(accountPerformance.current_week.conversions - accountPerformance.previous_week.conversions)})
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* CPA */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardContent className="pt-4 pb-4">
+                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Cost per Acq.</div>
+                          <div className="text-3xl font-bold text-[#1D1D1F]">{formatCurrency(Math.round(accountPerformance.current_week.cpa))}</div>
+                          <div className="text-xs text-[#8E8E93] mt-1">LW: {formatCurrency(Math.round(accountPerformance.previous_week.cpa))}</div>
+                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.cpa <= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
+                            {accountPerformance.wow_change.cpa >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.cpa)}% ({accountPerformance.current_week.cpa - accountPerformance.previous_week.cpa >= 0 ? "+" : ""}{formatCurrency(Math.round(accountPerformance.current_week.cpa - accountPerformance.previous_week.cpa))})
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Average CPC */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardContent className="pt-4 pb-4">
+                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Avg. CPC</div>
+                          <div className="text-3xl font-bold text-[#1D1D1F]">
+                            {formatCurrency(accountPerformance.current_week.clicks > 0 ? accountPerformance.current_week.spend / accountPerformance.current_week.clicks : 0)}
+                          </div>
+                          <div className="text-xs text-[#8E8E93] mt-1">
+                            LW: {formatCurrency(accountPerformance.previous_week.clicks > 0 ? accountPerformance.previous_week.spend / accountPerformance.previous_week.clicks : 0)}
+                          </div>
+                          {(() => {
+                            const currentCpc = accountPerformance.current_week.clicks > 0 ? accountPerformance.current_week.spend / accountPerformance.current_week.clicks : 0
+                            const prevCpc = accountPerformance.previous_week.clicks > 0 ? accountPerformance.previous_week.spend / accountPerformance.previous_week.clicks : 0
+                            const cpcChange = prevCpc > 0 ? ((currentCpc - prevCpc) / prevCpc) * 100 : 0
+                            const cpcDiff = currentCpc - prevCpc
+                            return (
+                              <div className={`text-sm font-semibold ${cpcChange <= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
+                                {cpcChange >= 0 ? "+" : ""}{Math.round(cpcChange)}% ({cpcDiff >= 0 ? "+" : ""}{formatCurrency(cpcDiff)})
+                              </div>
+                            )
+                          })()}
+                        </CardContent>
+                      </Card>
+
+                      {/* Clicks */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardContent className="pt-4 pb-4">
+                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Clicks</div>
+                          <div className="text-3xl font-bold text-[#1D1D1F]">{formatNumber(accountPerformance.current_week.clicks)}</div>
+                          <div className="text-xs text-[#8E8E93] mt-1">LW: {formatNumber(accountPerformance.previous_week.clicks)}</div>
+                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.clicks >= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
+                            {accountPerformance.wow_change.clicks >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.clicks)}% ({accountPerformance.current_week.clicks - accountPerformance.previous_week.clicks >= 0 ? "+" : ""}{formatNumber(accountPerformance.current_week.clicks - accountPerformance.previous_week.clicks)})
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Forecast */}
+                      <Card className="bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] text-white border-0 shadow-lg">
+                        <CardContent className="pt-4 pb-4">
+                          <div className="text-sm font-semibold uppercase tracking-wide text-[#A78BFA] mb-1">Next Week Forecast</div>
+                          <div className="text-2xl font-bold text-[#A78BFA]">{formatCurrency(Math.round(accountPerformance.forecast.spend))}</div>
+                          <div className="text-base font-medium text-white/70 mt-1">{Math.round(accountPerformance.forecast.conversions)} conv. predicted</div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                {/* 6-Week Campaign Performance Tables - Side by Side */}
+                {googleCampaignsWeekly && googleCampaignsWeekly.campaigns.length > 0 && (() => {
+                  // Define campaign pair order
+                  const campaignPairs = [
+                    { prefix: 'Certification', label: 'Certification' },
+                    { prefix: 'Training', label: 'Training' },
+                    { prefix: 'Courses', label: 'Courses' },
+                    { prefix: 'Classes', label: 'Classes' },
+                  ]
+
+                  // Helper to find campaign by name pattern
+                  const findCampaign = (prefix: string, device: string) => {
+                    return googleCampaignsWeekly.campaigns.find(c =>
+                      c.campaign_name.toLowerCase().includes(prefix.toLowerCase()) &&
+                      c.campaign_name.toLowerCase().includes(device.toLowerCase())
+                    )
+                  }
+
+                  return (
+                    <div className="mb-8">
+                      <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-[#0066CC]" />
+                        Google Campaign 6-Week Trend
+                      </h2>
+                      <div className="space-y-6">
+                        {campaignPairs.map(({ prefix, label }) => {
+                          const desktopCampaign = findCampaign(prefix, 'Desktop')
+                          const mobileCampaign = findCampaign(prefix, 'Mobile')
+
+                          if (!desktopCampaign && !mobileCampaign) return null
+
+                          return (
+                            <div key={prefix} className="space-y-2">
+                              <h3 className="text-sm font-semibold text-[#6E6E73] uppercase tracking-wider">{label}</h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Desktop Campaign */}
+                                {desktopCampaign && (
+                                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                                    <CardHeader className="pb-2 pt-3 px-4">
+                                      <CardTitle className="text-sm font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                        Desktop
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-0 px-4 pb-3">
+                                      <div className="overflow-x-auto">
+                                        <table className="w-full text-xs">
+                                          <thead>
+                                            <tr className="border-b border-[#D2D2D7]">
+                                              <th className="text-left py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Week</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Spend</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Conv.</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CPA</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Clicks</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CTR</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {desktopCampaign.weeks.map((week, idx) => (
+                                              <tr
+                                                key={week.week_label}
+                                                className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-blue-50" : ""}`}
+                                              >
+                                                <td className="py-1.5 px-1">
+                                                  <div className="font-semibold text-[#1D1D1F] text-[11px]">{week.week_label}</div>
+                                                  <div className="text-[9px] text-[#6E6E73]">{week.week_start}</div>
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
+                                                  {formatCurrency(week.spend)}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
+                                                  {week.conversions.toFixed(1)}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
+                                                  {week.conversions > 0 ? formatCurrency(week.cpa) : "-"}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
+                                                  {week.clicks.toLocaleString()}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
+                                                  {week.ctr.toFixed(2)}%
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                )}
+                                {/* Mobile Campaign */}
+                                {mobileCampaign && (
+                                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                                    <CardHeader className="pb-2 pt-3 px-4">
+                                      <CardTitle className="text-sm font-semibold text-[#1D1D1F] flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Mobile
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="pt-0 px-4 pb-3">
+                                      <div className="overflow-x-auto">
+                                        <table className="w-full text-xs">
+                                          <thead>
+                                            <tr className="border-b border-[#D2D2D7]">
+                                              <th className="text-left py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Week</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Spend</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Conv.</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CPA</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Clicks</th>
+                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CTR</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {mobileCampaign.weeks.map((week, idx) => (
+                                              <tr
+                                                key={week.week_label}
+                                                className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-green-50" : ""}`}
+                                              >
+                                                <td className="py-1.5 px-1">
+                                                  <div className="font-semibold text-[#1D1D1F] text-[11px]">{week.week_label}</div>
+                                                  <div className="text-[9px] text-[#6E6E73]">{week.week_start}</div>
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
+                                                  {formatCurrency(week.spend)}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
+                                                  {week.conversions.toFixed(1)}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
+                                                  {week.conversions > 0 ? formatCurrency(week.cpa) : "-"}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
+                                                  {week.clicks.toLocaleString()}
+                                                </td>
+                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
+                                                  {week.ctr.toFixed(2)}%
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Keywords Performance - Week over Week Comparison (from n8n ADVERONIX sheet) */}
+                {n8nKeywordsWeekly && n8nKeywordsWeekly.keywords && n8nKeywordsWeekly.keywords.length > 0 && (
+                  <div className="mb-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-[#0066CC]" />
+                          Keyword Performance (Week over Week)
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F] sticky left-0 bg-white">Keyword</th>
+                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F]">Campaign</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Avg CPC</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Conv.</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost/Conv.</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {n8nKeywordsWeekly.keywords.slice(0, 20).map((kw, idx) => {
+                                // Calculate variances
+                                const avgCpcVar = kw.two_weeks_ago_avg_cpc !== undefined ? kw.last_week_avg_cpc - kw.two_weeks_ago_avg_cpc : null;
+                                const convVar = kw.two_weeks_ago_conversions !== undefined ? kw.last_week_conversions - kw.two_weeks_ago_conversions : null;
+                                const costVar = kw.two_weeks_ago_cost !== undefined ? kw.last_week_cost - kw.two_weeks_ago_cost : null;
+                                const cpaVar = kw.last_week_cpa > 0 && kw.two_weeks_ago_cpa && kw.two_weeks_ago_cpa > 0 ? kw.last_week_cpa - kw.two_weeks_ago_cpa : null;
+
+                                return (
+                                <tr key={idx} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
+                                  <td className="py-2 px-2 text-[#1D1D1F] sticky left-0 bg-white">
+                                    <div className="font-medium truncate max-w-[180px]">{kw.keyword}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{kw.match_type}</div>
+                                  </td>
+                                  <td className="py-2 px-2 text-[#6E6E73]">
+                                    <div className="truncate max-w-[140px]">{kw.campaign || '-'}</div>
+                                  </td>
+                                  {/* Avg CPC - lower is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{formatCurrencyDecimal(kw.last_week_avg_cpc)}</div>
+                                    {avgCpcVar !== null && Math.abs(avgCpcVar) >= 0.01 && (
+                                      <div className={`text-[10px] ${avgCpcVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {avgCpcVar > 0 ? '+' : ''}{formatCurrencyDecimal(avgCpcVar)}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Conversions - higher is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{Math.round(kw.last_week_conversions)}</div>
+                                    {convVar !== null && convVar !== 0 && (
+                                      <div className={`text-[10px] ${convVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {convVar > 0 ? '+' : ''}{Math.round(convVar)}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Cost - neutral (orange for increase) */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{formatCurrency(Math.round(kw.last_week_cost))}</div>
+                                    {costVar !== null && Math.abs(costVar) >= 1 && (
+                                      <div className={`text-[10px] ${costVar < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
+                                        {costVar > 0 ? '+' : ''}{formatCurrency(Math.round(costVar))}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Cost/Conv (CPA) - lower is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className={`font-semibold ${kw.last_week_cpa > 0 ? 'text-[#1D1D1F]' : 'text-[#6E6E73]'}`}>
+                                      {kw.last_week_cpa > 0 ? formatCurrency(Math.round(kw.last_week_cpa)) : '-'}
+                                    </div>
+                                    {cpaVar !== null && Math.abs(cpaVar) >= 1 && (
+                                      <div className={`text-[10px] ${cpaVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {cpaVar > 0 ? '+' : ''}{formatCurrency(Math.round(cpaVar))}
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              )})}
+                            </tbody>
+                          </table>
+                        </div>
+                        {/* Week labels */}
+                        <div className="mt-3 pt-3 border-t border-[#E5E5E5] flex gap-4 text-xs text-[#6E6E73]">
+                          <span><strong>Last Week:</strong> {n8nKeywordsWeekly.last_week}</span>
+                          <span><strong>2 Weeks Ago:</strong> {n8nKeywordsWeekly.two_weeks_ago}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* High Spend / Low Conversion Keywords */}
+                {keywordsData && keywordsData.prior_bottom_performing && keywordsData.prior_bottom_performing.length > 0 && (
+                  <div className="mb-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4 text-[#FF9500]" />
+                          High Spend / Low Conversion
+                          <span className="text-xs font-normal text-[#6E6E73]">
+                            Last Week ({keywordsData.prior_week ? new Date(keywordsData.prior_week).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : '-'})
+                          </span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F]">Keyword</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Spend</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Conv.</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">CTR</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {keywordsData.prior_bottom_performing.slice(0, 8).map((kw, idx) => (
+                                <tr key={idx} className="border-b border-[#E5E5E5]">
+                                  <td className="py-2 px-2 text-[#1D1D1F]">
+                                    <div className="font-medium truncate max-w-[200px]">{kw.keyword}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{kw.match_type}</div>
+                                  </td>
+                                  <td className="text-right py-2 px-2 text-[#FF3B30] font-semibold">{formatCurrency(Math.round(kw.spend))}</td>
+                                  <td className="text-right py-2 px-2 text-[#1D1D1F]">{Math.round(kw.conversions)}</td>
+                                  <td className="text-right py-2 px-2 text-[#1D1D1F]">{Math.round(kw.ctr)}%</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Competitive Intelligence - Auction Insights */}
+                {auctionInsights?.competitor_cards && auctionInsights.competitor_cards.length > 0 && (
+                  <>
+                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-[#0066CC]" />
+                      Competitive Intelligence
+                    </h2>
+
+                    {/* Competitive Intelligence Summary */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  {/* Aggressive Competitors */}
+                  <Card className={`border-2 ${(auctionInsights.trends_summary?.aggressive?.length || 0) > 0 ? "border-red-200 bg-red-50" : "border-[#D2D2D7] bg-white"}`}>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className={`h-5 w-5 ${(auctionInsights.trends_summary?.aggressive?.length || 0) > 0 ? "text-red-500" : "text-[#D2D2D7]"}`} />
+                        <span className="font-semibold text-[#1D1D1F]">Getting Aggressive</span>
+                      </div>
+                      {(auctionInsights.trends_summary?.aggressive?.length || 0) > 0 ? (
+                        <div className="space-y-1">
+                          {auctionInsights.trends_summary.aggressive.map((name, idx) => (
+                            <div key={`aggressive-${idx}`} className="flex items-center gap-2 text-sm">
+                              <ArrowUp className="h-4 w-4 text-red-500" />
+                              <span className="text-red-700 font-medium">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-[#6E6E73]">No competitors getting aggressive</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Falling Back */}
+                  <Card className={`border-2 ${(auctionInsights.trends_summary?.falling_back?.length || 0) > 0 ? "border-green-200 bg-green-50" : "border-[#D2D2D7] bg-white"}`}>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingDown className={`h-5 w-5 ${(auctionInsights.trends_summary?.falling_back?.length || 0) > 0 ? "text-green-500" : "text-[#D2D2D7]"}`} />
+                        <span className="font-semibold text-[#1D1D1F]">Falling Back</span>
+                      </div>
+                      {(auctionInsights.trends_summary?.falling_back?.length || 0) > 0 ? (
+                        <div className="space-y-1">
+                          {auctionInsights.trends_summary.falling_back.map((name, idx) => (
+                            <div key={`falling-${idx}`} className="flex items-center gap-2 text-sm">
+                              <ArrowDown className="h-4 w-4 text-green-500" />
+                              <span className="text-green-700 font-medium">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-[#6E6E73]">No competitors falling back</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Stable */}
+                  <Card className="border-[#D2D2D7] bg-white">
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Minus className="h-5 w-5 text-[#6E6E73]" />
+                        <span className="font-semibold text-[#1D1D1F]">Holding Steady</span>
+                      </div>
+                      {(auctionInsights.trends_summary?.stable?.length || 0) > 0 ? (
+                        <div className="space-y-1">
+                          {auctionInsights.trends_summary.stable.map((name, idx) => (
+                            <div key={`stable-${idx}`} className="flex items-center gap-2 text-sm">
+                              <Minus className="h-4 w-4 text-[#6E6E73]" />
+                              <span className="text-[#6E6E73] font-medium">{name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-[#6E6E73]">All competitors showing movement</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Competitor Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {auctionInsights.competitor_cards.map((card) => {
+                    const isYou = card.is_you
+                    const trendIcon = card.trend === "up" ? ArrowUp : card.trend === "down" ? ArrowDown : Minus
+                    const TrendIcon = trendIcon
+                    const trendColor = isYou
+                      ? (card.trend === "up" ? "text-green-500" : card.trend === "down" ? "text-red-500" : "text-[#6E6E73]")
+                      : (card.trend === "up" ? "text-red-500" : card.trend === "down" ? "text-green-500" : "text-[#6E6E73]")
+
+                    // Mini sparkline from weekly data
+                    const sparklineData = (card.weekly_data || []).map(w => w.impression_share)
+                    const maxVal = sparklineData.length > 0 ? Math.max(...sparklineData, 1) : 100
+                    const minVal = sparklineData.length > 0 ? Math.min(...sparklineData, 0) : 0
+                    const range = maxVal - minVal || 1
+
+                    return (
+                      <Card
+                        key={card.domain}
+                        className={`${isYou ? "bg-gradient-to-br from-[#0066CC] to-[#0055AA] text-white border-0 shadow-lg" : "bg-white border-[#D2D2D7]"} shadow-sm`}
+                      >
+                        <CardContent className="pt-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              {isYou ? (
+                                <Shield className="h-5 w-5 text-white/80" />
+                              ) : (
+                                <Target className="h-5 w-5 text-[#6E6E73]" />
+                              )}
+                              <span className={`font-semibold text-sm ${isYou ? "text-white" : "text-[#1D1D1F]"}`}>
+                                {card.display_name}
+                              </span>
+                            </div>
+                            <div className={`flex items-center gap-1 ${trendColor}`}>
+                              <TrendIcon className="h-4 w-4" />
+                              <span className="text-xs font-medium">
+                                {card.change_pct > 0 ? "+" : ""}{Math.round(card.change_pct)}%
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Impression Share */}
+                          <div className="mb-3">
+                            <div className={`text-3xl font-bold ${isYou ? "text-white" : "text-[#1D1D1F]"}`}>
+                              {Math.round(card.current_metrics.impression_share)}%
+                            </div>
+                            <div className={`text-xs ${isYou ? "text-white/70" : "text-[#6E6E73]"}`}>
+                              Impression Share
+                            </div>
+                          </div>
+
+                          {/* Mini Sparkline */}
+                          <div className="h-8 flex items-end gap-0.5 mb-3">
+                            {sparklineData.map((val, i) => {
+                              const height = ((val - minVal) / range) * 100
+                              const isLast = i === sparklineData.length - 1
+                              return (
+                                <div
+                                  key={i}
+                                  className={`flex-1 rounded-t ${isYou ? (isLast ? "bg-white" : "bg-white/40") : (isLast ? "bg-[#0066CC]" : "bg-[#0066CC]/30")}`}
+                                  style={{ height: `${Math.max(height, 10)}%` }}
+                                />
+                              )
+                            })}
+                          </div>
+
+                          {/* Other Metrics */}
+                          {!isYou && (
+                            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E5E5E5]">
+                              <div>
+                                <div className="text-xs text-[#6E6E73]">Position Above</div>
+                                <div className={`text-sm font-semibold ${card.current_metrics.position_above_rate >= 30 ? "text-red-500" : "text-[#1D1D1F]"}`}>
+                                  {Math.round(card.current_metrics.position_above_rate)}%
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-xs text-[#6E6E73]">Outranking</div>
+                                <div className={`text-sm font-semibold ${card.current_metrics.outranking_share >= 80 ? "text-green-500" : "text-[#1D1D1F]"}`}>
+                                  {Math.round(card.current_metrics.outranking_share)}%
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Prophet Forecast */}
+                          <div className={`mt-2 pt-2 border-t ${isYou ? "border-white/20" : "border-[#E5E5E5]"}`}>
+                            <div className={`text-xs ${isYou ? "text-white/70" : "text-[#6E6E73]"}`}>
+                              Prophet Forecast →
+                              <span className={`ml-1 font-semibold ${isYou ? "text-white" : "text-[#1D1D1F]"}`}>
+                                {Math.round(card.forecast_next_week)}%
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+
+                  {/* Biggest Threat Card */}
+                  {(() => {
+                    // Calculate threat score for each competitor (excluding "You")
+                    const competitors = auctionInsights.competitor_cards.filter(c => !c.is_you)
+                    if (competitors.length === 0) return null
+
+                    // Threat score = position_above_rate + (impression_share * 0.5) - (100 - outranking_share)
+                    // Higher position above = more threatening
+                    // Higher impression share = more visible = more threatening
+                    // Lower outranking (we beat them less) = more threatening
+                    const threatsWithScore = competitors.map(c => ({
+                      ...c,
+                      threat_score: c.current_metrics.position_above_rate +
+                                   (c.current_metrics.impression_share * 0.3) -
+                                   (c.current_metrics.outranking_share * 0.2)
+                    })).sort((a, b) => b.threat_score - a.threat_score)
+
+                    const biggestThreat = threatsWithScore[0]
+                    if (!biggestThreat) return null
+
+                    const posAbove = biggestThreat.current_metrics.position_above_rate
+                    const impShare = biggestThreat.current_metrics.impression_share
+                    const outrank = biggestThreat.current_metrics.outranking_share
+
+                    // Generate action steps based on threat characteristics
+                    const actionSteps = []
+                    if (posAbove >= 30) {
+                      actionSteps.push("Increase bids on top keywords to improve ad position")
+                    }
+                    if (impShare >= 50) {
+                      actionSteps.push("Expand keyword coverage to compete on more queries")
+                    }
+                    if (outrank < 60) {
+                      actionSteps.push("Review ad copy and landing page quality scores")
+                    }
+                    if (biggestThreat.trend === "up") {
+                      actionSteps.push("Monitor weekly - competitor is gaining momentum")
+                    }
+                    if (actionSteps.length === 0) {
+                      actionSteps.push("Maintain current strategy - threat level manageable")
+                    }
+
+                    return (
+                      <Card className="bg-gradient-to-br from-red-600 to-red-800 text-white border-0 shadow-lg">
+                        <CardContent className="pt-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <AlertTriangle className="h-5 w-5 text-yellow-300" />
+                            <span className="font-bold text-sm uppercase tracking-wide text-yellow-300">Biggest Threat</span>
+                          </div>
+
+                          <div className="text-2xl font-bold mb-1">{biggestThreat.display_name}</div>
+
+                          <div className="grid grid-cols-3 gap-2 mb-4 text-center">
+                            <div>
+                              <div className="text-2xl font-bold">{Math.round(impShare)}%</div>
+                              <div className="text-xs text-white/70">Imp. Share</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-yellow-300">{Math.round(posAbove)}%</div>
+                              <div className="text-xs text-white/70">Pos. Above</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold">{Math.round(outrank)}%</div>
+                              <div className="text-xs text-white/70">We Outrank</div>
+                            </div>
+                          </div>
+
+                          <div className="border-t border-white/20 pt-3">
+                            <div className="text-xs font-semibold text-yellow-300 uppercase tracking-wide mb-2">Action Steps</div>
+                            <ul className="space-y-1">
+                              {actionSteps.slice(0, 3).map((step, idx) => (
+                                <li key={idx} className="text-xs text-white/90 flex items-start gap-2">
+                                  <span className="text-yellow-300 mt-0.5">→</span>
+                                  {step}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })()}
+                </div>
+
+                {/* Weekly Comparison Table */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold text-[#1D1D1F]">
+                      Weekly Impression Share Trend
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-[#D2D2D7]">
+                            <th className="text-left py-2 px-3 font-semibold text-[#1D1D1F]">Competitor</th>
+                            {(auctionInsights.weeks || []).slice(0, 6).map((week, weekIndex) => {
+                              const weekDate = new Date(week)
+                              return (
+                                <th key={`header-${week}-${weekIndex}`} className="text-center py-2 px-2 font-medium text-[#6E6E73] text-xs">
+                                  {weekDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                </th>
+                              )
+                            })}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {auctionInsights.competitor_cards.map((card, cardIndex) => (
+                            <tr key={`${card.domain}-${cardIndex}`} className={`border-b border-[#E5E5E5] ${card.is_you ? "bg-blue-50" : ""}`}>
+                              <td className="py-2 px-3">
+                                <span className={`font-medium ${card.is_you ? "text-[#0066CC]" : "text-[#1D1D1F]"}`}>
+                                  {card.display_name}
+                                </span>
+                              </td>
+                              {(auctionInsights.weeks || []).slice(0, 6).map((week, weekIndex) => {
+                                const weekData = (card.weekly_data || []).find(w => w.week === week)
+                                return (
+                                  <td key={`${week}-${weekIndex}`} className="text-center py-2 px-2 text-[#1D1D1F]">
+                                    {weekData ? `${Math.round(weekData.impression_share)}%` : "-"}
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                    </Card>
+                  </>
+                )}
+
+                {/* Show message if no data at all */}
+                {!accountPerformance && !campaignsData && !keywordsData && !auctionInsights && (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <TrendingUp className="h-12 w-12 text-[#D2D2D7] mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-[#1D1D1F]">No Google Ads Data Available</h3>
+                      <p className="text-[#6E6E73]">Unable to load Google Ads performance data</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {/* Bing Ads Tab */}
+        {activeTab === "bing-ads" && (
+          <>
+            {bingAdsLoading && !bingCampaignsData && !bingKeywordsData ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
+              </div>
+            ) : (
+              <>
+                {/* Campaign Performance */}
+                {bingCampaignsData && (() => {
+                  // Sort campaigns: alphabetical by base name
+                  const sortedCampaigns = [...bingCampaignsData.all_campaigns].sort((a, b) =>
+                    a.campaign_name.localeCompare(b.campaign_name)
+                  )
+
+                  // Calculate totals
+                  const totalSpend = sortedCampaigns.reduce((sum, c) => sum + c.spend, 0)
+                  const totalConversions = sortedCampaigns.reduce((sum, c) => sum + c.conversions, 0)
+                  const totalClicks = sortedCampaigns.reduce((sum, c) => sum + c.clicks, 0)
+                  const totalImpressions = sortedCampaigns.reduce((sum, c) => sum + c.impressions, 0)
+                  const totalCPA = totalConversions > 0 ? totalSpend / totalConversions : 0
+                  const totalCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0
+                  // Prior week totals
+                  const totalPriorSpend = sortedCampaigns.reduce((sum, c) => sum + (c.prior_spend || 0), 0)
+                  const totalPriorConversions = sortedCampaigns.reduce((sum, c) => sum + (c.prior_conversions || 0), 0)
+                  const totalPriorClicks = sortedCampaigns.reduce((sum, c) => sum + (c.prior_clicks || 0), 0)
+                  const totalPriorCPA = totalPriorConversions > 0 ? totalPriorSpend / totalPriorConversions : 0
+
+                  return (
+                  <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <Target className="h-5 w-5 text-[#0066CC]" />
+                      Bing Campaign Performance
+                      <span className="text-sm font-normal text-[#6E6E73]">Week of {new Date(bingCampaignsData.week).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    </h2>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="pt-4">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="text-left py-2 px-3 font-semibold text-[#1D1D1F]">Campaign</th>
+                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">Spend</th>
+                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">Conv.</th>
+                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">CPA</th>
+                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">Clicks</th>
+                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">CTR</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {sortedCampaigns.map((campaign, idx) => {
+                                // Calculate variances
+                                const spendVar = campaign.prior_spend ? campaign.spend - campaign.prior_spend : null;
+                                const convVar = campaign.prior_conversions !== undefined ? campaign.conversions - (campaign.prior_conversions || 0) : null;
+                                const cpaVar = campaign.cpa > 0 && campaign.prior_cpa && campaign.prior_cpa > 0 ? campaign.cpa - campaign.prior_cpa : null;
+                                const clicksVar = campaign.prior_clicks ? campaign.clicks - campaign.prior_clicks : null;
+                                const ctrVar = campaign.prior_ctr !== undefined ? campaign.ctr - (campaign.prior_ctr || 0) : null;
+
+                                return (
+                                <tr key={idx} className="border-b border-[#E5E5E5]">
+                                  <td className="py-2 px-3 text-[#1D1D1F] font-medium">{campaign.campaign_name}</td>
+                                  {/* Spend - lower is better (neutral orange for increase) */}
+                                  <td className="text-right py-2 px-3">
+                                    <div className="text-[#1D1D1F] font-medium">{formatCurrency(Math.round(campaign.spend))}</div>
+                                    {spendVar !== null && Math.abs(spendVar) >= 1 && (
+                                      <div className={`text-[10px] ${spendVar < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
+                                        {spendVar > 0 ? '+' : ''}{formatCurrency(Math.round(spendVar))}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Conversions - higher is better */}
+                                  <td className="text-right py-2 px-3">
+                                    <div className="text-[#1D1D1F] font-medium">{Math.round(campaign.conversions)}</div>
+                                    {convVar !== null && convVar !== 0 && (
+                                      <div className={`text-[10px] ${convVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {convVar > 0 ? '+' : ''}{Math.round(convVar)}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* CPA - lower is better */}
+                                  <td className="text-right py-2 px-3">
+                                    <div className="text-[#1D1D1F] font-medium">{formatCurrency(Math.round(campaign.cpa))}</div>
+                                    {cpaVar !== null && Math.abs(cpaVar) >= 1 && (
+                                      <div className={`text-[10px] ${cpaVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {cpaVar > 0 ? '+' : ''}{formatCurrency(Math.round(cpaVar))}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Clicks - higher is better */}
+                                  <td className="text-right py-2 px-3">
+                                    <div className="text-[#1D1D1F] font-medium">{formatNumber(campaign.clicks)}</div>
+                                    {clicksVar !== null && clicksVar !== 0 && (
+                                      <div className={`text-[10px] ${clicksVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {clicksVar > 0 ? '+' : ''}{formatNumber(clicksVar)}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* CTR - higher is better */}
+                                  <td className="text-right py-2 px-3">
+                                    <div className="text-[#1D1D1F] font-medium">{Math.round(campaign.ctr)}%</div>
+                                    {ctrVar !== null && Math.abs(ctrVar) >= 1 && (
+                                      <div className={`text-[10px] ${ctrVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {ctrVar > 0 ? '+' : ''}{Math.round(ctrVar)}%
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              )})}
+                              {/* Total Row */}
+                              <tr className="border-t-2 border-[#D2D2D7] bg-[#F5F5F7] font-semibold">
+                                <td className="py-2 px-3 text-[#1D1D1F]">Total</td>
+                                <td className="text-right py-2 px-3">
+                                  <div className="text-[#1D1D1F]">{formatCurrency(Math.round(totalSpend))}</div>
+                                  {totalPriorSpend > 0 && Math.abs(totalSpend - totalPriorSpend) >= 1 && (
+                                    <div className={`text-[10px] font-normal ${totalSpend - totalPriorSpend < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
+                                      {totalSpend - totalPriorSpend > 0 ? '+' : ''}{formatCurrency(Math.round(totalSpend - totalPriorSpend))}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="text-right py-2 px-3">
+                                  <div className="text-[#1D1D1F]">{Math.round(totalConversions)}</div>
+                                  {totalPriorConversions > 0 && (
+                                    <div className={`text-[10px] font-normal ${totalConversions - totalPriorConversions > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                      {totalConversions - totalPriorConversions > 0 ? '+' : ''}{Math.round(totalConversions - totalPriorConversions)}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="text-right py-2 px-3">
+                                  <div className="text-[#1D1D1F]">{formatCurrency(Math.round(totalCPA))}</div>
+                                  {totalPriorCPA > 0 && Math.abs(totalCPA - totalPriorCPA) >= 1 && (
+                                    <div className={`text-[10px] font-normal ${totalCPA - totalPriorCPA < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                      {totalCPA - totalPriorCPA > 0 ? '+' : ''}{formatCurrency(Math.round(totalCPA - totalPriorCPA))}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="text-right py-2 px-3">
+                                  <div className="text-[#1D1D1F]">{formatNumber(totalClicks)}</div>
+                                  {totalPriorClicks > 0 && (
+                                    <div className={`text-[10px] font-normal ${totalClicks - totalPriorClicks > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                      {totalClicks - totalPriorClicks > 0 ? '+' : ''}{formatNumber(totalClicks - totalPriorClicks)}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="text-right py-2 px-3">
+                                  <div className="text-[#1D1D1F]">{Math.round(totalCTR)}%</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  )
+                })()}
+
+                {/* 6-Week Campaign Performance Tables */}
+                {bingCampaignsWeekly && bingCampaignsWeekly.campaigns.length > 0 && (
+                  <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-[#0066CC]" />
+                      Bing Campaign 6-Week Trend
+                    </h2>
+                    <div className="grid grid-cols-1 gap-4">
+                      {bingCampaignsWeekly.campaigns.map((campaign) => (
+                        <Card key={campaign.campaign_name} className="bg-white border-[#D2D2D7] shadow-sm">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-semibold text-[#1D1D1F]">
+                              {campaign.campaign_name}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-2">
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="border-b border-[#D2D2D7]">
+                                    <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Week</th>
+                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Spend</th>
+                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Conv.</th>
+                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">CPA</th>
+                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Clicks</th>
+                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">CTR</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {campaign.weeks.map((week, idx) => (
+                                    <tr
+                                      key={week.week_label}
+                                      className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-[#E8F0FE]" : ""}`}
+                                    >
+                                      <td className="py-2 px-2">
+                                        <div className="font-semibold text-[#1D1D1F]">{week.week_label}</div>
+                                        <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                      </td>
+                                      <td className="text-right py-2 px-2 font-medium text-[#1D1D1F]">
+                                        {formatCurrency(week.spend)}
+                                      </td>
+                                      <td className="text-right py-2 px-2 font-medium text-[#1D1D1F]">
+                                        {week.conversions.toFixed(1)}
+                                      </td>
+                                      <td className="text-right py-2 px-2 text-[#6E6E73]">
+                                        {week.conversions > 0 ? formatCurrency(week.cpa) : "-"}
+                                      </td>
+                                      <td className="text-right py-2 px-2 text-[#6E6E73]">
+                                        {week.clicks.toLocaleString()}
+                                      </td>
+                                      <td className="text-right py-2 px-2 text-[#6E6E73]">
+                                        {week.ctr.toFixed(2)}%
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Keyword Performance */}
+                {bingKeywordsData && bingKeywordsData.all_keywords_comparison && bingKeywordsData.all_keywords_comparison.length > 0 && (
+                  <div className="mb-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-[#0066CC]" />
+                          Bing Keyword Performance (Week over Week)
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F] sticky left-0 bg-white">Keyword</th>
+                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F]">Campaign</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Max CPC</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Avg CPC</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Conv.</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost/Conv.</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Search IS</th>
+                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Click Share</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {bingKeywordsData.all_keywords_comparison.slice(0, 15).map((kw, idx) => {
+                                // Calculate variances
+                                const maxCpcVar = kw.last_week_max_cpc && kw.two_weeks_ago_max_cpc ? kw.last_week_max_cpc - kw.two_weeks_ago_max_cpc : null;
+                                const avgCpcVar = kw.last_week_avg_cpc && kw.two_weeks_ago_avg_cpc ? kw.last_week_avg_cpc - kw.two_weeks_ago_avg_cpc : null;
+                                const convVar = kw.two_weeks_ago_conversions !== undefined ? kw.last_week_conversions - kw.two_weeks_ago_conversions : null;
+                                const costVar = kw.two_weeks_ago_spend !== undefined ? kw.last_week_spend - kw.two_weeks_ago_spend : null;
+                                const cpaVar = kw.last_week_cpa > 0 && kw.two_weeks_ago_cpa && kw.two_weeks_ago_cpa > 0 ? kw.last_week_cpa - kw.two_weeks_ago_cpa : null;
+                                const searchIsVar = kw.last_week_search_impr_share && kw.two_weeks_ago_search_impr_share ? kw.last_week_search_impr_share - kw.two_weeks_ago_search_impr_share : null;
+                                const clickShareVar = kw.last_week_click_share && kw.two_weeks_ago_click_share ? kw.last_week_click_share - kw.two_weeks_ago_click_share : null;
+
+                                return (
+                                <tr key={idx} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
+                                  <td className="py-2 px-2 text-[#1D1D1F] sticky left-0 bg-white">
+                                    <div className="font-medium truncate max-w-[150px]">{kw.keyword}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{kw.match_type}</div>
+                                  </td>
+                                  <td className="py-2 px-2 text-[#6E6E73]">
+                                    <div className="truncate max-w-[120px]">{kw.campaign || '-'}</div>
+                                  </td>
+                                  {/* Max CPC - lower is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_max_cpc ? formatCurrencyDecimal(kw.last_week_max_cpc) : '-'}</div>
+                                    {maxCpcVar !== null && Math.abs(maxCpcVar) >= 0.01 && (
+                                      <div className={`text-[10px] ${maxCpcVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {maxCpcVar > 0 ? '+' : ''}{formatCurrencyDecimal(maxCpcVar)}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Avg CPC - lower is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_avg_cpc ? formatCurrencyDecimal(kw.last_week_avg_cpc) : '-'}</div>
+                                    {avgCpcVar !== null && Math.abs(avgCpcVar) >= 0.01 && (
+                                      <div className={`text-[10px] ${avgCpcVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {avgCpcVar > 0 ? '+' : ''}{formatCurrencyDecimal(avgCpcVar)}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Conversions - higher is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{Math.round(kw.last_week_conversions)}</div>
+                                    {convVar !== null && convVar !== 0 && (
+                                      <div className={`text-[10px] ${convVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {convVar > 0 ? '+' : ''}{Math.round(convVar)}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Cost - lower is better (or neutral) */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{formatCurrency(Math.round(kw.last_week_spend))}</div>
+                                    {costVar !== null && Math.abs(costVar) >= 1 && (
+                                      <div className={`text-[10px] ${costVar < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
+                                        {costVar > 0 ? '+' : ''}{formatCurrency(Math.round(costVar))}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Cost/Conv (CPA) - lower is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className={`font-semibold ${kw.last_week_cpa > 0 ? 'text-[#1D1D1F]' : 'text-[#6E6E73]'}`}>
+                                      {kw.last_week_cpa > 0 ? formatCurrency(Math.round(kw.last_week_cpa)) : '-'}
+                                    </div>
+                                    {cpaVar !== null && Math.abs(cpaVar) >= 1 && (
+                                      <div className={`text-[10px] ${cpaVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {cpaVar > 0 ? '+' : ''}{formatCurrency(Math.round(cpaVar))}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Search IS - higher is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_search_impr_share ? `${Math.round(kw.last_week_search_impr_share)}%` : '-'}</div>
+                                    {searchIsVar !== null && Math.abs(searchIsVar) >= 1 && (
+                                      <div className={`text-[10px] ${searchIsVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {searchIsVar > 0 ? '+' : ''}{Math.round(searchIsVar)}%
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/* Click Share - higher is better */}
+                                  <td className="text-right py-2 px-2">
+                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_click_share ? `${Math.round(kw.last_week_click_share)}%` : '-'}</div>
+                                    {clickShareVar !== null && Math.abs(clickShareVar) >= 1 && (
+                                      <div className={`text-[10px] ${clickShareVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
+                                        {clickShareVar > 0 ? '+' : ''}{Math.round(clickShareVar)}%
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              )})}
+                            </tbody>
+                          </table>
+                        </div>
+                        {/* Week labels */}
+                        <div className="mt-3 pt-3 border-t border-[#E5E5E5] flex gap-4 text-xs text-[#6E6E73]">
+                          <span><strong>Last Week:</strong> {bingKeywordsData.prior_week ? new Date(bingKeywordsData.prior_week).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : '-'}</span>
+                          <span><strong>2 Weeks Ago:</strong> {bingKeywordsData.two_weeks_ago ? new Date(bingKeywordsData.two_weeks_ago).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : '-'}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* No Data State */}
+                {!bingCampaignsData && !bingKeywordsData && (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-center">
+                      <Target className="h-12 w-12 text-[#D2D2D7] mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-[#1D1D1F]">No Bing Ads Data</h3>
+                      <p className="text-[#6E6E73]">Bing Ads performance data is not available</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {/* Jedi Council Tab */}
+        {activeTab === "jedi-council" && (
+          <JediCouncilSection jediCouncil={jediCouncil} />
+        )}
+
+        {/* Subscriptions Tab */}
+        {activeTab === "subscriptions" && (
+          <div className="space-y-6">
+            {subscriptionsLoading && !subscriptions ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                  <CardSkeleton key={i} />
+                ))}
+              </div>
+            ) : subscriptions ? (
+              <>
+                {/* Key Metrics Row */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  {/* Total Active */}
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-[#6E6E73]">
+                        Active Subscriptions
+                      </CardTitle>
+                      <Play className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-[#1D1D1F]">
+                        {formatNumber(subscriptions.metrics.active_subscriptions)}
+                      </div>
+                      <p className="text-xs text-[#6E6E73] mt-1">
+                        {((subscriptions.metrics.active_subscriptions / subscriptions.metrics.total_subscriptions) * 100).toFixed(1)}% of all subs
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  {/* MRR */}
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-[#6E6E73]">
+                        Active Sub Revenue
+                      </CardTitle>
+                      <DollarSign className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-[#1D1D1F]">
+                        {formatCurrency(subscriptions.metrics.mrr)}
+                      </div>
+                      <p className="text-xs text-[#6E6E73] mt-1">
+                        Avg: {formatCurrencyDecimal(subscriptions.metrics.avg_order_value)}/sub
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Active by Tier */}
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-shadow col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-[#6E6E73]">
+                        Active by Subscription Amount
+                      </CardTitle>
+                      <Users className="h-4 w-4 text-[#0066CC]" />
+                    </CardHeader>
+                    <CardContent>
+                      {subscriberMetrics?.available && subscriberMetrics.data?.tier_breakdown ? (() => {
+                        const t = subscriberMetrics.data.tier_breakdown
+                        const total = t.tier_29 + t.tier_40 + t.tier_50_70 + t.tier_90_plus
+                        const pct = (val: number) => total > 0 ? ((val / total) * 100).toFixed(1) : '0'
+                        return (
+                          <div className="grid grid-cols-5 gap-3">
+                            <div className="text-center">
+                              <div className="text-xl font-bold text-[#1D1D1F]">
+                                {t.tier_29.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-[#6E6E73]">$29</div>
+                              <div className="text-[10px] text-[#8E8E93]">{pct(t.tier_29)}%</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xl font-bold text-[#1D1D1F]">
+                                {t.tier_40.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-[#6E6E73]">$40</div>
+                              <div className="text-[10px] text-[#8E8E93]">{pct(t.tier_40)}%</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xl font-bold text-[#1D1D1F]">
+                                {t.tier_50_70.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-[#6E6E73]">$50-70</div>
+                              <div className="text-[10px] text-[#8E8E93]">{pct(t.tier_50_70)}%</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xl font-bold text-[#1D1D1F]">
+                                {t.tier_90_plus.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-[#6E6E73]">$90+</div>
+                              <div className="text-[10px] text-[#8E8E93]">{pct(t.tier_90_plus)}%</div>
+                            </div>
+                            <div className="text-center border-l border-[#D2D2D7] pl-3">
+                              <div className="text-xl font-bold text-[#0066CC]">
+                                ${subscriberMetrics.data.current_avg_renewal.toFixed(2)}
+                              </div>
+                              <div className="text-xs text-[#6E6E73]">Avg</div>
+                            </div>
+                          </div>
+                        )
+                      })() : (
+                        <div className="text-sm text-[#6E6E73]">Loading tier data...</div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Activity Metrics */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {/* New This Week */}
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-[#6E6E73]">
+                        New This Week
+                      </CardTitle>
+                      <ArrowUp className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-green-600">
+                        +{formatNumber(subscriptions.metrics.new_this_week)}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* New This Month */}
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-[#6E6E73]">
+                        New This Month
+                      </CardTitle>
+                      <ArrowUp className="h-4 w-4 text-green-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-green-600">
+                        +{formatNumber(subscriptions.metrics.new_this_month)}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Cancelled This Month */}
+                  <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-[#6E6E73]">
+                        Cancelled This Month
+                      </CardTitle>
+                      <ArrowDown className="h-4 w-4 text-red-500" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-red-600">
+                        -{formatNumber(subscriptions.metrics.cancelled_this_month)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Quarterly Cohort Retention */}
+                {subscriberMetrics?.available && subscriberMetrics.data?.quarterly_cohort_retention && (
+                  <Card className="border-0 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">
+                        Quarterly Cohort Retention
+                      </CardTitle>
+                      <CardDescription>
+                        New signups by quarter and what % are still active today (2025 - Present)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-5 gap-3">
+                        {Object.entries(subscriberMetrics.data.quarterly_cohort_retention).map(([quarter, data]) => (
+                          <div key={quarter} className="bg-[#F5F5F7] rounded-lg p-3 text-center">
+                            <div className="text-sm font-medium text-[#1D1D1F] mb-2">{quarter}</div>
+                            <div className="text-2xl font-bold text-[#1D1D1F]">
+                              {data.total_adds.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-[#6E6E73] mb-2">new adds</div>
+                            <div className="text-lg font-semibold text-green-600">
+                              {data.still_active.toLocaleString()} still active
+                            </div>
+                            <div className="text-sm font-medium text-green-600">
+                              {data.retention_pct}% retention
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-[#D2D2D7] flex flex-wrap justify-between items-center gap-2">
+                        <div className="text-sm text-[#6E6E73]">
+                          Total new adds: <span className="font-semibold text-[#1D1D1F]">{Object.values(subscriberMetrics.data.quarterly_cohort_retention).reduce((a, b) => a + b.total_adds, 0).toLocaleString()}</span>
+                        </div>
+                        <div className="text-sm text-[#6E6E73]">
+                          Still active: <span className="font-semibold text-green-600">{Object.values(subscriberMetrics.data.quarterly_cohort_retention).reduce((a, b) => a + b.still_active, 0).toLocaleString()}</span>
+                        </div>
+                        <div className="text-sm text-[#6E6E73]">
+                          Overall retention: <span className="font-semibold text-green-600">
+                            {(() => {
+                              const totals = Object.values(subscriberMetrics.data.quarterly_cohort_retention).reduce((a, b) => ({ adds: a.adds + b.total_adds, active: a.active + b.still_active }), { adds: 0, active: 0 })
+                              return totals.adds > 0 ? ((totals.active / totals.adds) * 100).toFixed(1) : '0'
+                            })()}%
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Immediate Cancels by Month */}
+                {subscriberMetrics?.available && subscriberMetrics.data?.immediate_cancels_by_month && (
+                  <Card className="border-0 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">
+                        Immediate Cancels by Month
+                      </CardTitle>
+                      <CardDescription>
+                        Subscribers who cancelled within 30 days of signing up (Jan 2025 - Present)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        {Object.entries(subscriberMetrics.data.immediate_cancels_by_month).map(([month, count]) => {
+                          const rate = subscriberMetrics.data?.immediate_cancel_rate_by_month?.[month] || 0
+                          const newAdds = subscriberMetrics.data?.new_adds_by_month?.[month] || 0
+                          return (
+                            <div key={month} className="bg-[#F5F5F7] rounded-lg p-3 text-center">
+                              <div className="text-xs text-[#6E6E73] mb-1">{month}</div>
+                              <div className={`text-xl font-bold ${count > 0 ? 'text-red-600' : 'text-[#1D1D1F]'}`}>
+                                {count}
+                              </div>
+                              <div className="text-xs text-[#6E6E73] mt-1">
+                                {rate}% of {newAdds} adds
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-[#D2D2D7] flex flex-wrap justify-between items-center gap-2">
+                        <div className="text-sm text-[#6E6E73]">
+                          Total new adds: <span className="font-semibold text-green-600">{Object.values(subscriberMetrics.data.new_adds_by_month || {}).reduce((a, b) => a + b, 0).toLocaleString()}</span>
+                        </div>
+                        <div className="text-sm text-[#6E6E73]">
+                          Total immediate cancels: <span className="font-semibold text-red-600">{subscriberMetrics.data.immediate_cancels_total.toLocaleString()}</span>
+                        </div>
+                        <div className="text-sm text-[#6E6E73]">
+                          {subscriberMetrics.data.immediate_cancels_pct}% of all cancellations
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* New Adds vs Immediate Cancels Chart */}
+                {subscriberMetrics?.available && subscriberMetrics.data?.new_adds_by_month && (
+                  <Card className="border-0 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">
+                        New Adds vs Immediate Cancels Trend
+                      </CardTitle>
+                      <CardDescription>
+                        Monthly comparison of new signups, immediate cancels, and cancel rate
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart
+                            data={Object.entries(subscriberMetrics.data.new_adds_by_month).map(([month, adds]) => ({
+                              month: month.replace(' 20', ' \''),
+                              newAdds: adds,
+                              cancels: subscriberMetrics.data?.immediate_cancels_by_month?.[month] || 0,
+                              rate: subscriberMetrics.data?.immediate_cancel_rate_by_month?.[month] || 0,
+                            }))}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5EA" />
+                            <XAxis
+                              dataKey="month"
+                              tick={{ fontSize: 12, fill: '#6E6E73' }}
+                              axisLine={{ stroke: '#D2D2D7' }}
+                            />
+                            <YAxis
+                              yAxisId="left"
+                              tick={{ fontSize: 12, fill: '#6E6E73' }}
+                              axisLine={{ stroke: '#D2D2D7' }}
+                              label={{ value: 'Count', angle: -90, position: 'insideLeft', fill: '#6E6E73', fontSize: 12 }}
+                            />
+                            <YAxis
+                              yAxisId="right"
+                              orientation="right"
+                              tick={{ fontSize: 12, fill: '#6E6E73' }}
+                              axisLine={{ stroke: '#D2D2D7' }}
+                              domain={[0, 20]}
+                              label={{ value: 'Cancel Rate %', angle: 90, position: 'insideRight', fill: '#6E6E73', fontSize: 12 }}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: 'white',
+                                border: '1px solid #D2D2D7',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                              }}
+                              formatter={(value, name) => {
+                                const val = Number(value) || 0
+                                if (name === 'rate') return [`${val}%`, 'Cancel Rate']
+                                if (name === 'newAdds') return [val.toLocaleString(), 'New Adds']
+                                if (name === 'cancels') return [val.toLocaleString(), 'Immediate Cancels']
+                                return [val, name]
+                              }}
+                            />
+                            <Legend
+                              wrapperStyle={{ paddingTop: '10px' }}
+                              formatter={(value) => {
+                                if (value === 'newAdds') return 'New Adds'
+                                if (value === 'cancels') return 'Immediate Cancels'
+                                if (value === 'rate') return 'Cancel Rate %'
+                                return value
+                              }}
+                            />
+                            <Bar
+                              yAxisId="left"
+                              dataKey="newAdds"
+                              fill="#34C759"
+                              radius={[4, 4, 0, 0]}
+                              name="newAdds"
+                            />
+                            <Bar
+                              yAxisId="left"
+                              dataKey="cancels"
+                              fill="#FF3B30"
+                              radius={[4, 4, 0, 0]}
+                              name="cancels"
+                            />
+                            <Line
+                              yAxisId="right"
+                              type="monotone"
+                              dataKey="rate"
+                              stroke="#FF9500"
+                              strokeWidth={3}
+                              dot={{ fill: '#FF9500', strokeWidth: 2, r: 4 }}
+                              name="rate"
+                            />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Adjusted Churn Rate by Month (excluding immediate cancels) */}
+                {subscriberMetrics?.available && subscriberMetrics.data?.adjusted_churn_by_month && (
+                  <Card className="border-0 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">
+                        Adjusted Churn Rate by Month
+                      </CardTitle>
+                      <CardDescription>
+                        Churn rate excluding immediate cancels (subscribers who stayed &gt;30 days before cancelling)
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
+                        {Object.entries(subscriberMetrics.data.adjusted_churn_by_month).map(([month, count]) => {
+                          const totalChurn = subscriberMetrics.data?.churn_by_month?.[month] || 0
+                          const immediateChurn = subscriberMetrics.data?.immediate_by_churn_month?.[month] || 0
+                          const adjustedRate = subscriberMetrics.data?.adjusted_churn_rate_by_month?.[month] || 0
+                          return (
+                            <div key={month} className="bg-[#F5F5F7] rounded-lg p-3 text-center">
+                              <div className="text-xs text-[#6E6E73] mb-1">{month}</div>
+                              <div className={`text-xl font-bold ${count > 0 ? 'text-orange-600' : 'text-[#1D1D1F]'}`}>
+                                {count}
+                              </div>
+                              <div className="text-xs text-[#6E6E73] mt-1">
+                                {adjustedRate}% adj. rate
+                              </div>
+                              <div className="text-[10px] text-[#8E8E93] mt-0.5">
+                                {totalChurn} total - {immediateChurn} imm.
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="pt-4 border-t border-[#D2D2D7]">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                          <div>
+                            <div className="text-xs text-[#6E6E73] mb-1">Avg Total Churn/mo</div>
+                            <div className="text-lg font-semibold text-red-600">{subscriberMetrics.data.avg_churn_12mo}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-[#6E6E73] mb-1">Avg Immediate/mo</div>
+                            <div className="text-lg font-semibold text-red-400">{Math.round(subscriberMetrics.data.immediate_cancels_avg_monthly)}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-[#6E6E73] mb-1">Avg Adjusted Churn/mo</div>
+                            <div className="text-lg font-semibold text-orange-600">{subscriberMetrics.data.avg_adjusted_churn_12mo}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-[#6E6E73] mb-1">Immediate % of Churn</div>
+                            <div className="text-lg font-semibold text-[#1D1D1F]">{subscriberMetrics.data.immediate_cancels_pct}%</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Status Breakdown Table */}
+                <Card className="border-0 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-[#1D1D1F]">
+                      Status Breakdown
+                    </CardTitle>
+                    <CardDescription>
+                      All subscription statuses with counts and revenue
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-[#D2D2D7]">
+                            <th className="text-left py-3 px-4 text-sm font-medium text-[#6E6E73]">Status</th>
+                            <th className="text-right py-3 px-4 text-sm font-medium text-[#6E6E73]">Count</th>
+                            <th className="text-right py-3 px-4 text-sm font-medium text-[#6E6E73]">% of Total</th>
+                            <th className="text-right py-3 px-4 text-sm font-medium text-[#6E6E73]">Total Revenue</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {subscriptions.status_breakdown.map((status, idx) => (
+                            <tr key={idx} className="border-b border-[#F5F5F7] hover:bg-[#F5F5F7]/50">
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  {status.status === "Active" && <Play className="h-4 w-4 text-green-500" />}
+                                  {status.status === "On Hold" && <Pause className="h-4 w-4 text-yellow-500" />}
+                                  {status.status === "Cancelled" && <XCircle className="h-4 w-4 text-red-500" />}
+                                  {status.status === "Pending Cancel" && <Clock className="h-4 w-4 text-orange-500" />}
+                                  {!["Active", "On Hold", "Cancelled", "Pending Cancel"].includes(status.status) && (
+                                    <RefreshCw className="h-4 w-4 text-[#6E6E73]" />
+                                  )}
+                                  <span className="font-medium text-[#1D1D1F]">{status.status}</span>
+                                </div>
+                              </td>
+                              <td className="text-right py-3 px-4 font-medium text-[#1D1D1F]">
+                                {formatNumber(status.count)}
+                              </td>
+                              <td className="text-right py-3 px-4">
+                                <span className="inline-flex items-center rounded-full bg-[#F5F5F7] px-2.5 py-0.5 text-sm font-medium text-[#6E6E73]">
+                                  {status.percentage.toFixed(1)}%
+                                </span>
+                              </td>
+                              <td className="text-right py-3 px-4 font-medium text-[#1D1D1F]">
+                                {formatCurrency(status.total_revenue)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr className="bg-[#F5F5F7]">
+                            <td className="py-3 px-4 font-semibold text-[#1D1D1F]">Total</td>
+                            <td className="text-right py-3 px-4 font-semibold text-[#1D1D1F]">
+                              {formatNumber(subscriptions.metrics.total_subscriptions)}
+                            </td>
+                            <td className="text-right py-3 px-4 font-semibold text-[#1D1D1F]">100%</td>
+                            <td className="text-right py-3 px-4 font-semibold text-[#1D1D1F]">
+                              {formatCurrency(subscriptions.status_breakdown.reduce((sum, s) => sum + s.total_revenue, 0))}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Last Updated */}
+                <p className="text-xs text-[#6E6E73] text-right">
+                  Last updated: {new Date(subscriptions.last_updated).toLocaleString()}
+                </p>
+              </>
+            ) : (
+              <Card className="border-0 shadow-sm">
+                <CardContent className="py-12 text-center">
+                  <p className="text-[#6E6E73]">Failed to load subscription data</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
+
+
+
