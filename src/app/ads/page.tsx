@@ -298,15 +298,91 @@ export default function AdsPage() {
           </div>
         </div>
 
-        {/* Totals Banner */}
-        <div className="bg-[#1a1a1a] rounded-lg p-4 mb-4 flex justify-center gap-12">
-          <div className="text-center">
-            <div className="text-white text-3xl font-bold">{formatNumber(organicData.this_week.totals.users)}</div>
-            <div className="text-gray-500 text-xs">Total New Visitors</div>
+        {/* Top KPI Cards */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          {/* New Visitors Card */}
+          <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+            <div className="h-1 bg-blue-500" />
+            <div className="p-6">
+              <div className="text-gray-400 text-sm mb-2">NEW VISITORS</div>
+              <div className="text-white text-5xl font-bold mb-4">{formatNumber(organicData.this_week.totals.users)}</div>
+              <div className="space-y-2">
+                {[
+                  { label: "vs 2 wks", data: organicData.last_week },
+                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago }
+                ].map((comp, i) => {
+                  const change = comp.data.totals.users > 0 
+                    ? ((organicData.this_week.totals.users - comp.data.totals.users) / comp.data.totals.users * 100) : 0
+                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
+                  return (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-500">{comp.label}</span>
+                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-white text-3xl font-bold">{organicData.this_week.totals.purchases}</div>
-            <div className="text-gray-500 text-xs">Total Purchases</div>
+
+          {/* Conversions Card */}
+          <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+            <div className="h-1 bg-green-500" />
+            <div className="p-6">
+              <div className="text-gray-400 text-sm mb-2">CONVERSIONS</div>
+              <div className="text-white text-5xl font-bold mb-4">{organicData.this_week.totals.purchases}</div>
+              <div className="space-y-2">
+                {[
+                  { label: "vs 2 wks", data: organicData.last_week },
+                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago }
+                ].map((comp, i) => {
+                  const change = comp.data.totals.purchases > 0 
+                    ? ((organicData.this_week.totals.purchases - comp.data.totals.purchases) / comp.data.totals.purchases * 100) : 0
+                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
+                  return (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-500">{comp.label}</span>
+                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Conversion Rate Card */}
+          <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+            <div className="h-1 bg-purple-500" />
+            <div className="p-6">
+              <div className="text-gray-400 text-sm mb-2">CONVERSION RATE</div>
+              <div className="text-white text-5xl font-bold mb-4">
+                {organicData.this_week.totals.users > 0 
+                  ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(2) 
+                  : "0"}%
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: "vs 2 wks", data: organicData.last_week },
+                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago }
+                ].map((comp, i) => {
+                  const currentRate = organicData.this_week.totals.users > 0 
+                    ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100) : 0
+                  const prevRate = comp.data.totals.users > 0 
+                    ? (comp.data.totals.purchases / comp.data.totals.users * 100) : 0
+                  const change = prevRate > 0 ? ((currentRate - prevRate) / prevRate * 100) : 0
+                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
+                  return (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-500">{comp.label}</span>
+                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
