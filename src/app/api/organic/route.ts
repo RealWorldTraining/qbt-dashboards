@@ -113,6 +113,14 @@ export async function GET() {
       const paidUsers = channelRow?.paid_users || 0
       const paidPurchases = channelRow?.paid_purchases || 0
 
+      // Calculate "Other" as the difference
+      const knownUsers = paidUsers + sourceRow.google_organic_users + sourceRow.direct_users + 
+                         sourceRow.bing_organic_users + sourceRow.qb_intuit_users
+      const knownPurchases = paidPurchases + sourceRow.google_organic_purchases + sourceRow.direct_purchases + 
+                             sourceRow.bing_organic_purchases + sourceRow.qb_intuit_purchases
+      const otherUsers = Math.max(0, totalUsers - knownUsers)
+      const otherPurchases = Math.max(0, totalPurchases - knownPurchases)
+
       return {
         week_label: label,
         date_range: weekCodeToDateRange(sourceRow.week_code),
@@ -158,6 +166,13 @@ export async function GET() {
             ? (sourceRow.qb_intuit_purchases / sourceRow.qb_intuit_users * 100) : 0,
           pct_of_users: (sourceRow.qb_intuit_users / totalUsers * 100),
           pct_of_purchases: (sourceRow.qb_intuit_purchases / totalPurchases * 100)
+        },
+        other: {
+          users: otherUsers,
+          purchases: otherPurchases,
+          conv_rate: otherUsers > 0 ? (otherPurchases / otherUsers * 100) : 0,
+          pct_of_users: (otherUsers / totalUsers * 100),
+          pct_of_purchases: (otherPurchases / totalPurchases * 100)
         }
       }
     }

@@ -43,6 +43,7 @@ interface OrganicWeek {
   direct: ChannelMetrics
   bing_organic: ChannelMetrics
   qb_intuit: ChannelMetrics
+  other: ChannelMetrics
 }
 
 interface OrganicData {
@@ -64,10 +65,10 @@ const LOADING_ADS: AdsData = {
 
 const LOADING_CHANNEL: ChannelMetrics = { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 }
 const LOADING_ORGANIC: OrganicData = {
-  this_week: { week_label: "Last Week", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
-  last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
-  two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
-  three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL },
+  this_week: { week_label: "Last Week", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   last_updated: new Date().toISOString()
 }
 
@@ -239,7 +240,7 @@ export default function AdsPage() {
   }
 
   // Build channel weeks data
-  type ChannelKey = 'google_ads' | 'google_organic' | 'direct' | 'bing_organic' | 'qb_intuit'
+  type ChannelKey = 'google_ads' | 'google_organic' | 'direct' | 'bing_organic' | 'qb_intuit' | 'other'
   
   const buildChannelWeeks = (channel: ChannelKey) => [
     { label: "2 wks ago", data: organicData.last_week[channel] },
@@ -278,10 +279,10 @@ export default function AdsPage() {
           </div>
         </div>
 
-        {/* Traffic Channels - 5 columns */}
+        {/* Traffic Channels - 6 columns */}
         <div className="mb-6">
           <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Traffic by Channel</h2>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-6 gap-3">
             <ChannelCard
               name="GOOGLE ADS"
               accentColor="bg-green-500"
@@ -311,6 +312,12 @@ export default function AdsPage() {
               accentColor="bg-emerald-500"
               current={organicData.this_week.qb_intuit}
               weeks={buildChannelWeeks('qb_intuit')}
+            />
+            <ChannelCard
+              name="OTHER"
+              accentColor="bg-purple-500"
+              current={organicData.this_week.other}
+              weeks={buildChannelWeeks('other')}
             />
           </div>
         </div>
