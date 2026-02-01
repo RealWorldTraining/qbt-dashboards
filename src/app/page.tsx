@@ -11,7 +11,8 @@ import {
   Megaphone,
   ArrowRight,
   BarChart3,
-  Zap
+  Zap,
+  Search,
 } from "lucide-react"
 
 const dashboards = [
@@ -70,6 +71,22 @@ const dashboards = [
     description: "Monthly traffic by channel from Google Analytics",
     color: "from-yellow-500 to-amber-600",
     stats: "Traffic • Channels"
+  },
+  { 
+    name: "Google Ads Summary", 
+    href: "/google-ads-summary", 
+    icon: TrendingUp, 
+    description: "Monthly Google Ads performance: spend, conversions, ROAS",
+    color: "from-red-500 to-rose-600",
+    stats: "Spend • Conversions • ROAS"
+  },
+  { 
+    name: "Bing Ads Summary", 
+    href: "/bing-ads-summary", 
+    icon: Search, 
+    description: "Monthly Microsoft Advertising performance metrics",
+    color: "from-sky-500 to-blue-600",
+    stats: "Spend • Conversions • ROAS"
   },
 ]
 
