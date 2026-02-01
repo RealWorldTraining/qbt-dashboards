@@ -12,6 +12,7 @@ import {
   Megaphone,
   ChevronDown,
   Home,
+  BarChart3,
 } from "lucide-react"
 
 const dashboards = [
@@ -22,6 +23,7 @@ const dashboards = [
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
   { name: "Sales", href: "/sales", icon: DollarSign, description: "Sales analytics" },
   { name: "Team", href: "/team", icon: Users, description: "Team performance" },
+  { name: "GA4 Summary", href: "/playground", icon: BarChart3, description: "Monthly traffic by channel" },
 ]
 
 interface DashboardNavProps {

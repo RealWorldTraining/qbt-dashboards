@@ -63,6 +63,14 @@ const dashboards = [
     color: "from-pink-500 to-rose-600",
     stats: "Performance"
   },
+  { 
+    name: "GA4 Summary", 
+    href: "/playground", 
+    icon: BarChart3, 
+    description: "Monthly traffic by channel from Google Analytics",
+    color: "from-yellow-500 to-amber-600",
+    stats: "Traffic • Channels"
+  },
 ]
 
 export default function Home() {
@@ -126,12 +134,6 @@ export default function Home() {
             Quick Links
           </h2>
           <div className="flex flex-wrap gap-3">
-            <Link 
-              href="/playground" 
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg transition-colors"
-            >
-              Playground
-            </Link>
             <Link 
               href="/live-help-dashboard" 
               className="px-4 py-2 text-sm text-gray-400 hover:text-white bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg transition-colors"

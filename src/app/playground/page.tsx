@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
+import { DashboardNav } from "@/components/DashboardNav"
 import {
   AreaChart,
   Area,
@@ -130,9 +131,12 @@ export default function PlaygroundPage() {
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-white text-2xl font-bold">Traffic Channel Analysis</h1>
-            <p className="text-gray-400 text-sm mt-1">Monthly breakdown by first user default channel group</p>
+          <div className="flex items-center gap-4">
+            <DashboardNav />
+            <div>
+              <h1 className="text-white text-2xl font-bold">Traffic Channel Analysis</h1>
+              <p className="text-gray-400 text-sm mt-1">Monthly breakdown by first user default channel group</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             {/* Chart Type Toggle */}
