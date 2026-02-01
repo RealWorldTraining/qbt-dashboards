@@ -28,6 +28,37 @@ interface WeeklyData {
   roas: number
 }
 
+interface CampaignMetrics {
+  week: string
+  campaign: string
+  clicks: number
+  impressions: number
+  ctr: number
+  avg_cpc: number
+  cost: number
+  conversions: number
+  conv_rate: number
+  search_impression_share: number
+  search_top_impression_share: number
+  search_abs_top_impression_share: number
+  click_share: number
+}
+
+interface CampaignWeek {
+  week: string
+  label: string
+  date_range: string
+}
+
+interface CampaignResponse {
+  weeks: CampaignWeek[]
+  campaigns: {
+    name: string
+    data: (CampaignMetrics | null)[]
+  }[]
+  last_updated: string
+}
+
 interface ApiResponse {
   data: WeeklyData[]
   last_updated: string
@@ -101,17 +132,28 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 
 export default function BingAdsSummaryPage() {
   const [data, setData] = useState<WeeklyData[]>([])
+  const [campaignData, setCampaignData] = useState<CampaignResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/bing-ads-weekly')
-      if (res.ok) {
-        const json: ApiResponse = await res.json()
+      const [weeklyRes, campaignRes] = await Promise.all([
+        fetch('/api/bing-ads-weekly'),
+        fetch('/api/bing-campaigns')
+      ])
+      
+      if (weeklyRes.ok) {
+        const json: ApiResponse = await weeklyRes.json()
         setData(json.data)
       }
+      
+      if (campaignRes.ok) {
+        const json: CampaignResponse = await campaignRes.json()
+        setCampaignData(json)
+      }
+      
       setLastRefresh(new Date())
     } catch (err) {
       console.error('Error fetching data:', err)
@@ -322,8 +364,8 @@ export default function BingAdsSummaryPage() {
           </div>
         </div>
 
-        {/* Data Table */}
-        <div className="bg-[#1a1a1a] rounded-xl p-6">
+        {/* Weekly Data Table */}
+        <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
           <h2 className="text-white text-lg font-semibold mb-4">Weekly Data</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -358,6 +400,100 @@ export default function BingAdsSummaryPage() {
             </table>
           </div>
         </div>
+
+        {/* Campaign Performance Section */}
+        {campaignData && campaignData.campaigns.length > 0 && (
+          <div className="bg-[#1a1a1a] rounded-xl p-6">
+            <h2 className="text-white text-lg font-semibold mb-4">Campaign Performance (Last 4 Weeks)</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Campaign</th>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
+                      {campaignData.weeks[0]?.date_range || 'Last Week'}
+                    </th>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
+                      {campaignData.weeks[1]?.date_range || '2 Weeks Ago'}
+                    </th>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
+                      {campaignData.weeks[2]?.date_range || '3 Weeks Ago'}
+                    </th>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
+                      {campaignData.weeks[3]?.date_range || '4 Weeks Ago'}
+                    </th>
+                  </tr>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left py-2 px-4 text-gray-500 text-xs"></th>
+                    {[0, 1, 2, 3].map((i) => (
+                      <>
+                        <th key={`spend-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">Spend</th>
+                        <th key={`conv-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">Conv</th>
+                      </>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {campaignData.campaigns.map((campaign, idx) => (
+                    <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
+                      <td className="py-3 px-4 text-white font-medium">{campaign.name}</td>
+                      {[0, 1, 2, 3].map((weekIdx) => {
+                        const weekData = campaign.data[weekIdx]
+                        return (
+                          <>
+                            <td key={`spend-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
+                              {weekData ? formatCurrency(weekData.cost) : '-'}
+                            </td>
+                            <td key={`conv-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
+                              {weekData ? formatNumber(weekData.conversions) : '-'}
+                            </td>
+                          </>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Detailed Campaign Metrics - Last Week */}
+            <h3 className="text-white text-md font-semibold mt-8 mb-4">Detailed Metrics - {campaignData.weeks[0]?.date_range || 'Last Week'}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Campaign</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Spend</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Impr</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Clicks</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">CTR</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Avg CPC</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Conv</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Conv %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {campaignData.campaigns.map((campaign, idx) => {
+                    const lastWeek = campaign.data[0]
+                    if (!lastWeek) return null
+                    return (
+                      <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
+                        <td className="py-3 px-4 text-white font-medium">{campaign.name}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatCurrency(lastWeek.cost)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.impressions)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.clicks)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.ctr)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatCurrency(lastWeek.avg_cpc)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.conversions)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.conv_rate)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="text-center mt-6">
