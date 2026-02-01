@@ -284,23 +284,23 @@ export default function AdsPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Build ads comparisons
+  // Build ads comparisons (ascending order: oldest first)
   const buildAdsComparisons = (metric: keyof WeeklyMetrics) => {
     const current = adsData.this_week[metric] as number
     return [
-      { label: "2 wks", value: adsData.last_week[metric] as number, change: ((current - (adsData.last_week[metric] as number)) / (adsData.last_week[metric] as number)) * 100 },
-      { label: "3 wks", value: adsData.two_weeks_ago[metric] as number, change: ((current - (adsData.two_weeks_ago[metric] as number)) / (adsData.two_weeks_ago[metric] as number)) * 100 },
       { label: "4 wks", value: adsData.three_weeks_ago[metric] as number, change: ((current - (adsData.three_weeks_ago[metric] as number)) / (adsData.three_weeks_ago[metric] as number)) * 100 },
+      { label: "3 wks", value: adsData.two_weeks_ago[metric] as number, change: ((current - (adsData.two_weeks_ago[metric] as number)) / (adsData.two_weeks_ago[metric] as number)) * 100 },
+      { label: "2 wks", value: adsData.last_week[metric] as number, change: ((current - (adsData.last_week[metric] as number)) / (adsData.last_week[metric] as number)) * 100 },
     ]
   }
 
-  // Build Bing ads comparisons
+  // Build Bing ads comparisons (ascending order: oldest first)
   const buildBingComparisons = (metric: keyof WeeklyMetrics) => {
     const current = bingAdsData.this_week[metric] as number
     return [
-      { label: "2 wks", value: bingAdsData.last_week[metric] as number, change: ((current - (bingAdsData.last_week[metric] as number)) / (bingAdsData.last_week[metric] as number)) * 100 },
-      { label: "3 wks", value: bingAdsData.two_weeks_ago[metric] as number, change: ((current - (bingAdsData.two_weeks_ago[metric] as number)) / (bingAdsData.two_weeks_ago[metric] as number)) * 100 },
       { label: "4 wks", value: bingAdsData.three_weeks_ago[metric] as number, change: ((current - (bingAdsData.three_weeks_ago[metric] as number)) / (bingAdsData.three_weeks_ago[metric] as number)) * 100 },
+      { label: "3 wks", value: bingAdsData.two_weeks_ago[metric] as number, change: ((current - (bingAdsData.two_weeks_ago[metric] as number)) / (bingAdsData.two_weeks_ago[metric] as number)) * 100 },
+      { label: "2 wks", value: bingAdsData.last_week[metric] as number, change: ((current - (bingAdsData.last_week[metric] as number)) / (bingAdsData.last_week[metric] as number)) * 100 },
     ]
   }
 
@@ -308,9 +308,9 @@ export default function AdsPage() {
   type ChannelKey = 'google_ads' | 'google_organic' | 'direct' | 'bing_organic' | 'qb_intuit' | 'other'
   
   const buildChannelWeeks = (channel: ChannelKey) => [
-    { label: "2 wks ago", data: organicData.last_week[channel] },
-    { label: "3 wks ago", data: organicData.two_weeks_ago[channel] },
     { label: "4 wks ago", data: organicData.three_weeks_ago[channel] },
+    { label: "3 wks ago", data: organicData.two_weeks_ago[channel] },
+    { label: "2 wks ago", data: organicData.last_week[channel] },
   ]
 
   return (
@@ -343,9 +343,9 @@ export default function AdsPage() {
               <div className="text-white text-5xl font-bold mb-4">{formatNumber(organicData.this_week.totals.users)}</div>
               <div className="space-y-2">
                 {[
-                  { label: "vs 2 wks", data: organicData.last_week },
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
                   { label: "vs 3 wks", data: organicData.two_weeks_ago },
-                  { label: "vs 4 wks", data: organicData.three_weeks_ago }
+                  { label: "vs 2 wks", data: organicData.last_week }
                 ].map((comp, i) => {
                   const change = comp.data.totals.users > 0 
                     ? ((organicData.this_week.totals.users - comp.data.totals.users) / comp.data.totals.users * 100) : 0
@@ -369,9 +369,9 @@ export default function AdsPage() {
               <div className="text-white text-5xl font-bold mb-4">{organicData.this_week.totals.purchases}</div>
               <div className="space-y-2">
                 {[
-                  { label: "vs 2 wks", data: organicData.last_week },
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
                   { label: "vs 3 wks", data: organicData.two_weeks_ago },
-                  { label: "vs 4 wks", data: organicData.three_weeks_ago }
+                  { label: "vs 2 wks", data: organicData.last_week }
                 ].map((comp, i) => {
                   const change = comp.data.totals.purchases > 0 
                     ? ((organicData.this_week.totals.purchases - comp.data.totals.purchases) / comp.data.totals.purchases * 100) : 0
@@ -399,9 +399,9 @@ export default function AdsPage() {
               </div>
               <div className="space-y-2">
                 {[
-                  { label: "vs 2 wks", data: organicData.last_week },
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
                   { label: "vs 3 wks", data: organicData.two_weeks_ago },
-                  { label: "vs 4 wks", data: organicData.three_weeks_ago }
+                  { label: "vs 2 wks", data: organicData.last_week }
                 ].map((comp, i) => {
                   const currentRate = organicData.this_week.totals.users > 0 
                     ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100) : 0

@@ -28,9 +28,11 @@ function parseNumber(val: string): number {
 }
 
 function formatDateRange(weekStart: string): string {
-  const start = new Date(weekStart)
-  const end = new Date(start)
-  end.setDate(start.getDate() + 6)
+  // Parse dates without timezone shift (YYYY-MM-DD format)
+  const [year, month, day] = weekStart.split('-').map(Number)
+  const start = new Date(year, month - 1, day)
+  const end = new Date(year, month - 1, day + 6)
+  
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
   return `${start.toLocaleDateString('en-US', opts)} - ${end.toLocaleDateString('en-US', opts)}`
 }
@@ -65,7 +67,7 @@ export async function GET() {
 
     // Parse all rows (skip header)
     // Columns: A=Week, B=Campaign, C=Clicks, D=Impressions, E=CTR, F=Avg CPC,
-    // G=Cost, H=Conversions, I=Conv Rate, J=Search Impr Share, K=Search Top, L=Search Abs Top, M=Click Share
+    // G=Cost, H=Conversions, I=Conv Rate, J=(old), K=Impr Share, L=Top %, M=Abs Top %
     const allData: CampaignRow[] = rows.slice(1)
       .filter(row => row[0] && row[1])
       .map(row => ({
@@ -78,10 +80,10 @@ export async function GET() {
         cost: parseNumber(row[6]),
         conversions: parseNumber(row[7]),
         conv_rate: parseNumber(row[8]),
-        search_impression_share: parseNumber(row[9]),
-        search_top_impression_share: parseNumber(row[10]),
-        search_abs_top_impression_share: parseNumber(row[11]),
-        click_share: parseNumber(row[12]),
+        search_impression_share: parseNumber(row[10]),  // Column K
+        search_top_impression_share: parseNumber(row[11]),  // Column L
+        search_abs_top_impression_share: parseNumber(row[12]),  // Column M
+        click_share: parseNumber(row[13]),  // Column N
       }))
 
     // Get unique weeks and campaigns

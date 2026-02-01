@@ -23,6 +23,7 @@ interface WeeklyData {
   clicks: number
   conversions: number
   ctr: number
+  avg_cpc: number
   conv_rate: number
   cpa: number
   roas: number
@@ -70,6 +71,7 @@ const METRIC_COLORS = {
   clicks: "#22c55e",      // green
   conversions: "#f59e0b", // amber
   ctr: "#8b5cf6",         // purple
+  avg_cpc: "#a855f7",     // violet
   conv_rate: "#ec4899",   // pink
   cpa: "#06b6d4",         // cyan
   roas: "#10b981",        // emerald
@@ -81,6 +83,7 @@ const METRIC_LABELS: Record<string, string> = {
   clicks: "Clicks",
   conversions: "Conversions",
   ctr: "CTR",
+  avg_cpc: "Avg CPC",
   conv_rate: "Conv Rate",
   cpa: "CPA",
   roas: "ROAS",
@@ -92,6 +95,10 @@ function formatNumber(value: number): string {
 
 function formatCurrency(value: number): string {
   return "$" + new Intl.NumberFormat("en-US").format(Math.round(value))
+}
+
+function formatCurrencyPrecise(value: number): string {
+  return "$" + value.toFixed(2)
 }
 
 function formatPercent(value: number): string {
@@ -191,7 +198,9 @@ export default function GoogleAdsSummaryPage() {
             <DashboardNav />
             <div>
               <h1 className="text-white text-2xl font-bold">Google Ads Summary</h1>
-              <p className="text-gray-400 text-sm mt-1">Last 6 weeks performance</p>
+              <p className="text-gray-400 text-sm mt-1">
+                {data.length > 0 ? `Week of ${data[0].week}` : 'Loading...'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -260,9 +269,6 @@ export default function GoogleAdsSummaryPage() {
                     dataKey="week" 
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 11 }}
-                    angle={-20}
-                    textAnchor="end"
-                    height={60}
                   />
                   <YAxis 
                     yAxisId="left"
@@ -300,10 +306,10 @@ export default function GoogleAdsSummaryPage() {
           </div>
         </div>
 
-        {/* Efficiency Chart */}
+        {/* CPC & CPA Chart */}
         <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
-          <h2 className="text-white text-lg font-semibold mb-4">Efficiency Metrics</h2>
-          <div style={{ width: '100%', height: 300 }}>
+          <h2 className="text-white text-lg font-semibold mb-4">Avg CPC & Cost Per Conversion</h2>
+          <div style={{ width: '100%', height: 400 }}>
             {chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -312,51 +318,39 @@ export default function GoogleAdsSummaryPage() {
                     dataKey="week" 
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 11 }}
-                    angle={-20}
-                    textAnchor="end"
-                    height={60}
                   />
                   <YAxis 
                     yAxisId="left"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
-                    tickFormatter={(value) => `${value.toFixed(1)}%`}
+                    tickFormatter={(value) => `$${value.toFixed(2)}`}
+                    label={{ value: 'Avg CPC', angle: -90, position: 'insideLeft', fill: '#999', fontSize: 12 }}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
-                    tickFormatter={(value) => `${value.toFixed(1)}x`}
+                    tickFormatter={(value) => `$${value}`}
+                    label={{ value: 'CPA', angle: 90, position: 'insideRight', fill: '#999', fontSize: 12 }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Line
+                  <Bar
                     yAxisId="left"
-                    type="monotone"
-                    dataKey="ctr"
-                    name="ctr"
-                    stroke={METRIC_COLORS.ctr}
-                    strokeWidth={2}
-                    dot={{ fill: METRIC_COLORS.ctr }}
-                  />
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="conv_rate"
-                    name="conv_rate"
-                    stroke={METRIC_COLORS.conv_rate}
-                    strokeWidth={2}
-                    dot={{ fill: METRIC_COLORS.conv_rate }}
+                    dataKey="avg_cpc"
+                    name="avg_cpc"
+                    fill={METRIC_COLORS.avg_cpc}
+                    radius={[4, 4, 0, 0]}
                   />
                   <Line
                     yAxisId="right"
                     type="monotone"
-                    dataKey="roas"
-                    name="roas"
-                    stroke={METRIC_COLORS.roas}
-                    strokeWidth={2}
-                    dot={{ fill: METRIC_COLORS.roas }}
+                    dataKey="cpa"
+                    name="cpa"
+                    stroke={METRIC_COLORS.cpa}
+                    strokeWidth={3}
+                    dot={{ fill: METRIC_COLORS.cpa, r: 5 }}
                   />
                 </ComposedChart>
               </ResponsiveContainer>
@@ -379,11 +373,10 @@ export default function GoogleAdsSummaryPage() {
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.conversions }}>Conv</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.conv_rate }}>Conv %</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.cpa }}>CPA</th>
-                  <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.roas }}>ROAS</th>
                 </tr>
               </thead>
               <tbody>
-                {data.map((row, idx) => (
+                {[...data].reverse().map((row, idx) => (
                   <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                     <td className="py-3 px-4 text-white font-medium">{row.week}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.spend)}</td>
@@ -393,7 +386,6 @@ export default function GoogleAdsSummaryPage() {
                     <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.conversions)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatPercent(row.conv_rate)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.cpa)}</td>
-                    <td className="text-right py-3 px-4 text-gray-300">{row.roas.toFixed(2)}x</td>
                   </tr>
                 ))}
               </tbody>
@@ -402,7 +394,21 @@ export default function GoogleAdsSummaryPage() {
         </div>
 
         {/* Campaign Performance Section */}
-        {campaignData && campaignData.campaigns.length > 0 && (
+        {campaignData && campaignData.campaigns.length > 0 && (() => {
+          // Custom sort order: Desktop first, then Mobile. Within each: Cert → Training → Classes → Courses
+          const campaignOrder = [
+            'Certification-Desktop', 'Training-Desktop', 'Classes-Desktop', 'Courses-Desktop',
+            'Certification-Mobile', 'Training-Mobile', 'Classes-Mobile', 'Courses-Mobile'
+          ]
+          const sortedCampaigns = [...campaignData.campaigns].sort((a, b) => {
+            const aIdx = campaignOrder.findIndex(name => a.name.toLowerCase().includes(name.toLowerCase().split('-')[0]) && a.name.toLowerCase().includes(name.toLowerCase().split('-')[1]))
+            const bIdx = campaignOrder.findIndex(name => b.name.toLowerCase().includes(name.toLowerCase().split('-')[0]) && b.name.toLowerCase().includes(name.toLowerCase().split('-')[1]))
+            if (aIdx === -1) return 1
+            if (bIdx === -1) return -1
+            return aIdx - bIdx
+          })
+          
+          return (
           <div className="bg-[#1a1a1a] rounded-xl p-6">
             <h2 className="text-white text-lg font-semibold mb-4">Campaign Performance (Last 4 Weeks)</h2>
             <div className="overflow-x-auto">
@@ -410,35 +416,37 @@ export default function GoogleAdsSummaryPage() {
                 <thead>
                   <tr className="border-b border-gray-700">
                     <th className="text-left py-3 px-4 text-gray-400 font-medium">Campaign</th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
-                      {campaignData.weeks[0]?.date_range || 'Last Week'}
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
+                      {campaignData.weeks[3]?.date_range || '4 Weeks Ago'}
                     </th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
-                      {campaignData.weeks[1]?.date_range || '2 Weeks Ago'}
-                    </th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
                       {campaignData.weeks[2]?.date_range || '3 Weeks Ago'}
                     </th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
-                      {campaignData.weeks[3]?.date_range || '4 Weeks Ago'}
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
+                      {campaignData.weeks[1]?.date_range || '2 Weeks Ago'}
+                    </th>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
+                      {campaignData.weeks[0]?.date_range || 'Last Week'}
                     </th>
                   </tr>
                   <tr className="border-b border-gray-700">
                     <th className="text-left py-2 px-4 text-gray-500 text-xs"></th>
-                    {[0, 1, 2, 3].map((i) => (
+                    {[3, 2, 1, 0].map((i) => (
                       <>
                         <th key={`spend-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">Spend</th>
                         <th key={`conv-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">Conv</th>
+                        <th key={`cpa-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">CPA</th>
                       </>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {campaignData.campaigns.map((campaign, idx) => (
+                  {sortedCampaigns.map((campaign, idx) => (
                     <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                       <td className="py-3 px-4 text-white font-medium">{campaign.name}</td>
-                      {[0, 1, 2, 3].map((weekIdx) => {
+                      {[3, 2, 1, 0].map((weekIdx) => {
                         const weekData = campaign.data[weekIdx]
+                        const cpa = weekData && weekData.conversions > 0 ? weekData.cost / weekData.conversions : null
                         return (
                           <>
                             <td key={`spend-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
@@ -446,6 +454,9 @@ export default function GoogleAdsSummaryPage() {
                             </td>
                             <td key={`conv-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
                               {weekData ? formatNumber(weekData.conversions) : '-'}
+                            </td>
+                            <td key={`cpa-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
+                              {cpa !== null ? formatCurrency(cpa) : '—'}
                             </td>
                           </>
                         )
@@ -473,10 +484,11 @@ export default function GoogleAdsSummaryPage() {
                     <th className="text-right py-3 px-3 text-gray-400 font-medium">Impr Share</th>
                     <th className="text-right py-3 px-3 text-gray-400 font-medium">Top %</th>
                     <th className="text-right py-3 px-3 text-gray-400 font-medium">Abs Top %</th>
+                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Click Share</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {campaignData.campaigns.map((campaign, idx) => {
+                  {sortedCampaigns.map((campaign, idx) => {
                     const lastWeek = campaign.data[0]
                     if (!lastWeek) return null
                     return (
@@ -486,12 +498,13 @@ export default function GoogleAdsSummaryPage() {
                         <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.impressions)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.clicks)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.ctr)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatCurrency(lastWeek.avg_cpc)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatCurrencyPrecise(lastWeek.avg_cpc)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.conversions)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.conv_rate)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_impression_share)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_top_impression_share)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_abs_top_impression_share)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.click_share)}</td>
                       </tr>
                     )
                   })}
@@ -499,7 +512,7 @@ export default function GoogleAdsSummaryPage() {
               </table>
             </div>
           </div>
-        )}
+        )})()}
 
         {/* Footer */}
         <div className="text-center mt-6">

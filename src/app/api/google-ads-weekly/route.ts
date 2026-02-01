@@ -11,8 +11,13 @@ function parseNumber(val: string): number {
 }
 
 function formatDateRange(start: string, end: string): string {
-  const startDate = new Date(start)
-  const endDate = new Date(end)
+  // Parse dates without timezone shift (YYYY-MM-DD format)
+  const [startYear, startMonth, startDay] = start.split('-').map(Number)
+  const [endYear, endMonth, endDay] = end.split('-').map(Number)
+  
+  const startDate = new Date(startYear, startMonth - 1, startDay)
+  const endDate = new Date(endYear, endMonth - 1, endDay)
+  
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
   return `${startDate.toLocaleDateString('en-US', opts)} - ${endDate.toLocaleDateString('en-US', opts)}`
 }
@@ -53,15 +58,25 @@ export async function GET() {
       impressions: parseNumber(row[6]),
       clicks: parseNumber(row[7]),
       ctr: parseNumber(row[8]),
+      avg_cpc: parseNumber(row[9]),
       conversions: parseNumber(row[10]),
       conv_rate: parseNumber(row[11]),
       cpa: parseNumber(row[12]),
       conv_value: parseNumber(row[13]),
     })).filter(w => w.week_start)
 
-    // Get last 6 weeks (excluding current incomplete week)
-    const last7 = allWeeks.slice(-7)
-    const last6Complete = last7.slice(0, 6) // Skip the most recent (likely incomplete)
+    // Get last 6 complete weeks
+    // A week is complete if its end date is before today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const completeWeeks = allWeeks.filter(w => {
+      const [year, month, day] = w.week_end.split('-').map(Number)
+      const weekEnd = new Date(year, month - 1, day)
+      return weekEnd < today
+    })
+    
+    const last6Complete = completeWeeks.slice(-6)
 
     const weeklyData = last6Complete.map(w => ({
       week: formatDateRange(w.week_start, w.week_end),
@@ -70,6 +85,7 @@ export async function GET() {
       impressions: w.impressions,
       clicks: w.clicks,
       ctr: w.ctr,
+      avg_cpc: w.avg_cpc,
       conversions: Math.round(w.conversions),
       conv_rate: w.conv_rate,
       cpa: Math.round(w.cpa),

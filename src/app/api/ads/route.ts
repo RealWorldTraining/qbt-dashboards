@@ -29,8 +29,13 @@ function parseNumber(val: string): number {
 }
 
 function formatDateRange(start: string, end: string): string {
-  const startDate = new Date(start)
-  const endDate = new Date(end)
+  // Parse dates without timezone shift (YYYY-MM-DD format)
+  const [startYear, startMonth, startDay] = start.split('-').map(Number)
+  const [endYear, endMonth, endDay] = end.split('-').map(Number)
+  
+  const startDate = new Date(startYear, startMonth - 1, startDay)
+  const endDate = new Date(endYear, endMonth - 1, endDay)
+  
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
   return `${startDate.toLocaleDateString('en-US', opts)} - ${endDate.toLocaleDateString('en-US', opts)}`
 }
