@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
+import { DashboardNav } from "@/components/DashboardNav"
 
 // Types for Google Ads data
 interface WeeklyMetrics {
@@ -318,6 +319,7 @@ export default function AdsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
+            <DashboardNav />
             <h1 className="text-white text-lg font-medium">Marketing Dashboard</h1>
             <span className="text-gray-500 text-xs">
               {lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}

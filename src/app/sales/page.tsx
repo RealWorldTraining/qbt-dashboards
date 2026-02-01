@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { DashboardNav } from "@/components/DashboardNav"
 import {
   ComposedChart,
   Bar,
@@ -2053,9 +2054,12 @@ export default function DashboardPage() {
       <header className="border-b border-[#D2D2D7] bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <h1 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight">
-              Dashboard
-            </h1>
+            <div className="flex items-center gap-3">
+              <DashboardNav theme="light" />
+              <h1 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight">
+                Sales
+              </h1>
+            </div>
             {metrics && (
               <span className="text-sm text-[#6E6E73]">
                 {metrics.today.date_range}

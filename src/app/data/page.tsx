@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { RefreshCw, Loader2 } from "lucide-react"
+import { DashboardNav } from "@/components/DashboardNav"
 
 // Sales metrics types
 interface PeriodMetrics {
@@ -163,6 +164,7 @@ export default function DataDashboard() {
       {/* Header - minimal */}
       <header className="flex items-center justify-between px-6 py-3 bg-zinc-900/80 border-b border-zinc-800">
         <div className="flex items-center gap-4">
+          <DashboardNav />
           <h1 className="text-2xl font-bold text-white tracking-tight">Mission Control</h1>
           <div className="flex items-center gap-2 text-zinc-400 text-sm">
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
