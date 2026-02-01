@@ -4,22 +4,20 @@ import { useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
 import { DashboardNav } from "@/components/DashboardNav"
 import {
-  AreaChart,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Legend,
-  BarChart,
   Bar,
   ComposedChart,
   Line,
 } from "recharts"
 
-interface MonthlyData {
-  month: string
+interface WeeklyData {
+  week: string
+  week_start: string
   spend: number
   impressions: number
   clicks: number
@@ -31,12 +29,12 @@ interface MonthlyData {
 }
 
 interface ApiResponse {
-  data: MonthlyData[]
+  data: WeeklyData[]
   last_updated: string
 }
 
 const METRIC_COLORS = {
-  spend: "#ef4444",      // red
+  spend: "#ef4444",       // red
   impressions: "#3b82f6", // blue
   clicks: "#22c55e",      // green
   conversions: "#f59e0b", // amber
@@ -102,15 +100,14 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 }
 
 export default function GoogleAdsSummaryPage() {
-  const [data, setData] = useState<MonthlyData[]>([])
+  const [data, setData] = useState<WeeklyData[]>([])
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
-  const [chartType, setChartType] = useState<"area" | "bar">("area")
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/google-ads-monthly')
+      const res = await fetch('/api/google-ads-weekly')
       if (res.ok) {
         const json: ApiResponse = await res.json()
         setData(json.data)
@@ -129,9 +126,9 @@ export default function GoogleAdsSummaryPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Calculate totals for summary cards
-  const latestMonth = data[data.length - 1]
-  const previousMonth = data[data.length - 2]
+  // Calculate changes for summary cards (current vs previous week)
+  const currentWeek = data[0]
+  const previousWeek = data[1]
   
   const calculateChange = (current: number, previous: number) => {
     if (!previous) return 0
@@ -139,6 +136,9 @@ export default function GoogleAdsSummaryPage() {
   }
 
   const metrics = ["spend", "impressions", "clicks", "conversions", "ctr", "conv_rate", "cpa", "roas"] as const
+
+  // Reverse data for charts (oldest first)
+  const chartData = [...data].reverse()
 
   return (
     <div className="min-h-screen bg-black p-6">
@@ -149,29 +149,10 @@ export default function GoogleAdsSummaryPage() {
             <DashboardNav />
             <div>
               <h1 className="text-white text-2xl font-bold">Google Ads Summary</h1>
-              <p className="text-gray-400 text-sm mt-1">Monthly performance metrics</p>
+              <p className="text-gray-400 text-sm mt-1">Last 6 weeks performance</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            {/* Chart Type Toggle */}
-            <div className="flex bg-[#1a1a1a] rounded-lg p-1">
-              <button
-                onClick={() => setChartType("area")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  chartType === "area" ? "bg-red-600 text-white" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                Area
-              </button>
-              <button
-                onClick={() => setChartType("bar")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  chartType === "bar" ? "bg-red-600 text-white" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                Bar
-              </button>
-            </div>
             <span className="text-gray-500 text-sm">
               {lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
             </span>
@@ -182,11 +163,11 @@ export default function GoogleAdsSummaryPage() {
         </div>
 
         {/* Summary Cards */}
-        {latestMonth && (
+        {currentWeek && (
           <div className="grid grid-cols-8 gap-3 mb-6">
             {metrics.map((metric) => {
-              const current = latestMonth[metric]
-              const previous = previousMonth?.[metric] || 0
+              const current = currentWeek[metric]
+              const previous = previousWeek?.[metric] || 0
               const change = calculateChange(current, previous)
               const color = METRIC_COLORS[metric]
               
@@ -199,7 +180,7 @@ export default function GoogleAdsSummaryPage() {
                 displayValue = current.toFixed(2) + "x"
               }
               
-              // For CPA, lower is better (inverse the color logic)
+              // For CPA, lower is better
               const isInverse = metric === "cpa"
               const changeColor = isInverse 
                 ? (change <= 0 ? 'text-green-500' : 'text-red-500')
@@ -227,16 +208,19 @@ export default function GoogleAdsSummaryPage() {
 
         {/* Main Chart - Spend & Conversions */}
         <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
-          <h2 className="text-white text-lg font-semibold mb-4">Monthly Spend & Conversions</h2>
+          <h2 className="text-white text-lg font-semibold mb-4">Weekly Spend & Conversions</h2>
           <div style={{ width: '100%', height: 400 }}>
-            {data.length > 0 && (
+            {chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                   <XAxis 
-                    dataKey="month" 
+                    dataKey="week" 
                     stroke="#666" 
-                    tick={{ fill: '#999', fontSize: 12 }}
+                    tick={{ fill: '#999', fontSize: 11 }}
+                    angle={-20}
+                    textAnchor="end"
+                    height={60}
                   />
                   <YAxis 
                     yAxisId="left"
@@ -252,64 +236,43 @@ export default function GoogleAdsSummaryPage() {
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  {chartType === "area" ? (
-                    <>
-                      <Area
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="spend"
-                        name="spend"
-                        stroke={METRIC_COLORS.spend}
-                        fill={METRIC_COLORS.spend}
-                        fillOpacity={0.3}
-                      />
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="conversions"
-                        name="conversions"
-                        stroke={METRIC_COLORS.conversions}
-                        strokeWidth={3}
-                        dot={{ fill: METRIC_COLORS.conversions }}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <Bar
-                        yAxisId="left"
-                        dataKey="spend"
-                        name="spend"
-                        fill={METRIC_COLORS.spend}
-                      />
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="conversions"
-                        name="conversions"
-                        stroke={METRIC_COLORS.conversions}
-                        strokeWidth={3}
-                        dot={{ fill: METRIC_COLORS.conversions }}
-                      />
-                    </>
-                  )}
+                  <Bar
+                    yAxisId="left"
+                    dataKey="spend"
+                    name="spend"
+                    fill={METRIC_COLORS.spend}
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="conversions"
+                    name="conversions"
+                    stroke={METRIC_COLORS.conversions}
+                    strokeWidth={3}
+                    dot={{ fill: METRIC_COLORS.conversions, r: 5 }}
+                  />
                 </ComposedChart>
               </ResponsiveContainer>
             )}
           </div>
         </div>
 
-        {/* Efficiency Chart - CTR, Conv Rate, ROAS */}
+        {/* Efficiency Chart */}
         <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
           <h2 className="text-white text-lg font-semibold mb-4">Efficiency Metrics</h2>
           <div style={{ width: '100%', height: 300 }}>
-            {data.length > 0 && (
+            {chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                   <XAxis 
-                    dataKey="month" 
+                    dataKey="week" 
                     stroke="#666" 
-                    tick={{ fill: '#999', fontSize: 12 }}
+                    tick={{ fill: '#999', fontSize: 11 }}
+                    angle={-20}
+                    textAnchor="end"
+                    height={60}
                   />
                   <YAxis 
                     yAxisId="left"
@@ -361,18 +324,18 @@ export default function GoogleAdsSummaryPage() {
 
         {/* Data Table */}
         <div className="bg-[#1a1a1a] rounded-xl p-6">
-          <h2 className="text-white text-lg font-semibold mb-4">Monthly Data</h2>
+          <h2 className="text-white text-lg font-semibold mb-4">Weekly Data</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-700">
-                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Month</th>
+                  <th className="text-left py-3 px-4 text-gray-400 font-medium">Week</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.spend }}>Spend</th>
-                  <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.impressions }}>Impressions</th>
+                  <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.impressions }}>Impr</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.clicks }}>Clicks</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.ctr }}>CTR</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.conversions }}>Conv</th>
-                  <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.conv_rate }}>Conv Rate</th>
+                  <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.conv_rate }}>Conv %</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.cpa }}>CPA</th>
                   <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.roas }}>ROAS</th>
                 </tr>
@@ -380,7 +343,7 @@ export default function GoogleAdsSummaryPage() {
               <tbody>
                 {data.map((row, idx) => (
                   <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
-                    <td className="py-3 px-4 text-white font-medium">{row.month}</td>
+                    <td className="py-3 px-4 text-white font-medium">{row.week}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.spend)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.impressions)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.clicks)}</td>
