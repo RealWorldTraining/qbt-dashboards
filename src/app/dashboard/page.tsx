@@ -2221,48 +2221,48 @@ export default function DashboardPage() {
                             </thead>
                             <tbody>
                               {(() => {
-                                // Calculate max value for heat map
+                                // Calculate max value for heatmap
                                 const allValues = hourlyComparison.periods
-                                  .filter(p => !p.period_label.includes("Avg") && p.period_label !== "1 Year Ago" && p.period_label !== "-1Y")
-                                  .flatMap(p => Object.values(p.hourly_sales).filter(v => v !== null) as number[])
+                                  .flatMap(p => Object.values(p.hourly_sales).filter((v): v is number => v !== null))
                                 const maxValue = Math.max(...allValues, 1)
                                 
                                 return hourlyComparison.periods.map((period, idx) => {
                                   const isToday = period.period_label === "Today"
                                   const isShaded = period.period_label === "1 Year Ago" || period.period_label === "-1Y" || period.period_label.includes("Avg")
-                                  const isPrimaryRow = !isShaded // Today through 4W Ago
-                                  const rowBg = isToday ? "bg-[#0066CC]/20" : isShaded ? "bg-[#2D2D2F]" : idx % 2 === 0 ? "bg-[#1D1D1F]" : "bg-[#252527]"
-                                  const cellBg = isToday ? "bg-[#0066CC]/20" : isShaded ? "bg-[#2D2D2F]" : idx % 2 === 0 ? "bg-[#1D1D1F]" : "bg-[#252527]"
+                                  const cellBg = isToday ? "bg-[#1A3A52]" : isShaded ? "bg-[#2D2D2F]" : "bg-[#1D1D1F]"
                                   
                                   return (
                                     <tr
                                       key={period.period_label}
-                                      className={`border-b border-[#3D3D3F] ${rowBg} hover:bg-[#3D3D3F] transition-colors`}
+                                      className="border-b border-white/5"
                                     >
                                       <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
-                                        <div className={`font-semibold ${isToday ? "text-[#4D9FFF]" : "text-white"}`}>{abbreviatePeriodLabel(period.period_label)}</div>
+                                        <div className="font-semibold text-white">{abbreviatePeriodLabel(period.period_label)}</div>
                                         {period.period_date && (
-                                          <div className="text-xs text-[#8E8E93]">{period.period_date}</div>
+                                          <div className="text-xs text-white/40">{period.period_date}</div>
                                         )}
                                       </td>
                                       {hourlyComparison.hours.map((hour) => {
                                         const value = period.hourly_sales[hour]
-                                        // Heat map for primary rows
-                                        const heatIntensity = isPrimaryRow && value !== null ? Math.min(value / maxValue, 1) : 0
-                                        const heatBg = isPrimaryRow && value !== null && value > 0
-                                          ? `rgba(0, 102, 204, ${0.1 + heatIntensity * 0.4})`
-                                          : ''
+                                        // Calculate blue intensity based on value (0-100 scale)
+                                        const intensity = value ? Math.round((value / maxValue) * 100) : 0
+                                        const bgColor = value === null 
+                                          ? 'bg-[#1D1D1F]' 
+                                          : intensity > 80 ? 'bg-blue-600'
+                                          : intensity > 60 ? 'bg-blue-500'
+                                          : intensity > 40 ? 'bg-blue-600/60'
+                                          : intensity > 20 ? 'bg-blue-600/40'
+                                          : 'bg-blue-600/20'
                                         return (
                                           <td
                                             key={hour}
-                                            className={`text-center py-3 px-1 font-medium ${value === null ? "text-[#6E6E73]" : "text-white"}`}
-                                            style={heatBg ? { backgroundColor: heatBg } : {}}
+                                            className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
                                           >
                                             {value === null ? "-" : value}
                                           </td>
                                         )
                                       })}
-                                      <td className={`text-center py-3 px-3 font-bold ${isToday ? "bg-[#0066CC] text-white" : isShaded ? "bg-[#4D4D4F] text-white" : "bg-[#0066CC] text-white"}`}>
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${period.end_of_day === null ? "text-white/20" : "text-white"}`}>
                                         {period.end_of_day === null ? "-" : period.end_of_day}
                                       </td>
                                     </tr>
