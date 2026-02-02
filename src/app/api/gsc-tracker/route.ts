@@ -1,8 +1,11 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-const SHEET_ID = '1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM'
-const RANGE = 'GSC Keyword Tracker!A:K'
+// NOTE: GSC Keyword Tracker not yet available in Adveronix
+// Returning empty data until tracker tab is added
+// TODO: Add GSC: Keyword Tracker tab to Adveronix sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'GSC: Keyword Tracker!A:K' // Tab does not exist yet
 
 interface KeywordRow {
   query: string
@@ -26,6 +29,33 @@ function parseNumber(val: string): number {
 
 export async function GET() {
   try {
+    // TODO: GSC Keyword Tracker tab not yet in Adveronix
+    // Returning stub data until tab is created
+    // Required columns: Query | Relevancy | Mega-Cluster | Keyword Cluster | Keyword Type | Position | Clicks | Impressions | CTR | Week | Last Updated
+    
+    // Return empty/stub response for now
+    return NextResponse.json({
+      data: [],
+      summary: {
+        week: 'N/A',
+        demandIndex: 0,
+        totalKeywords: 0,
+        totalClicks: 0,
+        totalImpressions: 0,
+        overallCTR: 0
+      },
+      topByClicks: [],
+      topByPosition: [],
+      byCluster: [],
+      last_updated: new Date().toISOString(),
+      note: 'GSC Keyword Tracker tab not yet available in Adveronix sheet'
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+      },
+    })
+    
+    /* Original implementation - restore when tracker tab is added to Adveronix
     const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
     if (!credsJson) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 500 })
@@ -51,6 +81,7 @@ export async function GET() {
     if (!rows || rows.length < 2) {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
+    */"
 
     // Parse all rows (skip header)
     // Columns: A=Query, B=Relevancy, C=Mega-Cluster, D=Keyword Cluster, E=Keyword Type,

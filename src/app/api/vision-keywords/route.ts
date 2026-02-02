@@ -6,10 +6,15 @@ const TAB_NAME = 'GADS: Search Keyword: Weekly with analytics';
 
 export async function GET() {
   try {
-    // Load credentials from the secrets file
-    const credsPath = process.env.HOME + '/clawd/.secrets/google-sheets.json';
-    const fs = require('fs');
-    const credentials = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
+    // Load credentials from environment variable (Vercel) or local file (dev)
+    let credentials;
+    if (process.env.GOOGLE_SHEETS_CREDENTIALS) {
+      credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+    } else {
+      const fs = require('fs');
+      const credsPath = process.env.HOME + '/clawd/.secrets/google-sheets.json';
+      credentials = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
+    }
 
     const auth = new google.auth.OAuth2(
       credentials.client_id,
