@@ -13,6 +13,7 @@ import {
   Bar,
   ComposedChart,
   Line,
+  LabelList,
 } from "recharts"
 
 interface WeeklyData {
@@ -65,10 +66,10 @@ interface ApiResponse {
 }
 
 const METRIC_COLORS = {
-  spend: "#0ea5e9",       // sky blue (Bing brand)
+  spend: "#FF3B30",       // red (matching Google Ads dashboard)
   impressions: "#3b82f6", // blue
   clicks: "#22c55e",      // green
-  conversions: "#f59e0b", // amber
+  conversions: "#34C759", // green (matching Google Ads dashboard)
   ctr: "#8b5cf6",         // purple
   conv_rate: "#ec4899",   // pink
   cpa: "#06b6d4",         // cyan
@@ -204,48 +205,59 @@ export default function BingAdsSummaryPage() {
           </div>
         </div>
 
-        {/* Summary Cards */}
+        {/* Overall Summary Cards */}
         {currentWeek && (
-          <div className="grid grid-cols-8 gap-3 mb-6">
-            {metrics.map((metric) => {
-              const current = currentWeek[metric]
-              const previous = previousWeek?.[metric] || 0
-              const change = calculateChange(current, previous)
-              const color = METRIC_COLORS[metric]
-              
-              let displayValue = formatNumber(current)
-              if (metric === "spend" || metric === "cpa") {
-                displayValue = formatCurrency(current)
-              } else if (metric === "ctr" || metric === "conv_rate") {
-                displayValue = formatPercent(current)
-              } else if (metric === "roas") {
-                displayValue = current.toFixed(2) + "x"
-              }
-              
-              // For CPA, lower is better
-              const isInverse = metric === "cpa"
-              const changeColor = isInverse 
-                ? (change <= 0 ? 'text-green-500' : 'text-red-500')
-                : (change >= 0 ? 'text-green-500' : 'text-red-500')
-              
-              return (
-                <div key={metric} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
-                  <div className="h-1" style={{ backgroundColor: color }} />
-                  <div className="p-4">
-                    <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">
-                      {METRIC_LABELS[metric]}
-                    </div>
-                    <div className="text-white text-xl font-bold mb-1">
-                      {displayValue}
-                    </div>
-                    <div className={`text-sm ${changeColor}`}>
-                      {change >= 0 ? '+' : ''}{change.toFixed(1)}% vs prev
+          <>
+            <div className="text-gray-500 text-xs font-medium mb-2 uppercase tracking-wide">Overall (Desktop Only)</div>
+            <div className="grid grid-cols-7 gap-3 mb-6">
+              {(["spend", "impressions", "clicks", "conversions", "ctr", "conv_rate", "cpa"] as const).map((metric) => {
+                const current = currentWeek[metric]
+                const previous = previousWeek?.[metric] || 0
+                const absoluteChange = current - previous
+                const color = METRIC_COLORS[metric]
+                
+                let displayValue = formatNumber(current)
+                if (metric === "spend" || metric === "cpa") {
+                  displayValue = formatCurrency(current)
+                } else if (metric === "ctr" || metric === "conv_rate") {
+                  displayValue = formatPercent(current)
+                }
+                
+                // Format the absolute change based on metric type
+                let changeDisplay = ""
+                if (metric === "spend" || metric === "cpa") {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '-') + formatCurrency(Math.abs(absoluteChange))
+                } else if (metric === "ctr" || metric === "conv_rate") {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '') + absoluteChange.toFixed(1) + "%"
+                } else {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '') + formatNumber(absoluteChange)
+                }
+                
+                // For CPA, lower is better
+                const isInverse = metric === "cpa"
+                const changeColor = isInverse 
+                  ? (absoluteChange <= 0 ? 'text-green-500' : 'text-red-500')
+                  : (absoluteChange >= 0 ? 'text-green-500' : 'text-red-500')
+                
+                return (
+                  <div key={metric} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+                    <div className="h-1" style={{ backgroundColor: color }} />
+                    <div className="p-4">
+                      <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">
+                        {METRIC_LABELS[metric]}
+                      </div>
+                      <div className="text-white text-xl font-bold mb-1">
+                        {displayValue}
+                      </div>
+                      <div className={`text-sm ${changeColor}`}>
+                        {changeDisplay} vs prev
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          </>
         )}
 
         {/* Main Chart - Spend & Conversions */}
@@ -260,21 +272,20 @@ export default function BingAdsSummaryPage() {
                     dataKey="week" 
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 11 }}
-                    angle={-20}
-                    textAnchor="end"
-                    height={60}
                   />
                   <YAxis 
                     yAxisId="left"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
                     tickFormatter={(value) => value >= 1000 ? `$${(value / 1000).toFixed(0)}k` : `$${value}`}
+                    domain={[0, 15000]}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
+                    domain={[0, 60]}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -284,7 +295,15 @@ export default function BingAdsSummaryPage() {
                     name="spend"
                     fill={METRIC_COLORS.spend}
                     radius={[4, 4, 0, 0]}
-                  />
+                  >
+                    <LabelList 
+                      dataKey="spend" 
+                      position="top" 
+                      fill={METRIC_COLORS.spend}
+                      fontSize={11}
+                      formatter={(value) => typeof value === 'number' ? `$${(value / 1000).toFixed(1)}k` : ''}
+                    />
+                  </Bar>
                   <Line
                     yAxisId="right"
                     type="monotone"
@@ -293,41 +312,48 @@ export default function BingAdsSummaryPage() {
                     stroke={METRIC_COLORS.conversions}
                     strokeWidth={3}
                     dot={{ fill: METRIC_COLORS.conversions, r: 5 }}
-                  />
+                  >
+                    <LabelList 
+                      dataKey="conversions" 
+                      position="top" 
+                      fill={METRIC_COLORS.conversions} 
+                      fontSize={11}
+                      offset={10}
+                    />
+                  </Line>
                 </ComposedChart>
               </ResponsiveContainer>
             )}
           </div>
         </div>
 
-        {/* Efficiency Chart */}
+        {/* CPC & CPA Chart */}
         <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
-          <h2 className="text-white text-lg font-semibold mb-4">Efficiency Metrics</h2>
-          <div style={{ width: '100%', height: 300 }}>
+          <h2 className="text-white text-lg font-semibold mb-4">Avg CPC & Cost Per Conversion</h2>
+          <div style={{ width: '100%', height: 400 }}>
             {chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <ComposedChart data={chartData} margin={{ top: 30, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                   <XAxis 
                     dataKey="week" 
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 11 }}
-                    angle={-20}
-                    textAnchor="end"
-                    height={60}
                   />
                   <YAxis 
                     yAxisId="left"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
-                    tickFormatter={(value) => `${value.toFixed(1)}%`}
+                    tickFormatter={(value) => `$${value.toFixed(2)}`}
+                    domain={[0, 6]}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
-                    tickFormatter={(value) => `${value.toFixed(1)}x`}
+                    tickFormatter={(value) => `$${value}`}
+                    domain={[0, 250]}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -338,26 +364,33 @@ export default function BingAdsSummaryPage() {
                     name="ctr"
                     stroke={METRIC_COLORS.ctr}
                     strokeWidth={2}
-                    dot={{ fill: METRIC_COLORS.ctr }}
-                  />
-                  <Line
-                    yAxisId="left"
-                    type="monotone"
-                    dataKey="conv_rate"
-                    name="conv_rate"
-                    stroke={METRIC_COLORS.conv_rate}
-                    strokeWidth={2}
-                    dot={{ fill: METRIC_COLORS.conv_rate }}
-                  />
+                    dot={{ fill: METRIC_COLORS.ctr, r: 4 }}
+                  >
+                    <LabelList 
+                      dataKey="ctr" 
+                      position="top" 
+                      fill={METRIC_COLORS.ctr}
+                      fontSize={10}
+                      formatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : ''}
+                    />
+                  </Line>
                   <Line
                     yAxisId="right"
                     type="monotone"
-                    dataKey="roas"
-                    name="roas"
-                    stroke={METRIC_COLORS.roas}
-                    strokeWidth={2}
-                    dot={{ fill: METRIC_COLORS.roas }}
-                  />
+                    dataKey="cpa"
+                    name="cpa"
+                    stroke={METRIC_COLORS.cpa}
+                    strokeWidth={3}
+                    dot={{ fill: METRIC_COLORS.cpa, r: 5 }}
+                  >
+                    <LabelList 
+                      dataKey="cpa" 
+                      position="top" 
+                      fill={METRIC_COLORS.cpa}
+                      fontSize={11}
+                      formatter={(value) => typeof value === 'number' ? `$${value.toFixed(0)}` : ''}
+                    />
+                  </Line>
                 </ComposedChart>
               </ResponsiveContainer>
             )}
