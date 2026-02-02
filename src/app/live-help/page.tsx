@@ -34,6 +34,21 @@ interface TrainerPerformance {
   };
 }
 
+interface CalendarEvent {
+  summary: string;
+  start: string;
+  end: string;
+  trainer?: string;
+}
+
+interface HourSchedule {
+  hour: string;
+  hourStart: string;
+  downhill: CalendarEvent[];
+  orchard: CalendarEvent[];
+  backup: CalendarEvent[];
+}
+
 declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,6 +70,7 @@ export default function LiveHelpDashboard() {
     help_sessions: 0
   });
   const [trainerPerformance, setTrainerPerformance] = useState<TrainerPerformance>({});
+  const [schedules, setSchedules] = useState<HourSchedule[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +114,17 @@ export default function LiveHelpDashboard() {
     }
   }, []);
 
+  const fetchSchedules = useCallback(async () => {
+    try {
+      const response = await fetch('/api/live-help-schedule');
+      if (!response.ok) throw new Error('Failed to fetch schedules');
+      const data = await response.json();
+      setSchedules(data.schedules || []);
+    } catch (err) {
+      console.error('Failed to fetch schedules:', err);
+    }
+  }, []);
+
   const fetchAllData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -106,7 +133,8 @@ export default function LiveHelpDashboard() {
       await Promise.all([
         fetchCurrentStatus(),
         fetchTodayStats(),
-        fetchTrainerPerformance()
+        fetchTrainerPerformance(),
+        fetchSchedules()
       ]);
     } catch (err) {
       console.error('Failed to fetch data:', err);
@@ -114,7 +142,7 @@ export default function LiveHelpDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [fetchCurrentStatus, fetchTodayStats, fetchTrainerPerformance]);
+  }, [fetchCurrentStatus, fetchTodayStats, fetchTrainerPerformance, fetchSchedules]);
 
   // Initial fetch
   useEffect(() => {
@@ -246,31 +274,45 @@ export default function LiveHelpDashboard() {
             </div>
           ) : (
             <>
-              {/* Room Status - Real-time (Top Section) */}
-              <div className="mb-8">
-                <div className="grid md:grid-cols-2 gap-5 mb-5">
+              {/* Top Grid: Schedule and Room Status */}
+              <div className="grid lg:grid-cols-3 gap-5 mb-8">
+                {/* Schedule Section - Takes 2 columns */}
+                <div className="lg:col-span-2 space-y-4">
+                  <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                    📅 Trainer Schedule <span className="text-sm text-green-400 font-normal">● LIVE</span>
+                  </h2>
+                  {schedules.map((schedule, idx) => (
+                    <ScheduleHourCard key={idx} schedule={schedule} isCurrent={idx === 0} />
+                  ))}
+                </div>
+
+                {/* Room Status - Takes 1 column (narrower) */}
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                    🏠 Room Status <span className="text-sm text-green-400 font-normal">● LIVE</span>
+                  </h2>
                   {Object.entries(currentStatus)
                     .filter(([roomName]) => roomName === 'Downhill' || roomName === 'Orchard')
                     .map(([roomName, room]) => (
-                      <RoomCard key={roomName} roomName={roomName} room={room} />
+                      <RoomCard key={roomName} roomName={roomName} room={room} compact />
                     ))}
+                  
+                  {/* Stats below rooms */}
+                  <div className="space-y-3 mt-4">
+                    <StatusCard 
+                      label="Longest Wait" 
+                      value={`${Math.round(longestWait)} min`} 
+                      subtext="Max wait time"
+                      color={longestWait > 15 ? "red" : longestWait > 5 ? "yellow" : "green"}
+                    />
+                    <StatusCard 
+                      label="Today's Visits" 
+                      value={todayStats.total_visits} 
+                      subtext={`${todayStats.help_sessions} helped`}
+                      color="blue"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              {/* Live Stats Row */}
-              <div className="grid grid-cols-2 gap-5 mb-8">
-                <StatusCard 
-                  label="Longest Wait" 
-                  value={`${Math.round(longestWait)} min`} 
-                  subtext="Max wait time"
-                  color={longestWait > 15 ? "red" : longestWait > 5 ? "yellow" : "green"}
-                />
-                <StatusCard 
-                  label="Today's Visits" 
-                  value={todayStats.total_visits} 
-                  subtext={`${todayStats.help_sessions} helped`}
-                  color="blue"
-                />
               </div>
 
               {/* Today's Activity */}
@@ -342,7 +384,49 @@ function StatusCard({
   );
 }
 
-function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
+function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isCurrent: boolean }) {
+  return (
+    <div className={`bg-white/5 rounded-xl p-4 border ${isCurrent ? 'border-green-500/50 bg-green-900/10' : 'border-white/10'}`}>
+      <h3 className={`text-sm font-semibold mb-3 ${isCurrent ? 'text-green-400' : 'text-gray-300'}`}>
+        {schedule.hour} {isCurrent && '(Current)'}
+      </h3>
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <div className="text-xs text-gray-400 mb-1">🌋 Downhill</div>
+          {schedule.downhill.length === 0 ? (
+            <div className="text-xs text-gray-500 italic">No coverage</div>
+          ) : (
+            schedule.downhill.map((event, idx) => (
+              <div key={idx} className="text-sm text-white">{event.trainer}</div>
+            ))
+          )}
+        </div>
+        <div>
+          <div className="text-xs text-gray-400 mb-1">🌳 Orchard</div>
+          {schedule.orchard.length === 0 ? (
+            <div className="text-xs text-gray-500 italic">No coverage</div>
+          ) : (
+            schedule.orchard.map((event, idx) => (
+              <div key={idx} className="text-sm text-white">{event.trainer}</div>
+            ))
+          )}
+        </div>
+        <div>
+          <div className="text-xs text-gray-400 mb-1">🔄 Backup</div>
+          {schedule.backup.length === 0 ? (
+            <div className="text-xs text-gray-500 italic">No coverage</div>
+          ) : (
+            schedule.backup.map((event, idx) => (
+              <div key={idx} className="text-sm text-white">{event.trainer}</div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RoomCard({ roomName, room, compact = false }: { roomName: string; room: RoomStatus; compact?: boolean }) {
   const isEmpty = room.total_current === 0;
   const roomEmojis: Record<string, string> = {
     'Downhill': '🌋',
@@ -351,32 +435,32 @@ function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
   };
 
   return (
-    <div className={`bg-white/5 rounded-2xl p-6 border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
-      <h4 className="text-lg font-semibold mb-4 flex items-center justify-between">
+    <div className={`bg-white/5 rounded-2xl ${compact ? 'p-4' : 'p-6'} border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
+      <h4 className={`${compact ? 'text-base' : 'text-lg'} font-semibold mb-3 flex items-center justify-between`}>
         <span>{roomEmojis[roomName]} {roomName}</span>
-        <span className={`text-sm px-2 py-1 rounded-full ${
+        <span className={`text-xs px-2 py-1 rounded-full ${
           isEmpty ? 'bg-gray-700 text-gray-400' : 'bg-green-900 text-green-300'
         }`}>
-          {room.total_current} people
+          {room.total_current}
         </span>
       </h4>
 
       {isEmpty ? (
-        <p className="text-gray-400 text-center py-6">No one currently in room</p>
+        <p className="text-gray-400 text-center py-4 text-sm">Empty</p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Being Helped */}
           {room.being_helped.length > 0 && (
             <div>
-              <h5 className="text-sm font-medium text-green-400 mb-2">
+              <h5 className="text-xs font-medium text-green-400 mb-1">
                 💬 Being Helped ({room.being_helped.length})
               </h5>
               <div className="space-y-1">
                 {room.being_helped.map((person, idx) => (
-                  <div key={idx} className="text-sm bg-green-900/20 rounded p-2 border border-green-500/30">
+                  <div key={idx} className="text-xs bg-green-900/20 rounded p-2 border border-green-500/30">
                     <div className="font-medium">{person.name}</div>
-                    <div className="text-xs text-gray-400">
-                      with {person.trainer} • {Math.round(person.help_duration_minutes || 0)} min
+                    <div className="text-[10px] text-gray-400">
+                      {person.trainer} • {Math.round(person.help_duration_minutes || 0)}m
                     </div>
                   </div>
                 ))}
@@ -387,15 +471,15 @@ function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
           {/* Waiting */}
           {room.waiting.length > 0 && (
             <div>
-              <h5 className="text-sm font-medium text-yellow-400 mb-2">
+              <h5 className="text-xs font-medium text-yellow-400 mb-1">
                 ⏳ Waiting ({room.waiting.length})
               </h5>
               <div className="space-y-1">
                 {room.waiting.map((person, idx) => (
-                  <div key={idx} className="text-sm bg-yellow-900/20 rounded p-2 border border-yellow-500/30">
+                  <div key={idx} className="text-xs bg-yellow-900/20 rounded p-2 border border-yellow-500/30">
                     <div className="font-medium">{person.name}</div>
-                    <div className="text-xs text-gray-400">
-                      waiting {Math.round(person.wait_duration_minutes || 0)} min
+                    <div className="text-[10px] text-gray-400">
+                      {Math.round(person.wait_duration_minutes || 0)}m
                     </div>
                   </div>
                 ))}
