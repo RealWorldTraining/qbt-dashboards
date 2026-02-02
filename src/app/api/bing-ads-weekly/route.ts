@@ -1,8 +1,9 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-const SHEET_ID = '1INXxnW3WVkENN7Brvo3sgPcs96C06r3O6mEkgEABxk8'
-const RANGE = 'Bing Paid: Weekly Account Summary!A:I'
+// Adveronix: Paid Search sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'BING: Account Summary Weekly!A:J'
 
 function parseNumber(val: string): number {
   if (!val) return 0
@@ -46,19 +47,18 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Parse all rows (skip header)
-    // Columns: A=Week, B=Impressions, C=Clicks, D=CTR, E=Avg CPC, F=Spend, G=Conversions, H=Conv Rate, I=CPA
+    // Adveronix structure: Week | Ad distribution | Impressions | Clicks | CTR | Avg.CPC | Spend | Conversions | Conv.Rate | CPA
     const allWeeks = rows.slice(1)
       .filter(row => row[0])
       .map(row => ({
         week_start: row[0],
-        impressions: parseNumber(row[1]),
-        clicks: parseNumber(row[2]),
-        ctr: parseNumber(row[3]),
-        spend: parseNumber(row[5]),
-        conversions: parseNumber(row[6]),
-        conv_rate: parseNumber(row[7]),
-        cpa: parseNumber(row[8]),
+        impressions: parseNumber(row[2]),
+        clicks: parseNumber(row[3]),
+        ctr: parseNumber(row[4]),
+        spend: parseNumber(row[6]),
+        conversions: parseNumber(row[7]),
+        conv_rate: parseNumber(row[8]),
+        cpa: parseNumber(row[9]),
       }))
       .sort((a, b) => a.week_start.localeCompare(b.week_start))
 

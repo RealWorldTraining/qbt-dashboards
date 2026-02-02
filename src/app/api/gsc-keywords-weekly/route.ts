@@ -1,132 +1,149 @@
+import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-// CORRECTED 4-week keyword data from GSC API
-// Source: Vision's direct GSC API pull on 2026-02-01
-// Filter: Query NOT contains "login" (query filter only, matches Aaron's GSC)
-// Country: United States only
-// Weeks: 4wk ago (Jan 4-10), 3wk ago (Jan 11-17), 2wk ago (Jan 18-24), Last wk (Jan 25-31)
-const KEYWORD_WEEKLY_DATA = [
-  {
-    query: 'quickbooks training',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 119, impressions: 2442 },
-      { week: 'Jan 11-17', clicks: 158, impressions: 2451 },
-      { week: 'Jan 18-24', clicks: 128, impressions: 2443 },
-      { week: 'Jan 25-31', clicks: 111, impressions: 2072 },
-    ],
-  },
-  {
-    query: 'quickbooks certification',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 66, impressions: 2823 },
-      { week: 'Jan 11-17', clicks: 40, impressions: 2611 },
-      { week: 'Jan 18-24', clicks: 52, impressions: 2670 },
-      { week: 'Jan 25-31', clicks: 57, impressions: 2325 },
-    ],
-  },
-  {
-    query: 'quickbooks bookkeeping course',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 44, impressions: 327 },
-      { week: 'Jan 11-17', clicks: 39, impressions: 268 },
-      { week: 'Jan 18-24', clicks: 51, impressions: 332 },
-      { week: 'Jan 25-31', clicks: 40, impressions: 219 },
-    ],
-  },
-  {
-    query: 'quickbooks classes',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 33, impressions: 639 },
-      { week: 'Jan 11-17', clicks: 36, impressions: 576 },
-      { week: 'Jan 18-24', clicks: 30, impressions: 588 },
-      { week: 'Jan 25-31', clicks: 32, impressions: 455 },
-    ],
-  },
-  {
-    query: 'quickbooks classes near me',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 37, impressions: 429 },
-      { week: 'Jan 11-17', clicks: 29, impressions: 368 },
-      { week: 'Jan 18-24', clicks: 16, impressions: 343 },
-      { week: 'Jan 25-31', clicks: 30, impressions: 310 },
-    ],
-  },
-  {
-    query: 'bookkeeping certification',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 20, impressions: 589 },
-      { week: 'Jan 11-17', clicks: 17, impressions: 931 },
-      { week: 'Jan 18-24', clicks: 26, impressions: 1257 },
-      { week: 'Jan 25-31', clicks: 20, impressions: 1055 },
-    ],
-  },
-  {
-    query: 'quickbooks training courses',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 27, impressions: 265 },
-      { week: 'Jan 11-17', clicks: 22, impressions: 247 },
-      { week: 'Jan 18-24', clicks: 28, impressions: 306 },
-      { week: 'Jan 25-31', clicks: 20, impressions: 214 },
-    ],
-  },
-  {
-    query: 'quickbooks training online',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 11, impressions: 419 },
-      { week: 'Jan 11-17', clicks: 9, impressions: 369 },
-      { week: 'Jan 18-24', clicks: 19, impressions: 452 },
-      { week: 'Jan 25-31', clicks: 16, impressions: 374 },
-    ],
-  },
-  {
-    query: 'quickbooks class',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 18, impressions: 298 },
-      { week: 'Jan 11-17', clicks: 11, impressions: 216 },
-      { week: 'Jan 18-24', clicks: 6, impressions: 246 },
-      { week: 'Jan 25-31', clicks: 13, impressions: 203 },
-    ],
-  },
-  {
-    query: 'quickbooks online training',
-    weeks: [
-      { week: 'Jan 4-10', clicks: 6, impressions: 817 },
-      { week: 'Jan 11-17', clicks: 16, impressions: 840 },
-      { week: 'Jan 18-24', clicks: 20, impressions: 885 },
-      { week: 'Jan 25-31', clicks: 13, impressions: 635 },
-    ],
-  },
-]
+// Adveronix: Paid Search sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'GSC: Query Daily!A:E'
+
+function parseNumber(val: string): number {
+  if (!val) return 0
+  const cleaned = val.replace(/[,$%]/g, '')
+  return parseFloat(cleaned) || 0
+}
+
+function getWeekStart(dateStr: string): string {
+  // Get the Sunday of the week containing this date
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  const dayOfWeek = date.getDay() // 0 = Sunday, 6 = Saturday
+  const sunday = new Date(date)
+  sunday.setDate(date.getDate() - dayOfWeek)
+  return sunday.toISOString().split('T')[0]
+}
+
+function formatWeekLabel(weekStart: string): string {
+  const [year, month, day] = weekStart.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  const endDate = new Date(date)
+  endDate.setDate(date.getDate() + 6)
+  
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  return `${date.toLocaleDateString('en-US', opts).replace(',', '')}-${endDate.getDate()}`
+}
 
 export async function GET() {
   try {
-    // Calculate totals for each keyword
-    const keywordsWithTotals = KEYWORD_WEEKLY_DATA.map(kw => {
-      const totals = kw.weeks.reduce(
-        (acc, w) => ({
-          clicks: acc.clicks + w.clicks,
-          impressions: acc.impressions + w.impressions,
-        }),
-        { clicks: 0, impressions: 0 }
-      )
-      return {
-        ...kw,
-        totals,
-        ctr: totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0,
-      }
+    const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
+    if (!credsJson) {
+      return NextResponse.json({ error: 'Missing credentials' }, { status: 500 })
+    }
+
+    const credentials = JSON.parse(
+      Buffer.from(credsJson, 'base64').toString('utf-8')
+    )
+
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     })
 
-    // Sort by total clicks descending
-    keywordsWithTotals.sort((a, b) => b.totals.clicks - a.totals.clicks)
+    const sheets = google.sheets({ version: 'v4', auth })
+    
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: RANGE,
+    })
+
+    const rows = response.data.values
+    if (!rows || rows.length < 2) {
+      return NextResponse.json({ error: 'No data found' }, { status: 404 })
+    }
+
+    // Aggregate daily keyword data into weeks
+    // Structure: Map<weekStart, Map<query, {clicks, impressions}>>
+    const weeklyKeywordAgg = new Map<string, Map<string, { clicks: number; impressions: number }>>()
+    
+    rows.slice(1).forEach(row => {
+      const date = row[0]
+      const query = row[1]
+      if (!date || !query) return
+      
+      const weekStart = getWeekStart(date)
+      
+      if (!weeklyKeywordAgg.has(weekStart)) {
+        weeklyKeywordAgg.set(weekStart, new Map())
+      }
+      
+      const weekData = weeklyKeywordAgg.get(weekStart)!
+      const existing = weekData.get(query) || { clicks: 0, impressions: 0 }
+      
+      existing.clicks += parseNumber(row[3])
+      existing.impressions += parseNumber(row[2])
+      
+      weekData.set(query, existing)
+    })
+
+    // Get the last 4 complete weeks
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const allWeekStarts = Array.from(weeklyKeywordAgg.keys()).sort().reverse()
+    
+    const completeWeeks = allWeekStarts.filter(weekStart => {
+      const [year, month, day] = weekStart.split('-').map(Number)
+      const sunday = new Date(year, month - 1, day)
+      const saturday = new Date(sunday)
+      saturday.setDate(sunday.getDate() + 6)
+      return saturday < today
+    })
+
+    const last4Weeks = completeWeeks.slice(0, 4)
+
+    // Get top 20 queries by clicks for each of the last 4 weeks
+    const keywordData: Array<{
+      query: string
+      weeks: Array<{ week: string; clicks: number; impressions: number }>
+    }> = []
+
+    // Collect all queries that appear in any of the last 4 weeks
+    const allQueriesSet = new Set<string>()
+    last4Weeks.forEach(weekStart => {
+      const weekData = weeklyKeywordAgg.get(weekStart)!
+      weekData.forEach((_, query) => allQueriesSet.add(query))
+    })
+
+    // For each query, get its data for all 4 weeks
+    allQueriesSet.forEach(query => {
+      const weeks = last4Weeks.map(weekStart => {
+        const weekData = weeklyKeywordAgg.get(weekStart)!
+        const queryData = weekData.get(query) || { clicks: 0, impressions: 0 }
+        return {
+          week: formatWeekLabel(weekStart),
+          clicks: queryData.clicks,
+          impressions: queryData.impressions
+        }
+      })
+
+      keywordData.push({ query, weeks })
+    })
+
+    // Sort by total clicks across all 4 weeks (descending)
+    keywordData.sort((a, b) => {
+      const totalA = a.weeks.reduce((sum, w) => sum + w.clicks, 0)
+      const totalB = b.weeks.reduce((sum, w) => sum + w.clicks, 0)
+      return totalB - totalA
+    })
+
+    // Return top 20 keywords
+    const top20 = keywordData.slice(0, 20)
 
     return NextResponse.json({
-      keywords: keywordsWithTotals,
-      weekLabels: ['Jan 4-10', 'Jan 11-17', 'Jan 18-24', 'Jan 25-31'],
-      filter: 'Query NOT contains "login" (US only)',
-      lastUpdated: '2026-02-01T13:59:00-06:00',
+      data: top20,
+      weeks: last4Weeks.map(ws => formatWeekLabel(ws)),
+      last_updated: new Date().toISOString()
     }, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
       },
     })
   } catch (error) {

@@ -1,21 +1,14 @@
+import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-// CORRECTED data from GSC API (US only, Sun-Sat weeks)
-// Source: Vision's direct GSC API pull on 2026-02-01
-// Filter: Query NOT contains "login" (query filter only, matches Aaron's GSC)
-const VERIFIED_GSC_DATA = {
-  '2026': [
-    { week_start: '2026-01-04', week_end: '2026-01-10', impressions: 199192, clicks: 1164 },
-    { week_start: '2026-01-11', week_end: '2026-01-17', impressions: 192954, clicks: 1255 },
-    { week_start: '2026-01-18', week_end: '2026-01-24', impressions: 198821, clicks: 1221 },
-    { week_start: '2026-01-25', week_end: '2026-01-31', impressions: 170892, clicks: 1115 },
-  ],
-  '2025': [
-    { week_start: '2025-01-05', week_end: '2025-01-11', impressions: 52812, clicks: 2411 },
-    { week_start: '2025-01-12', week_end: '2025-01-18', impressions: 58833, clicks: 2541 },
-    { week_start: '2025-01-19', week_end: '2025-01-25', impressions: 81142, clicks: 2625 },
-    { week_start: '2025-01-26', week_end: '2025-02-01', impressions: 68244, clicks: 2610 },
-  ]
+// Adveronix: Paid Search sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'GSC: Account Daily!A:D'
+
+function parseNumber(val: string): number {
+  if (!val) return 0
+  const cleaned = val.replace(/[,$%]/g, '')
+  return parseFloat(cleaned) || 0
 }
 
 function formatDateRange(start: string, end: string): string {
@@ -27,6 +20,25 @@ function formatDateRange(start: string, end: string): string {
   
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
   return `${startDate.toLocaleDateString('en-US', opts)} - ${endDate.toLocaleDateString('en-US', opts)}`
+}
+
+function getWeekStart(dateStr: string): string {
+  // Get the Sunday of the week containing this date
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  const dayOfWeek = date.getDay() // 0 = Sunday, 6 = Saturday
+  const sunday = new Date(date)
+  sunday.setDate(date.getDate() - dayOfWeek)
+  return sunday.toISOString().split('T')[0]
+}
+
+function getWeekEnd(weekStart: string): string {
+  // Get the Saturday (6 days after Sunday)
+  const [year, month, day] = weekStart.split('-').map(Number)
+  const sunday = new Date(year, month - 1, day)
+  const saturday = new Date(sunday)
+  saturday.setDate(sunday.getDate() + 6)
+  return saturday.toISOString().split('T')[0]
 }
 
 interface WeekData {
@@ -42,113 +54,96 @@ interface WeekData {
 
 export async function GET() {
   try {
-    // Build week data from verified GSC data
-    const allWeeks: WeekData[] = []
-    
-    for (const [yearStr, weeks] of Object.entries(VERIFIED_GSC_DATA)) {
-      const year = parseInt(yearStr)
-      for (const w of weeks) {
-        const ctr = w.impressions > 0 ? (w.clicks / w.impressions) * 100 : 0
-        allWeeks.push({
-          week: formatDateRange(w.week_start, w.week_end),
-          week_start: w.week_start,
-          week_end: w.week_end,
-          year,
-          impressions: w.impressions,
-          clicks: w.clicks,
-          ctr: Math.round(ctr * 100) / 100,
-          queries: 0,
-        })
-      }
+    const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
+    if (!credsJson) {
+      return NextResponse.json({ error: 'Missing credentials' }, { status: 500 })
     }
 
-    // Sort by date descending
-    allWeeks.sort((a, b) => {
-      const dateA = new Date(a.week_start)
-      const dateB = new Date(b.week_start)
-      return dateB.getTime() - dateA.getTime()
+    const credentials = JSON.parse(
+      Buffer.from(credsJson, 'base64').toString('utf-8')
+    )
+
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     })
 
-    // Separate current year and last year data
-    const currentYear = new Date().getFullYear()
-    const lastYear = currentYear - 1
+    const sheets = google.sheets({ version: 'v4', auth })
+    
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: RANGE,
+    })
 
-    const currentYearWeeks = allWeeks.filter(w => w.year === currentYear)
-    const lastYearWeeks = allWeeks.filter(w => w.year === lastYear)
-
-    // Calculate 4-week totals for current year
-    const current4Weeks = currentYearWeeks.slice(0, 4)
-    const current4WeekTotals = current4Weeks.reduce(
-      (acc, week) => ({
-        impressions: acc.impressions + week.impressions,
-        clicks: acc.clicks + week.clicks,
-      }),
-      { impressions: 0, clicks: 0 }
-    )
-    const current4WeekCTR = current4WeekTotals.impressions > 0 
-      ? (current4WeekTotals.clicks / current4WeekTotals.impressions) * 100 
-      : 0
-
-    // Calculate 4-week totals for last year (YoY)
-    const lastYear4Weeks = lastYearWeeks.slice(0, 4)
-    const lastYear4WeekTotals = lastYear4Weeks.reduce(
-      (acc, week) => ({
-        impressions: acc.impressions + week.impressions,
-        clicks: acc.clicks + week.clicks,
-      }),
-      { impressions: 0, clicks: 0 }
-    )
-    const lastYear4WeekCTR = lastYear4WeekTotals.impressions > 0 
-      ? (lastYear4WeekTotals.clicks / lastYear4WeekTotals.impressions) * 100 
-      : 0
-
-    // WoW comparison (most recent vs previous)
-    const thisWeek = current4Weeks[0] || null
-    const lastWeek = current4Weeks[1] || null
-
-    let wowComparison = null
-    if (thisWeek && lastWeek) {
-      wowComparison = {
-        current: thisWeek,
-        previous: lastWeek,
-        impressionsChange: lastWeek.impressions > 0 
-          ? ((thisWeek.impressions - lastWeek.impressions) / lastWeek.impressions) * 100 
-          : 0,
-        clicksChange: lastWeek.clicks > 0 
-          ? ((thisWeek.clicks - lastWeek.clicks) / lastWeek.clicks) * 100 
-          : 0,
-        ctrChange: lastWeek.ctr > 0 
-          ? ((thisWeek.ctr - lastWeek.ctr) / lastWeek.ctr) * 100 
-          : 0,
-      }
+    const rows = response.data.values
+    if (!rows || rows.length < 2) {
+      return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // YoY comparison
-    let yoyComparison = null
-    if (current4WeekTotals.impressions > 0 && lastYear4WeekTotals.impressions > 0) {
-      yoyComparison = {
-        current: {
-          impressions: current4WeekTotals.impressions,
-          clicks: current4WeekTotals.clicks,
-          ctr: current4WeekCTR,
-        },
-        lastYear: {
-          impressions: lastYear4WeekTotals.impressions,
-          clicks: lastYear4WeekTotals.clicks,
-          ctr: lastYear4WeekCTR,
-        },
-        impressionsChange: ((current4WeekTotals.impressions - lastYear4WeekTotals.impressions) / lastYear4WeekTotals.impressions) * 100,
-        clicksChange: ((current4WeekTotals.clicks - lastYear4WeekTotals.clicks) / lastYear4WeekTotals.clicks) * 100,
-        ctrChange: ((current4WeekCTR - lastYear4WeekCTR) / lastYear4WeekCTR) * 100,
+    // Aggregate daily data into weeks (Sunday-Saturday)
+    const weeklyAgg = new Map<string, { impressions: number; clicks: number }>()
+    
+    rows.slice(1).forEach(row => {
+      const date = row[0]
+      if (!date) return
+      
+      const weekStart = getWeekStart(date)
+      const existing = weeklyAgg.get(weekStart) || { impressions: 0, clicks: 0 }
+      
+      existing.impressions += parseNumber(row[1])
+      existing.clicks += parseNumber(row[2])
+      
+      weeklyAgg.set(weekStart, existing)
+    })
+
+    // Convert to array and sort by date (most recent first)
+    const allWeeks: WeekData[] = Array.from(weeklyAgg.entries())
+      .map(([weekStart, data]) => {
+        const weekEnd = getWeekEnd(weekStart)
+        const year = parseInt(weekStart.split('-')[0])
+        
+        return {
+          week: formatDateRange(weekStart, weekEnd),
+          week_start: weekStart,
+          week_end: weekEnd,
+          year,
+          impressions: data.impressions,
+          clicks: data.clicks,
+          ctr: data.impressions > 0 ? (data.clicks / data.impressions) * 100 : 0,
+          queries: 0 // Not available in account-level data
+        }
+      })
+      .sort((a, b) => b.week_start.localeCompare(a.week_start))
+
+    // Filter to complete weeks only (week end date is before today)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const completeWeeks = allWeeks.filter(w => {
+      const [year, month, day] = w.week_end.split('-').map(Number)
+      const weekEnd = new Date(year, month - 1, day)
+      return weekEnd < today
+    })
+
+    // Get last 8 weeks for current year and matching weeks from previous year
+    const last8Weeks = completeWeeks.slice(0, 8)
+    const currentYearWeeks = last8Weeks.filter(w => w.year === new Date().getFullYear())
+    
+    // Find year-over-year comparison weeks (same weeks from previous year)
+    const yoyWeeks: WeekData[] = []
+    for (const currentWeek of currentYearWeeks.slice(0, 4)) {
+      const [year, month, day] = currentWeek.week_start.split('-').map(Number)
+      const lastYearWeekStart = `${year - 1}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      const yoyWeek = allWeeks.find(w => w.week_start === lastYearWeekStart)
+      if (yoyWeek) {
+        yoyWeeks.push(yoyWeek)
       }
     }
 
     return NextResponse.json({
-      current4Weeks,
-      lastYear4Weeks,
-      wowComparison,
-      yoyComparison,
-      allWeeks,
+      data: last8Weeks,
+      yoyData: yoyWeeks.length === 4 ? yoyWeeks : null,
+      last_updated: new Date().toISOString()
     }, {
       headers: {
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',

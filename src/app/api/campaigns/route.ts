@@ -1,9 +1,9 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-// Same sheet as ads data
-const SHEET_ID = '1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM'
-const RANGE = 'Campaign Performance!A:N'
+// Adveronix: Paid Search sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'GADS: Campaign: Weekly (Devices)!A:P'
 
 interface CampaignRow {
   week: string
@@ -65,26 +65,56 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Parse all rows (skip header)
-    // Columns: A=Week, B=Campaign, C=Clicks, D=Impressions, E=CTR, F=Avg CPC,
-    // G=Cost, H=Conversions, I=Conv Rate, J=(old), K=Impr Share, L=Top %, M=Abs Top %
-    const allData: CampaignRow[] = rows.slice(1)
-      .filter(row => row[0] && row[1])
-      .map(row => ({
-        week: row[0],
-        campaign: row[1],
-        clicks: parseNumber(row[2]),
-        impressions: parseNumber(row[3]),
-        ctr: parseNumber(row[4]),
-        avg_cpc: parseNumber(row[5]),
-        cost: parseNumber(row[6]),
-        conversions: parseNumber(row[7]),
-        conv_rate: parseNumber(row[8]),
-        search_impression_share: parseNumber(row[10]),  // Column K
-        search_top_impression_share: parseNumber(row[11]),  // Column L
-        search_abs_top_impression_share: parseNumber(row[12]),  // Column M
-        click_share: parseNumber(row[13]),  // Column N
-      }))
+    // Adveronix structure: Week | Campaign | Device | Clicks | Impressions | CTR | Avg.CPC | Cost | CPM | Conv | Cross-dev | CPA | Abs.Top% | Top% | Impr.Share | Content.Share
+    // Group by week + campaign (aggregate across devices)
+    const aggMap = new Map<string, any>()
+    
+    rows.slice(1).forEach(row => {
+      const week = row[0]
+      const campaign = row[1]
+      if (!week || !campaign) return
+      
+      const key = `${week}::${campaign}`
+      const existing = aggMap.get(key) || {
+        week,
+        campaign,
+        clicks: 0,
+        impressions: 0,
+        cost: 0,
+        conversions: 0,
+        abs_top_sum: 0,
+        top_sum: 0,
+        impr_share_sum: 0,
+        count: 0
+      }
+      
+      existing.clicks += parseNumber(row[3])
+      existing.impressions += parseNumber(row[4])
+      existing.cost += parseNumber(row[7])
+      existing.conversions += parseNumber(row[9])
+      existing.abs_top_sum += parseNumber(row[12]) * parseNumber(row[4])  // Weight by impressions
+      existing.top_sum += parseNumber(row[13]) * parseNumber(row[4])
+      existing.impr_share_sum += parseNumber(row[14]) * parseNumber(row[4])
+      existing.count += 1
+      
+      aggMap.set(key, existing)
+    })
+    
+    const allData: CampaignRow[] = Array.from(aggMap.values()).map(agg => ({
+      week: agg.week,
+      campaign: agg.campaign,
+      clicks: agg.clicks,
+      impressions: agg.impressions,
+      ctr: agg.impressions > 0 ? (agg.clicks / agg.impressions) * 100 : 0,
+      avg_cpc: agg.clicks > 0 ? agg.cost / agg.clicks : 0,
+      cost: agg.cost,
+      conversions: agg.conversions,
+      conv_rate: agg.clicks > 0 ? (agg.conversions / agg.clicks) * 100 : 0,
+      search_impression_share: agg.impressions > 0 ? (agg.impr_share_sum / agg.impressions) * 100 : 0,
+      search_top_impression_share: agg.impressions > 0 ? (agg.top_sum / agg.impressions) * 100 : 0,
+      search_abs_top_impression_share: agg.impressions > 0 ? (agg.abs_top_sum / agg.impressions) * 100 : 0,
+      click_share: 0,  // Not available in Adveronix
+    }))
 
     // Get unique weeks and campaigns
     const weeks = [...new Set(allData.map(r => r.week))].sort().reverse()

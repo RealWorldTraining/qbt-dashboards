@@ -1,8 +1,9 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-const SHEET_ID = '1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM'
-const RANGE = 'Weekly_Summary!A:N'
+// Adveronix: Paid Search sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'GADS: Account: Weekly (Devices)!A:L'
 
 function parseNumber(val: string): number {
   if (!val) return 0
@@ -50,20 +51,50 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Parse all rows
-    const allWeeks = rows.slice(1).map((row) => ({
-      week_start: row[0] || '',
-      week_end: row[1] || '',
-      spend: parseNumber(row[5]),
-      impressions: parseNumber(row[6]),
-      clicks: parseNumber(row[7]),
-      ctr: parseNumber(row[8]),
-      avg_cpc: parseNumber(row[9]),
-      conversions: parseNumber(row[10]),
-      conv_rate: parseNumber(row[11]),
-      cpa: parseNumber(row[12]),
-      conv_value: parseNumber(row[13]),
-    })).filter(w => w.week_start)
+    // Adveronix structure: Week | Account | Device | Clicks | Impressions | CTR | Avg.CPC | Cost | CPM | Conv | Cross-dev | CPA
+    // Group by week and aggregate across devices
+    const weeklyAgg = new Map()
+    
+    rows.slice(1).forEach((row) => {
+      const week = row[0]
+      if (!week) return
+      
+      const existing = weeklyAgg.get(week) || {
+        week_start: week,
+        clicks: 0,
+        impressions: 0,
+        spend: 0,
+        conversions: 0,
+        conv_value: 0
+      }
+      
+      existing.clicks += parseNumber(row[3])
+      existing.impressions += parseNumber(row[4])
+      existing.spend += parseNumber(row[7])
+      existing.conversions += parseNumber(row[9])
+      // Assume $500 value per conversion for conv_value calculation
+      existing.conv_value += parseNumber(row[9]) * 500
+      
+      weeklyAgg.set(week, existing)
+    })
+    
+    const allWeeks = Array.from(weeklyAgg.values()).map(w => {
+      // Calculate week_end (week_start is Monday, so add 6 days for Sunday)
+      const [year, month, day] = w.week_start.split('-').map(Number)
+      const startDate = new Date(year, month - 1, day)
+      const endDate = new Date(startDate)
+      endDate.setDate(endDate.getDate() + 6)
+      const week_end = endDate.toISOString().split('T')[0]
+      
+      return {
+        ...w,
+        week_end,
+        ctr: w.impressions > 0 ? (w.clicks / w.impressions) * 100 : 0,
+        avg_cpc: w.clicks > 0 ? w.spend / w.clicks : 0,
+        conv_rate: w.clicks > 0 ? (w.conversions / w.clicks) * 100 : 0,
+        cpa: w.conversions > 0 ? w.spend / w.conversions : 0
+      }
+    }).filter(w => w.week_start)
 
     // Get last 6 complete weeks
     // A week is complete if its end date is before today

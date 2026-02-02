@@ -1,8 +1,9 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-const SHEET_ID = '1INXxnW3WVkENN7Brvo3sgPcs96C06r3O6mEkgEABxk8'
-const RANGE = 'Bing Paid: Weekly Campaign Summary!A:M'
+// Adveronix: Paid Search sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'Bing: Campaign Weekly!A:Q'
 
 interface CampaignRow {
   week: string
@@ -62,25 +63,23 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Parse all rows (skip header)
-    // Columns: A=Week, B=Account, C=Campaign, D=Ad dist, E=Quality score,
-    // F=Impressions, G=Clicks, H=CTR, I=Avg CPC, J=Spend, K=Avg pos, L=Conversions, M=Conv Rate, N=CPA
+    // Adveronix structure: Week | Account | Campaign | Ad dist | Quality | Impressions | Clicks | CTR | Avg.CPC | Spend | Avg.pos | Conv | Conv.Rate | CPA | Abs.Top% | Impr.Share | Click.Share
     const allData: CampaignRow[] = rows.slice(1)
       .filter(row => row[0] && row[2]) // Filter by week and campaign
       .map(row => ({
         week: row[0],
-        campaign: row[2], // Column C
-        clicks: parseNumber(row[6]), // Column G
-        impressions: parseNumber(row[5]), // Column F
-        ctr: parseNumber(row[7]), // Column H
-        avg_cpc: parseNumber(row[8]), // Column I
-        cost: parseNumber(row[9]), // Column J
-        conversions: parseNumber(row[11]), // Column L
-        conv_rate: parseNumber(row[12]), // Column M
-        search_impression_share: 0, // Not in this sheet
-        search_top_impression_share: 0,
-        search_abs_top_impression_share: 0,
-        click_share: 0,
+        campaign: row[2],
+        clicks: parseNumber(row[6]),
+        impressions: parseNumber(row[5]),
+        ctr: parseNumber(row[7]),
+        avg_cpc: parseNumber(row[8]),
+        cost: parseNumber(row[9]),
+        conversions: parseNumber(row[11]),
+        conv_rate: parseNumber(row[12]),
+        search_impression_share: parseNumber(row[15]),
+        search_top_impression_share: 0, // Not available
+        search_abs_top_impression_share: parseNumber(row[14]),
+        click_share: parseNumber(row[16]),
       }))
 
     // Get unique weeks and campaigns

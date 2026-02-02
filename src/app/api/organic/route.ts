@@ -1,33 +1,33 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-const SHEET_ID = '1SvvnNc32S7jSW1GP1bonJAoW0bTuNgHh9ERQo6RgcEY'
-const SOURCE_MEDIUM_RANGE = 'First User Source Medium!A:N'
-const CHANNEL_GROUP_RANGE = 'First User Default Channel Group!A:N'
+// Adveronix: Paid Search sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const SESSION_SOURCE_RANGE = 'GA4: Traffic Weekly Session Source!A:E'
+const CHANNEL_GROUP_RANGE = 'GA4: Traffic Weekly Channel!A:E'
 
 function parseNumber(val: string): number {
   if (!val) return 0
-  const cleaned = val.replace(/,/g, '').replace(/%/g, '')
+  const cleaned = val.replace(/[,$%]/g, '')
   return parseFloat(cleaned) || 0
 }
 
-function weekCodeToDateRange(weekCode: string): string {
-  const year = parseInt(weekCode.substring(0, 4))
-  const week = parseInt(weekCode.substring(4))
-  
-  const jan4 = new Date(year, 0, 4)
-  const dayOfWeek = jan4.getDay() || 7
-  const firstMonday = new Date(jan4)
-  firstMonday.setDate(jan4.getDate() - dayOfWeek + 1)
-  
-  const weekStart = new Date(firstMonday)
-  weekStart.setDate(firstMonday.getDate() + (week - 1) * 7)
-  
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekStart.getDate() + 6)
-  
+function parseWeekDate(weekStr: string): Date {
+  // Handle both formats: "2025-12-28" and "M/D/YYYY"
+  if (weekStr.includes('/')) {
+    const [month, day, year] = weekStr.split('/').map(Number)
+    return new Date(year, month - 1, day)
+  } else {
+    const [year, month, day] = weekStr.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+}
+
+function formatWeekLabel(weekDate: Date): string {
+  const endDate = new Date(weekDate)
+  endDate.setDate(weekDate.getDate() + 6)
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
-  return `${weekStart.toLocaleDateString('en-US', opts)} - ${weekEnd.toLocaleDateString('en-US', opts)}`
+  return `${weekDate.toLocaleDateString('en-US', opts)} - ${endDate.toLocaleDateString('en-US', opts)}`
 }
 
 export async function GET() {
@@ -49,10 +49,10 @@ export async function GET() {
     const sheets = google.sheets({ version: 'v4', auth })
     
     // Fetch both tabs
-    const [sourceMediumRes, channelGroupRes] = await Promise.all([
+    const [sessionSourceRes, channelGroupRes] = await Promise.all([
       sheets.spreadsheets.values.get({
         spreadsheetId: SHEET_ID,
-        range: SOURCE_MEDIUM_RANGE,
+        range: SESSION_SOURCE_RANGE,
       }),
       sheets.spreadsheets.values.get({
         spreadsheetId: SHEET_ID,
@@ -60,137 +60,189 @@ export async function GET() {
       })
     ])
 
-    const sourceMediumRows = sourceMediumRes.data.values
+    const sessionSourceRows = sessionSourceRes.data.values
     const channelGroupRows = channelGroupRes.data.values
     
-    if (!sourceMediumRows || sourceMediumRows.length < 2) {
-      return NextResponse.json({ error: 'No source medium data found' }, { status: 404 })
+    if (!sessionSourceRows || sessionSourceRows.length < 2) {
+      return NextResponse.json({ error: 'No session source data found' }, { status: 404 })
     }
 
-    // Parse Source Medium data (granular sources)
-    // Columns: A=week, E=Direct Users, F=Direct Purchases, 
-    // G=Google Organic Users, H=Google Organic Purchases,
-    // I=QB Intuit Users, J=QB Intuit Purchases,
-    // K=Bing Organic Users, L=Bing Organic Purchases,
-    // M=Bing CPC Users, N=Bing CPC Purchases
-    const sourceData = sourceMediumRows.slice(1)
-      .filter(row => row[0] && /^\d{6}$/.test(row[0]))
-      .map(row => ({
-        week_code: row[0],
-        direct_users: parseNumber(row[4]),
-        direct_purchases: parseNumber(row[5]),
-        google_organic_users: parseNumber(row[6]),
-        google_organic_purchases: parseNumber(row[7]),
-        qb_intuit_users: parseNumber(row[8]),
-        qb_intuit_purchases: parseNumber(row[9]),
-        bing_organic_users: parseNumber(row[10]),
-        bing_organic_purchases: parseNumber(row[11]),
-      }))
-      .sort((a, b) => a.week_code.localeCompare(b.week_code))
+    // Group session source data by week
+    // Structure: Week | Session source/medium | New users | Total users | Purchases
+    const weeklySourceData = new Map<string, Map<string, { users: number; purchases: number }>>()
+    
+    sessionSourceRows.slice(1).forEach(row => {
+      const weekStr = row[0]
+      const sourceMedium = row[1]?.toLowerCase() || ''
+      if (!weekStr) return
+      
+      const weekDate = parseWeekDate(weekStr)
+      const weekKey = weekDate.toISOString().split('T')[0]
+      
+      if (!weeklySourceData.has(weekKey)) {
+        weeklySourceData.set(weekKey, new Map())
+      }
+      
+      const weekData = weeklySourceData.get(weekKey)!
+      const users = parseNumber(row[3]) // Total users column
+      const purchases = parseNumber(row[4]) // Ecommerce purchases column
+      
+      // Categorize sources
+      let category = 'other'
+      if (sourceMedium.includes('google') && sourceMedium.includes('organic')) {
+        category = 'google_organic'
+      } else if (sourceMedium.includes('bing') && sourceMedium.includes('organic')) {
+        category = 'bing_organic'
+      } else if (sourceMedium.includes('bing') && sourceMedium.includes('cpc')) {
+        category = 'bing_cpc'
+      } else if (sourceMedium.includes('(direct)') || sourceMedium.includes('(none)')) {
+        category = 'direct'
+      } else if (sourceMedium.includes('quickbooks.intuit.com')) {
+        category = 'qb_intuit'
+      }
+      
+      const existing = weekData.get(category) || { users: 0, purchases: 0 }
+      existing.users += users
+      existing.purchases += purchases
+      weekData.set(category, existing)
+    })
 
-    // Parse Channel Group data (totals + paid)
-    // Columns: A=week, B=week_start, C=Organic users, D=Organic purchases,
-    // E=Direct users, F=Direct purchases, G=Referral users, H=Referral purchases,
-    // I=Paid users, J=Paid purchases, K=Total Users, L=Total Purchases
-    const channelData = channelGroupRows ? channelGroupRows.slice(1)
-      .filter(row => row[0] && /^\d{6}$/.test(row[0]))
-      .map(row => ({
-        week_code: row[0],
-        total_users: parseNumber(row[10]),      // Column K
-        total_purchases: parseNumber(row[11]),  // Column L
-        paid_users: parseNumber(row[8]),        // Column I
-        paid_purchases: parseNumber(row[9]),    // Column J
-      }))
-      .sort((a, b) => a.week_code.localeCompare(b.week_code)) : []
+    // Group channel data by week for totals
+    const weeklyChannelData = new Map<string, { total_users: number; total_purchases: number; paid_users: number; paid_purchases: number }>()
+    
+    if (channelGroupRows && channelGroupRows.length > 1) {
+      // First, aggregate by week (sum all channels)
+      const weekTotals = new Map<string, Map<string, { users: number; purchases: number }>>()
+      
+      channelGroupRows.slice(1).forEach(row => {
+        const weekStr = row[0]
+        const channelGroup = row[1]?.toLowerCase() || ''
+        if (!weekStr) return
+        
+        const weekDate = parseWeekDate(weekStr)
+        const weekKey = weekDate.toISOString().split('T')[0]
+        
+        if (!weekTotals.has(weekKey)) {
+          weekTotals.set(weekKey, new Map())
+        }
+        
+        const weekData = weekTotals.get(weekKey)!
+        const users = parseNumber(row[3])
+        const purchases = parseNumber(row[4])
+        
+        const existing = weekData.get(channelGroup) || { users: 0, purchases: 0 }
+        existing.users += users
+        existing.purchases += purchases
+        weekData.set(channelGroup, existing)
+      })
+      
+      // Calculate totals and paid totals per week
+      weekTotals.forEach((channelMap, weekKey) => {
+        let total_users = 0
+        let total_purchases = 0
+        let paid_users = 0
+        let paid_purchases = 0
+        
+        channelMap.forEach((data, channel) => {
+          total_users += data.users
+          total_purchases += data.purchases
+          
+          if (channel.includes('paid')) {
+            paid_users += data.users
+            paid_purchases += data.purchases
+          }
+        })
+        
+        weeklyChannelData.set(weekKey, { total_users, total_purchases, paid_users, paid_purchases })
+      })
+    }
 
     // Get last 5 weeks
-    const last5Source = sourceData.slice(-5).reverse()
-    const last5Channel = channelData.slice(-5).reverse()
+    const sortedWeeks = Array.from(weeklySourceData.keys()).sort().reverse()
+    const last5Weeks = sortedWeeks.slice(0, 5)
 
-    const formatWeek = (sourceRow: typeof sourceData[0], channelRow: typeof channelData[0] | undefined, label: string) => {
-      const totalUsers = channelRow?.total_users || 1
-      const totalPurchases = channelRow?.total_purchases || 1
-      const paidUsers = channelRow?.paid_users || 0
-      const paidPurchases = channelRow?.paid_purchases || 0
-
-      // Calculate "Other" as the difference
-      const knownUsers = paidUsers + sourceRow.google_organic_users + sourceRow.direct_users + 
-                         sourceRow.bing_organic_users + sourceRow.qb_intuit_users
-      const knownPurchases = paidPurchases + sourceRow.google_organic_purchases + sourceRow.direct_purchases + 
-                             sourceRow.bing_organic_purchases + sourceRow.qb_intuit_purchases
+    const formatWeek = (weekKey: string, label: string) => {
+      const sourceData = weeklySourceData.get(weekKey)
+      const channelData = weeklyChannelData.get(weekKey)
+      
+      const googleOrganic = sourceData?.get('google_organic') || { users: 0, purchases: 0 }
+      const bingOrganic = sourceData?.get('bing_organic') || { users: 0, purchases: 0 }
+      const direct = sourceData?.get('direct') || { users: 0, purchases: 0 }
+      const qbIntuit = sourceData?.get('qb_intuit') || { users: 0, purchases: 0 }
+      const bingCpc = sourceData?.get('bing_cpc') || { users: 0, purchases: 0 }
+      
+      const totalUsers = channelData?.total_users || 1
+      const totalPurchases = channelData?.total_purchases || 1
+      const paidUsers = channelData?.paid_users || 0
+      const paidPurchases = channelData?.paid_purchases || 0
+      
+      // Calculate "Other" as residual
+      const knownUsers = paidUsers + googleOrganic.users + direct.users + bingOrganic.users + qbIntuit.users
+      const knownPurchases = paidPurchases + googleOrganic.purchases + direct.purchases + bingOrganic.purchases + qbIntuit.purchases
       const otherUsers = Math.max(0, totalUsers - knownUsers)
       const otherPurchases = Math.max(0, totalPurchases - knownPurchases)
-
+      
+      const weekDate = parseWeekDate(weekKey)
+      
       return {
-        week_label: label,
-        date_range: weekCodeToDateRange(sourceRow.week_code),
-        totals: {
-          users: totalUsers,
-          purchases: totalPurchases
-        },
-        google_ads: {
-          users: paidUsers,
-          purchases: paidPurchases,
-          conv_rate: paidUsers > 0 ? (paidPurchases / paidUsers * 100) : 0,
-          pct_of_users: (paidUsers / totalUsers * 100),
-          pct_of_purchases: (paidPurchases / totalPurchases * 100)
-        },
+        week: formatWeekLabel(weekDate),
+        label,
         google_organic: {
-          users: sourceRow.google_organic_users,
-          purchases: sourceRow.google_organic_purchases,
-          conv_rate: sourceRow.google_organic_users > 0 
-            ? (sourceRow.google_organic_purchases / sourceRow.google_organic_users * 100) : 0,
-          pct_of_users: (sourceRow.google_organic_users / totalUsers * 100),
-          pct_of_purchases: (sourceRow.google_organic_purchases / totalPurchases * 100)
+          users: googleOrganic.users,
+          purchases: googleOrganic.purchases,
+          percent_users: (googleOrganic.users / totalUsers) * 100,
+          percent_purchases: (googleOrganic.purchases / totalPurchases) * 100
         },
         direct: {
-          users: sourceRow.direct_users,
-          purchases: sourceRow.direct_purchases,
-          conv_rate: sourceRow.direct_users > 0 
-            ? (sourceRow.direct_purchases / sourceRow.direct_users * 100) : 0,
-          pct_of_users: (sourceRow.direct_users / totalUsers * 100),
-          pct_of_purchases: (sourceRow.direct_purchases / totalPurchases * 100)
+          users: direct.users,
+          purchases: direct.purchases,
+          percent_users: (direct.users / totalUsers) * 100,
+          percent_purchases: (direct.purchases / totalPurchases) * 100
         },
         bing_organic: {
-          users: sourceRow.bing_organic_users,
-          purchases: sourceRow.bing_organic_purchases,
-          conv_rate: sourceRow.bing_organic_users > 0 
-            ? (sourceRow.bing_organic_purchases / sourceRow.bing_organic_users * 100) : 0,
-          pct_of_users: (sourceRow.bing_organic_users / totalUsers * 100),
-          pct_of_purchases: (sourceRow.bing_organic_purchases / totalPurchases * 100)
+          users: bingOrganic.users,
+          purchases: bingOrganic.purchases,
+          percent_users: (bingOrganic.users / totalUsers) * 100,
+          percent_purchases: (bingOrganic.purchases / totalPurchases) * 100
         },
         qb_intuit: {
-          users: sourceRow.qb_intuit_users,
-          purchases: sourceRow.qb_intuit_purchases,
-          conv_rate: sourceRow.qb_intuit_users > 0 
-            ? (sourceRow.qb_intuit_purchases / sourceRow.qb_intuit_users * 100) : 0,
-          pct_of_users: (sourceRow.qb_intuit_users / totalUsers * 100),
-          pct_of_purchases: (sourceRow.qb_intuit_purchases / totalPurchases * 100)
+          users: qbIntuit.users,
+          purchases: qbIntuit.purchases,
+          percent_users: (qbIntuit.users / totalUsers) * 100,
+          percent_purchases: (qbIntuit.purchases / totalPurchases) * 100
+        },
+        paid: {
+          users: paidUsers,
+          purchases: paidPurchases,
+          percent_users: (paidUsers / totalUsers) * 100,
+          percent_purchases: (paidPurchases / totalPurchases) * 100
         },
         other: {
           users: otherUsers,
           purchases: otherPurchases,
-          conv_rate: otherUsers > 0 ? (otherPurchases / otherUsers * 100) : 0,
-          pct_of_users: (otherUsers / totalUsers * 100),
-          pct_of_purchases: (otherPurchases / totalPurchases * 100)
+          percent_users: (otherUsers / totalUsers) * 100,
+          percent_purchases: (otherPurchases / totalPurchases) * 100
+        },
+        total: {
+          users: totalUsers,
+          purchases: totalPurchases
         }
       }
     }
 
-    // Match source and channel data by week code, shift to skip incomplete week
-    const findChannel = (weekCode: string) => last5Channel.find(c => c.week_code === weekCode)
+    const weekLabels = ['Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
+    const formattedWeeks = last5Weeks.map((weekKey, idx) => formatWeek(weekKey, weekLabels[idx]))
 
-    const data = {
-      this_week: formatWeek(last5Source[1], findChannel(last5Source[1].week_code), 'Last Week'),
-      last_week: formatWeek(last5Source[2], findChannel(last5Source[2].week_code), '2 Weeks Ago'),
-      two_weeks_ago: formatWeek(last5Source[3], findChannel(last5Source[3].week_code), '3 Weeks Ago'),
-      three_weeks_ago: formatWeek(last5Source[4], findChannel(last5Source[4].week_code), '4 Weeks Ago'),
-      last_updated: new Date().toISOString(),
-    }
-
-    return NextResponse.json(data)
+    return NextResponse.json({
+      data: formattedWeeks,
+      last_updated: new Date().toISOString()
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+      },
+    })
   } catch (error) {
-    console.error('Error fetching organic data:', error)
+    console.error('Error fetching organic traffic data:', error)
     return NextResponse.json(
       { error: 'Failed to fetch data', details: String(error) },
       { status: 500 }
