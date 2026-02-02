@@ -282,11 +282,14 @@ export default function LiveHelpDashboard() {
                     🏠 Room Status <span className="text-sm text-green-400 font-normal">● LIVE</span>
                   </h2>
                   <div className="space-y-4">
-                    {Object.entries(currentStatus)
-                      .filter(([roomName]) => roomName === 'Downhill' || roomName === 'Orchard')
-                      .map(([roomName, room]) => (
-                        <RoomCard key={roomName} roomName={roomName} room={room} />
-                      ))}
+                    {/* Rooms side by side */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {Object.entries(currentStatus)
+                        .filter(([roomName]) => roomName === 'Downhill' || roomName === 'Orchard')
+                        .map(([roomName, room]) => (
+                          <RoomCard key={roomName} roomName={roomName} room={room} />
+                        ))}
+                    </div>
                     
                     {/* Stats below rooms */}
                     <div className="grid grid-cols-2 gap-3">
@@ -443,32 +446,32 @@ function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
   };
 
   return (
-    <div className={`bg-white/5 rounded-2xl p-6 border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
-      <h4 className="text-lg font-semibold mb-4 flex items-center justify-between">
+    <div className={`bg-white/5 rounded-2xl p-4 border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
+      <h4 className="text-base font-semibold mb-3 flex items-center justify-between">
         <span>{roomEmojis[roomName]} {roomName}</span>
-        <span className={`text-sm px-2 py-1 rounded-full ${
+        <span className={`text-xs px-2 py-1 rounded-full ${
           isEmpty ? 'bg-gray-700 text-gray-400' : 'bg-green-900 text-green-300'
         }`}>
-          {room.total_current} people
+          {room.total_current}
         </span>
       </h4>
 
       {isEmpty ? (
-        <p className="text-gray-400 text-center py-6">No one currently in room</p>
+        <p className="text-gray-400 text-center py-4 text-sm">No one in room</p>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Being Helped */}
           {room.being_helped.length > 0 && (
             <div>
-              <h5 className="text-sm font-medium text-green-400 mb-2">
+              <h5 className="text-xs font-medium text-green-400 mb-1">
                 💬 Being Helped ({room.being_helped.length})
               </h5>
               <div className="space-y-1">
                 {room.being_helped.map((person, idx) => (
-                  <div key={idx} className="text-sm bg-green-900/20 rounded p-2 border border-green-500/30">
+                  <div key={idx} className="text-xs bg-green-900/20 rounded p-2 border border-green-500/30">
                     <div className="font-medium">{person.name}</div>
-                    <div className="text-xs text-gray-400">
-                      with {person.trainer} • {Math.round(person.help_duration_minutes || 0)} min
+                    <div className="text-[10px] text-gray-400">
+                      {person.trainer} • {Math.round(person.help_duration_minutes || 0)}m
                     </div>
                   </div>
                 ))}
@@ -479,15 +482,15 @@ function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
           {/* Waiting */}
           {room.waiting.length > 0 && (
             <div>
-              <h5 className="text-sm font-medium text-yellow-400 mb-2">
+              <h5 className="text-xs font-medium text-yellow-400 mb-1">
                 ⏳ Waiting ({room.waiting.length})
               </h5>
               <div className="space-y-1">
                 {room.waiting.map((person, idx) => (
-                  <div key={idx} className="text-sm bg-yellow-900/20 rounded p-2 border border-yellow-500/30">
+                  <div key={idx} className="text-xs bg-yellow-900/20 rounded p-2 border border-yellow-500/30">
                     <div className="font-medium">{person.name}</div>
-                    <div className="text-xs text-gray-400">
-                      waiting {Math.round(person.wait_duration_minutes || 0)} min
+                    <div className="text-[10px] text-gray-400">
+                      {Math.round(person.wait_duration_minutes || 0)}m
                     </div>
                   </div>
                 ))}

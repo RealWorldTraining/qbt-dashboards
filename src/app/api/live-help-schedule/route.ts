@@ -123,12 +123,26 @@ export async function GET(request: NextRequest) {
         return eventStartCST >= hourStart && eventStartCST < hourEnd;
       };
       
+      const downhillFiltered = downhillEvents.filter(isInHour);
+      const orchardFiltered = orchardEvents.filter(isInHour);
+      const backupFiltered = backupEvents.filter(isInHour);
+      
+      if (i === 0) {
+        console.log(`Current hour: ${hourLabel}`);
+        console.log(`Downhill events:`, downhillEvents.length, 'filtered:', downhillFiltered.length);
+        console.log(`Orchard events:`, orchardEvents.length, 'filtered:', orchardFiltered.length);
+        console.log(`Backup events:`, backupEvents.length, 'filtered:', backupFiltered.length);
+        if (downhillEvents.length > 0) {
+          console.log('Sample Downhill event:', downhillEvents[0]);
+        }
+      }
+      
       hourSchedules.push({
         hour: hourLabel,
         hourStart: hourStart,
-        downhill: downhillEvents.filter(isInHour),
-        orchard: orchardEvents.filter(isInHour),
-        backup: backupEvents.filter(isInHour)
+        downhill: downhillFiltered,
+        orchard: orchardFiltered,
+        backup: backupFiltered
       });
     }
     
