@@ -376,7 +376,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (action === 'top-attendees') {
-      // Top 5 attendees by total time today
+      // Top 5 attendees by total HELP DURATION (start_time to end_time) today
       let allTodayData: any[] = [];
       
       for (const [roomEmoji, roomDisplay] of Object.entries(ROOMS)) {
@@ -387,36 +387,39 @@ export async function GET(request: NextRequest) {
         allTodayData = allTodayData.concat(todayRoomData);
       }
       
-      // Calculate total time per attendee
+      // Calculate total HELP DURATION per attendee (start_time → end_time)
       const attendeeTotals: Record<string, number> = {};
       
       for (const row of allTodayData) {
         const name = row.attendee_name ? row.attendee_name.toString().trim() : '';
         if (!name) continue;
         
-        const entered = row.entered ? row.entered.toString() : '';
-        const left = row.left ? row.left.toString() : '';
+        const startTime = row.start_time ? row.start_time.toString().trim() : '';
+        const endTime = row.end_time ? row.end_time.toString().trim() : '';
+        
+        // Only count sessions where they were actually helped (have start_time)
+        if (!startTime || startTime === '') continue;
         
         let duration = 0;
-        if (entered) {
-          if (left && left.trim() !== '') {
-            // Completed session - calculate duration
-            duration = calculateDurationMinutes(entered, left, row.date);
-          } else {
-            // Still in room - calculate from entered to now
-            const enteredDt = parseTime(entered, row.date);
-            const now = new Date();
-            if (enteredDt) {
-              const deltaMs = now.getTime() - enteredDt.getTime();
-              duration = Math.max(0, deltaMs / (1000 * 60));
-            }
+        if (endTime && endTime !== '') {
+          // Completed help session - calculate duration from start_time to end_time
+          duration = calculateDurationMinutes(startTime, endTime, row.date);
+        } else {
+          // Currently being helped - calculate from start_time to now
+          const startDt = parseTime(startTime, row.date);
+          const now = new Date();
+          if (startDt) {
+            const deltaMs = now.getTime() - startDt.getTime();
+            duration = Math.max(0, deltaMs / (1000 * 60));
           }
         }
         
-        if (!attendeeTotals[name]) {
-          attendeeTotals[name] = 0;
+        if (duration > 0) {
+          if (!attendeeTotals[name]) {
+            attendeeTotals[name] = 0;
+          }
+          attendeeTotals[name] += duration;
         }
-        attendeeTotals[name] += duration;
       }
       
       // Sort and get top 5
