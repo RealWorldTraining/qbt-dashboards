@@ -88,23 +88,41 @@ export async function GET(request: NextRequest) {
     const nowCSTString = nowUTC.toLocaleString('en-US', { timeZone: 'America/Chicago' });
     const nowCST = new Date(nowCSTString);
     
-    // Get events for the next 8 hours in CST
-    const endTimeCST = new Date(nowCST.getTime() + 8 * 60 * 60 * 1000);
+    const currentHour = nowCST.getHours();
+    
+    // Determine how many hours to show based on current time
+    // Open 7:30 AM - 5:30 PM CST
+    // Show up to 5:30 PM (17:30), but display 5:00-5:30 for the last slot
+    let hoursToShow = 0;
+    if (currentHour >= 7 && currentHour < 17) {
+      // Between 7 AM and 5 PM, show remaining hours up to 5 PM
+      hoursToShow = 17 - currentHour + 1; // +1 to include current hour
+    } else if (currentHour >= 17) {
+      // After 5 PM, show just current hour if still in 5-6 range, otherwise show nothing
+      hoursToShow = currentHour < 18 ? 1 : 0;
+    }
     
     // Fetch events from all three calendars (API expects UTC)
+    const endTimeUTC = new Date(nowUTC.getTime() + hoursToShow * 60 * 60 * 1000);
     const [downhillEvents, orchardEvents, backupEvents] = await Promise.all([
-      getCalendarEvents(calendar, CALENDARS.downhill, nowUTC, new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000)),
-      getCalendarEvents(calendar, CALENDARS.orchard, nowUTC, new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000)),
-      getCalendarEvents(calendar, CALENDARS.backup, nowUTC, new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000))
+      getCalendarEvents(calendar, CALENDARS.downhill, nowUTC, endTimeUTC),
+      getCalendarEvents(calendar, CALENDARS.orchard, nowUTC, endTimeUTC),
+      getCalendarEvents(calendar, CALENDARS.backup, nowUTC, endTimeUTC)
     ]);
+    
+    console.log(`[Schedule API] Current time CST: ${nowCSTString}, Hour: ${currentHour}`);
+    console.log(`[Schedule API] Total events - Downhill: ${downhillEvents.length}, Orchard: ${orchardEvents.length}, Backup: ${backupEvents.length}`);
     
     // Group events by hour (in CST)
     const hourSchedules: HourSchedule[] = [];
     
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < hoursToShow; i++) {
       // Create hour boundaries in CST
       const hourStart = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate(), nowCST.getHours() + i, 0, 0);
       const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000);
+      
+      // Special case for 5 PM hour - show as 5:00 - 5:30 PM
+      const isClosingHour = hourStart.getHours() === 17;
       
       const formatHour = (date: Date) => {
         const hours = date.getHours();
@@ -113,29 +131,30 @@ export async function GET(request: NextRequest) {
         return `${hours12}:00 ${ampm}`;
       };
       
-      const hourLabel = `${formatHour(hourStart)} - ${formatHour(hourEnd)}`;
+      let hourLabel: string;
+      if (isClosingHour) {
+        hourLabel = '5:00 PM - 5:30 PM';
+      } else {
+        hourLabel = `${formatHour(hourStart)} - ${formatHour(hourEnd)}`;
+      }
       
-      // Filter events that fall within this hour (convert event times to CST for comparison)
+      // Filter events that fall within this hour
       const isInHour = (event: CalendarEvent) => {
         const eventStartUTC = new Date(event.start);
         const eventStartCSTString = eventStartUTC.toLocaleString('en-US', { timeZone: 'America/Chicago' });
         const eventStartCST = new Date(eventStartCSTString);
+        
+        // For debugging
+        if (i === 0) {
+          console.log(`[Event Check] Event: ${event.summary}, Start UTC: ${eventStartUTC.toISOString()}, Start CST: ${eventStartCSTString}, Hour start: ${hourStart.toISOString()}, Hour end: ${hourEnd.toISOString()}`);
+        }
+        
         return eventStartCST >= hourStart && eventStartCST < hourEnd;
       };
       
       const downhillFiltered = downhillEvents.filter(isInHour);
       const orchardFiltered = orchardEvents.filter(isInHour);
       const backupFiltered = backupEvents.filter(isInHour);
-      
-      if (i === 0) {
-        console.log(`Current hour: ${hourLabel}`);
-        console.log(`Downhill events:`, downhillEvents.length, 'filtered:', downhillFiltered.length);
-        console.log(`Orchard events:`, orchardEvents.length, 'filtered:', orchardFiltered.length);
-        console.log(`Backup events:`, backupEvents.length, 'filtered:', backupFiltered.length);
-        if (downhillEvents.length > 0) {
-          console.log('Sample Downhill event:', downhillEvents[0]);
-        }
-      }
       
       hourSchedules.push({
         hour: hourLabel,
@@ -144,6 +163,9 @@ export async function GET(request: NextRequest) {
         orchard: orchardFiltered,
         backup: backupFiltered
       });
+      
+      // Stop at 5:30 PM
+      if (isClosingHour) break;
     }
     
     return NextResponse.json({
