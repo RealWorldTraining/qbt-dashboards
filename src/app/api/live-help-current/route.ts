@@ -304,12 +304,20 @@ export async function GET(request: NextRequest) {
         ? helpDurations.reduce((a, b) => a + b, 0) / helpDurations.length 
         : 0;
       
-      // Hourly breakdown
+      // Hourly breakdown (in CST)
       const hourlyLogins = new Array(24).fill(0);
       for (const row of allTodayData) {
-        const enteredDt = parseTime(row.entered ? row.entered.toString() : '', row.date);
-        if (enteredDt) {
-          hourlyLogins[enteredDt.getHours()]++;
+        const enteredStr = row.entered ? row.entered.toString() : '';
+        if (enteredStr) {
+          // Parse the hour directly from the time string (e.g., "2:23 PM")
+          const timeParts = enteredStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (timeParts) {
+            let hours = parseInt(timeParts[1]);
+            const ampm = timeParts[3].toUpperCase();
+            if (ampm === 'PM' && hours !== 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+            hourlyLogins[hours]++;
+          }
         }
       }
       
