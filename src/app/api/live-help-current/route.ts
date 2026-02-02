@@ -74,41 +74,48 @@ function parseTime(timeStr: string, dateStr?: string): Date | null {
     if (ampm === 'PM' && hours !== 12) hours += 12;
     if (ampm === 'AM' && hours === 12) hours = 0;
     
-    // Parse date (or use today in CST)
+    // Parse date (or use today)
     let year: number, month: number, day: number;
     
     if (dateStr) {
       // Parse date like "2/2/26"
       const dateParts = dateStr.split('/');
-      month = parseInt(dateParts[0]);
+      month = parseInt(dateParts[0]) - 1; // 0-indexed for Date
       day = parseInt(dateParts[1]);
       year = parseInt(dateParts[2]);
       if (year < 100) year += 2000;
     } else {
-      // Use today's date in CST
-      const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
-      year = nowCST.getFullYear();
-      month = nowCST.getMonth() + 1;
-      day = nowCST.getDate();
+      const now = new Date();
+      year = now.getFullYear();
+      month = now.getMonth();
+      day = now.getDate();
     }
     
-    // CST is UTC-6 (or CDT is UTC-5 during daylight saving time)
-    // February is definitely CST (not DST), so use 6 hour offset
-    // To check if DST: March-November might be CDT
-    let cstOffsetHours = 6;
-    if (month >= 3 && month <= 11) {
-      // Might be CDT (UTC-5), do more specific check
-      // DST in US: second Sunday in March to first Sunday in November
-      // For simplicity, assume CDT from March-November
-      // TODO: More precise DST calculation if needed
-      cstOffsetHours = 5;
-    }
+    // The time from the sheet is in CST
+    // CST is UTC-6 (standard) or UTC-5 (daylight CDT)
+    // Create the date as if it were UTC, then adjust for CST offset
     
-    // Build UTC timestamp from CST time
-    // If it's 2:58 PM CST, that's 8:58 PM UTC (or 7:58 PM if CDT)
-    const utcTimestamp = Date.UTC(year, month - 1, day, hours + cstOffsetHours, minutes, 0);
+    // Determine if this date would be in CST (winter) or CDT (summer)
+    // DST in Chicago: second Sunday March through first Sunday November
+    // Simplified: use month check
+    const isDST = month >= 2 && month <= 10; // March-November might be CDT
+    const cstOffsetMinutes = isDST ? -300 : -360; // CDT is UTC-5, CST is UTC-6 (negative because behind UTC)
     
-    return new Date(utcTimestamp);
+    // Create date in local server time first
+    const localDate = new Date(year, month, day, hours, minutes, 0, 0);
+    
+    // Get server's timezone offset
+    const serverOffsetMinutes = localDate.getTimezoneOffset();
+    
+    // Adjust from server timezone to CST
+    // If server is UTC (offset=0) and we want CST (offset=-360), we need to add 360 minutes to the timestamp
+    const adjustmentMs = (serverOffsetMinutes - cstOffsetMinutes) * 60 * 1000;
+    
+    const cstDate = new Date(localDate.getTime() + adjustmentMs);
+    
+    console.log(`parseTime: ${timeStr} on ${dateStr} → server=${localDate.toISOString()} cst=${cstDate.toISOString()} (serverOffset=${serverOffsetMinutes}, cstOffset=${cstOffsetMinutes}, adj=${adjustmentMs/1000/60}min)`);
+    
+    return cstDate;
   } catch (error) {
     console.error('parseTime error:', error);
     return null;
