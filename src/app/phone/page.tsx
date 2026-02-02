@@ -282,7 +282,7 @@ export default function PhoneDashboard() {
                 ]
                 const maxValue = Math.max(...allValues, 1)
                 
-                const getHeatmapClass = (value: number | string | undefined) => {
+                const getHeatmapClass = (value: number | string | null | undefined) => {
                   if (!value || value === '-' || typeof value !== 'number') return 'bg-[#1D1D1F]'
                   const intensity = Math.round((value / maxValue) * 100)
                   if (intensity > 80) return 'bg-blue-600'
