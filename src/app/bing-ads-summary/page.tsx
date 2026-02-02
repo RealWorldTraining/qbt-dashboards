@@ -357,14 +357,12 @@ export default function BingAdsSummaryPage() {
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Line
+                  <Bar
                     yAxisId="left"
-                    type="monotone"
                     dataKey="ctr"
                     name="ctr"
-                    stroke={METRIC_COLORS.ctr}
-                    strokeWidth={2}
-                    dot={{ fill: METRIC_COLORS.ctr, r: 4 }}
+                    fill={METRIC_COLORS.ctr}
+                    radius={[4, 4, 0, 0]}
                   >
                     <LabelList 
                       dataKey="ctr" 
@@ -373,7 +371,7 @@ export default function BingAdsSummaryPage() {
                       fontSize={10}
                       formatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : ''}
                     />
-                  </Line>
+                  </Bar>
                   <Line
                     yAxisId="right"
                     type="monotone"
