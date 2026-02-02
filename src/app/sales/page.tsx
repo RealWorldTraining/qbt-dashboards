@@ -2276,7 +2276,7 @@ export default function DashboardPage() {
                                       return (
                                         <td
                                           key={hour}
-                                          className={`text-center py-2 px-0.5 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}
+                                          className={`text-center py-2 px-0.5 ${value === null ? "text-[#D2D2D7]" : "text-white"}`}
                                         >
                                           {value === null ? "-" : value}
                                         </td>
