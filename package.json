@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "rm -rf .next && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:clean": "rm -rf .next .next-forced node_modules/.cache && next build"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
