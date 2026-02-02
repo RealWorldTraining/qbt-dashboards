@@ -62,7 +62,7 @@ export default function LiveHelpDashboard() {
 
   const fetchCurrentStatus = useCallback(async () => {
     try {
-      const response = await fetch('/api/live-help?action=current-status');
+      const response = await fetch('/api/live-help-current?action=current-status');
       if (!response.ok) throw new Error('Failed to fetch current status');
       const data = await response.json();
       setCurrentStatus(data);
@@ -75,7 +75,7 @@ export default function LiveHelpDashboard() {
 
   const fetchTodayStats = useCallback(async () => {
     try {
-      const response = await fetch('/api/live-help?action=today-stats');
+      const response = await fetch('/api/live-help-current?action=today-stats');
       if (!response.ok) throw new Error('Failed to fetch today stats');
       const data = await response.json();
       setTodayStats(data);
@@ -89,7 +89,7 @@ export default function LiveHelpDashboard() {
 
   const fetchTrainerPerformance = useCallback(async () => {
     try {
-      const response = await fetch('/api/live-help?action=trainer-performance');
+      const response = await fetch('/api/live-help-current?action=trainer-performance');
       if (!response.ok) throw new Error('Failed to fetch trainer performance');
       const data = await response.json();
       setTrainerPerformance(data);
