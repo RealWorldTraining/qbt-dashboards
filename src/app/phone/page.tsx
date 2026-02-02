@@ -66,40 +66,66 @@ export default function PhoneDashboard() {
   async function fetchData() {
     setLoading(true)
     try {
-      const response = await fetch(`${RAILWAY_API_URL}/metrics`)
-      if (response.ok) {
-        const data: MetricsResponse = await response.json()
-        
-        // Get current timestamp
-        const now = new Date()
-        const timestamp = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-        
-        // Transform Railway API data into phone metrics format
-        setMetrics({
-          today: {
-            total: data.today.direct_qty,
-            lastWeek: 0, // TODO: Need historical data endpoint
-            twoWeeksAgo: 0, // TODO: Need historical data endpoint
-            threeWeeksAgo: 0, // TODO: Need historical data endpoint
-            timestamp
-          },
-          yesterday: {
-            total: data.yesterday.direct_qty,
-            priorYear: data.yesterday.py_qty,
-            change: data.yesterday.qty_change_pct
-          },
-          thisWeek: {
-            total: data.this_week.direct_qty,
-            priorYear: data.this_week.py_qty,
-            change: data.this_week.qty_change_pct
-          },
-          mtd: {
-            total: data.this_month.direct_qty,
-            priorYear: data.this_month.py_qty,
-            change: data.this_month.qty_change_pct
-          }
-        })
+      const [metricsResponse, hourlyResponse] = await Promise.all([
+        fetch(`${RAILWAY_API_URL}/metrics`),
+        fetch(`${RAILWAY_API_URL}/hourly-comparison`)
+      ])
+      
+      if (!metricsResponse.ok || !hourlyResponse.ok) {
+        throw new Error('Failed to fetch data')
       }
+      
+      const metricsData: MetricsResponse = await metricsResponse.json()
+      const hourlyData = await hourlyResponse.json()
+      
+      // Get current timestamp and hour
+      const now = new Date()
+      const timestamp = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      const currentHour = now.getHours()
+      
+      // Format hour for lookup (e.g., "4pm", "12pm")
+      let hourKey = ''
+      if (currentHour === 0) hourKey = '12am'
+      else if (currentHour < 12) hourKey = `${currentHour}am`
+      else if (currentHour === 12) hourKey = '12pm'
+      else hourKey = `${currentHour - 12}pm`
+      
+      // Find "at this time" sales for previous weeks
+      const periods = hourlyData.periods || []
+      const todayPeriod = periods.find((p: any) => p.period_label === 'Today')
+      const lastWeekPeriod = periods.find((p: any) => p.period_label === '1 Week Ago')
+      const twoWeeksPeriod = periods.find((p: any) => p.period_label === '2 Weeks Ago')
+      const threeWeeksPeriod = periods.find((p: any) => p.period_label === '3 Weeks Ago')
+      
+      const lastWeekAtTime = lastWeekPeriod?.hourly_sales?.[hourKey] || 0
+      const twoWeeksAtTime = twoWeeksPeriod?.hourly_sales?.[hourKey] || 0
+      const threeWeeksAtTime = threeWeeksPeriod?.hourly_sales?.[hourKey] || 0
+      
+      // Transform Railway API data into phone metrics format
+      setMetrics({
+        today: {
+          total: metricsData.today.direct_qty,
+          lastWeek: lastWeekAtTime,
+          twoWeeksAgo: twoWeeksAtTime,
+          threeWeeksAgo: threeWeeksAtTime,
+          timestamp
+        },
+        yesterday: {
+          total: metricsData.yesterday.direct_qty,
+          priorYear: metricsData.yesterday.py_qty,
+          change: metricsData.yesterday.qty_change_pct
+        },
+        thisWeek: {
+          total: metricsData.this_week.direct_qty,
+          priorYear: metricsData.this_week.py_qty,
+          change: metricsData.this_week.qty_change_pct
+        },
+        mtd: {
+          total: metricsData.this_month.direct_qty,
+          priorYear: metricsData.this_month.py_qty,
+          change: metricsData.this_month.qty_change_pct
+        }
+      })
       setLastRefresh(new Date())
     } catch (error) {
       console.error("Error fetching data:", error)
