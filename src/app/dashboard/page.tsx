@@ -2139,9 +2139,9 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium text-white/70 mb-1">Today @ {timeStr}</div>
                       <div className="text-7xl font-bold text-white mb-2">{formatNumber(metrics.today.direct_qty)}</div>
                       <div className="w-full space-y-0.5 text-sm px-2">
-                        <div className="flex justify-between"><span className="text-white/60">LW @ {timeStr}</span><span className="font-semibold text-white/80">{lastWeekSales}</span></div>
-                        <div className="flex justify-between"><span className="text-white/60">2WA @ {timeStr}</span><span className="font-semibold text-white/80">{twoWeeksSales}</span></div>
-                        <div className="flex justify-between"><span className="text-white/60">3WA @ {timeStr}</span><span className="font-semibold text-white/80">{threeWeeksSales}</span></div>
+                        <div className="flex justify-between"><span className="text-white/60">LW</span><span className="font-semibold text-white/80">{lastWeekSales}</span></div>
+                        <div className="flex justify-between"><span className="text-white/60">2WA</span><span className="font-semibold text-white/80">{twoWeeksSales}</span></div>
+                        <div className="flex justify-between"><span className="text-white/60">3WA</span><span className="font-semibold text-white/80">{threeWeeksSales}</span></div>
                       </div>
                     </div>
                   )
