@@ -15,10 +15,12 @@ import {
   BarChart3,
   TrendingUp,
   Search,
+  Smartphone,
 } from "lucide-react"
 
 const dashboards = [
   { name: "Home", href: "/", icon: Home, description: "Dashboard directory" },
+  { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
   { name: "Sales Snapshot", href: "/data", icon: Tv, description: "TV display - forecasts" },
   { name: "Dashboard", href: "/dashboard", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
   { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },

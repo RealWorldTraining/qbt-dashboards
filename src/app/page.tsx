@@ -13,6 +13,7 @@ import {
   BarChart3,
   Zap,
   Search,
+  Smartphone,
 } from "lucide-react"
 
 const dashboards = [
@@ -23,6 +24,14 @@ const dashboards = [
     description: "Real-time forecasts for the office TV",
     color: "from-cyan-500 to-blue-600",
     stats: "Today • Week • Month"
+  },
+  { 
+    name: "Phone", 
+    href: "/phone", 
+    icon: Smartphone, 
+    description: "Mobile-optimized sales dashboard for iPhone",
+    color: "from-slate-500 to-gray-600",
+    stats: "Today • Yesterday • Week • MTD"
   },
   { 
     name: "Dashboard", 
