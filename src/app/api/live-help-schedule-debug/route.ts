@@ -40,6 +40,23 @@ async function getGoogleCalendarClient() {
   return google.calendar({ version: 'v3', auth });
 }
 
+async function getCalendarEvents(calendar: any, calendarId: string, timeMin: Date, timeMax: Date) {
+  try {
+    const response = await calendar.events.list({
+      calendarId,
+      timeMin: timeMin.toISOString(),
+      timeMax: timeMax.toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+    });
+
+    return response.data.items || [];
+  } catch (error) {
+    console.error(`Error fetching calendar ${calendarId}:`, error);
+    return [];
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const calendar = await getGoogleCalendarClient();
