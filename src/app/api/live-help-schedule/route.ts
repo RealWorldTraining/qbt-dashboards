@@ -81,6 +81,9 @@ async function getCalendarEvents(calendar: any, calendarId: string, timeMin: Dat
 
 export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const debug = searchParams.get('debug') === 'true';
+    
     const calendar = await getGoogleCalendarClient();
     
     // Get current time in CST
@@ -89,6 +92,30 @@ export async function GET(request: NextRequest) {
     const nowCST = new Date(nowCSTString);
     
     const currentHour = nowCST.getHours();
+    
+    // Debug mode: return raw calendar data
+    if (debug) {
+      const endTimeUTC = new Date(nowUTC.getTime() + 12 * 60 * 60 * 1000);
+      const [downhillEvents, orchardEvents, backupEvents] = await Promise.all([
+        getCalendarEvents(calendar, CALENDARS.downhill, nowUTC, endTimeUTC),
+        getCalendarEvents(calendar, CALENDARS.orchard, nowUTC, endTimeUTC),
+        getCalendarEvents(calendar, CALENDARS.backup, nowUTC, endTimeUTC)
+      ]);
+      
+      return NextResponse.json({
+        serverTime: {
+          utc: nowUTC.toISOString(),
+          cstString: nowCSTString,
+          cstParsed: nowCST.toISOString(),
+          currentHourCST: currentHour
+        },
+        calendars: {
+          downhill: { id: CALENDARS.downhill, count: downhillEvents.length, events: downhillEvents },
+          orchard: { id: CALENDARS.orchard, count: orchardEvents.length, events: orchardEvents },
+          backup: { id: CALENDARS.backup, count: backupEvents.length, events: backupEvents }
+        }
+      });
+    }
     
     // Determine how many hours to show based on current time
     // Open 7:30 AM - 5:30 PM CST
