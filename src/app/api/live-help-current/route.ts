@@ -375,6 +375,63 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(trainerStats);
     }
     
+    if (action === 'top-attendees') {
+      // Top 5 attendees by total time today
+      let allTodayData: any[] = [];
+      
+      for (const [roomEmoji, roomDisplay] of Object.entries(ROOMS)) {
+        const roomData = await getRoomData(sheets, roomEmoji);
+        const todayRoomData = roomData
+          .filter(row => row.date === today)
+          .map(row => ({ ...row, room: roomDisplay }));
+        allTodayData = allTodayData.concat(todayRoomData);
+      }
+      
+      // Calculate total time per attendee
+      const attendeeTotals: Record<string, number> = {};
+      
+      for (const row of allTodayData) {
+        const name = row.attendee_name ? row.attendee_name.toString().trim() : '';
+        if (!name) continue;
+        
+        const entered = row.entered ? row.entered.toString() : '';
+        const left = row.left ? row.left.toString() : '';
+        
+        let duration = 0;
+        if (entered) {
+          if (left && left.trim() !== '') {
+            // Completed session - calculate duration
+            duration = calculateDurationMinutes(entered, left, row.date);
+          } else {
+            // Still in room - calculate from entered to now
+            const enteredDt = parseTime(entered, row.date);
+            const now = new Date();
+            if (enteredDt) {
+              const deltaMs = now.getTime() - enteredDt.getTime();
+              duration = Math.max(0, deltaMs / (1000 * 60));
+            }
+          }
+        }
+        
+        if (!attendeeTotals[name]) {
+          attendeeTotals[name] = 0;
+        }
+        attendeeTotals[name] += duration;
+      }
+      
+      // Sort and get top 5
+      const top5 = Object.entries(attendeeTotals)
+        .map(([name, minutes]) => ({
+          name,
+          minutes: Math.round(minutes * 10) / 10,
+          hours: Math.round((minutes / 60) * 100) / 100
+        }))
+        .sort((a, b) => b.minutes - a.minutes)
+        .slice(0, 5);
+      
+      return NextResponse.json(top5);
+    }
+    
     return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
     
   } catch (error) {

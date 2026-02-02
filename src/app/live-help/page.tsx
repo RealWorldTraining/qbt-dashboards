@@ -34,6 +34,12 @@ interface TrainerPerformance {
   };
 }
 
+interface AttendeeTime {
+  name: string;
+  minutes: number;
+  hours: number;
+}
+
 interface CalendarEvent {
   summary: string;
   start: string;
@@ -70,6 +76,7 @@ export default function LiveHelpDashboard() {
     help_sessions: 0
   });
   const [trainerPerformance, setTrainerPerformance] = useState<TrainerPerformance>({});
+  const [topAttendees, setTopAttendees] = useState<AttendeeTime[]>([]);
   const [schedules, setSchedules] = useState<HourSchedule[]>([]);
   
   const [loading, setLoading] = useState(true);
@@ -111,6 +118,17 @@ export default function LiveHelpDashboard() {
     }
   }, []);
 
+  const fetchTopAttendees = useCallback(async () => {
+    try {
+      const response = await fetch('/api/live-help-current?action=top-attendees');
+      if (!response.ok) throw new Error('Failed to fetch top attendees');
+      const data = await response.json();
+      setTopAttendees(data);
+    } catch (err) {
+      console.error('Failed to fetch top attendees:', err);
+    }
+  }, []);
+
   const fetchSchedules = useCallback(async () => {
     try {
       const response = await fetch('/api/live-help-schedule');
@@ -131,6 +149,7 @@ export default function LiveHelpDashboard() {
         fetchCurrentStatus(),
         fetchTodayStats(),
         fetchTrainerPerformance(),
+        fetchTopAttendees(),
         fetchSchedules()
       ]);
     } catch (err) {
@@ -139,7 +158,7 @@ export default function LiveHelpDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [fetchCurrentStatus, fetchTodayStats, fetchTrainerPerformance, fetchSchedules]);
+  }, [fetchCurrentStatus, fetchTodayStats, fetchTrainerPerformance, fetchTopAttendees, fetchSchedules]);
 
   // Initial fetch
   useEffect(() => {
@@ -170,6 +189,13 @@ export default function LiveHelpDashboard() {
       setTimeout(() => updateHourlyChart(todayStats), 100);
     }
   }, [todayStats]);
+
+  // Update top attendees chart when data changes
+  useEffect(() => {
+    if (topAttendees && topAttendees.length > 0) {
+      setTimeout(() => updateTopAttendeesChart(topAttendees), 100);
+    }
+  }, [topAttendees]);
 
   const updateHourlyChart = (data: TodayStats) => {
     if (typeof window === 'undefined' || !window.Chart) return;
@@ -225,6 +251,60 @@ export default function LiveHelpDashboard() {
     }
   };
 
+  const updateTopAttendeesChart = (data: AttendeeTime[]) => {
+    if (typeof window === 'undefined' || !window.Chart) return;
+    
+    const Chart = window.Chart;
+    
+    // Destroy existing chart
+    if (chartInstances.current.topAttendees) {
+      chartInstances.current.topAttendees.destroy();
+    }
+    
+    const ctx = document.getElementById('topAttendeesChart') as HTMLCanvasElement;
+    if (ctx) {
+      chartInstances.current.topAttendees = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.map(a => a.name),
+          datasets: [{
+            label: 'Total Time (hours)',
+            data: data.map(a => a.hours),
+            backgroundColor: '#4CAF50',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const hours = context.parsed.x;
+                  const minutes = Math.round(hours * 60);
+                  return `${hours.toFixed(2)} hours (${minutes} minutes)`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { 
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              title: { display: true, text: 'Total Time (hours)', color: '#888' }
+            },
+            y: { 
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+  };
+
   // Calculate totals across all rooms
   const totalWaiting = Object.values(currentStatus).reduce((sum, room) => sum + room.waiting.length, 0);
   const totalBeingHelped = Object.values(currentStatus).reduce((sum, room) => sum + room.being_helped.length, 0);
@@ -242,6 +322,9 @@ export default function LiveHelpDashboard() {
         chartsInitialized.current = true;
         if (todayStats.hourly_logins.length > 0) {
           updateHourlyChart(todayStats);
+        }
+        if (topAttendees.length > 0) {
+          updateTopAttendeesChart(topAttendees);
         }
       }} />
       <div className="min-h-screen bg-gradient-to-br from-[#0f0f23] to-[#1a1a2e] text-white">
@@ -363,6 +446,32 @@ export default function LiveHelpDashboard() {
                       ))}
                     {Object.keys(trainerPerformance).length === 0 && (
                       <p className="text-gray-400 text-center py-8">No trainer sessions yet today</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Top 5 Attendees by Total Time */}
+              <div className="bg-white/5 rounded-2xl p-6 border border-white/10 mb-8">
+                <h3 className="text-xl font-semibold mb-5">🏆 Top 5 Attendees by Total Time Today</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div style={{ height: '350px' }} className="relative">
+                    <canvas id="topAttendeesChart"></canvas>
+                  </div>
+                  <div className="space-y-3">
+                    {topAttendees.map((attendee, idx) => (
+                      <div key={idx} className="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/10">
+                        <div>
+                          <div className="font-medium">#{idx + 1} {attendee.name}</div>
+                          <div className="text-xs text-gray-400">{Math.round(attendee.minutes)} minutes</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-400">{attendee.hours}h</div>
+                        </div>
+                      </div>
+                    ))}
+                    {topAttendees.length === 0 && (
+                      <p className="text-gray-400 text-center py-8">No attendance data yet today</p>
                     )}
                   </div>
                 </div>
