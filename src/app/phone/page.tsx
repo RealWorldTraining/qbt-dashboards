@@ -255,7 +255,7 @@ export default function PhoneDashboard() {
 
       {/* Hourly Comparison - 2pm to EOD */}
       <div className="bg-[#1D1D1F] rounded-2xl p-4 mb-6 overflow-x-auto">
-        <h3 className="text-white font-semibold text-sm mb-3">📊 Hourly Sales (2pm-EOD)</h3>
+        <h3 className="text-white font-semibold text-sm mb-3">Hourly Sales (2pm-EOD)</h3>
         <div className="text-xs">
           <table className="w-full">
             <thead>
