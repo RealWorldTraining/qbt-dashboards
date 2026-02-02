@@ -3,66 +3,36 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Script from 'next/script';
 
-interface TrainerData {
+interface PersonStatus {
   name: string;
-  sessions: number;
-  avg: number;
-  median: number;
-  quick: number;
-  long: number;
-  quickPct: number;
+  trainer?: string;
+  entered?: string;
+  help_started?: string;
+  help_duration_minutes?: number;
+  wait_duration_minutes?: number;
 }
 
-interface ApiResponse {
-  data: TrainerData[];
-  summary: {
-    totalSessions: number;
-    avgDuration: number;
-    trainerCount: number;
-  };
-  dateRange: {
-    start: string;
-    end: string;
-    preset: string;
-  };
-  error?: string;
+interface RoomStatus {
+  being_helped: PersonStatus[];
+  waiting: PersonStatus[];
+  total_current: number;
 }
 
-// Static data for charts (these don't change with date filters for now)
-const monthlyData = {
-  labels: ["Feb 24", "Mar 24", "Apr 24", "May 24", "Jun 24", "Jul 24", "Aug 24", "Sep 24", "Oct 24", "Nov 24", "Dec 24", "Jan 25", "Feb 25", "Mar 25", "Apr 25", "May 25", "Jun 25", "Jul 25", "Aug 25", "Sep 25", "Oct 25", "Nov 25", "Dec 25", "Jan 26"],
-  values: [2852, 2519, 2223, 2246, 2014, 2331, 2375, 2162, 2088, 2019, 2187, 3253, 2603, 2547, 2337, 2078, 2098, 2368, 2130, 2145, 1954, 1713, 2000, 2733]
-};
+interface TodayStats {
+  total_visits: number;
+  completed_visits: number;
+  average_help_duration_minutes: number;
+  hourly_logins: { hour: number; logins: number }[];
+  help_sessions: number;
+}
 
-const dowData = {
-  labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-  values: [12388, 13644, 13444, 12842, 11254, 0, 0]
-};
-
-const roomData = {
-  labels: ['Downhill', 'Orchard', 'Llamas'],
-  values: [28254, 21564, 368]
-};
-
-const topicsData = {
-  labels: ["Reconciliation", "Banking (Bank Feeds)", "Edit/Void Txns", "Bookkeeping", "Lists Org", "Open A/R", "Payroll Taxes/Liabilities", "Uncategorized", "Loans/Assets", "Open A/P", "QBPayments", "Lost & Found", "Undeposited Funds", "1099/Contractors", "Training Recommendations"],
-  values: [6589, 3656, 2707, 2187, 2139, 1694, 1680, 1671, 1346, 1065, 1062, 1053, 1042, 1025, 1019]
-};
-
-const yearlyData = {
-  labels: ["2023", "2024", "2025", "2026"],
-  values: [5409, 28204, 27226, 2733]
-};
-
-// Static metrics (all-time)
-const helpedSessions = 53804;
-const noHelpRate = 15.4;
-const busiestDay = "Tuesday";
-const peakMonth = "Jan 2025";
-const peakMonthCount = 3253;
-
-type SortKey = 'name' | 'sessions' | 'avg' | 'median' | 'quick' | 'long' | 'quickPct';
-type SortDir = 'asc' | 'desc';
+interface TrainerPerformance {
+  [trainerName: string]: {
+    sessions: number;
+    total_duration: number;
+    avg_duration: number;
+  };
+}
 
 declare global {
   interface Window {
@@ -73,349 +43,397 @@ declare global {
 
 export default function LiveHelpDashboard() {
   const chartsInitialized = useRef(false);
-  const [trainerData, setTrainerData] = useState<TrainerData[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>('sessions');
-  const [sortDir, setSortDir] = useState<SortDir>('desc');
-  const [datePreset, setDatePreset] = useState('all-time');
-  const [customStart, setCustomStart] = useState('');
-  const [customEnd, setCustomEnd] = useState('');
+  const chartInstances = useRef<Record<string, any>>({});
+  const intervalRef = useRef<NodeJS.Timeout>();
+  
+  const [currentStatus, setCurrentStatus] = useState<Record<string, RoomStatus>>({});
+  const [todayStats, setTodayStats] = useState<TodayStats>({
+    total_visits: 0,
+    completed_visits: 0,
+    average_help_duration_minutes: 0,
+    hourly_logins: [],
+    help_sessions: 0
+  });
+  const [trainerPerformance, setTrainerPerformance] = useState<TrainerPerformance>({});
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [summary, setSummary] = useState({ totalSessions: 63572, avgDuration: 8.4, trainerCount: 12 });
-  const [dateRangeDisplay, setDateRangeDisplay] = useState('');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const fetchData = useCallback(async (preset: string, start?: string, end?: string) => {
+  const fetchCurrentStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/live-help-current?action=current-status');
+      if (!response.ok) throw new Error('Failed to fetch current status');
+      const data = await response.json();
+      setCurrentStatus(data);
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error('Failed to fetch current status:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch current status');
+    }
+  }, []);
+
+  const fetchTodayStats = useCallback(async () => {
+    try {
+      const response = await fetch('/api/live-help-current?action=today-stats');
+      if (!response.ok) throw new Error('Failed to fetch today stats');
+      const data = await response.json();
+      setTodayStats(data);
+      
+      // Update hourly chart
+      setTimeout(() => updateHourlyChart(data), 100);
+    } catch (err) {
+      console.error('Failed to fetch today stats:', err);
+    }
+  }, []);
+
+  const fetchTrainerPerformance = useCallback(async () => {
+    try {
+      const response = await fetch('/api/live-help-current?action=trainer-performance');
+      if (!response.ok) throw new Error('Failed to fetch trainer performance');
+      const data = await response.json();
+      setTrainerPerformance(data);
+    } catch (err) {
+      console.error('Failed to fetch trainer performance:', err);
+    }
+  }, []);
+
+  const fetchAllData = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      let url = `/api/live-help?preset=${preset}`;
-      if (preset === 'custom' && start && end) {
-        url += `&start=${start}&end=${end}`;
-      }
-      
-      const response = await fetch(url);
-      const result: ApiResponse = await response.json();
-      
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      
-      setTrainerData(result.data);
-      setSummary(result.summary);
-      
-      // Format date range display
-      const startDate = new Date(result.dateRange.start);
-      const endDate = new Date(result.dateRange.end);
-      setDateRangeDisplay(
-        `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
-      );
+      await Promise.all([
+        fetchCurrentStatus(),
+        fetchTodayStats(),
+        fetchTrainerPerformance()
+      ]);
     } catch (err) {
       console.error('Failed to fetch data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchCurrentStatus, fetchTodayStats, fetchTrainerPerformance]);
 
   // Initial fetch
   useEffect(() => {
-    fetchData('all-time');
-  }, [fetchData]);
+    fetchAllData();
+  }, [fetchAllData]);
 
-  // Fetch when preset changes (except for custom - wait for Apply button)
+  // Set up auto-refresh
   useEffect(() => {
-    if (datePreset !== 'custom') {
-      fetchData(datePreset);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
-  }, [datePreset, fetchData]);
+    
+    // Refresh every 30 seconds
+    intervalRef.current = setInterval(() => {
+      fetchAllData();
+    }, 30000);
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [fetchAllData]);
 
-  const handleApplyCustomRange = () => {
-    if (customStart && customEnd) {
-      fetchData('custom', customStart, customEnd);
-    }
-  };
-
-  useEffect(() => {
-    if (chartsInitialized.current) return;
-    if (typeof window !== 'undefined' && window.Chart) {
-      initCharts();
-      chartsInitialized.current = true;
-    }
-  }, []);
-
-  // Sort data when sort key/direction changes
-  const sortedData = [...trainerData].sort((a, b) => {
-    const aVal = a[sortKey];
-    const bVal = b[sortKey];
-    if (typeof aVal === 'string' && typeof bVal === 'string') {
-      return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-    }
-    return sortDir === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
-  });
-
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDir('desc');
-    }
-  };
-
-  const SortIcon = ({ columnKey }: { columnKey: SortKey }) => {
-    if (sortKey !== columnKey) return <span className="ml-1 text-gray-600">↕</span>;
-    return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
-  };
-
-  const initCharts = () => {
+  const updateHourlyChart = (data: TodayStats) => {
+    if (typeof window === 'undefined' || !window.Chart) return;
+    
     const Chart = window.Chart;
-    Chart.defaults.color = '#888';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
-
-    const monthlyCtx = document.getElementById('monthlyChart') as HTMLCanvasElement;
-    if (monthlyCtx) {
-      new Chart(monthlyCtx, {
-        type: 'line',
-        data: { labels: monthlyData.labels, datasets: [{ label: 'Sessions', data: monthlyData.values, borderColor: '#00d9ff', backgroundColor: 'rgba(0,217,255,0.1)', fill: true, tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
-      });
+    
+    // Destroy existing chart
+    if (chartInstances.current.hourly) {
+      chartInstances.current.hourly.destroy();
     }
-
-    const dowCtx = document.getElementById('dowChart') as HTMLCanvasElement;
-    if (dowCtx) {
-      new Chart(dowCtx, {
+    
+    const ctx = document.getElementById('hourlyChart') as HTMLCanvasElement;
+    if (ctx) {
+      // Get current hour for highlighting
+      const currentHour = new Date().getHours();
+      
+      chartInstances.current.hourly = new Chart(ctx, {
         type: 'bar',
-        data: { labels: dowData.labels, datasets: [{ data: dowData.values, backgroundColor: dowData.values.map((_, i) => i === 1 ? '#00ff88' : '#00d9ff'), borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
-      });
-    }
-
-    const roomCtx = document.getElementById('roomChart') as HTMLCanvasElement;
-    if (roomCtx) {
-      new Chart(roomCtx, {
-        type: 'doughnut',
-        data: { labels: roomData.labels, datasets: [{ data: roomData.values, backgroundColor: ['#00d9ff', '#00ff88', '#ffd700'], borderWidth: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 20 } } } }
-      });
-    }
-
-    const trainerCtx = document.getElementById('trainerChart') as HTMLCanvasElement;
-    if (trainerCtx) {
-      new Chart(trainerCtx, {
-        type: 'bar',
-        data: { labels: trainerData.slice(0, 10).map(t => t.name), datasets: [{ data: trainerData.slice(0, 10).map(t => t.sessions), backgroundColor: '#00d9ff', borderRadius: 8 }] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { display: false } } } }
-      });
-    }
-
-    const topicsCtx = document.getElementById('topicsChart') as HTMLCanvasElement;
-    if (topicsCtx) {
-      new Chart(topicsCtx, {
-        type: 'bar',
-        data: { labels: topicsData.labels, datasets: [{ data: topicsData.values, backgroundColor: '#00ff88', borderRadius: 8 }] },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { display: false } } } }
-      });
-    }
-
-    const yearlyCtx = document.getElementById('yearlyChart') as HTMLCanvasElement;
-    if (yearlyCtx) {
-      new Chart(yearlyCtx, {
-        type: 'bar',
-        data: { labels: yearlyData.labels, datasets: [{ data: yearlyData.values, backgroundColor: ['#ff6b6b', '#00d9ff', '#00ff88', '#ffd700'], borderRadius: 8 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
+        data: {
+          labels: data.hourly_logins.map(h => {
+            const hour12 = h.hour === 0 ? 12 : h.hour > 12 ? h.hour - 12 : h.hour;
+            const ampm = h.hour < 12 ? 'AM' : 'PM';
+            return `${hour12}${ampm}`;
+          }),
+          datasets: [{
+            label: 'Logins',
+            data: data.hourly_logins.map(h => h.logins),
+            backgroundColor: data.hourly_logins.map(h => 
+              h.hour === currentHour ? '#00ff88' : '#00d9ff'
+            ),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { 
+              beginAtZero: true, 
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              title: { display: true, text: 'Number of People', color: '#888' }
+            },
+            x: { 
+              grid: { display: false },
+              title: { display: true, text: 'Hour of Day', color: '#888' }
+            }
+          }
+        }
       });
     }
   };
+
+  // Calculate totals across all rooms
+  const totalWaiting = Object.values(currentStatus).reduce((sum, room) => sum + room.waiting.length, 0);
+  const totalBeingHelped = Object.values(currentStatus).reduce((sum, room) => sum + room.being_helped.length, 0);
+  const totalCurrent = totalWaiting + totalBeingHelped;
+
+  // Get longest wait time
+  const allWaiting = Object.values(currentStatus).flatMap(room => room.waiting);
+  const longestWait = allWaiting.length > 0 
+    ? Math.max(...allWaiting.map(p => p.wait_duration_minutes || 0))
+    : 0;
 
   return (
     <>
-      <Script src="https://cdn.jsdelivr.net/npm/chart.js" onLoad={() => initCharts()} />
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white">
-        <div className="max-w-[1600px] mx-auto p-5">
-          <header className="text-center py-8 border-b border-white/10 mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent mb-2">
-              📊 Live Help Dashboard
+      <Script src="https://cdn.jsdelivr.net/npm/chart.js" onLoad={() => {
+        chartsInitialized.current = true;
+        if (todayStats.hourly_logins.length > 0) {
+          updateHourlyChart(todayStats);
+        }
+      }} />
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0f23] to-[#1a1a2e] text-white">
+        <div className="max-w-[1800px] mx-auto p-5">
+          <header className="text-center py-6 border-b border-green-500/30 mb-8">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent mb-2 flex items-center justify-center gap-3">
+              <img src="/qb-logo.png" alt="QuickBooks" className="h-10" />
+              🔴 Live Help Dashboard
             </h1>
             <p className="text-gray-400 text-sm">
-              QuickBooksTraining.com | Data: 2023-2026 | {summary.totalSessions.toLocaleString()} Total Sessions | Live Data
+              Real-time status • Updates every 30 seconds • Live Now
+              {lastUpdated && (
+                <span className="ml-3">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
             </p>
           </header>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
-            <MetricCard label="Total Sessions" value={summary.totalSessions.toLocaleString()} subtext="All attendees" />
-            <MetricCard label="Helped Sessions" value={helpedSessions.toLocaleString()} subtext="With trainer" />
-            <MetricCard label="No-Help Rate" value={`${noHelpRate}%`} subtext="Left without help" />
-            <MetricCard label="Avg Duration" value={`${summary.avgDuration} min`} subtext="Per session" />
-            <MetricCard label="Busiest Day" value={busiestDay} subtext="Highest volume" />
-            <MetricCard label="Peak Month" value={peakMonth} subtext={`${peakMonthCount.toLocaleString()} sessions`} />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-5 mb-8">
-            <ChartCard title="📈 Monthly Session Volume (Last 24 Months)"><canvas id="monthlyChart"></canvas></ChartCard>
-            <ChartCard title="📆 Sessions by Day of Week"><canvas id="dowChart"></canvas></ChartCard>
-            <ChartCard title="🏠 Sessions by Room"><canvas id="roomChart"></canvas></ChartCard>
-            <ChartCard title="👥 Top Trainers by Volume"><canvas id="trainerChart"></canvas></ChartCard>
-          </div>
-
-          {/* Trainer Rankings Section */}
-          <h2 className="text-2xl font-semibold mt-10 mb-5 pb-2 border-b-2 border-cyan-500/30">
-            👥 Trainer Performance Rankings
-          </h2>
-          
-          {/* Date Filter */}
-          <div className="bg-white/5 rounded-2xl p-4 border border-white/10 mb-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Time Period:</label>
-                <select 
-                  value={datePreset}
-                  onChange={(e) => setDatePreset(e.target.value)}
-                  className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
-                >
-                  <option value="all-time">All Time</option>
-                  <option value="this-week">This Week</option>
-                  <option value="last-week">Last Week</option>
-                  <option value="this-month">This Month</option>
-                  <option value="last-month">Last Month</option>
-                  <option value="this-quarter">This Quarter</option>
-                  <option value="last-quarter">Last Quarter</option>
-                  <option value="this-year">This Year</option>
-                  <option value="last-year">Last Year</option>
-                  <option value="custom">Custom Range</option>
-                </select>
-              </div>
-              
-              {datePreset === 'custom' && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={customStart}
-                    onChange={(e) => setCustomStart(e.target.value)}
-                    className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
-                  />
-                  <span className="text-gray-400">to</span>
-                  <input
-                    type="date"
-                    value={customEnd}
-                    onChange={(e) => setCustomEnd(e.target.value)}
-                    className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500"
-                  />
-                  <button 
-                    onClick={handleApplyCustomRange}
-                    disabled={!customStart || !customEnd}
-                    className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-600 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                  >
-                    Apply
-                  </button>
-                </div>
-              )}
-              
-              <div className="ml-auto text-sm text-gray-400">
-                {loading ? (
-                  <span className="animate-pulse">Loading...</span>
-                ) : error ? (
-                  <span className="text-red-400">Error: {error}</span>
-                ) : (
-                  dateRangeDisplay || 'Showing all data'
-                )}
-              </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin inline-block w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full mb-4"></div>
+              <p className="text-gray-400">Loading live data...</p>
             </div>
-          </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-400">
+              <p>Error: {error}</p>
+              <button 
+                onClick={() => fetchAllData()}
+                className="mt-4 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Live Status Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+                <StatusCard 
+                  label="People Waiting" 
+                  value={totalWaiting} 
+                  subtext="Across all rooms"
+                  color="yellow"
+                  pulse={totalWaiting > 0}
+                />
+                <StatusCard 
+                  label="Being Helped" 
+                  value={totalBeingHelped} 
+                  subtext="Currently in session"
+                  color="green"
+                />
+                <StatusCard 
+                  label="Longest Wait" 
+                  value={`${Math.round(longestWait)} min`} 
+                  subtext="Max wait time"
+                  color={longestWait > 15 ? "red" : longestWait > 5 ? "yellow" : "green"}
+                />
+                <StatusCard 
+                  label="Today's Visits" 
+                  value={todayStats.total_visits} 
+                  subtext={`${todayStats.help_sessions} helped`}
+                  color="blue"
+                />
+              </div>
 
-          {/* Trainer Table */}
-          <div className="bg-white/5 rounded-2xl p-6 border border-white/10 overflow-x-auto">
-            {loading ? (
-              <div className="text-center py-8 text-gray-400">
-                <div className="animate-spin inline-block w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full mb-4"></div>
-                <p>Loading trainer data...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-8 text-red-400">
-                <p>Failed to load data: {error}</p>
-                <button 
-                  onClick={() => fetchData(datePreset, customStart, customEnd)}
-                  className="mt-4 bg-cyan-500 hover:bg-cyan-600 px-4 py-2 rounded-lg text-sm font-semibold"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-cyan-400 text-sm uppercase tracking-wider">
-                    <th className="p-3 bg-cyan-500/10 rounded-l-lg">Rank</th>
-                    <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => handleSort('name')}>
-                      Trainer <SortIcon columnKey="name" />
-                    </th>
-                    <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => handleSort('sessions')}>
-                      Sessions <SortIcon columnKey="sessions" />
-                    </th>
-                    <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => handleSort('avg')}>
-                      Avg Duration <SortIcon columnKey="avg" />
-                    </th>
-                    <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => handleSort('median')}>
-                      Median <SortIcon columnKey="median" />
-                    </th>
-                    <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => handleSort('quick')}>
-                      Quick (&lt;5m) <SortIcon columnKey="quick" />
-                    </th>
-                    <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors rounded-r-lg" onClick={() => handleSort('long')}>
-                      Long (&gt;20m) <SortIcon columnKey="long" />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedData.map((t, i) => (
-                    <tr key={t.name} className="border-b border-white/5 hover:bg-white/5">
-                      <td className={`p-3 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-400' : ''}`}>
-                        {i + 1}
-                      </td>
-                      <td className="p-3 font-semibold">{t.name}</td>
-                      <td className="p-3">{t.sessions.toLocaleString()}</td>
-                      <td className="p-3">{t.avg} min</td>
-                      <td className="p-3">{t.median} min</td>
-                      <td className="p-3">{t.quick.toLocaleString()} ({t.quickPct}%)</td>
-                      <td className="p-3">{t.long.toLocaleString()}</td>
-                    </tr>
+              {/* Room Status - Real-time */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold mb-5 pb-2 border-b-2 border-green-500/30 flex items-center gap-2">
+                  🏠 Room Status <span className="text-sm text-green-400 font-normal">● LIVE</span>
+                </h2>
+                
+                <div className="grid md:grid-cols-3 gap-5">
+                  {Object.entries(currentStatus).map(([roomName, room]) => (
+                    <RoomCard key={roomName} roomName={roomName} room={room} />
                   ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                </div>
+              </div>
 
-          <h2 className="text-2xl font-semibold mt-10 mb-5 pb-2 border-b-2 border-cyan-500/30">
-            🏷️ Top Question Topics
-          </h2>
-          <div className="grid md:grid-cols-2 gap-5">
-            <ChartCard title="Most Common Topics" height="400px"><canvas id="topicsChart"></canvas></ChartCard>
-            <ChartCard title="📅 Yearly Comparison"><canvas id="yearlyChart"></canvas></ChartCard>
-          </div>
+              {/* Today's Activity */}
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-xl font-semibold mb-5 flex items-center gap-2">
+                    📊 Today's Activity
+                    <span className="text-sm text-gray-400">({todayStats.total_visits} total visits)</span>
+                  </h3>
+                  <div style={{ height: '300px' }} className="relative">
+                    <canvas id="hourlyChart"></canvas>
+                  </div>
+                </div>
 
-          <footer className="text-center text-gray-500 text-sm mt-12 pb-8">
-            Data sourced from Live Help attendance logs | Connected to Google Sheets
-          </footer>
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-xl font-semibold mb-5">⚡ Today's Trainer Performance</h3>
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                    {Object.entries(trainerPerformance)
+                      .sort(([,a], [,b]) => b.sessions - a.sessions)
+                      .map(([name, stats]) => (
+                        <TrainerRow key={name} name={name} stats={stats} />
+                      ))}
+                    {Object.keys(trainerPerformance).length === 0 && (
+                      <p className="text-gray-400 text-center py-8">No trainer sessions yet today</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <footer className="text-center text-gray-500 text-sm mt-12 pb-8">
+                🔴 Live data from Google Sheets • Real-time room status • Auto-refreshes every 30 seconds
+              </footer>
+            </>
+          )}
         </div>
       </div>
     </>
   );
 }
 
-function MetricCard({ label, value, subtext }: { label: string; value: string; subtext: string }) {
+function StatusCard({ 
+  label, 
+  value, 
+  subtext, 
+  color = "blue", 
+  pulse = false 
+}: { 
+  label: string; 
+  value: string | number; 
+  subtext?: string; 
+  color?: "green" | "yellow" | "red" | "blue";
+  pulse?: boolean;
+}) {
+  const colorClasses = {
+    green: 'border-green-500/50 from-green-400 to-cyan-400',
+    yellow: 'border-yellow-500/50 from-yellow-400 to-orange-400',
+    red: 'border-red-500/50 from-red-400 to-pink-400',
+    blue: 'border-blue-500/50 from-blue-400 to-cyan-400'
+  };
+
   return (
-    <div className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:transform hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/20 transition-all">
+    <div className={`bg-white/5 rounded-2xl p-6 border ${colorClasses[color].split(' ')[0]} hover:transform hover:-translate-y-1 hover:shadow-lg transition-all ${pulse ? 'animate-pulse' : ''}`}>
       <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">{label}</div>
-      <div className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent">{value}</div>
-      <div className="text-xs text-gray-500 mt-1">{subtext}</div>
+      <div className={`text-3xl font-bold bg-gradient-to-r ${colorClasses[color].substring(colorClasses[color].indexOf('from-'))} bg-clip-text text-transparent`}>
+        {value}
+      </div>
+      {subtext && <div className="text-xs text-gray-500 mt-1">{subtext}</div>}
     </div>
   );
 }
 
-function ChartCard({ title, children, height = '300px' }: { title: string; children: React.ReactNode; height?: string }) {
+function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
+  const isEmpty = room.total_current === 0;
+  const roomEmojis: Record<string, string> = {
+    'Downhill': '🌋',
+    'Orchard': '🌳', 
+    'Llamas': '🦙'
+  };
+
   return (
-    <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-      <h3 className="text-lg font-semibold mb-5">{title}</h3>
-      <div style={{ height }} className="relative">{children}</div>
+    <div className={`bg-white/5 rounded-2xl p-6 border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
+      <h4 className="text-lg font-semibold mb-4 flex items-center justify-between">
+        <span>{roomEmojis[roomName]} {roomName}</span>
+        <span className={`text-sm px-2 py-1 rounded-full ${
+          isEmpty ? 'bg-gray-700 text-gray-400' : 'bg-green-900 text-green-300'
+        }`}>
+          {room.total_current} people
+        </span>
+      </h4>
+
+      {isEmpty ? (
+        <p className="text-gray-400 text-center py-6">No one currently in room</p>
+      ) : (
+        <div className="space-y-4">
+          {/* Being Helped */}
+          {room.being_helped.length > 0 && (
+            <div>
+              <h5 className="text-sm font-medium text-green-400 mb-2">
+                💬 Being Helped ({room.being_helped.length})
+              </h5>
+              <div className="space-y-1">
+                {room.being_helped.map((person, idx) => (
+                  <div key={idx} className="text-sm bg-green-900/20 rounded p-2 border border-green-500/30">
+                    <div className="font-medium">{person.name}</div>
+                    <div className="text-xs text-gray-400">
+                      with {person.trainer} • {Math.round(person.help_duration_minutes || 0)} min
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Waiting */}
+          {room.waiting.length > 0 && (
+            <div>
+              <h5 className="text-sm font-medium text-yellow-400 mb-2">
+                ⏳ Waiting ({room.waiting.length})
+              </h5>
+              <div className="space-y-1">
+                {room.waiting.map((person, idx) => (
+                  <div key={idx} className="text-sm bg-yellow-900/20 rounded p-2 border border-yellow-500/30">
+                    <div className="font-medium">{person.name}</div>
+                    <div className="text-xs text-gray-400">
+                      waiting {Math.round(person.wait_duration_minutes || 0)} min
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TrainerRow({ name, stats }: { name: string; stats: { sessions: number; total_duration: number; avg_duration: number } }) {
+  return (
+    <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/10">
+      <div>
+        <div className="font-medium">{name}</div>
+        <div className="text-xs text-gray-400">{stats.sessions} sessions today</div>
+      </div>
+      <div className="text-right">
+        <div className="text-lg font-semibold text-cyan-400">{stats.avg_duration} min</div>
+        <div className="text-xs text-gray-400">avg duration</div>
+      </div>
     </div>
   );
 }

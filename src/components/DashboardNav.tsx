@@ -23,6 +23,8 @@ const dashboards = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
   { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },
   { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
+  { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
+  { name: "Live Help Archive", href: "/live-help-archive", icon: BarChart3, description: "Historical trainer data" },
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
   { name: "Sales", href: "/sales", icon: DollarSign, description: "Sales analytics" },
   { name: "Team", href: "/team", icon: Users, description: "Team performance" },
