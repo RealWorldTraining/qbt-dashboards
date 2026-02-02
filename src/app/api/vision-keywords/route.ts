@@ -9,7 +9,10 @@ export async function GET() {
     // Load credentials from environment variable (Vercel) or local file (dev)
     let credentials;
     if (process.env.GOOGLE_SHEETS_CREDENTIALS) {
-      credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+      // Vercel stores credentials as base64-encoded JSON
+      credentials = JSON.parse(
+        Buffer.from(process.env.GOOGLE_SHEETS_CREDENTIALS, 'base64').toString('utf-8')
+      );
     } else {
       const fs = require('fs');
       const credsPath = process.env.HOME + '/clawd/.secrets/google-sheets.json';
