@@ -199,7 +199,7 @@ export default function PhoneDashboard() {
           <div className="text-white text-6xl font-bold mb-4">{metrics.today.total}</div>
           <div className="space-y-1.5">
             <div className="text-sm text-center">
-              <span className="text-gray-400">LW</span>
+              <span className="text-gray-400">1WA</span>
               <span className="text-white font-medium ml-2">{metrics.today.lastWeek}</span>
             </div>
             <div className="text-sm text-center">
@@ -305,7 +305,7 @@ export default function PhoneDashboard() {
                       <td className="text-center py-2 px-1 font-semibold text-white bg-[#2D2D2F]">{hourlyData?.todayEOD ?? '-'}</td>
                     </tr>
                     <tr className="border-b border-white/5">
-                      <td className="py-2 px-2 text-white/60 bg-[#1D1D1F]">LW</td>
+                      <td className="py-2 px-2 text-white/60 bg-[#1D1D1F]">1WA</td>
                       <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['2pm'])}`}>{hourlyData?.lastWeek['2pm'] ?? '-'}</td>
                       <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['3pm'])}`}>{hourlyData?.lastWeek['3pm'] ?? '-'}</td>
                       <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['4pm'])}`}>{hourlyData?.lastWeek['4pm'] ?? '-'}</td>
