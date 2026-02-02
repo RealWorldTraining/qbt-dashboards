@@ -76,9 +76,16 @@ export async function GET() {
       return weekEnd < today
     })
     
-    const last6Complete = completeWeeks.slice(-6)
+    // Sort by date ascending before slicing (in case rows are not in order)
+    completeWeeks.sort((a, b) => {
+      const dateA = new Date(a.week_start)
+      const dateB = new Date(b.week_start)
+      return dateA.getTime() - dateB.getTime()
+    })
+    
+    const last8Complete = completeWeeks.slice(-8)
 
-    const weeklyData = last6Complete.map(w => ({
+    const weeklyData = last8Complete.map(w => ({
       week: formatDateRange(w.week_start, w.week_end),
       week_start: w.week_start,
       spend: Math.round(w.spend),
@@ -91,9 +98,65 @@ export async function GET() {
       cpa: Math.round(w.cpa),
       roas: w.spend > 0 ? w.conv_value / w.spend : 0,
     })).reverse() // Most recent first
+    
+    // Find YoY data: same 4-week period from last year
+    // Current 4 weeks are weeklyData[0..3], find matching weeks from prior year
+    const current4Weeks = weeklyData.slice(0, 4)
+    const yoyWeeks: typeof weeklyData = []
+    
+    if (current4Weeks.length === 4) {
+      // For each current week, find the equivalent week from last year (52 weeks prior)
+      // Use a Set to track which weeks we've already matched (avoid duplicates)
+      const matchedWeekStarts = new Set<string>()
+      
+      for (const currentWeek of current4Weeks) {
+        const [year, month, day] = currentWeek.week_start.split('-').map(Number)
+        const targetDate = new Date(year - 1, month - 1, day)
+        
+        // Find the closest week in allWeeks from last year (not already matched)
+        let bestMatch: typeof allWeeks[0] | null = null
+        let bestDiff = Infinity
+        
+        for (const w of allWeeks) {
+          const [wYear, wMonth, wDay] = w.week_start.split('-').map(Number)
+          if (wYear !== year - 1) continue
+          if (matchedWeekStarts.has(w.week_start)) continue
+          
+          const weekStart = new Date(wYear, wMonth - 1, wDay)
+          const diffDays = Math.abs((targetDate.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24))
+          
+          if (diffDays <= 7 && diffDays < bestDiff) {
+            bestDiff = diffDays
+            bestMatch = w
+          }
+        }
+        
+        const matchingWeek = bestMatch
+        if (matchingWeek) {
+          matchedWeekStarts.add(matchingWeek.week_start)
+        }
+        
+        if (matchingWeek) {
+          yoyWeeks.push({
+            week: formatDateRange(matchingWeek.week_start, matchingWeek.week_end),
+            week_start: matchingWeek.week_start,
+            spend: Math.round(matchingWeek.spend),
+            impressions: matchingWeek.impressions,
+            clicks: matchingWeek.clicks,
+            ctr: matchingWeek.ctr,
+            avg_cpc: matchingWeek.avg_cpc,
+            conversions: Math.round(matchingWeek.conversions),
+            conv_rate: matchingWeek.conv_rate,
+            cpa: Math.round(matchingWeek.cpa),
+            roas: matchingWeek.spend > 0 ? matchingWeek.conv_value / matchingWeek.spend : 0,
+          })
+        }
+      }
+    }
 
     return NextResponse.json({
       data: weeklyData,
+      yoyData: yoyWeeks.length === 4 ? yoyWeeks : null,
       last_updated: new Date().toISOString()
     }, {
       headers: {

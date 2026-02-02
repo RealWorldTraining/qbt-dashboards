@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 // Same sheet as ads data
 const SHEET_ID = '1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM'
-const RANGE = 'Campaign Performance!A:M'
+const RANGE = 'Campaign Performance!A:N'
 
 interface CampaignRow {
   week: string

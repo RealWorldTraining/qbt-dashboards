@@ -17,7 +17,7 @@ import {
 
 const dashboards = [
   { 
-    name: "Mission Control", 
+    name: "Sales Snapshot", 
     href: "/data", 
     icon: Tv, 
     description: "Real-time forecasts for the office TV",
@@ -57,14 +57,6 @@ const dashboards = [
     stats: "Revenue • Orders"
   },
   { 
-    name: "Team", 
-    href: "/team", 
-    icon: Users, 
-    description: "Team performance metrics and stats",
-    color: "from-pink-500 to-rose-600",
-    stats: "Performance"
-  },
-  { 
     name: "GA4 Summary", 
     href: "/playground", 
     icon: BarChart3, 
@@ -87,6 +79,14 @@ const dashboards = [
     description: "Monthly Microsoft Advertising performance metrics",
     color: "from-sky-500 to-blue-600",
     stats: "Spend • Conversions • ROAS"
+  },
+  { 
+    name: "Trend Analysis", 
+    href: "/trend-analysis", 
+    icon: TrendingUp, 
+    description: "YoY comparisons, 4-week trends & Vision's insights",
+    color: "from-violet-500 to-purple-600",
+    stats: "Trends • YoY • Analysis"
   },
 ]
 

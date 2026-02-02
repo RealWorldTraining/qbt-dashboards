@@ -698,6 +698,20 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US").format(value)
 }
 
+function abbreviatePeriodLabel(label: string): string {
+  const mappings: { [key: string]: string } = {
+    "1 Week Ago": "1W Ago",
+    "2 Weeks Ago": "2W Ago", 
+    "3 Weeks Ago": "3W Ago",
+    "4 Weeks Ago": "4W Ago",
+    "1 Year Ago": "1Y Ago",
+    "Last 4 Weeks Avg": "L4W Avg",
+    "Last 6 Months Avg": "L6M Avg",
+    "Last 12 Months Avg": "L12M Avg",
+  }
+  return mappings[label] || label
+}
+
 // Jedi Council Category Types - 5 main categories
 type JediCategory = "budget" | "bids" | "competitors" | "assets" | "search-terms"
 
@@ -2105,17 +2119,33 @@ export default function DashboardPage() {
               <>
               {/* Top Row - 4 Simple KPI Cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {/* Today */}
-                <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
-                  <div className="text-lg font-medium text-white/70 mb-1">Today</div>
-                  <div className="text-7xl font-bold text-white">{formatNumber(metrics.today.direct_qty)}</div>
-                  <div className="mt-2 text-center">
-                    <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(metrics.today.py_qty)}</div>
-                    <div className={`text-lg font-semibold ${metrics.today.qty_change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                      {metrics.today.qty_change_pct >= 0 ? "+" : ""}{metrics.today.qty_change_pct}% ({metrics.today.direct_qty - metrics.today.py_qty >= 0 ? "+" : ""}{metrics.today.direct_qty - metrics.today.py_qty})
+                {/* Today with time comparison */}
+                {(() => {
+                  const now = new Date()
+                  const hour = now.getHours()
+                  const minutes = now.getMinutes()
+                  const timeStr = `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${minutes.toString().padStart(2, '0')}${hour >= 12 ? 'pm' : 'am'}`
+                  const hourLabel = hour === 0 ? "12am" : hour < 12 ? `${hour}am` : hour === 12 ? "12pm" : `${hour - 12}pm`
+                  const todayData = hourlyComparison?.periods.find(p => p.period_label === "Today")
+                  const lastWeekData = hourlyComparison?.periods.find(p => p.period_label === "1 Week Ago" || p.period_label === "-1W")
+                  const twoWeeksData = hourlyComparison?.periods.find(p => p.period_label === "2 Weeks Ago" || p.period_label === "-2W")
+                  const threeWeeksData = hourlyComparison?.periods.find(p => p.period_label === "3 Weeks Ago" || p.period_label === "-3W")
+                  const todaySales = todayData?.hourly_sales[hourLabel] ?? metrics.today.direct_qty
+                  const lastWeekSales = lastWeekData?.hourly_sales[hourLabel] ?? 0
+                  const twoWeeksSales = twoWeeksData?.hourly_sales[hourLabel] ?? 0
+                  const threeWeeksSales = threeWeeksData?.hourly_sales[hourLabel] ?? 0
+                  return (
+                    <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-5 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                      <div className="text-sm font-medium text-white/70 mb-1">Today @ {timeStr}</div>
+                      <div className="text-7xl font-bold text-white mb-2">{formatNumber(metrics.today.direct_qty)}</div>
+                      <div className="w-full space-y-0.5 text-sm px-2">
+                        <div className="flex justify-between"><span className="text-white/60">LW @ {timeStr}</span><span className="font-semibold text-white/80">{lastWeekSales}</span></div>
+                        <div className="flex justify-between"><span className="text-white/60">2WA @ {timeStr}</span><span className="font-semibold text-white/80">{twoWeeksSales}</span></div>
+                        <div className="flex justify-between"><span className="text-white/60">3WA @ {timeStr}</span><span className="font-semibold text-white/80">{threeWeeksSales}</span></div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  )
+                })()}
                 {/* Yesterday */}
                 <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                   <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
@@ -2151,73 +2181,8 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* MAIN SECTION - 2 Column Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
-                {/* Left - Charts */}
-                <div className="lg:col-span-9 space-y-4">
-                  {/* Bar Chart - This Week vs Last Week Cumulative */}
-                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">This Week vs Last Week</CardTitle>
-                      <CardDescription className="text-sm text-[#6E6E73]">Cumulative daily sales by day</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {extendedWeeklyTrends ? (() => {
-                        const currentWeek = extendedWeeklyTrends.direct_qty.find(w => w.week_label === "Current Week")
-                        const lastWeek = extendedWeeklyTrends.direct_qty.find(w => w.week_label === "Last Week")
-                        const days = extendedWeeklyTrends.days || ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-
-                        const chartData = days.map(day => {
-                          const thisWeekVal = currentWeek?.daily_cumulative[day] ?? 0
-                          const lastWeekVal = lastWeek?.daily_cumulative[day] ?? 0
-                          const pctChange = lastWeekVal > 0 ? ((thisWeekVal - lastWeekVal) / lastWeekVal) * 100 : 0
-                          return {
-                            day,
-                            thisWeek: thisWeekVal,
-                            lastWeek: lastWeekVal,
-                            pctChange
-                          }
-                        })
-
-                        return (
-                          <div>
-                            <ResponsiveContainer width="100%" height={200}>
-                              <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E7" vertical={false} />
-                                <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#6E6E73' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} axisLine={false} tickLine={false} />
-                                <Tooltip
-                                  contentStyle={{ backgroundColor: 'white', border: '1px solid #E5E5E7', borderRadius: '8px', fontSize: '12px' }}
-                                  formatter={(value, name) => [value ?? 0, name === 'thisWeek' ? 'This Week' : 'Last Week']}
-                                />
-                                <Bar dataKey="lastWeek" fill="#D2D2D7" radius={[4, 4, 0, 0]} name="Last Week">
-                                  <LabelList dataKey="lastWeek" position="insideTop" fill="#6E6E73" fontSize={14} fontWeight={600} dy={6} />
-                                </Bar>
-                                <Bar dataKey="thisWeek" fill="#1D1D1F" radius={[4, 4, 0, 0]} name="This Week">
-                                  <LabelList dataKey="thisWeek" position="insideTop" fill="#FFFFFF" fontSize={14} fontWeight={600} dy={6} />
-                                </Bar>
-                              </ComposedChart>
-                            </ResponsiveContainer>
-                            {/* Percentage change row - aligned with chart X-axis */}
-                            <div className="flex -mt-3" style={{ marginLeft: '58px', marginRight: '10px' }}>
-                              {chartData.map((d) => (
-                                <div key={d.day} className="flex-1 text-center">
-                                  <span className={`text-xs font-semibold ${d.pctChange >= 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                    {d.pctChange >= 0 ? '+' : ''}{d.pctChange.toFixed(0)}%
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )
-                      })() : (
-                        <div className="h-[220px] flex items-center justify-center">
-                          <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
+              {/* Hourly Comparison Section */}
+              <div className="mb-6">
                   {/* Hourly Comparison Table */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
@@ -2237,285 +2202,80 @@ export default function DashboardPage() {
                           {error}
                         </div>
                       ) : hourlyComparison ? (
-                        <div>
-                          <table className="w-full text-xs">
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
                             <thead>
-                              <tr className="border-b border-[#D2D2D7]">
-                                <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] sticky left-0 bg-white min-w-[90px]">
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">
                                   Period
                                 </th>
                                 {hourlyComparison.hours.map((hour) => (
-                                  <th key={hour} className="text-center py-2 px-0.5 font-medium text-[#6E6E73] whitespace-nowrap">
+                                  <th key={hour} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">
                                     {hour.replace('am', 'a').replace('pm', 'p')}
                                   </th>
                                 ))}
-                                <th className="text-center py-2 px-1 font-semibold text-[#1D1D1F] bg-[#F5F5F7] whitespace-nowrap">
+                                <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">
                                   EOD
                                 </th>
                               </tr>
                             </thead>
                             <tbody>
-                              {hourlyComparison.periods.map((period) => {
-                                const isToday = period.period_label === "Today"
-                                const isShaded = period.period_label === "-1Y" || period.period_label.includes("Avg")
-                                const rowBg = isToday ? "bg-[#E8F4FF]" : isShaded ? "bg-[#F5F5F5]" : ""
-                                const cellBg = isToday ? "bg-[#E8F4FF]" : isShaded ? "bg-[#F5F5F5]" : "bg-white"
-                                return (
-                                  <tr
-                                    key={period.period_label}
-                                    className={`border-b border-[#E5E5E5] ${rowBg}`}
-                                  >
-                                    <td className={`py-2 px-1 sticky left-0 ${cellBg}`}>
-                                      <div className="font-medium text-[#1D1D1F] text-xs">{period.period_label}</div>
-                                      {period.period_date && (
-                                        <div className="text-[10px] text-[#6E6E73]">{period.period_date}</div>
-                                      )}
-                                    </td>
-                                    {hourlyComparison.hours.map((hour) => {
-                                      const value = period.hourly_sales[hour]
-                                      return (
-                                        <td
-                                          key={hour}
-                                          className={`text-center py-2 px-0.5 ${value === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}
-                                        >
-                                          {value === null ? "-" : value}
-                                        </td>
-                                      )
-                                    })}
-                                    <td className={`text-center py-2 px-1 font-semibold ${isShaded ? "bg-[#F5F5F5]" : "bg-[#F5F5F7]"} ${period.end_of_day === null ? "text-[#D2D2D7]" : "text-[#1D1D1F]"}`}>
-                                      {period.end_of_day === null ? "-" : period.end_of_day}
-                                    </td>
-                                  </tr>
-                                )
-                              })}
+                              {(() => {
+                                // Calculate max value for heat map
+                                const allValues = hourlyComparison.periods
+                                  .filter(p => !p.period_label.includes("Avg") && p.period_label !== "1 Year Ago" && p.period_label !== "-1Y")
+                                  .flatMap(p => Object.values(p.hourly_sales).filter(v => v !== null) as number[])
+                                const maxValue = Math.max(...allValues, 1)
+                                
+                                return hourlyComparison.periods.map((period, idx) => {
+                                  const isToday = period.period_label === "Today"
+                                  const isShaded = period.period_label === "1 Year Ago" || period.period_label === "-1Y" || period.period_label.includes("Avg")
+                                  const isPrimaryRow = !isShaded // Today through 4W Ago
+                                  const rowBg = isToday ? "bg-[#0066CC]/20" : isShaded ? "bg-[#2D2D2F]" : idx % 2 === 0 ? "bg-[#1D1D1F]" : "bg-[#252527]"
+                                  const cellBg = isToday ? "bg-[#0066CC]/20" : isShaded ? "bg-[#2D2D2F]" : idx % 2 === 0 ? "bg-[#1D1D1F]" : "bg-[#252527]"
+                                  
+                                  return (
+                                    <tr
+                                      key={period.period_label}
+                                      className={`border-b border-[#3D3D3F] ${rowBg} hover:bg-[#3D3D3F] transition-colors`}
+                                    >
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className={`font-semibold ${isToday ? "text-[#4D9FFF]" : "text-white"}`}>{abbreviatePeriodLabel(period.period_label)}</div>
+                                        {period.period_date && (
+                                          <div className="text-xs text-[#8E8E93]">{period.period_date}</div>
+                                        )}
+                                      </td>
+                                      {hourlyComparison.hours.map((hour) => {
+                                        const value = period.hourly_sales[hour]
+                                        // Heat map for primary rows
+                                        const heatIntensity = isPrimaryRow && value !== null ? Math.min(value / maxValue, 1) : 0
+                                        const heatBg = isPrimaryRow && value !== null && value > 0
+                                          ? `rgba(0, 102, 204, ${0.1 + heatIntensity * 0.4})`
+                                          : ''
+                                        return (
+                                          <td
+                                            key={hour}
+                                            className={`text-center py-3 px-1 font-medium ${value === null ? "text-[#6E6E73]" : isPrimaryRow ? "text-[#4D9FFF]" : "text-[#8E8E93]"}`}
+                                            style={heatBg ? { backgroundColor: heatBg } : {}}
+                                          >
+                                            {value === null ? "-" : value}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold ${isToday ? "bg-[#0066CC] text-white" : isShaded ? "bg-[#4D4D4F] text-white" : "bg-[#0066CC] text-white"}`}>
+                                        {period.end_of_day === null ? "-" : period.end_of_day}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
                             </tbody>
                           </table>
                         </div>
                       ) : null}
                     </CardContent>
                   </Card>
-                </div>
 
-                {/* Right Sidebar - Combined Real-time & Forecasts */}
-                <div className="lg:col-span-3">
-                  <Card className="bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] border-0 shadow-sm h-full pt-2">
-                    <CardContent className="space-y-3 pt-0 px-3">
-                      {/* Header */}
-                      <div className="text-center pb-2">
-                        <span className="text-2xl font-bold uppercase tracking-[0.25em] text-white/60">The Prophet</span>
-                      </div>
-                      {/* Top Row - Today @ and EOD side by side */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {/* Real-time Comparison */}
-                        {hourlyComparison ? (() => {
-                          const now = new Date()
-                          const hour = now.getHours()
-                          const minutes = now.getMinutes()
-                          const timeStr = `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${minutes.toString().padStart(2, '0')}${hour >= 12 ? 'pm' : 'am'}`
-                          const hourLabel = hour === 0 ? "12am" : hour < 12 ? `${hour}am` : hour === 12 ? "12pm" : `${hour - 12}pm`
-
-                          const todayData = hourlyComparison.periods.find(p => p.period_label === "Today")
-                          const lastWeekData = hourlyComparison.periods.find(p => p.period_label === "-1W")
-                          const twoWeeksData = hourlyComparison.periods.find(p => p.period_label === "-2W")
-                          const threeWeeksData = hourlyComparison.periods.find(p => p.period_label === "-3W")
-
-                          const todaySales = todayData?.hourly_sales[hourLabel] ?? 0
-                          const lastWeekSales = lastWeekData?.hourly_sales[hourLabel] ?? 0
-                          const twoWeeksSales = twoWeeksData?.hourly_sales[hourLabel] ?? 0
-                          const threeWeeksSales = threeWeeksData?.hourly_sales[hourLabel] ?? 0
-
-                          return (
-                            <div className="rounded-xl p-3 bg-gradient-to-br from-[#0066CC] to-[#0055AA]">
-                              <div className="text-center mb-2">
-                                <div className="text-[10px] font-medium text-white/70 uppercase tracking-wider">Today @</div>
-                                <div className="text-2xl font-bold text-white">{timeStr}</div>
-                              </div>
-                              <div className="space-y-1">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm text-white/80 text-left">Today</span>
-                                  <span className="text-xl font-bold text-white">{todaySales}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm text-white/60 text-left">LW</span>
-                                  <span className="text-lg font-semibold text-white/80">{lastWeekSales}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm text-white/60 text-left">2WA</span>
-                                  <span className="text-lg font-semibold text-white/80">{twoWeeksSales}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm text-white/60 text-left">3WA</span>
-                                  <span className="text-lg font-semibold text-white/80">{threeWeeksSales}</span>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })() : (
-                          <div className="rounded-xl p-3 bg-gradient-to-br from-[#0066CC] to-[#0055AA] flex items-center justify-center">
-                            <Loader2 className="h-5 w-5 animate-spin text-white/50" />
-                          </div>
-                        )}
-
-                        {/* EOD Projection */}
-                        {eodProjection ? (
-                          <div className="rounded-xl p-4 bg-white/95 flex flex-col items-center justify-center">
-                            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73] mb-1">
-                              EOD Forecast
-                            </div>
-                            <div className="text-5xl font-bold text-[#A78BFA]">{eodProjection.projected_eod}</div>
-                            <div className="text-sm text-[#8E8E93] mb-2">
-                              {eodProjection.projected_lower}-{eodProjection.projected_upper}
-                            </div>
-                            <div className="flex items-center justify-center gap-6 pt-2 border-t border-gray-100 w-full">
-                              <div className="text-center">
-                                <div className="text-[10px] uppercase text-[#8E8E93]">vs LW</div>
-                                <div className={`text-xl font-bold ${eodProjection.vs_last_week >= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
-                                  {eodProjection.vs_last_week >= 0 ? "+" : ""}{eodProjection.vs_last_week}
-                                </div>
-                              </div>
-                              <div className="text-center">
-                                <div className="text-[10px] uppercase text-[#8E8E93]">vs 2W</div>
-                                <div className={`text-xl font-bold ${eodProjection.vs_two_weeks >= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
-                                  {eodProjection.vs_two_weeks >= 0 ? "+" : ""}{eodProjection.vs_two_weeks}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="rounded-xl p-4 bg-white/95 flex items-center justify-center">
-                            <Loader2 className="h-5 w-5 animate-spin text-[#A78BFA]" />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Holiday Indicator */}
-                      {eowForecast?.week_has_holiday && eowForecast.holiday_name && (
-                        <div className="rounded-xl p-3 bg-amber-500/20">
-                          <div className="text-[9px] font-semibold uppercase tracking-wider text-amber-400/70 mb-1 text-center">
-                            Forecast Adjusted For
-                          </div>
-                          <div className="text-sm font-medium text-amber-300 text-center">{eowForecast.holiday_name}</div>
-                        </div>
-                      )}
-
-                      {/* Monthly Forecast */}
-                      {eomForecast && (
-                        <div className="rounded-xl p-4 bg-white/95">
-                          <div className="text-center mb-1">
-                            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73]">{eomForecast.month_name} Forecast</span>
-                            <div className="text-xs text-[#8E8E93] mt-0.5">{eomForecast.days_remaining}d left</div>
-                            <div className="text-5xl font-bold text-[#A78BFA] mt-2">{formatNumber(eomForecast.predicted_sales)}</div>
-                          </div>
-                          {(() => {
-                            const totalDays = eomForecast.days_completed + 1 + eomForecast.days_remaining
-                            const daysSoFar = eomForecast.days_completed + 1
-                            const mtdExpected = Math.round(eomForecast.predicted_sales * (daysSoFar / totalDays))
-                            const variance = eomForecast.current_month_sales - mtdExpected
-                            const variancePct = Math.round((variance / mtdExpected) * 100)
-                            return (
-                              <div className="flex justify-between items-center text-sm mt-3 pt-2 border-t border-gray-100">
-                                <div className="text-center">
-                                  <div className="font-bold text-lg text-[#1D1D1F]">{formatNumber(eomForecast.current_month_sales)}</div>
-                                  <div className="text-[10px] text-[#8E8E93] uppercase">MTD Actual</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="font-bold text-lg text-[#8E8E93]">{formatNumber(mtdExpected)}</div>
-                                  <div className="text-[10px] text-[#8E8E93] uppercase">MTD Expected</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className={`font-bold text-lg ${variancePct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                    {variancePct >= 0 ? `+${variancePct}%` : `${variancePct}%`}
-                                  </div>
-                                  <div className="text-[10px] text-[#8E8E93] uppercase">Variance</div>
-                                </div>
-                              </div>
-                            )
-                          })()}
-                        </div>
-                      )}
-
-                      {/* This Week Forecast */}
-                      {thisWeekForecast && (
-                        <div className="rounded-xl p-4 bg-white/95">
-                          <div className="text-center mb-1">
-                            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6E6E73]">Week Forecast</span>
-                            <div className="text-xs text-[#8E8E93] mt-0.5">{thisWeekForecast.week_start_date} - {thisWeekForecast.week_end_date}</div>
-                            <div className="text-5xl font-bold text-[#A78BFA] mt-2">{formatNumber(thisWeekForecast.predicted_sales)}</div>
-                          </div>
-                          {thisWeekForecast.has_holiday && thisWeekForecast.holiday_name && (
-                            <div className="text-xs text-amber-600 text-center mb-2">
-                              ⚠️ {thisWeekForecast.holiday_name}
-                            </div>
-                          )}
-                          {/* MTD Actual vs Expected */}
-                          {(() => {
-                            const totalDays = 7
-                            const daysSoFar = thisWeekForecast.days_completed + 1
-                            const wtdExpected = Math.round(thisWeekForecast.predicted_sales * (daysSoFar / totalDays))
-                            const variance = thisWeekForecast.current_week_sales - wtdExpected
-                            const variancePct = Math.round((variance / wtdExpected) * 100)
-                            return (
-                              <div className="flex justify-between items-center text-sm mt-2 pt-2 border-t border-gray-100">
-                                <div className="text-center">
-                                  <div className="font-bold text-lg text-[#1D1D1F]">{formatNumber(thisWeekForecast.current_week_sales)}</div>
-                                  <div className="text-[10px] text-[#8E8E93] uppercase">WTD Actual</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="font-bold text-lg text-[#8E8E93]">{formatNumber(wtdExpected)}</div>
-                                  <div className="text-[10px] text-[#8E8E93] uppercase">WTD Expected</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className={`font-bold text-lg ${variancePct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                    {variancePct >= 0 ? `+${variancePct}%` : `${variancePct}%`}
-                                  </div>
-                                  <div className="text-[10px] text-[#8E8E93] uppercase">Variance</div>
-                                </div>
-                              </div>
-                            )
-                          })()}
-                          {/* Daily Breakdown */}
-                          {(() => {
-                            const totalPredicted = thisWeekForecast.daily_breakdown.reduce((sum, d) => sum + d.predicted, 0)
-                            const totalActual = thisWeekForecast.daily_breakdown.reduce((sum, d) => sum + (d.actual ?? 0), 0)
-                            const absoluteVariance = totalActual - totalPredicted
-                            return (
-                              <div className="mt-3 pt-2 border-t border-gray-100">
-                                <div className="grid grid-cols-8 gap-1">
-                                  {thisWeekForecast.daily_breakdown.map((day) => (
-                                    <div key={day.day} className="text-center">
-                                      <div className="text-[9px] text-[#8E8E93] font-medium">{day.day}</div>
-                                      <div className="text-xs font-semibold text-[#A78BFA]">{day.predicted}</div>
-                                      <div className={`text-xs font-bold ${day.actual !== null ? (day.actual >= day.predicted ? "text-[#34C759]" : "text-[#FF6B6B]") : "text-[#D2D2D7]"}`}>
-                                        {day.actual !== null ? day.actual : "-"}
-                                      </div>
-                                    </div>
-                                  ))}
-                                  {/* Total Column */}
-                                  <div className="text-center border-l border-gray-200 pl-1">
-                                    <div className="text-[9px] text-[#1D1D1F] font-bold">Total</div>
-                                    <div className="text-xs font-semibold text-[#A78BFA]">{totalPredicted}</div>
-                                    <div className={`text-xs font-bold ${totalActual >= totalPredicted ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                      {totalActual}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
-                                  <div className="flex gap-4 text-[9px] text-[#8E8E93]">
-                                    <span><span className="text-[#A78BFA]">■</span> Predicted</span>
-                                    <span><span className="text-[#34C759]">■</span><span className="text-[#FF6B6B]">■</span> Actual</span>
-                                  </div>
-                                  <div className={`text-sm font-bold ${absoluteVariance >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                    {absoluteVariance >= 0 ? `+${absoluteVariance}` : absoluteVariance} variance
-                                  </div>
-                                </div>
-                              </div>
-                            )
-                          })()}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
               </div>
               </>
             ) : null}

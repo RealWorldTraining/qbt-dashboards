@@ -62,8 +62,19 @@ export async function GET() {
       }))
       .sort((a, b) => a.week_start.localeCompare(b.week_start))
 
-    // Get last 6 weeks
-    const last6 = allWeeks.slice(-6)
+    // Filter to only complete weeks (week end date is before today)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const completeWeeks = allWeeks.filter(w => {
+      const start = new Date(w.week_start)
+      const weekEnd = new Date(start)
+      weekEnd.setDate(start.getDate() + 6)
+      return weekEnd < today
+    })
+
+    // Get last 6 complete weeks
+    const last6 = completeWeeks.slice(-6)
 
     const weeklyData = last6.map(w => ({
       week: formatDateRange(w.week_start),

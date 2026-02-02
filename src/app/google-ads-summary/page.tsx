@@ -13,6 +13,7 @@ import {
   Bar,
   ComposedChart,
   Line,
+  LabelList,
 } from "recharts"
 
 interface WeeklyData {
@@ -69,7 +70,7 @@ const METRIC_COLORS = {
   spend: "#ef4444",       // red
   impressions: "#3b82f6", // blue
   clicks: "#22c55e",      // green
-  conversions: "#f59e0b", // amber
+  conversions: "#22c55e", // green
   ctr: "#8b5cf6",         // purple
   avg_cpc: "#a855f7",     // violet
   conv_rate: "#ec4899",   // pink
@@ -102,7 +103,11 @@ function formatCurrencyPrecise(value: number): string {
 }
 
 function formatPercent(value: number): string {
-  return value.toFixed(2) + "%"
+  return Math.round(value) + "%"
+}
+
+function formatConvRate(value: number): string {
+  return value.toFixed(1) + "%"
 }
 
 // Custom tooltip
@@ -117,8 +122,10 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
           let formattedValue = formatNumber(entry.value)
           if (entry.name === "spend" || entry.name === "cpa") {
             formattedValue = formatCurrency(entry.value)
-          } else if (entry.name === "ctr" || entry.name === "conv_rate") {
+          } else if (entry.name === "ctr") {
             formattedValue = formatPercent(entry.value)
+          } else if (entry.name === "conv_rate") {
+            formattedValue = formatConvRate(entry.value)
           } else if (entry.name === "roas") {
             formattedValue = entry.value.toFixed(2) + "x"
           }
@@ -184,7 +191,39 @@ export default function GoogleAdsSummaryPage() {
     return ((current - previous) / previous) * 100
   }
 
-  const metrics = ["spend", "impressions", "clicks", "conversions", "ctr", "conv_rate", "cpa", "roas"] as const
+  const metrics = ["spend", "impressions", "clicks", "conversions", "ctr", "conv_rate", "cpa"] as const
+
+  // Aggregate campaign data by device type (Desktop/Mobile)
+  const getDeviceMetrics = (deviceType: 'Desktop' | 'Mobile', weekIndex: number) => {
+    if (!campaignData) return null
+    
+    const campaigns = campaignData.campaigns.filter(c => 
+      c.name.toLowerCase().includes(deviceType.toLowerCase())
+    )
+    
+    let spend = 0, impressions = 0, clicks = 0, conversions = 0
+    
+    campaigns.forEach(campaign => {
+      const weekData = campaign.data[weekIndex]
+      if (weekData) {
+        spend += weekData.cost
+        impressions += weekData.impressions
+        clicks += weekData.clicks
+        conversions += weekData.conversions
+      }
+    })
+    
+    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0
+    const conv_rate = clicks > 0 ? (conversions / clicks) * 100 : 0
+    const cpa = conversions > 0 ? spend / conversions : 0
+    
+    return { spend, impressions, clicks, conversions, ctr, conv_rate, cpa }
+  }
+  
+  const currentDesktop = getDeviceMetrics('Desktop', 0)
+  const previousDesktop = getDeviceMetrics('Desktop', 1)
+  const currentMobile = getDeviceMetrics('Mobile', 0)
+  const previousMobile = getDeviceMetrics('Mobile', 1)
 
   // Reverse data for charts (oldest first)
   const chartData = [...data].reverse()
@@ -215,27 +254,37 @@ export default function GoogleAdsSummaryPage() {
 
         {/* Summary Cards */}
         {currentWeek && (
-          <div className="grid grid-cols-8 gap-3 mb-6">
+          <div className="grid grid-cols-7 gap-3 mb-6">
             {metrics.map((metric) => {
               const current = currentWeek[metric]
               const previous = previousWeek?.[metric] || 0
-              const change = calculateChange(current, previous)
+              const absoluteChange = current - previous
               const color = METRIC_COLORS[metric]
               
               let displayValue = formatNumber(current)
               if (metric === "spend" || metric === "cpa") {
                 displayValue = formatCurrency(current)
-              } else if (metric === "ctr" || metric === "conv_rate") {
+              } else if (metric === "ctr") {
                 displayValue = formatPercent(current)
-              } else if (metric === "roas") {
-                displayValue = current.toFixed(2) + "x"
+              } else if (metric === "conv_rate") {
+                displayValue = current.toFixed(2) + "%"
+              }
+              
+              // Format the absolute change based on metric type
+              let changeDisplay = ""
+              if (metric === "spend" || metric === "cpa") {
+                changeDisplay = (absoluteChange >= 0 ? '+' : '-') + formatCurrency(Math.abs(absoluteChange))
+              } else if (metric === "ctr" || metric === "conv_rate") {
+                changeDisplay = (absoluteChange >= 0 ? '+' : '') + absoluteChange.toFixed(1) + "%"
+              } else {
+                changeDisplay = (absoluteChange >= 0 ? '+' : '') + formatNumber(absoluteChange)
               }
               
               // For CPA, lower is better
               const isInverse = metric === "cpa"
               const changeColor = isInverse 
-                ? (change <= 0 ? 'text-green-500' : 'text-red-500')
-                : (change >= 0 ? 'text-green-500' : 'text-red-500')
+                ? (absoluteChange <= 0 ? 'text-green-500' : 'text-red-500')
+                : (absoluteChange >= 0 ? 'text-green-500' : 'text-red-500')
               
               return (
                 <div key={metric} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
@@ -248,12 +297,122 @@ export default function GoogleAdsSummaryPage() {
                       {displayValue}
                     </div>
                     <div className={`text-sm ${changeColor}`}>
-                      {change >= 0 ? '+' : ''}{change.toFixed(1)}% vs prev
+                      {changeDisplay} vs prev
                     </div>
                   </div>
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* Desktop Summary Cards */}
+        {currentDesktop && (
+          <div className="mb-2">
+            <div className="text-gray-500 text-xs font-medium mb-2 uppercase tracking-wide">Desktop</div>
+            <div className="grid grid-cols-7 gap-3">
+              {metrics.map((metric) => {
+                const current = currentDesktop[metric as keyof typeof currentDesktop] as number
+                const previous = previousDesktop?.[metric as keyof typeof previousDesktop] as number || 0
+                const absoluteChange = current - previous
+                const color = METRIC_COLORS[metric]
+                
+                let displayValue = formatNumber(current)
+                if (metric === "spend" || metric === "cpa") {
+                  displayValue = formatCurrency(current)
+                } else if (metric === "ctr") {
+                  displayValue = formatPercent(current)
+                } else if (metric === "conv_rate") {
+                  displayValue = current.toFixed(2) + "%"
+                }
+                
+                let changeDisplay = ""
+                if (metric === "spend" || metric === "cpa") {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '-') + formatCurrency(Math.abs(absoluteChange))
+                } else if (metric === "ctr" || metric === "conv_rate") {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '') + absoluteChange.toFixed(1) + "%"
+                } else {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '') + formatNumber(absoluteChange)
+                }
+                
+                const isInverse = metric === "cpa"
+                const changeColor = isInverse 
+                  ? (absoluteChange <= 0 ? 'text-green-500' : 'text-red-500')
+                  : (absoluteChange >= 0 ? 'text-green-500' : 'text-red-500')
+                
+                return (
+                  <div key={`desktop-${metric}`} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+                    <div className="h-1" style={{ backgroundColor: color }} />
+                    <div className="p-3">
+                      <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">
+                        {METRIC_LABELS[metric]}
+                      </div>
+                      <div className="text-white text-lg font-bold mb-1">
+                        {displayValue}
+                      </div>
+                      <div className={`text-xs ${changeColor}`}>
+                        {changeDisplay} vs prev
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Summary Cards */}
+        {currentMobile && (
+          <div className="mb-6">
+            <div className="text-gray-500 text-xs font-medium mb-2 uppercase tracking-wide">Mobile</div>
+            <div className="grid grid-cols-7 gap-3">
+              {metrics.map((metric) => {
+                const current = currentMobile[metric as keyof typeof currentMobile] as number
+                const previous = previousMobile?.[metric as keyof typeof previousMobile] as number || 0
+                const absoluteChange = current - previous
+                const color = METRIC_COLORS[metric]
+                
+                let displayValue = formatNumber(current)
+                if (metric === "spend" || metric === "cpa") {
+                  displayValue = formatCurrency(current)
+                } else if (metric === "ctr") {
+                  displayValue = formatPercent(current)
+                } else if (metric === "conv_rate") {
+                  displayValue = current.toFixed(2) + "%"
+                }
+                
+                let changeDisplay = ""
+                if (metric === "spend" || metric === "cpa") {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '-') + formatCurrency(Math.abs(absoluteChange))
+                } else if (metric === "ctr" || metric === "conv_rate") {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '') + absoluteChange.toFixed(1) + "%"
+                } else {
+                  changeDisplay = (absoluteChange >= 0 ? '+' : '') + formatNumber(absoluteChange)
+                }
+                
+                const isInverse = metric === "cpa"
+                const changeColor = isInverse 
+                  ? (absoluteChange <= 0 ? 'text-green-500' : 'text-red-500')
+                  : (absoluteChange >= 0 ? 'text-green-500' : 'text-red-500')
+                
+                return (
+                  <div key={`mobile-${metric}`} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
+                    <div className="h-1" style={{ backgroundColor: color }} />
+                    <div className="p-3">
+                      <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">
+                        {METRIC_LABELS[metric]}
+                      </div>
+                      <div className="text-white text-lg font-bold mb-1">
+                        {displayValue}
+                      </div>
+                      <div className={`text-xs ${changeColor}`}>
+                        {changeDisplay} vs prev
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 
@@ -275,12 +434,14 @@ export default function GoogleAdsSummaryPage() {
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
                     tickFormatter={(value) => value >= 1000 ? `$${(value / 1000).toFixed(0)}k` : `$${value}`}
+                    domain={[0, 30000]}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
+                    domain={[0, 120]}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
@@ -290,7 +451,15 @@ export default function GoogleAdsSummaryPage() {
                     name="spend"
                     fill={METRIC_COLORS.spend}
                     radius={[4, 4, 0, 0]}
-                  />
+                  >
+                    <LabelList 
+                      dataKey="spend" 
+                      position="top" 
+                      fill={METRIC_COLORS.spend}
+                      fontSize={11}
+                      formatter={(value) => typeof value === 'number' ? `$${(value / 1000).toFixed(0)}k` : ''}
+                    />
+                  </Bar>
                   <Line
                     yAxisId="right"
                     type="monotone"
@@ -299,7 +468,15 @@ export default function GoogleAdsSummaryPage() {
                     stroke={METRIC_COLORS.conversions}
                     strokeWidth={3}
                     dot={{ fill: METRIC_COLORS.conversions, r: 5 }}
-                  />
+                  >
+                    <LabelList 
+                      dataKey="conversions" 
+                      position="top" 
+                      fill="#22c55e" 
+                      fontSize={11}
+                      offset={10}
+                    />
+                  </Line>
                 </ComposedChart>
               </ResponsiveContainer>
             )}
@@ -312,7 +489,7 @@ export default function GoogleAdsSummaryPage() {
           <div style={{ width: '100%', height: 400 }}>
             {chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <ComposedChart data={chartData} margin={{ top: 30, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                   <XAxis 
                     dataKey="week" 
@@ -323,35 +500,54 @@ export default function GoogleAdsSummaryPage() {
                     yAxisId="left"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
-                    tickFormatter={(value) => `$${value.toFixed(2)}`}
-                    label={{ value: 'Avg CPC', angle: -90, position: 'insideLeft', fill: '#999', fontSize: 12 }}
+                    tickFormatter={(value) => `$${value}`}
+                    label={{ value: 'CPA', angle: -90, position: 'insideLeft', fill: '#999', fontSize: 12 }}
+                    domain={[0, 400]}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     stroke="#666" 
                     tick={{ fill: '#999', fontSize: 12 }}
-                    tickFormatter={(value) => `$${value}`}
-                    label={{ value: 'CPA', angle: 90, position: 'insideRight', fill: '#999', fontSize: 12 }}
+                    tickFormatter={(value) => `$${value.toFixed(2)}`}
+                    label={{ value: 'Avg CPC', angle: 90, position: 'insideRight', fill: '#999', fontSize: 12 }}
+                    domain={[0, 3]}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Bar
                     yAxisId="left"
-                    dataKey="avg_cpc"
-                    name="avg_cpc"
-                    fill={METRIC_COLORS.avg_cpc}
+                    dataKey="cpa"
+                    name="cpa"
+                    fill={METRIC_COLORS.cpa}
                     radius={[4, 4, 0, 0]}
-                  />
+                  >
+                    <LabelList 
+                      dataKey="cpa" 
+                      position="top" 
+                      fill={METRIC_COLORS.cpa}
+                      fontSize={11}
+                      formatter={(value) => typeof value === 'number' ? `$${Math.round(value)}` : ''}
+                    />
+                  </Bar>
                   <Line
                     yAxisId="right"
                     type="monotone"
-                    dataKey="cpa"
-                    name="cpa"
-                    stroke={METRIC_COLORS.cpa}
+                    dataKey="avg_cpc"
+                    name="avg_cpc"
+                    stroke={METRIC_COLORS.avg_cpc}
                     strokeWidth={3}
-                    dot={{ fill: METRIC_COLORS.cpa, r: 5 }}
-                  />
+                    dot={{ fill: METRIC_COLORS.avg_cpc, r: 5 }}
+                  >
+                    <LabelList 
+                      dataKey="avg_cpc" 
+                      position="top" 
+                      fill={METRIC_COLORS.avg_cpc}
+                      fontSize={11}
+                      offset={12}
+                      formatter={(value) => typeof value === 'number' ? `$${value.toFixed(2)}` : ''}
+                    />
+                  </Line>
                 </ComposedChart>
               </ResponsiveContainer>
             )}
@@ -384,7 +580,7 @@ export default function GoogleAdsSummaryPage() {
                     <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.clicks)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatPercent(row.ctr)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.conversions)}</td>
-                    <td className="text-right py-3 px-4 text-gray-300">{formatPercent(row.conv_rate)}</td>
+                    <td className="text-right py-3 px-4 text-gray-300">{formatConvRate(row.conv_rate)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.cpa)}</td>
                   </tr>
                 ))}
@@ -416,13 +612,13 @@ export default function GoogleAdsSummaryPage() {
                 <thead>
                   <tr className="border-b border-gray-700">
                     <th className="text-left py-3 px-4 text-gray-400 font-medium">Campaign</th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium bg-gray-800/40" colSpan={3}>
                       {campaignData.weeks[3]?.date_range || '4 Weeks Ago'}
                     </th>
                     <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
                       {campaignData.weeks[2]?.date_range || '3 Weeks Ago'}
                     </th>
-                    <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
+                    <th className="text-center py-3 px-4 text-gray-400 font-medium bg-gray-800/40" colSpan={3}>
                       {campaignData.weeks[1]?.date_range || '2 Weeks Ago'}
                     </th>
                     <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={3}>
@@ -431,13 +627,16 @@ export default function GoogleAdsSummaryPage() {
                   </tr>
                   <tr className="border-b border-gray-700">
                     <th className="text-left py-2 px-4 text-gray-500 text-xs"></th>
-                    {[3, 2, 1, 0].map((i) => (
-                      <>
-                        <th key={`spend-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">Spend</th>
-                        <th key={`conv-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">Conv</th>
-                        <th key={`cpa-${i}`} className="text-right py-2 px-2 text-gray-500 text-xs">CPA</th>
-                      </>
-                    ))}
+                    {[3, 2, 1, 0].map((i) => {
+                      const bgClass = i % 2 === 1 ? 'bg-gray-800/40' : ''
+                      return (
+                        <>
+                          <th key={`spend-${i}`} className={`text-right py-2 px-2 text-gray-500 text-xs ${bgClass}`}>Spend</th>
+                          <th key={`conv-${i}`} className={`text-right py-2 px-2 text-gray-500 text-xs ${bgClass}`}>Conv</th>
+                          <th key={`cpa-${i}`} className={`text-right py-2 px-2 text-gray-500 text-xs ${bgClass}`}>CPA</th>
+                        </>
+                      )
+                    })}
                   </tr>
                 </thead>
                 <tbody>
@@ -447,15 +646,16 @@ export default function GoogleAdsSummaryPage() {
                       {[3, 2, 1, 0].map((weekIdx) => {
                         const weekData = campaign.data[weekIdx]
                         const cpa = weekData && weekData.conversions > 0 ? weekData.cost / weekData.conversions : null
+                        const bgClass = weekIdx % 2 === 1 ? 'bg-gray-800/40' : ''
                         return (
                           <>
-                            <td key={`spend-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
+                            <td key={`spend-${weekIdx}`} className={`text-right py-3 px-2 text-gray-300 ${bgClass}`}>
                               {weekData ? formatCurrency(weekData.cost) : '-'}
                             </td>
-                            <td key={`conv-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
+                            <td key={`conv-${weekIdx}`} className={`text-right py-3 px-2 text-gray-300 ${bgClass}`}>
                               {weekData ? formatNumber(weekData.conversions) : '-'}
                             </td>
-                            <td key={`cpa-${weekIdx}`} className="text-right py-3 px-2 text-gray-300">
+                            <td key={`cpa-${weekIdx}`} className={`text-right py-3 px-2 text-gray-300 ${bgClass}`}>
                               {cpa !== null ? formatCurrency(cpa) : '—'}
                             </td>
                           </>
@@ -500,7 +700,7 @@ export default function GoogleAdsSummaryPage() {
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.ctr)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatCurrencyPrecise(lastWeek.avg_cpc)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.conversions)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.conv_rate)}</td>
+                        <td className="text-right py-3 px-3 text-gray-300">{formatConvRate(lastWeek.conv_rate)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_impression_share)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_top_impression_share)}</td>
                         <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_abs_top_impression_share)}</td>

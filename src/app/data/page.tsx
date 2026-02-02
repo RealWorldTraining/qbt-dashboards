@@ -165,7 +165,7 @@ export default function DataDashboard() {
       <header className="flex items-center justify-between px-6 py-3 bg-zinc-900/80 border-b border-zinc-800">
         <div className="flex items-center gap-4">
           <DashboardNav />
-          <h1 className="text-2xl font-bold text-white tracking-tight">Mission Control</h1>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Sales Snapshot</h1>
           <div className="flex items-center gap-2 text-zinc-400 text-sm">
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             <span>Updated {lastUpdated.toLocaleTimeString()}</span>
@@ -218,7 +218,7 @@ export default function DataDashboard() {
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
           <span className="text-zinc-400 text-sm">Live</span>
         </div>
-        <span className="text-zinc-600 text-sm">QuickBooks Training • Mission Control</span>
+        <span className="text-zinc-600 text-sm">QuickBooks Training • Sales Snapshot</span>
       </footer>
     </div>
   )
