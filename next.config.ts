@@ -14,5 +14,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-// Cache bust: 2026-02-02 13:47:45
