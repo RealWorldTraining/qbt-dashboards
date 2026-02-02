@@ -45,7 +45,21 @@ export default function VisionDashboard() {
     try {
       const response = await fetch('/api/vision-keywords');
       const result = await response.json();
-      setKeywordData(result.data || []);
+      
+      // Filter to last 90 days and active campaigns only
+      const now = new Date();
+      const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      
+      const filtered = (result.data || []).filter((row: KeywordData) => {
+        const weekDate = new Date(row['Week (Monday)']);
+        const clicks = parseInt(row['Clicks']) || 0;
+        const conversions = parseFloat(row['Conversions']) || 0;
+        
+        // Keep only recent data with some activity
+        return weekDate >= ninetyDaysAgo && (clicks > 0 || conversions > 0);
+      });
+      
+      setKeywordData(filtered);
     } catch (error) {
       console.error('Error fetching keyword data:', error);
     } finally {
@@ -63,6 +77,28 @@ export default function VisionDashboard() {
   const parsePercent = (val: string) => {
     if (!val) return 0;
     return parseFloat(val.replace(/%/g, '')) || 0;
+  };
+
+  // Helper to shorten campaign names for better display
+  const shortenCampaignName = (name: string) => {
+    // Remove "Campaign" redundancy and shorten common patterns
+    return name
+      .replace(/Campaign/gi, '')
+      .replace(/Training - /gi, '')
+      .replace(/Classes - /gi, '')
+      .replace(/Courses - /gi, '')
+      .replace(/Certification - /gi, '')
+      .trim();
+  };
+
+  // Get date range for display
+  const getDateRange = () => {
+    if (keywordData.length === 0) return '';
+    const weeks = [...new Set(keywordData.map(r => r['Week (Monday)']))].sort();
+    if (weeks.length === 0) return '';
+    const first = new Date(weeks[0]);
+    const last = new Date(weeks[weeks.length - 1]);
+    return `${first.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${last.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   };
 
   // Section 1: Bid vs Actual CPC Efficiency
@@ -83,7 +119,7 @@ export default function VisionDashboard() {
 
         return {
           keyword: row['Search keyword'],
-          campaign: row['Campaign Name'],
+          campaign: shortenCampaignName(row['Campaign Name']),
           maxCPC,
           avgCPC,
           spread,
@@ -102,14 +138,15 @@ export default function VisionDashboard() {
 
     keywordData.forEach(row => {
       const campaign = row['Campaign Name'];
+      const shortName = shortenCampaignName(campaign);
       // Extract device from campaign name (assuming format like "Training - Desktop")
       const device = campaign.includes('Desktop') ? 'Desktop' :
                      campaign.includes('Mobile') ? 'Mobile' : 'Unknown';
-      const key = `${campaign.split(' - ')[0]} - ${device}`;
+      const key = `${shortName} - ${device}`;
 
       if (!grouped[key]) {
         grouped[key] = {
-          campaign: campaign.split(' - ')[0],
+          campaign: shortName,
           device,
           spend: 0,
           clicks: 0,
@@ -124,11 +161,14 @@ export default function VisionDashboard() {
       grouped[key].impressions += parseInt(row['Impressions']) || 0;
     });
 
-    return Object.values(grouped).map((g: any) => ({
-      ...g,
-      cpa: g.conversions > 0 ? g.spend / g.conversions : 0,
-      ctr: g.impressions > 0 ? (g.clicks / g.impressions) * 100 : 0,
-    }));
+    return Object.values(grouped)
+      .map((g: any) => ({
+        ...g,
+        cpa: g.conversions > 0 ? g.spend / g.conversions : 0,
+        ctr: g.impressions > 0 ? (g.clicks / g.impressions) * 100 : 0,
+      }))
+      .filter((g: any) => g.clicks > 0 || g.conversions > 0) // Filter out zero-activity campaigns
+      .sort((a: any, b: any) => b.spend - a.spend); // Sort by spend descending
   };
 
   // Section 3: Keyword-Level CPA Trends
@@ -219,7 +259,7 @@ export default function VisionDashboard() {
 
       return {
         keyword: row['Search keyword'],
-        campaign: row['Campaign Name'],
+        campaign: shortenCampaignName(row['Campaign Name']),
         action,
         reason,
         maxCPC,
@@ -251,12 +291,16 @@ export default function VisionDashboard() {
   const campaignDevice = getCampaignDeviceData();
   const cpaTrends = getKeywordCPATrends();
   const recommendations = getBidRecommendations();
+  const dateRange = getDateRange();
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold mb-2">Vision Analytics Dashboard</h1>
-        <p className="text-gray-600 mb-8">Keyword-level insights and bid optimization</p>
+        <p className="text-gray-600 mb-2">Keyword-level insights and bid optimization</p>
+        {dateRange && (
+          <p className="text-sm text-gray-500 mb-6">📅 Data range: {dateRange} (Last 90 days, active campaigns only)</p>
+        )}
 
         {/* Section 1: Bid vs Actual CPC Efficiency */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
