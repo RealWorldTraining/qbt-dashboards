@@ -165,18 +165,17 @@ export async function GET(request: NextRequest) {
         hourLabel = `${formatHour(hourStart)} - ${formatHour(hourEnd)}`;
       }
       
-      // Filter events that fall within this hour
+      // Filter events that are ACTIVE during this hour (overlapping)
       const isInHour = (event: CalendarEvent) => {
         const eventStartUTC = new Date(event.start);
+        const eventEndUTC = new Date(event.end);
         const eventStartCSTString = eventStartUTC.toLocaleString('en-US', { timeZone: 'America/Chicago' });
+        const eventEndCSTString = eventEndUTC.toLocaleString('en-US', { timeZone: 'America/Chicago' });
         const eventStartCST = new Date(eventStartCSTString);
+        const eventEndCST = new Date(eventEndCSTString);
         
-        // For debugging
-        if (i === 0) {
-          console.log(`[Event Check] Event: ${event.summary}, Start UTC: ${eventStartUTC.toISOString()}, Start CST: ${eventStartCSTString}, Hour start: ${hourStart.toISOString()}, Hour end: ${hourEnd.toISOString()}`);
-        }
-        
-        return eventStartCST >= hourStart && eventStartCST < hourEnd;
+        // Event overlaps hour if: event_start < hour_end AND event_end > hour_start
+        return eventStartCST < hourEnd && eventEndCST > hourStart;
       };
       
       const downhillFiltered = downhillEvents.filter(isInHour);
