@@ -74,24 +74,59 @@ function parseTime(timeStr: string, dateStr?: string): Date | null {
     if (ampm === 'PM' && hours !== 12) hours += 12;
     if (ampm === 'AM' && hours === 12) hours = 0;
     
-    let date: Date;
+    // Parse date (or use today in CST)
+    let year: number, month: number, day: number;
+    
     if (dateStr) {
       // Parse date like "2/2/26"
       const dateParts = dateStr.split('/');
-      const month = parseInt(dateParts[0]) - 1; // 0-based
-      const day = parseInt(dateParts[1]);
-      let year = parseInt(dateParts[2]);
+      month = parseInt(dateParts[0]);
+      day = parseInt(dateParts[1]);
+      year = parseInt(dateParts[2]);
       if (year < 100) year += 2000;
-      
-      date = new Date(year, month, day, hours, minutes);
     } else {
-      // Use today's date
-      date = new Date();
-      date.setHours(hours, minutes, 0, 0);
+      // Use today's date in CST
+      const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+      year = nowCST.getFullYear();
+      month = nowCST.getMonth() + 1;
+      day = nowCST.getDate();
     }
     
-    return date;
+    // Build date string that will be interpreted as CST
+    // Approach: create a string representation and parse it as CST using toLocaleString
+    const monthStr = String(month).padStart(2, '0');
+    const dayStr = String(day).padStart(2, '0');
+    const hoursStr = String(hours).padStart(2, '0');
+    const minutesStr = String(minutes).padStart(2, '0');
+    
+    // Create string: "2/2/2026, 2:46:00 PM" format
+    const ampmStr = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    const dateStringCST = `${month}/${day}/${year}, ${hours12}:${String(minutes).padStart(2, '0')}:00 ${ampmStr}`;
+    
+    // Parse this string as a US date - it will use local timezone
+    // Then adjust for CST offset
+    const localDate = new Date(dateStringCST);
+    
+    // Calculate CST offset: CST is -6 hours from UTC (or -5 during DST)
+    // Get what the UTC time would be if this were CST
+    const offsetMinutes = 6 * 60; // CST offset (will auto-adjust for DST based on date)
+    
+    // Check if this date would be in DST
+    const jan = new Date(year, 0, 1);
+    const jul = new Date(year, 6, 1);
+    const stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+    const testDate = new Date(year, month - 1, day);
+    const isDST = testDate.getTimezoneOffset() < stdOffset;
+    
+    const cstOffsetHours = isDST ? 5 : 6; // CDT is UTC-5, CST is UTC-6
+    
+    // Build the UTC timestamp for this CST time
+    const utcTimestamp = Date.UTC(year, month - 1, day, hours + cstOffsetHours, minutes, 0);
+    
+    return new Date(utcTimestamp);
   } catch (error) {
+    console.error('parseTime error:', error);
     return null;
   }
 }
@@ -188,9 +223,10 @@ export async function GET(request: NextRequest) {
             let helpDuration = 0;
             if (helpStarted) {
               const startDt = parseTime(helpStarted, person.date);
-              const now = new Date();
+              // Get current time in CST
+              const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
               if (startDt) {
-                const deltaMs = now.getTime() - startDt.getTime();
+                const deltaMs = nowCST.getTime() - startDt.getTime();
                 helpDuration = Math.max(0, Math.round((deltaMs / (1000 * 60)) * 10) / 10);
               }
             }
@@ -213,9 +249,10 @@ export async function GET(request: NextRequest) {
             let waitDuration = 0;
             if (entered) {
               const enteredDt = parseTime(entered, person.date);
-              const now = new Date();
+              // Get current time in CST
+              const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
               if (enteredDt) {
-                const deltaMs = now.getTime() - enteredDt.getTime();
+                const deltaMs = nowCST.getTime() - enteredDt.getTime();
                 waitDuration = Math.max(0, Math.round((deltaMs / (1000 * 60)) * 10) / 10);
               }
             }
