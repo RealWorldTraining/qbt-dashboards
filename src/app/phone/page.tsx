@@ -3,6 +3,36 @@
 import { useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
 
+const RAILWAY_API_URL = "https://qbtraining-site-production.up.railway.app"
+
+interface PeriodMetrics {
+  label: string
+  date_range: string
+  direct_qty: number
+  direct_revenue: number
+  py_qty: number
+  py_revenue: number
+  qty_change_pct: number
+  revenue_change_pct: number
+  renewal_qty: number
+  renewal_revenue: number
+  py_renewal_qty: number
+  py_renewal_revenue: number
+  renewal_qty_change_pct: number
+  renewal_revenue_change_pct: number
+  total_gross_revenue: number
+  py_total_gross_revenue: number
+  total_gross_revenue_change_pct: number
+}
+
+interface MetricsResponse {
+  yesterday: PeriodMetrics
+  today: PeriodMetrics
+  this_week: PeriodMetrics
+  this_month: PeriodMetrics
+  avg_sale_price: number
+}
+
 interface SalesMetrics {
   today: {
     total: number
@@ -36,34 +66,37 @@ export default function PhoneDashboard() {
   async function fetchData() {
     setLoading(true)
     try {
-      const response = await fetch("/api/recap")
+      const response = await fetch(`${RAILWAY_API_URL}/metrics`)
       if (response.ok) {
-        const data = await response.json()
-        // Transform recap data into phone metrics
-        // TODO: Calculate today, yesterday, this week, MTD from recap data
-        // For now, using placeholder data
+        const data: MetricsResponse = await response.json()
+        
+        // Get current timestamp
+        const now = new Date()
+        const timestamp = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        
+        // Transform Railway API data into phone metrics format
         setMetrics({
           today: {
-            total: 22,
-            lastWeek: 14,
-            twoWeeksAgo: 28,
-            threeWeeksAgo: 31,
-            timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            total: data.today.direct_qty,
+            lastWeek: 0, // TODO: Need historical data endpoint
+            twoWeeksAgo: 0, // TODO: Need historical data endpoint
+            threeWeeksAgo: 0, // TODO: Need historical data endpoint
+            timestamp
           },
           yesterday: {
-            total: 22,
-            priorYear: 6,
-            change: 266.7
+            total: data.yesterday.direct_qty,
+            priorYear: data.yesterday.py_qty,
+            change: data.yesterday.qty_change_pct
           },
           thisWeek: {
-            total: 44,
-            priorYear: 45,
-            change: -2.2
+            total: data.this_week.direct_qty,
+            priorYear: data.this_week.py_qty,
+            change: data.this_week.qty_change_pct
           },
           mtd: {
-            total: 44,
-            priorYear: 9,
-            change: 388.9
+            total: data.this_month.direct_qty,
+            priorYear: data.this_month.py_qty,
+            change: data.this_month.qty_change_pct
           }
         })
       }
