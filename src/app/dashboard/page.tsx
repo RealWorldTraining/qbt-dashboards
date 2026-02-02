@@ -2255,7 +2255,7 @@ export default function DashboardPage() {
                                         return (
                                           <td
                                             key={hour}
-                                            className={`text-center py-3 px-1 font-medium ${value === null ? "text-[#6E6E73]" : isPrimaryRow ? "text-[#4D9FFF]" : "text-[#8E8E93]"}`}
+                                            className={`text-center py-3 px-1 font-medium ${value === null ? "text-[#6E6E73]" : "text-white"}`}
                                             style={heatBg ? { backgroundColor: heatBg } : {}}
                                           >
                                             {value === null ? "-" : value}
