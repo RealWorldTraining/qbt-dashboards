@@ -286,9 +286,26 @@ export default function LiveHelpDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       {Object.entries(currentStatus)
                         .filter(([roomName]) => roomName === 'Downhill' || roomName === 'Orchard')
-                        .map(([roomName, room]) => (
-                          <RoomCard key={roomName} roomName={roomName} room={room} />
-                        ))}
+                        .map(([roomName, room]) => {
+                          // Get scheduled trainer for this room from current hour
+                          const currentSchedule = schedules[0];
+                          let scheduledTrainer = '';
+                          if (currentSchedule) {
+                            const roomKey = roomName.toLowerCase() as 'downhill' | 'orchard';
+                            const events = currentSchedule[roomKey];
+                            if (events && events.length > 0) {
+                              scheduledTrainer = extractName(events[0].trainer || events[0].summary);
+                            }
+                          }
+                          return (
+                            <RoomCard 
+                              key={roomName} 
+                              roomName={roomName} 
+                              room={room} 
+                              scheduledTrainer={scheduledTrainer}
+                            />
+                          );
+                        })}
                     </div>
                     
                     {/* Stats below rooms */}
@@ -457,7 +474,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
   );
 }
 
-function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
+function RoomCard({ roomName, room, scheduledTrainer }: { roomName: string; room: RoomStatus; scheduledTrainer?: string }) {
   const isEmpty = room.total_current === 0;
   const roomEmojis: Record<string, string> = {
     'Downhill': '🌋',
@@ -468,7 +485,12 @@ function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
   return (
     <div className={`bg-white/5 rounded-2xl p-4 border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
       <h4 className="text-base font-semibold mb-3 flex items-center justify-between">
-        <span>{roomEmojis[roomName]} {roomName}</span>
+        <span>
+          {roomEmojis[roomName]} {roomName}
+          {scheduledTrainer && (
+            <span className="text-gray-400 font-normal"> - {scheduledTrainer}</span>
+          )}
+        </span>
         <span className={`text-xs px-2 py-1 rounded-full ${
           isEmpty ? 'bg-gray-700 text-gray-400' : 'bg-green-900 text-green-300'
         }`}>
