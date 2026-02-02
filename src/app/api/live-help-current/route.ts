@@ -92,36 +92,20 @@ function parseTime(timeStr: string, dateStr?: string): Date | null {
       day = nowCST.getDate();
     }
     
-    // Build date string that will be interpreted as CST
-    // Approach: create a string representation and parse it as CST using toLocaleString
-    const monthStr = String(month).padStart(2, '0');
-    const dayStr = String(day).padStart(2, '0');
-    const hoursStr = String(hours).padStart(2, '0');
-    const minutesStr = String(minutes).padStart(2, '0');
+    // CST is UTC-6 (or CDT is UTC-5 during daylight saving time)
+    // February is definitely CST (not DST), so use 6 hour offset
+    // To check if DST: March-November might be CDT
+    let cstOffsetHours = 6;
+    if (month >= 3 && month <= 11) {
+      // Might be CDT (UTC-5), do more specific check
+      // DST in US: second Sunday in March to first Sunday in November
+      // For simplicity, assume CDT from March-November
+      // TODO: More precise DST calculation if needed
+      cstOffsetHours = 5;
+    }
     
-    // Create string: "2/2/2026, 2:46:00 PM" format
-    const ampmStr = hours >= 12 ? 'PM' : 'AM';
-    const hours12 = hours % 12 || 12;
-    const dateStringCST = `${month}/${day}/${year}, ${hours12}:${String(minutes).padStart(2, '0')}:00 ${ampmStr}`;
-    
-    // Parse this string as a US date - it will use local timezone
-    // Then adjust for CST offset
-    const localDate = new Date(dateStringCST);
-    
-    // Calculate CST offset: CST is -6 hours from UTC (or -5 during DST)
-    // Get what the UTC time would be if this were CST
-    const offsetMinutes = 6 * 60; // CST offset (will auto-adjust for DST based on date)
-    
-    // Check if this date would be in DST
-    const jan = new Date(year, 0, 1);
-    const jul = new Date(year, 6, 1);
-    const stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-    const testDate = new Date(year, month - 1, day);
-    const isDST = testDate.getTimezoneOffset() < stdOffset;
-    
-    const cstOffsetHours = isDST ? 5 : 6; // CDT is UTC-5, CST is UTC-6
-    
-    // Build the UTC timestamp for this CST time
+    // Build UTC timestamp from CST time
+    // If it's 2:58 PM CST, that's 8:58 PM UTC (or 7:58 PM if CDT)
     const utcTimestamp = Date.UTC(year, month - 1, day, hours + cstOffsetHours, minutes, 0);
     
     return new Date(utcTimestamp);
@@ -223,11 +207,12 @@ export async function GET(request: NextRequest) {
             let helpDuration = 0;
             if (helpStarted) {
               const startDt = parseTime(helpStarted, person.date);
-              // Get current time in CST
-              const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+              const now = new Date(); // UTC time
               if (startDt) {
-                const deltaMs = nowCST.getTime() - startDt.getTime();
+                console.log(`[${roomDisplay}] ${person.attendee_name}: start=${helpStarted}, startDt=${startDt.toISOString()}, now=${now.toISOString()}`);
+                const deltaMs = now.getTime() - startDt.getTime();
                 helpDuration = Math.max(0, Math.round((deltaMs / (1000 * 60)) * 10) / 10);
+                console.log(`[${roomDisplay}] ${person.attendee_name}: deltaMs=${deltaMs}, duration=${helpDuration}min`);
               }
             }
             
@@ -249,10 +234,9 @@ export async function GET(request: NextRequest) {
             let waitDuration = 0;
             if (entered) {
               const enteredDt = parseTime(entered, person.date);
-              // Get current time in CST
-              const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+              const now = new Date(); // UTC time
               if (enteredDt) {
-                const deltaMs = nowCST.getTime() - enteredDt.getTime();
+                const deltaMs = now.getTime() - enteredDt.getTime();
                 waitDuration = Math.max(0, Math.round((deltaMs / (1000 * 60)) * 10) / 10);
               }
             }
