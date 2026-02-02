@@ -58,8 +58,20 @@ interface SalesMetrics {
   }
 }
 
+interface HourlyData {
+  today: { [hour: string]: number | null }
+  lastWeek: { [hour: string]: number | null }
+  twoWeeks: { [hour: string]: number | null }
+  threeWeeks: { [hour: string]: number | null }
+  todayEOD: number | null
+  lastWeekEOD: number | null
+  twoWeeksEOD: number | null
+  threeWeeksEOD: number | null
+}
+
 export default function PhoneDashboard() {
   const [metrics, setMetrics] = useState<SalesMetrics | null>(null)
+  const [hourlyData, setHourlyData] = useState<HourlyData | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
@@ -100,6 +112,18 @@ export default function PhoneDashboard() {
       const lastWeekAtTime = lastWeekPeriod?.hourly_sales?.[hourKey] || 0
       const twoWeeksAtTime = twoWeeksPeriod?.hourly_sales?.[hourKey] || 0
       const threeWeeksAtTime = threeWeeksPeriod?.hourly_sales?.[hourKey] || 0
+      
+      // Extract hourly data for table
+      setHourlyData({
+        today: todayPeriod?.hourly_sales || {},
+        lastWeek: lastWeekPeriod?.hourly_sales || {},
+        twoWeeks: twoWeeksPeriod?.hourly_sales || {},
+        threeWeeks: threeWeeksPeriod?.hourly_sales || {},
+        todayEOD: todayPeriod?.end_of_day || null,
+        lastWeekEOD: lastWeekPeriod?.end_of_day || null,
+        twoWeeksEOD: twoWeeksPeriod?.end_of_day || null,
+        threeWeeksEOD: threeWeeksPeriod?.end_of_day || null,
+      })
       
       // Transform Railway API data into phone metrics format
       setMetrics({
@@ -167,10 +191,10 @@ export default function PhoneDashboard() {
         </button>
       </div>
 
-      {/* Metrics Grid */}
+      {/* Metrics Grid - 2x2 */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         {/* Today Card */}
-        <div className="bg-[#1c1c1e] rounded-2xl p-5 col-span-2 sm:col-span-1 flex flex-col items-center text-center">
+        <div className="bg-[#1c1c1e] rounded-2xl p-5 flex flex-col items-center text-center">
           <div className="text-gray-400 text-sm mb-2">Today @ {metrics.today.timestamp}</div>
           <div className="text-white text-6xl font-bold mb-4">{metrics.today.total}</div>
           <div className="space-y-1.5">
@@ -190,7 +214,7 @@ export default function PhoneDashboard() {
         </div>
 
         {/* Yesterday Card */}
-        <div className="bg-[#1c1c1e] rounded-2xl p-5 col-span-2 sm:col-span-1 flex flex-col items-center text-center">
+        <div className="bg-[#1c1c1e] rounded-2xl p-5 flex flex-col items-center text-center">
           <div className="text-gray-400 text-sm mb-2">Yesterday</div>
           <div className="text-white text-6xl font-bold mb-4">{metrics.yesterday.total}</div>
           <div className="space-y-1.5">
@@ -226,6 +250,69 @@ export default function PhoneDashboard() {
               ({metrics.mtd.change >= 0 ? '+' : ''}{metrics.mtd.total - metrics.mtd.priorYear})
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Hourly Comparison - 2pm to EOD */}
+      <div className="bg-white rounded-2xl p-4 mb-6 overflow-x-auto">
+        <h3 className="text-gray-900 font-semibold text-sm mb-3">📊 Hourly Sales (2pm-EOD)</h3>
+        <div className="text-xs">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-2 px-2 text-gray-600 font-medium">Period</th>
+                <th className="text-center py-2 px-1 text-gray-600 font-medium">2pm</th>
+                <th className="text-center py-2 px-1 text-gray-600 font-medium">3pm</th>
+                <th className="text-center py-2 px-1 text-gray-600 font-medium">4pm</th>
+                <th className="text-center py-2 px-1 text-gray-600 font-medium">5pm</th>
+                <th className="text-center py-2 px-1 text-gray-600 font-medium">6pm</th>
+                <th className="text-center py-2 px-1 text-gray-600 font-medium">7pm</th>
+                <th className="text-center py-2 px-1 text-gray-600 font-medium">EOD</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 px-2 font-medium text-gray-900">Today</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['2pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['3pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['4pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['5pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['6pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['7pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 font-semibold text-blue-600">{hourlyData?.todayEOD ?? '-'}</td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 px-2 text-gray-600">LW</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['2pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['3pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['4pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['5pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['6pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['7pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 font-semibold text-gray-700">{hourlyData?.lastWeekEOD ?? '-'}</td>
+              </tr>
+              <tr className="border-b border-gray-100">
+                <td className="py-2 px-2 text-gray-600">2WA</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['2pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['3pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['4pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['5pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['6pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['7pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 font-semibold text-gray-700">{hourlyData?.twoWeeksEOD ?? '-'}</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-2 text-gray-600">3WA</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['2pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['3pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['4pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['5pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['6pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['7pm'] ?? '-'}</td>
+                <td className="text-center py-2 px-1 font-semibold text-gray-700">{hourlyData?.threeWeeksEOD ?? '-'}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
