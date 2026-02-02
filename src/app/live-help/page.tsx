@@ -282,7 +282,8 @@ export default function LiveHelpDashboard() {
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: function(context) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                label: function(context: any) {
                   const hours = context.parsed.x;
                   const minutes = Math.round(hours * 60);
                   return `${hours.toFixed(2)} hours (${minutes} minutes)`;
