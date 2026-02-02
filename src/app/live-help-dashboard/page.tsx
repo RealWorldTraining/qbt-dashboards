@@ -220,7 +220,7 @@ export default function LiveHelpDashboard() {
               🔴 Live Help Dashboard
             </h1>
             <p className="text-gray-400 text-sm">
-              Real-time status • Updates every 30 seconds
+              Real-time status • Updates every 30 seconds • Live Now
               {lastUpdated && (
                 <span className="ml-3">
                   Last updated: {lastUpdated.toLocaleTimeString()}
