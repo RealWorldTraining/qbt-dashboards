@@ -1,31 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
-const SPREADSHEET_ID = '1Rf9sf4xEIBhOJZGfA2wvLEmDUNd0onuHBZfCBFXx7y4';
-const SHEETS_TO_FETCH = ['Log', 'FY2025 Log', 'FY2024 Log'];
+// Real-time Live Help sheet (current tracking)
+const LIVE_SPREADSHEET_ID = '1BOFucsKkTjviWQO5724znJOKlN8wuLOLkZiOtsXT7UI';
 
-interface TrainerStats {
+// Room mapping
+const ROOMS = {
+  '🌋DOWNHILL': 'Downhill',
+  '🌳ORCHARD': 'Orchard',
+  '🦙LLAMAS': 'Llamas'
+};
+
+interface PersonStatus {
   name: string;
-  sessions: number;
-  totalDuration: number;
-  durations: number[];
-  quick: number;
-  long: number;
+  entered: string;
+  left: string;
+  trainer_name: string;
+  start_time: string;
+  end_time: string;
+  wait_duration_minutes: number;
+  help_duration_minutes: number;
 }
 
-interface RawRow {
-  room: string;
-  date: Date | null;
-  attendee: string;
-  trainer: string;
-  duration: number | null;
-  topic: string;
-}
-
-interface FetchResult {
-  rows: RawRow[];
-  errors: string[];
-  sheetCounts: Record<string, number>;
+interface RoomStatus {
+  being_helped: PersonStatus[];
+  waiting: PersonStatus[];
+  total_current: number;
 }
 
 async function getGoogleSheetsClient() {
@@ -60,420 +60,286 @@ async function getGoogleSheetsClient() {
   return google.sheets({ version: 'v4', auth });
 }
 
-function parseDate(dateStr: string): Date | null {
-  if (!dateStr) return null;
+function parseTime(timeStr: string, dateStr?: string): Date | null {
+  if (!timeStr || timeStr.trim() === '') return null;
   
-  const parts = dateStr.split('/');
-  if (parts.length === 3) {
-    const month = parseInt(parts[0], 10) - 1;
-    const day = parseInt(parts[1], 10);
-    let year = parseInt(parts[2], 10);
+  try {
+    const timeParts = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!timeParts) return null;
     
-    if (year < 100) {
-      year += year < 50 ? 2000 : 1900;
+    let hours = parseInt(timeParts[1]);
+    const minutes = parseInt(timeParts[2]);
+    const ampm = timeParts[3].toUpperCase();
+    
+    if (ampm === 'PM' && hours !== 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    
+    let date: Date;
+    if (dateStr) {
+      // Parse date like "2/2/26"
+      const dateParts = dateStr.split('/');
+      const month = parseInt(dateParts[0]) - 1; // 0-based
+      const day = parseInt(dateParts[1]);
+      let year = parseInt(dateParts[2]);
+      if (year < 100) year += 2000;
+      
+      date = new Date(year, month, day, hours, minutes);
+    } else {
+      // Use today's date
+      date = new Date();
+      date.setHours(hours, minutes, 0, 0);
     }
     
-    if (year < 2020 || year > 2030) return null;
-    
-    const date = new Date(year, month, day);
-    if (isNaN(date.getTime())) return null;
     return date;
-  }
-  
-  return null;
-}
-
-function parseDuration(durationStr: string): number | null {
-  if (!durationStr) return null;
-  const num = parseFloat(durationStr);
-  if (isNaN(num) || num < 0 || num > 480) return null;
-  return num;
-}
-
-async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<FetchResult> {
-  const allRows: RawRow[] = [];
-  const errors: string[] = [];
-  const sheetCounts: Record<string, number> = {};
-  
-  for (const sheetName of SHEETS_TO_FETCH) {
-    try {
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `'${sheetName}'!A:G`,
-      });
-      
-      const rows = response.data.values || [];
-      let count = 0;
-      
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || row.length < 5) continue;
-        
-        const trainer = row[3]?.toString().trim();
-        if (!trainer || trainer === '' || trainer.toLowerCase() === 'trainer name') continue;
-        
-        const rawRow: RawRow = {
-          room: row[0]?.toString().trim() || '',
-          date: parseDate(row[1]?.toString().trim() || ''),
-          attendee: row[2]?.toString().trim() || '',
-          trainer: trainer,
-          duration: parseDuration(row[4]?.toString().trim() || ''),
-          topic: row[6]?.toString().trim() || '',
-        };
-        
-        allRows.push(rawRow);
-        count++;
-      }
-      
-      sheetCounts[sheetName] = count;
-    } catch (error) {
-      const errMsg = error instanceof Error ? error.message : String(error);
-      errors.push(`${sheetName}: ${errMsg}`);
-    }
-  }
-  
-  return { rows: allRows, errors, sheetCounts };
-}
-
-function getDateRange(preset: string, customStart?: string, customEnd?: string): { start: Date; end: Date } {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
-  switch (preset) {
-    case 'this-week': {
-      const dayOfWeek = today.getDay();
-      const start = new Date(today);
-      start.setDate(today.getDate() - dayOfWeek);
-      return { start, end: now };
-    }
-    case 'last-week': {
-      const dayOfWeek = today.getDay();
-      const end = new Date(today);
-      end.setDate(today.getDate() - dayOfWeek - 1);
-      end.setHours(23, 59, 59, 999);
-      const start = new Date(end);
-      start.setDate(end.getDate() - 6);
-      start.setHours(0, 0, 0, 0);
-      return { start, end };
-    }
-    case 'this-month': {
-      const start = new Date(today.getFullYear(), today.getMonth(), 1);
-      return { start, end: now };
-    }
-    case 'last-month': {
-      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const end = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
-      return { start, end };
-    }
-    case 'this-quarter': {
-      const quarter = Math.floor(today.getMonth() / 3);
-      const start = new Date(today.getFullYear(), quarter * 3, 1);
-      return { start, end: now };
-    }
-    case 'last-quarter': {
-      const quarter = Math.floor(today.getMonth() / 3);
-      const start = new Date(today.getFullYear(), (quarter - 1) * 3, 1);
-      const end = new Date(today.getFullYear(), quarter * 3, 0, 23, 59, 59, 999);
-      return { start, end };
-    }
-    case 'this-year': {
-      const start = new Date(today.getFullYear(), 0, 1);
-      return { start, end: now };
-    }
-    case 'last-year': {
-      const start = new Date(today.getFullYear() - 1, 0, 1);
-      const end = new Date(today.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
-      return { start, end };
-    }
-    case 'custom': {
-      return {
-        start: customStart ? new Date(customStart) : new Date(2020, 0, 1),
-        end: customEnd ? new Date(customEnd + 'T23:59:59') : now
-      };
-    }
-    default: // all-time
-      return { start: new Date(2020, 0, 1), end: now };
+  } catch (error) {
+    return null;
   }
 }
 
-function filterByDateRange(rows: RawRow[], start: Date, end: Date): RawRow[] {
-  return rows.filter(row => {
-    if (!row.date) return false;
-    return row.date >= start && row.date <= end;
-  });
+function getTodayString(): string {
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const day = today.getDate();
+  const year = today.getFullYear() % 100;
+  return `${month}/${day}/${year}`;
 }
 
-function aggregateByTrainer(rows: RawRow[]): TrainerStats[] {
-  const trainerMap = new Map<string, TrainerStats>();
+function calculateDurationMinutes(startStr: string, endStr: string, dateStr: string): number {
+  const startDt = parseTime(startStr, dateStr);
+  const endDt = parseTime(endStr, dateStr);
   
-  for (const row of rows) {
-    // Normalize trainer name: capitalize first letter (sue -> Sue)
-    const name = row.trainer.charAt(0).toUpperCase() + row.trainer.slice(1);
+  if (startDt && endDt) {
+    const delta = endDt.getTime() - startDt.getTime();
+    return delta / (1000 * 60); // Convert to minutes
+  }
+  return 0;
+}
+
+async function getRoomData(sheets: ReturnType<typeof google.sheets>, roomName: string): Promise<any[]> {
+  try {
+    const result = await sheets.spreadsheets.values.get({
+      spreadsheetId: LIVE_SPREADSHEET_ID,
+      range: `${roomName}!A:J`
+    });
     
-    if (!trainerMap.has(name)) {
-      trainerMap.set(name, {
-        name,
-        sessions: 0,
-        totalDuration: 0,
-        durations: [],
-        quick: 0,
-        long: 0,
-      });
-    }
+    const rows = result.data.values || [];
+    if (rows.length <= 4) return []; // No data beyond headers
     
-    const stats = trainerMap.get(name)!;
-    stats.sessions++;
-    
-    if (row.duration !== null) {
-      stats.totalDuration += row.duration;
-      stats.durations.push(row.duration);
-      if (row.duration < 5) stats.quick++;
-      if (row.duration > 20) stats.long++;
-    }
-  }
-  
-  return Array.from(trainerMap.values());
-}
-
-function calculateMedian(arr: number[]): number {
-  if (arr.length === 0) return 0;
-  const sorted = [...arr].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-function getDayOfWeekStats(rows: RawRow[]): number[] {
-  const counts = [0, 0, 0, 0, 0, 0, 0]; // Sun-Sat
-  for (const row of rows) {
-    if (row.date) {
-      counts[row.date.getDay()]++;
-    }
-  }
-  // Reorder to Mon-Sun
-  return [counts[1], counts[2], counts[3], counts[4], counts[5], counts[6], counts[0]];
-}
-
-function getWeekNumber(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-}
-
-function getDayOfWeekByYear(rows: RawRow[]): Record<string, number[]> {
-  // Get current week number
-  const now = new Date();
-  const currentWeek = getWeekNumber(now);
-  
-  const yearData: Record<string, number[]> = {
-    '2024': [0, 0, 0, 0, 0, 0, 0], // Mon-Sun
-    '2025': [0, 0, 0, 0, 0, 0, 0],
-    '2026': [0, 0, 0, 0, 0, 0, 0],
-  };
-  
-  for (const row of rows) {
-    if (row.date) {
-      const year = row.date.getFullYear().toString();
-      const weekNum = getWeekNumber(row.date);
-      
-      // Only include data from the same week number as current week
-      if (weekNum === currentWeek && yearData[year]) {
-        const dayOfWeek = row.date.getDay();
-        // Convert Sun(0) to index 6, Mon(1) to index 0, etc.
-        const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        yearData[year][dayIndex]++;
+    // Process data rows (skip headers at row 4, index 3)
+    const data = [];
+    for (let i = 4; i < rows.length; i++) {
+      const row = rows[i];
+      if (row.length >= 4 && row[3] && row[3].toString().trim()) {
+        data.push({
+          row: i + 1,
+          date: row[1] || '',           // B: Date 
+          entered: row[2] || '',        // C: Entered
+          attendee_name: row[3] || '',  // D: Attendee Name
+          left: row[4] || '',           // E: Left
+          trainer_name: row[5] || '',   // F: Trainer Name
+          click_start: row[6] || '',    // G: Click to start
+          click_end: row[7] || '',      // H: Click to end  
+          start_time: row[8] || '',     // I: Start time
+          end_time: row[9] || ''        // J: End time
+        });
       }
     }
+    
+    return data;
+  } catch (error) {
+    console.error(`Error reading ${roomName}:`, error);
+    return [];
   }
-  
-  return yearData;
-}
-
-function getTopicStats(rows: RawRow[]): { label: string; count: number }[] {
-  const topicMap = new Map<string, number>();
-  
-  for (const row of rows) {
-    if (row.topic && row.topic !== '') {
-      topicMap.set(row.topic, (topicMap.get(row.topic) || 0) + 1);
-    }
-  }
-  
-  return Array.from(topicMap.entries())
-    .map(([label, count]) => ({ label, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 15);
-}
-
-function getMonthlyByYear(rows: RawRow[]): Record<string, number[]> {
-  const yearData: Record<string, number[]> = {
-    '2024': new Array(12).fill(0),
-    '2025': new Array(12).fill(0),
-    '2026': new Array(12).fill(0),
-  };
-  
-  for (const row of rows) {
-    if (row.date) {
-      const year = row.date.getFullYear().toString();
-      const month = row.date.getMonth();
-      if (yearData[year]) {
-        yearData[year][month]++;
-      }
-    }
-  }
-  
-  return yearData;
-}
-
-function getBusiestDay(rows: RawRow[]): string {
-  const dayCounts = getDayOfWeekStats(rows);
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  let maxIdx = 0;
-  for (let i = 1; i < dayCounts.length; i++) {
-    if (dayCounts[i] > dayCounts[maxIdx]) {
-      maxIdx = i;
-    }
-  }
-  return days[maxIdx];
 }
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const preset = searchParams.get('preset') || 'this-week';
-    const customStart = searchParams.get('start') || undefined;
-    const customEnd = searchParams.get('end') || undefined;
-    const debug = searchParams.get('debug') === 'true';
-    
-    const { start, end } = getDateRange(preset, customStart, customEnd);
-    
-    const envCheck = {
-      hasProjectId: !!process.env.GOOGLE_PROJECT_ID,
-      hasPrivateKey: !!process.env.GOOGLE_PRIVATE_KEY,
-      hasClientEmail: !!process.env.GOOGLE_CLIENT_EMAIL,
-      privateKeyLength: process.env.GOOGLE_PRIVATE_KEY?.length || 0,
-      privateKeyStart: process.env.GOOGLE_PRIVATE_KEY?.substring(0, 30),
-    };
-    
-    if (debug) {
-      return NextResponse.json({ envCheck, message: 'Debug mode - env vars check' });
-    }
+    const action = searchParams.get('action') || 'current-status';
     
     const sheets = await getGoogleSheetsClient();
-    const fetchResult = await fetchAllData(sheets);
+    const today = getTodayString();
     
-    // Filter data by date range
-    const filteredRows = filterByDateRange(fetchResult.rows, start, end);
-    const trainerStats = aggregateByTrainer(filteredRows);
-    
-    // Calculate metrics
-    const totalSessions = filteredRows.length;
-    const sessionsWithDuration = filteredRows.filter(r => r.duration !== null);
-    const totalDuration = sessionsWithDuration.reduce((sum, r) => sum + (r.duration || 0), 0);
-    const avgDuration = sessionsWithDuration.length > 0 
-      ? Math.round((totalDuration / sessionsWithDuration.length) * 10) / 10 
-      : 0;
-    
-    // No-help rate (sessions without trainer interaction - approximated as very short durations)
-    const noHelpCount = filteredRows.filter(r => r.duration === null || r.duration === 0).length;
-    const noHelpRate = totalSessions > 0 
-      ? Math.round((noHelpCount / totalSessions) * 1000) / 10 
-      : 0;
-    
-    const helpedSessions = totalSessions - noHelpCount;
-    const busiestDay = getBusiestDay(filteredRows);
-    
-    // Excluded trainers (case-insensitive)
-    const EXCLUDED_TRAINERS = ['x', 'nancy mattar', 'jenna'];
-    
-    // Helper to normalize name (capitalize first letter)
-    const normalizeName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
-    
-    // Helper to check if trainer should be excluded
-    const isExcluded = (name: string) => EXCLUDED_TRAINERS.includes(name.toLowerCase());
-    
-    // Trainer data formatted (with exclusions and name normalization)
-    const trainerData = trainerStats
-      .map(stats => ({
-        name: normalizeName(stats.name),
-        sessions: stats.sessions,
-        avg: stats.durations.length > 0 
-          ? Math.round((stats.totalDuration / stats.durations.length) * 10) / 10 
-          : 0,
-        median: Math.round(calculateMedian(stats.durations)),
-        quick: stats.quick,
-        long: stats.long,
-        quickPct: stats.sessions > 0 
-          ? Math.round((stats.quick / stats.sessions) * 1000) / 10 
-          : 0,
-      }))
-      .filter(t => t.sessions > 0 && !isExcluded(t.name))
-      .sort((a, b) => b.sessions - a.sessions);
-    
-    // Top trainer (fastest average time with minimum 5 sessions)
-    const qualifiedTrainers = trainerData.filter(t => t.sessions >= 5 && t.avg > 0);
-    const topTrainer = qualifiedTrainers.length > 0
-      ? qualifiedTrainers.reduce((best, t) => t.avg < best.avg ? t : best)
-      : null;
-    
-    // Day of week stats
-    const dayOfWeekStats = getDayOfWeekStats(filteredRows);
-    
-    // Day of week by year (for all data, not filtered)
-    const dayOfWeekByYear = getDayOfWeekByYear(fetchResult.rows);
-    
-    // Topic stats
-    const topicStats = getTopicStats(filteredRows);
-    
-    // Monthly by year (for all data, not filtered)
-    const monthlyByYear = getMonthlyByYear(fetchResult.rows);
-    
-    // Trainer comparison to average
-    const trainerComparison = trainerData
-      .filter(t => t.sessions >= 3 && t.avg > 0)
-      .map(t => ({
-        name: t.name,
-        avg: t.avg,
-        sessions: t.sessions,
-        diff: Math.round((t.avg - avgDuration) * 10) / 10,
-      }))
-      .sort((a, b) => a.avg - b.avg);
-    
-    return NextResponse.json({
-      trainerData,
-      summary: {
-        totalSessions,
-        helpedSessions,
-        noHelpRate,
-        avgDuration,
-        busiestDay,
-        trainerCount: trainerData.length,
-        topTrainer: topTrainer ? { name: topTrainer.name, avg: topTrainer.avg } : null,
-      },
-      charts: {
-        dayOfWeek: dayOfWeekStats,
-        dayOfWeekByYear,
-        topics: topicStats,
-        monthlyByYear,
-        trainerComparison,
-      },
-      dateRange: {
-        start: start.toISOString(),
-        end: end.toISOString(),
-        preset
-      },
-      _debug: {
-        rawRowCount: fetchResult.rows.length,
-        filteredRowCount: filteredRows.length,
-        sheetCounts: fetchResult.sheetCounts,
-        errors: fetchResult.errors,
+    if (action === 'current-status') {
+      // Real-time room status
+      const status: Record<string, RoomStatus> = {};
+      
+      for (const [roomEmoji, roomDisplay] of Object.entries(ROOMS)) {
+        const roomData = await getRoomData(sheets, roomEmoji);
+        
+        // Filter to today's data
+        const todayData = roomData.filter(row => row.date === today);
+        
+        // Find people currently in room (no "left" time)
+        const currentPeople = todayData.filter(row => !row.left || row.left.toString().trim() === '');
+        
+        // Categorize current people
+        const beingHelped: PersonStatus[] = [];
+        const waiting: PersonStatus[] = [];
+        
+        for (const person of currentPeople) {
+          const trainer = person.trainer_name ? person.trainer_name.toString().trim() : '';
+          
+          if (trainer && trainer !== 'X') {
+            // Being helped
+            const helpStarted = person.start_time ? person.start_time.toString() : '';
+            const helpDuration = helpStarted ? 
+              calculateDurationMinutes(helpStarted, new Date().toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: true 
+              }), person.date) : 0;
+            
+            beingHelped.push({
+              name: person.attendee_name,
+              trainer: trainer,
+              entered: person.entered.toString(),
+              left: '',
+              trainer_name: trainer,
+              start_time: helpStarted,
+              end_time: '',
+              help_duration_minutes: Math.round(helpDuration * 10) / 10,
+              wait_duration_minutes: 0
+            });
+          } else {
+            // Waiting
+            const entered = person.entered ? person.entered.toString() : '';
+            const waitDuration = entered ?
+              calculateDurationMinutes(entered, new Date().toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit', 
+                hour12: true
+              }), person.date) : 0;
+            
+            waiting.push({
+              name: person.attendee_name,
+              entered: entered,
+              left: '',
+              trainer_name: '',
+              start_time: '',
+              end_time: '',
+              wait_duration_minutes: Math.round(waitDuration * 10) / 10,
+              help_duration_minutes: 0
+            });
+          }
+        }
+        
+        status[roomDisplay] = {
+          being_helped: beingHelped,
+          waiting: waiting,
+          total_current: currentPeople.length
+        };
       }
-    });
+      
+      return NextResponse.json(status);
+    }
+    
+    if (action === 'today-stats') {
+      // Today's statistics
+      let allTodayData: any[] = [];
+      
+      // Collect all today's data from all rooms
+      for (const [roomEmoji, roomDisplay] of Object.entries(ROOMS)) {
+        const roomData = await getRoomData(sheets, roomEmoji);
+        const todayRoomData = roomData
+          .filter(row => row.date === today)
+          .map(row => ({ ...row, room: roomDisplay }));
+        allTodayData = allTodayData.concat(todayRoomData);
+      }
+      
+      // Calculate stats
+      const totalVisits = allTodayData.length;
+      const completedVisits = allTodayData.filter(row => row.left && row.left.toString().trim() !== '');
+      
+      // Average help duration (for completed sessions with trainer)
+      const helpDurations: number[] = [];
+      for (const row of completedVisits) {
+        const trainer = row.trainer_name ? row.trainer_name.toString().trim() : '';
+        if (trainer && trainer !== 'X') {
+          const duration = calculateDurationMinutes(
+            row.start_time ? row.start_time.toString() : '',
+            row.end_time ? row.end_time.toString() : '',
+            row.date
+          );
+          if (duration > 0) {
+            helpDurations.push(duration);
+          }
+        }
+      }
+      
+      const avgHelpDuration = helpDurations.length > 0 
+        ? helpDurations.reduce((a, b) => a + b, 0) / helpDurations.length 
+        : 0;
+      
+      // Hourly breakdown
+      const hourlyLogins = new Array(24).fill(0);
+      for (const row of allTodayData) {
+        const enteredDt = parseTime(row.entered ? row.entered.toString() : '', row.date);
+        if (enteredDt) {
+          hourlyLogins[enteredDt.getHours()]++;
+        }
+      }
+      
+      const hourlyData = hourlyLogins.map((logins, hour) => ({ hour, logins }));
+      
+      return NextResponse.json({
+        total_visits: totalVisits,
+        completed_visits: completedVisits.length,
+        average_help_duration_minutes: Math.round(avgHelpDuration * 10) / 10,
+        hourly_logins: hourlyData,
+        help_sessions: helpDurations.length
+      });
+    }
+    
+    if (action === 'trainer-performance') {
+      // Trainer performance for today
+      let allTodayData: any[] = [];
+      
+      for (const [roomEmoji, roomDisplay] of Object.entries(ROOMS)) {
+        const roomData = await getRoomData(sheets, roomEmoji);
+        const todayRoomData = roomData
+          .filter(row => row.date === today)
+          .map(row => ({ ...row, room: roomDisplay }));
+        allTodayData = allTodayData.concat(todayRoomData);
+      }
+      
+      // Calculate per-trainer stats
+      const trainerStats: Record<string, { sessions: number; total_duration: number; avg_duration: number }> = {};
+      
+      for (const row of allTodayData) {
+        const trainer = row.trainer_name ? row.trainer_name.toString().trim() : '';
+        if (trainer && trainer !== 'X') {
+          if (!trainerStats[trainer]) {
+            trainerStats[trainer] = { sessions: 0, total_duration: 0, avg_duration: 0 };
+          }
+          
+          const duration = calculateDurationMinutes(
+            row.start_time ? row.start_time.toString() : '',
+            row.end_time ? row.end_time.toString() : '',
+            row.date
+          );
+          
+          trainerStats[trainer].sessions++;
+          trainerStats[trainer].total_duration += duration;
+        }
+      }
+      
+      // Calculate averages
+      for (const [trainer, stats] of Object.entries(trainerStats)) {
+        if (stats.sessions > 0) {
+          stats.avg_duration = Math.round((stats.total_duration / stats.sessions) * 10) / 10;
+        }
+      }
+      
+      return NextResponse.json(trainerStats);
+    }
+    
+    return NextResponse.json({ error: 'Invalid action parameter' }, { status: 400 });
     
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Live Help API Error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch data', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to fetch live data', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
