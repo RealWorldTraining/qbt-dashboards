@@ -127,10 +127,10 @@ export default function LiveHelpDashboard() {
       clearInterval(intervalRef.current);
     }
     
-    // Refresh every 30 seconds
+    // Refresh every 60 seconds
     intervalRef.current = setInterval(() => {
       fetchAllData();
-    }, 30000);
+    }, 60000);
     
     return () => {
       if (intervalRef.current) {
@@ -220,7 +220,7 @@ export default function LiveHelpDashboard() {
               🔴 Live Help Dashboard
             </h1>
             <p className="text-gray-400 text-sm">
-              Real-time status • Updates every 30 seconds • Live Now
+              Real-time status • Updates every 60 seconds • Live Now
               {lastUpdated && (
                 <span className="ml-3">
                   Last updated: {lastUpdated.toLocaleTimeString()}
@@ -301,7 +301,7 @@ export default function LiveHelpDashboard() {
               </div>
 
               <footer className="text-center text-gray-500 text-sm mt-12 pb-8">
-                🔴 Live data from Google Sheets • Real-time room status • Auto-refreshes every 30 seconds
+                🔴 Live data from Google Sheets • Real-time room status • Auto-refreshes every 60 seconds
               </footer>
             </>
           )}
