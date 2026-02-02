@@ -95,9 +95,6 @@ export default function LiveHelpDashboard() {
       if (!response.ok) throw new Error('Failed to fetch today stats');
       const data = await response.json();
       setTodayStats(data);
-      
-      // Update hourly chart
-      setTimeout(() => updateHourlyChart(data), 100);
     } catch (err) {
       console.error('Failed to fetch today stats:', err);
     }
@@ -166,6 +163,13 @@ export default function LiveHelpDashboard() {
       }
     };
   }, [fetchAllData]);
+
+  // Update chart when todayStats changes
+  useEffect(() => {
+    if (todayStats.hourly_logins && todayStats.hourly_logins.length > 0) {
+      setTimeout(() => updateHourlyChart(todayStats), 100);
+    }
+  }, [todayStats]);
 
   const updateHourlyChart = (data: TodayStats) => {
     if (typeof window === 'undefined' || !window.Chart) return;
