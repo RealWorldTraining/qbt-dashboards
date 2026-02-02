@@ -19,13 +19,9 @@ export async function GET() {
       credentials = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
     }
 
-    const auth = new google.auth.OAuth2(
-      credentials.client_id,
-      credentials.client_secret
-    );
-    
-    auth.setCredentials({
-      refresh_token: credentials.refresh_token,
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
