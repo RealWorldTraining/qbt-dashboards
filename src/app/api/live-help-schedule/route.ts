@@ -117,53 +117,62 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    // Determine how many hours to show based on current time
-    // Open 7:30 AM - 5:30 PM CST
-    // Show up to 5:30 PM (17:30), but display 5:00-5:30 for the last slot
-    let hoursToShow = 0;
-    if (currentHour >= 7 && currentHour < 17) {
-      // Between 7 AM and 5 PM, show remaining hours up to 5 PM
-      hoursToShow = 17 - currentHour + 1; // +1 to include current hour
-    } else if (currentHour >= 17) {
-      // After 5 PM, show just current hour if still in 5-6 range, otherwise show nothing
-      hoursToShow = currentHour < 18 ? 1 : 0;
+    // Business hours: 7:30 AM - 5:30 PM CST with half-hour blocks
+    // Blocks: 7:30-8:30, 8:30-9:30, ..., 4:30-5:30
+    const currentMinute = nowCST.getMinutes();
+    
+    // Check if we're outside business hours
+    if (currentHour < 7 || (currentHour === 7 && currentMinute < 30)) {
+      return NextResponse.json({ schedules: [], lastUpdated: new Date().toISOString() });
+    }
+    if (currentHour >= 17 && currentMinute >= 30) {
+      return NextResponse.json({ schedules: [], lastUpdated: new Date().toISOString() });
     }
     
+    // Calculate which half-hour block we're currently in
+    let currentBlockStart = 7; // Start at 7 AM
+    if (currentHour > 7 || (currentHour === 7 && currentMinute >= 30)) {
+      currentBlockStart = currentHour;
+      if (currentMinute < 30) {
+        currentBlockStart -= 1; // If before :30, we're in the previous block
+      }
+      // Adjust to start at :30
+      if (currentBlockStart < 7) currentBlockStart = 7;
+    }
+    
+    // Total blocks from 7:30 to 5:30 = 10 blocks
+    // 7:30-8:30, 8:30-9:30, 9:30-10:30, 10:30-11:30, 11:30-12:30, 12:30-1:30, 1:30-2:30, 2:30-3:30, 3:30-4:30, 4:30-5:30
+    const totalBlocks = 10;
+    const firstBlockHour = 7; // 7:30 AM start
+    const currentBlockIndex = currentBlockStart - firstBlockHour;
+    const blocksToShow = totalBlocks - currentBlockIndex;
+    
     // Fetch events from all three calendars (API expects UTC)
-    const endTimeUTC = new Date(nowUTC.getTime() + hoursToShow * 60 * 60 * 1000);
+    const endTimeUTC = new Date(nowUTC.getTime() + blocksToShow * 60 * 60 * 1000);
     const [downhillEvents, orchardEvents, backupEvents] = await Promise.all([
       getCalendarEvents(calendar, CALENDARS.downhill, nowUTC, endTimeUTC),
       getCalendarEvents(calendar, CALENDARS.orchard, nowUTC, endTimeUTC),
       getCalendarEvents(calendar, CALENDARS.backup, nowUTC, endTimeUTC)
     ]);
     
-    console.log(`[Schedule API] Current time CST: ${nowCSTString}, Hour: ${currentHour}`);
-    console.log(`[Schedule API] Total events - Downhill: ${downhillEvents.length}, Orchard: ${orchardEvents.length}, Backup: ${backupEvents.length}`);
-    
-    // Group events by hour (in CST)
+    // Group events by half-hour blocks (in CST)
     const hourSchedules: HourSchedule[] = [];
     
-    for (let i = 0; i < hoursToShow; i++) {
-      // Create hour boundaries in CST
-      const hourStart = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate(), nowCST.getHours() + i, 0, 0);
-      const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000);
+    for (let i = 0; i < blocksToShow; i++) {
+      // Create half-hour block boundaries: X:30 to X+1:30
+      const blockHour = firstBlockHour + currentBlockIndex + i;
+      const hourStart = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate(), blockHour, 30, 0);
+      const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000); // +1 hour
       
-      // Special case for 5 PM hour - show as 5:00 - 5:30 PM
-      const isClosingHour = hourStart.getHours() === 17;
-      
-      const formatHour = (date: Date) => {
+      const formatHalfHour = (date: Date) => {
         const hours = date.getHours();
+        const minutes = date.getMinutes();
         const hours12 = hours % 12 || 12;
         const ampm = hours >= 12 ? 'PM' : 'AM';
-        return `${hours12}:00 ${ampm}`;
+        return `${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
       };
       
-      let hourLabel: string;
-      if (isClosingHour) {
-        hourLabel = '5:00 PM - 5:30 PM';
-      } else {
-        hourLabel = `${formatHour(hourStart)} - ${formatHour(hourEnd)}`;
-      }
+      const hourLabel = `${formatHalfHour(hourStart)} - ${formatHalfHour(hourEnd)}`;
       
       // Filter events that are ACTIVE during this hour (overlapping)
       const isInHour = (event: CalendarEvent) => {
@@ -189,9 +198,6 @@ export async function GET(request: NextRequest) {
         orchard: orchardFiltered,
         backup: backupFiltered
       });
-      
-      // Stop at 5:30 PM
-      if (isClosingHour) break;
     }
     
     return NextResponse.json({
