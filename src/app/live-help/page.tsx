@@ -389,10 +389,30 @@ function StatusCard({
   );
 }
 
+// Trainer name mapping
+const TRAINER_NAMES: Record<string, string> = {
+  'bpittenger': 'Brandon',
+  'eotero': 'Ericka',
+  'wsandin': 'Whitney',
+  'sthompson': 'Shauna',
+  'amarks': 'Amy',
+  'casse': 'Cassie',
+  'cassie': 'Cassie',
+  'JRuvaldt': 'Jason',
+  'jruvaldt': 'Jason',
+};
+
+function normalizeTrainerName(name: string): string {
+  if (!name) return name;
+  const normalized = TRAINER_NAMES[name.toLowerCase()];
+  return normalized || name;
+}
+
 function extractName(summary: string): string {
   // Extract name from format like "50% Orchard [close] (Ericka)" → "Ericka"
   const match = summary.match(/\(([^)]+)\)/);
-  return match ? match[1] : summary;
+  const extracted = match ? match[1] : summary;
+  return normalizeTrainerName(extracted);
 }
 
 function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isCurrent: boolean }) {
@@ -471,7 +491,7 @@ function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
                   <div key={idx} className="text-xs bg-green-900/20 rounded p-2 border border-green-500/30">
                     <div className="font-medium">{person.name}</div>
                     <div className="text-[10px] text-gray-400">
-                      {person.trainer} • {Math.round(person.help_duration_minutes || 0)}m
+                      {normalizeTrainerName(person.trainer || '')} • {Math.round(person.help_duration_minutes || 0)}m
                     </div>
                   </div>
                 ))}
@@ -507,7 +527,7 @@ function TrainerRow({ name, stats }: { name: string; stats: { sessions: number; 
   return (
     <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/10">
       <div>
-        <div className="font-medium">{name}</div>
+        <div className="font-medium">{normalizeTrainerName(name)}</div>
         <div className="text-xs text-gray-400">{stats.sessions} sessions today</div>
       </div>
       <div className="text-right">
