@@ -88,6 +88,14 @@ const dashboards = [
     color: "from-violet-500 to-purple-600",
     stats: "Trends • YoY • Analysis"
   },
+  { 
+    name: "Vision Analytics", 
+    href: "/vision", 
+    icon: Zap, 
+    description: "Keyword-level bid optimization & CPA trend analysis",
+    color: "from-fuchsia-500 to-pink-600",
+    stats: "Bids • Keywords • CPA"
+  },
 ]
 
 export default function Home() {
