@@ -7,7 +7,7 @@ const RANGE = 'GADS: Account: Weekly (Devices)!A:L'
 
 function parseNumber(val: string): number {
   if (!val) return 0
-  const cleaned = val.replace(/,/g, '').replace(/%/g, '')
+  const cleaned = val.replace(/[$,]/g, '').replace(/%/g, '')
   return parseFloat(cleaned) || 0
 }
 
