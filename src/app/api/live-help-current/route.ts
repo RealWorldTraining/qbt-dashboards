@@ -113,8 +113,6 @@ function parseTime(timeStr: string, dateStr?: string): Date | null {
     
     const cstDate = new Date(localDate.getTime() + adjustmentMs);
     
-    console.log(`parseTime: ${timeStr} on ${dateStr} → server=${localDate.toISOString()} cst=${cstDate.toISOString()} (serverOffset=${serverOffsetMinutes}, cstOffset=${cstOffsetMinutes}, adj=${adjustmentMs/1000/60}min)`);
-    
     return cstDate;
   } catch (error) {
     console.error('parseTime error:', error);
@@ -216,10 +214,8 @@ export async function GET(request: NextRequest) {
               const startDt = parseTime(helpStarted, person.date);
               const now = new Date(); // UTC time
               if (startDt) {
-                console.log(`[${roomDisplay}] ${person.attendee_name}: start=${helpStarted}, startDt=${startDt.toISOString()}, now=${now.toISOString()}`);
                 const deltaMs = now.getTime() - startDt.getTime();
                 helpDuration = Math.max(0, Math.round((deltaMs / (1000 * 60)) * 10) / 10);
-                console.log(`[${roomDisplay}] ${person.attendee_name}: deltaMs=${deltaMs}, duration=${helpDuration}min`);
               }
             }
             
