@@ -111,10 +111,10 @@ export default function PhoneDashboard() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         {/* Today Card */}
-        <div className="bg-[#1c1c1e] rounded-2xl p-5 col-span-2 sm:col-span-1">
+        <div className="bg-[#1c1c1e] rounded-2xl p-5 col-span-2 sm:col-span-1 flex flex-col items-center text-center">
           <div className="text-gray-400 text-sm mb-2">Today @ {metrics.today.timestamp}</div>
           <div className="text-white text-6xl font-bold mb-4">{metrics.today.total}</div>
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 w-full">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">LW @ {metrics.today.timestamp}</span>
               <span className="text-white font-medium">{metrics.today.lastWeek}</span>
@@ -131,7 +131,7 @@ export default function PhoneDashboard() {
         </div>
 
         {/* Yesterday Card */}
-        <div className="bg-[#1c1c1e] rounded-2xl p-5 col-span-2 sm:col-span-1">
+        <div className="bg-[#1c1c1e] rounded-2xl p-5 col-span-2 sm:col-span-1 flex flex-col items-center text-center">
           <div className="text-gray-400 text-sm mb-2">Yesterday</div>
           <div className="text-white text-6xl font-bold mb-4">{metrics.yesterday.total}</div>
           <div className="space-y-1.5">
@@ -144,7 +144,7 @@ export default function PhoneDashboard() {
         </div>
 
         {/* This Week Card */}
-        <div className="bg-[#1c1c1e] rounded-2xl p-5">
+        <div className="bg-[#1c1c1e] rounded-2xl p-5 flex flex-col items-center text-center">
           <div className="text-gray-400 text-sm mb-2">This Week</div>
           <div className="text-white text-6xl font-bold mb-4">{metrics.thisWeek.total}</div>
           <div className="space-y-1.5">
@@ -157,7 +157,7 @@ export default function PhoneDashboard() {
         </div>
 
         {/* MTD Card */}
-        <div className="bg-[#1c1c1e] rounded-2xl p-5">
+        <div className="bg-[#1c1c1e] rounded-2xl p-5 flex flex-col items-center text-center">
           <div className="text-gray-400 text-sm mb-2">MTD</div>
           <div className="text-white text-6xl font-bold mb-4">{metrics.mtd.total}</div>
           <div className="space-y-1.5">
