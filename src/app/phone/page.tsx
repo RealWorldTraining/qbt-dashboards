@@ -147,18 +147,18 @@ export default function PhoneDashboard() {
         <div className="bg-[#1c1c1e] rounded-2xl p-5 col-span-2 sm:col-span-1 flex flex-col items-center text-center">
           <div className="text-gray-400 text-sm mb-2">Today @ {metrics.today.timestamp}</div>
           <div className="text-white text-6xl font-bold mb-4">{metrics.today.total}</div>
-          <div className="space-y-1.5 w-full">
-            <div className="flex justify-between text-sm">
+          <div className="space-y-1.5">
+            <div className="text-sm text-center">
               <span className="text-gray-400">LW @ {metrics.today.timestamp}</span>
-              <span className="text-white font-medium">{metrics.today.lastWeek}</span>
+              <span className="text-white font-medium ml-2">{metrics.today.lastWeek}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="text-sm text-center">
               <span className="text-gray-400">2WA @ {metrics.today.timestamp}</span>
-              <span className="text-white font-medium">{metrics.today.twoWeeksAgo}</span>
+              <span className="text-white font-medium ml-2">{metrics.today.twoWeeksAgo}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="text-sm text-center">
               <span className="text-gray-400">3WA @ {metrics.today.timestamp}</span>
-              <span className="text-white font-medium">{metrics.today.threeWeeksAgo}</span>
+              <span className="text-white font-medium ml-2">{metrics.today.threeWeeksAgo}</span>
             </div>
           </div>
         </div>
