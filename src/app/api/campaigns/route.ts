@@ -136,6 +136,20 @@ export async function GET() {
       }
     }
 
+    // Filter out campaigns with no activity (all zeros or nulls)
+    const activeCampaigns = campaigns.filter(name => {
+      const campaignWeeks = recentWeeks.map(week => campaignData[name]?.[week])
+      
+      // Check if campaign has any meaningful data in any week
+      const hasActivity = campaignWeeks.some(weekData => {
+        if (!weekData) return false
+        // Consider active if has clicks, impressions, or spend > 0
+        return weekData.clicks > 0 || weekData.impressions > 0 || weekData.cost > 0
+      })
+      
+      return hasActivity
+    })
+
     // Format response
     const result = {
       weeks: recentWeeks.map((w, i) => ({
@@ -143,7 +157,7 @@ export async function GET() {
         label: i === 0 ? 'Last Week' : i === 1 ? '2 Weeks Ago' : i === 2 ? '3 Weeks Ago' : '4 Weeks Ago',
         date_range: formatDateRange(w)
       })),
-      campaigns: campaigns.map(name => ({
+      campaigns: activeCampaigns.map(name => ({
         name,
         data: recentWeeks.map(week => campaignData[name]?.[week] || null)
       })),
