@@ -274,44 +274,46 @@ export default function LiveHelpDashboard() {
             </div>
           ) : (
             <>
-              {/* Top Grid: Schedule and Room Status */}
-              <div className="grid lg:grid-cols-3 gap-5 mb-8">
-                {/* Schedule Section - Takes 2 columns */}
-                <div className="lg:col-span-2 space-y-4">
+              {/* Top Grid: Room Status (left half) and Schedule (right half) */}
+              <div className="grid lg:grid-cols-2 gap-5 mb-8">
+                {/* Left Half: Room Status Cards */}
+                <div>
+                  <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                    🏠 Room Status <span className="text-sm text-green-400 font-normal">● LIVE</span>
+                  </h2>
+                  <div className="space-y-4">
+                    {Object.entries(currentStatus)
+                      .filter(([roomName]) => roomName === 'Downhill' || roomName === 'Orchard')
+                      .map(([roomName, room]) => (
+                        <RoomCard key={roomName} roomName={roomName} room={room} />
+                      ))}
+                    
+                    {/* Stats below rooms */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <StatusCard 
+                        label="Longest Wait" 
+                        value={`${Math.round(longestWait)} min`} 
+                        subtext="Max wait time"
+                        color={longestWait > 15 ? "red" : longestWait > 5 ? "yellow" : "green"}
+                      />
+                      <StatusCard 
+                        label="Today's Visits" 
+                        value={todayStats.total_visits} 
+                        subtext={`${todayStats.help_sessions} helped`}
+                        color="blue"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Half: Schedule Section */}
+                <div className="space-y-4">
                   <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
                     📅 Trainer Schedule <span className="text-sm text-green-400 font-normal">● LIVE</span>
                   </h2>
                   {schedules.map((schedule, idx) => (
                     <ScheduleHourCard key={idx} schedule={schedule} isCurrent={idx === 0} />
                   ))}
-                </div>
-
-                {/* Room Status - Takes 1 column (narrower) */}
-                <div className="space-y-4">
-                  <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                    🏠 Room Status <span className="text-sm text-green-400 font-normal">● LIVE</span>
-                  </h2>
-                  {Object.entries(currentStatus)
-                    .filter(([roomName]) => roomName === 'Downhill' || roomName === 'Orchard')
-                    .map(([roomName, room]) => (
-                      <RoomCard key={roomName} roomName={roomName} room={room} compact />
-                    ))}
-                  
-                  {/* Stats below rooms */}
-                  <div className="space-y-3 mt-4">
-                    <StatusCard 
-                      label="Longest Wait" 
-                      value={`${Math.round(longestWait)} min`} 
-                      subtext="Max wait time"
-                      color={longestWait > 15 ? "red" : longestWait > 5 ? "yellow" : "green"}
-                    />
-                    <StatusCard 
-                      label="Today's Visits" 
-                      value={todayStats.total_visits} 
-                      subtext={`${todayStats.help_sessions} helped`}
-                      color="blue"
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -384,6 +386,12 @@ function StatusCard({
   );
 }
 
+function extractName(summary: string): string {
+  // Extract name from format like "50% Orchard [close] (Ericka)" → "Ericka"
+  const match = summary.match(/\(([^)]+)\)/);
+  return match ? match[1] : summary;
+}
+
 function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isCurrent: boolean }) {
   return (
     <div className={`bg-white/5 rounded-xl p-4 border ${isCurrent ? 'border-green-500/50 bg-green-900/10' : 'border-white/10'}`}>
@@ -397,7 +405,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
             <div className="text-xs text-gray-500 italic">No coverage</div>
           ) : (
             schedule.downhill.map((event, idx) => (
-              <div key={idx} className="text-sm text-white">{event.trainer}</div>
+              <div key={idx} className="text-sm text-white">{extractName(event.trainer || event.summary)}</div>
             ))
           )}
         </div>
@@ -407,7 +415,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
             <div className="text-xs text-gray-500 italic">No coverage</div>
           ) : (
             schedule.orchard.map((event, idx) => (
-              <div key={idx} className="text-sm text-white">{event.trainer}</div>
+              <div key={idx} className="text-sm text-white">{extractName(event.trainer || event.summary)}</div>
             ))
           )}
         </div>
@@ -417,7 +425,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
             <div className="text-xs text-gray-500 italic">No coverage</div>
           ) : (
             schedule.backup.map((event, idx) => (
-              <div key={idx} className="text-sm text-white">{event.trainer}</div>
+              <div key={idx} className="text-sm text-white">{extractName(event.trainer || event.summary)}</div>
             ))
           )}
         </div>
@@ -426,7 +434,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
   );
 }
 
-function RoomCard({ roomName, room, compact = false }: { roomName: string; room: RoomStatus; compact?: boolean }) {
+function RoomCard({ roomName, room }: { roomName: string; room: RoomStatus }) {
   const isEmpty = room.total_current === 0;
   const roomEmojis: Record<string, string> = {
     'Downhill': '🌋',
@@ -435,32 +443,32 @@ function RoomCard({ roomName, room, compact = false }: { roomName: string; room:
   };
 
   return (
-    <div className={`bg-white/5 rounded-2xl ${compact ? 'p-4' : 'p-6'} border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
-      <h4 className={`${compact ? 'text-base' : 'text-lg'} font-semibold mb-3 flex items-center justify-between`}>
+    <div className={`bg-white/5 rounded-2xl p-6 border border-white/10 ${isEmpty ? 'opacity-60' : ''}`}>
+      <h4 className="text-lg font-semibold mb-4 flex items-center justify-between">
         <span>{roomEmojis[roomName]} {roomName}</span>
-        <span className={`text-xs px-2 py-1 rounded-full ${
+        <span className={`text-sm px-2 py-1 rounded-full ${
           isEmpty ? 'bg-gray-700 text-gray-400' : 'bg-green-900 text-green-300'
         }`}>
-          {room.total_current}
+          {room.total_current} people
         </span>
       </h4>
 
       {isEmpty ? (
-        <p className="text-gray-400 text-center py-4 text-sm">Empty</p>
+        <p className="text-gray-400 text-center py-6">No one currently in room</p>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {/* Being Helped */}
           {room.being_helped.length > 0 && (
             <div>
-              <h5 className="text-xs font-medium text-green-400 mb-1">
+              <h5 className="text-sm font-medium text-green-400 mb-2">
                 💬 Being Helped ({room.being_helped.length})
               </h5>
               <div className="space-y-1">
                 {room.being_helped.map((person, idx) => (
-                  <div key={idx} className="text-xs bg-green-900/20 rounded p-2 border border-green-500/30">
+                  <div key={idx} className="text-sm bg-green-900/20 rounded p-2 border border-green-500/30">
                     <div className="font-medium">{person.name}</div>
-                    <div className="text-[10px] text-gray-400">
-                      {person.trainer} • {Math.round(person.help_duration_minutes || 0)}m
+                    <div className="text-xs text-gray-400">
+                      with {person.trainer} • {Math.round(person.help_duration_minutes || 0)} min
                     </div>
                   </div>
                 ))}
@@ -471,15 +479,15 @@ function RoomCard({ roomName, room, compact = false }: { roomName: string; room:
           {/* Waiting */}
           {room.waiting.length > 0 && (
             <div>
-              <h5 className="text-xs font-medium text-yellow-400 mb-1">
+              <h5 className="text-sm font-medium text-yellow-400 mb-2">
                 ⏳ Waiting ({room.waiting.length})
               </h5>
               <div className="space-y-1">
                 {room.waiting.map((person, idx) => (
-                  <div key={idx} className="text-xs bg-yellow-900/20 rounded p-2 border border-yellow-500/30">
+                  <div key={idx} className="text-sm bg-yellow-900/20 rounded p-2 border border-yellow-500/30">
                     <div className="font-medium">{person.name}</div>
-                    <div className="text-[10px] text-gray-400">
-                      {Math.round(person.wait_duration_minutes || 0)}m
+                    <div className="text-xs text-gray-400">
+                      waiting {Math.round(person.wait_duration_minutes || 0)} min
                     </div>
                   </div>
                 ))}

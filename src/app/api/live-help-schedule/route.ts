@@ -83,22 +83,27 @@ export async function GET(request: NextRequest) {
   try {
     const calendar = await getGoogleCalendarClient();
     
-    // Get events for the next 8 hours, grouped by hour
-    const now = new Date();
-    const endTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    // Get current time in CST
+    const nowUTC = new Date();
+    const nowCSTString = nowUTC.toLocaleString('en-US', { timeZone: 'America/Chicago' });
+    const nowCST = new Date(nowCSTString);
     
-    // Fetch events from all three calendars
+    // Get events for the next 8 hours in CST
+    const endTimeCST = new Date(nowCST.getTime() + 8 * 60 * 60 * 1000);
+    
+    // Fetch events from all three calendars (API expects UTC)
     const [downhillEvents, orchardEvents, backupEvents] = await Promise.all([
-      getCalendarEvents(calendar, CALENDARS.downhill, now, endTime),
-      getCalendarEvents(calendar, CALENDARS.orchard, now, endTime),
-      getCalendarEvents(calendar, CALENDARS.backup, now, endTime)
+      getCalendarEvents(calendar, CALENDARS.downhill, nowUTC, new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000)),
+      getCalendarEvents(calendar, CALENDARS.orchard, nowUTC, new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000)),
+      getCalendarEvents(calendar, CALENDARS.backup, nowUTC, new Date(nowUTC.getTime() + 8 * 60 * 60 * 1000))
     ]);
     
-    // Group events by hour
+    // Group events by hour (in CST)
     const hourSchedules: HourSchedule[] = [];
     
     for (let i = 0; i < 8; i++) {
-      const hourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + i, 0, 0);
+      // Create hour boundaries in CST
+      const hourStart = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate(), nowCST.getHours() + i, 0, 0);
       const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000);
       
       const formatHour = (date: Date) => {
@@ -110,10 +115,12 @@ export async function GET(request: NextRequest) {
       
       const hourLabel = `${formatHour(hourStart)} - ${formatHour(hourEnd)}`;
       
-      // Filter events that fall within this hour
+      // Filter events that fall within this hour (convert event times to CST for comparison)
       const isInHour = (event: CalendarEvent) => {
-        const eventStart = new Date(event.start);
-        return eventStart >= hourStart && eventStart < hourEnd;
+        const eventStartUTC = new Date(event.start);
+        const eventStartCSTString = eventStartUTC.toLocaleString('en-US', { timeZone: 'America/Chicago' });
+        const eventStartCST = new Date(eventStartCSTString);
+        return eventStartCST >= hourStart && eventStartCST < hourEnd;
       };
       
       hourSchedules.push({
