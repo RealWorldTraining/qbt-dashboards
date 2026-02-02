@@ -246,21 +246,19 @@ export default function LiveHelpDashboard() {
             </div>
           ) : (
             <>
-              {/* Live Status Overview */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
-                <StatusCard 
-                  label="People Waiting" 
-                  value={totalWaiting} 
-                  subtext="Across all rooms"
-                  color="yellow"
-                  pulse={totalWaiting > 0}
-                />
-                <StatusCard 
-                  label="Being Helped" 
-                  value={totalBeingHelped} 
-                  subtext="Currently in session"
-                  color="green"
-                />
+              {/* Room Status - Real-time (Top Section) */}
+              <div className="mb-8">
+                <div className="grid md:grid-cols-2 gap-5 mb-5">
+                  {Object.entries(currentStatus)
+                    .filter(([roomName]) => roomName === 'Downhill' || roomName === 'Orchard')
+                    .map(([roomName, room]) => (
+                      <RoomCard key={roomName} roomName={roomName} room={room} />
+                    ))}
+                </div>
+              </div>
+
+              {/* Live Stats Row */}
+              <div className="grid grid-cols-2 gap-5 mb-8">
                 <StatusCard 
                   label="Longest Wait" 
                   value={`${Math.round(longestWait)} min`} 
@@ -273,19 +271,6 @@ export default function LiveHelpDashboard() {
                   subtext={`${todayStats.help_sessions} helped`}
                   color="blue"
                 />
-              </div>
-
-              {/* Room Status - Real-time */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-semibold mb-5 pb-2 border-b-2 border-green-500/30 flex items-center gap-2">
-                  🏠 Room Status <span className="text-sm text-green-400 font-normal">● LIVE</span>
-                </h2>
-                
-                <div className="grid md:grid-cols-3 gap-5">
-                  {Object.entries(currentStatus).map(([roomName, room]) => (
-                    <RoomCard key={roomName} roomName={roomName} room={room} />
-                  ))}
-                </div>
               </div>
 
               {/* Today's Activity */}

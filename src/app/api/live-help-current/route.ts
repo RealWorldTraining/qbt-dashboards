@@ -183,12 +183,17 @@ export async function GET(request: NextRequest) {
           if (trainer && trainer !== 'X') {
             // Being helped
             const helpStarted = person.start_time ? person.start_time.toString() : '';
-            const helpDuration = helpStarted ? 
-              calculateDurationMinutes(helpStarted, new Date().toLocaleTimeString('en-US', { 
-                hour: 'numeric', 
-                minute: '2-digit', 
-                hour12: true 
-              }), person.date) : 0;
+            
+            // Calculate duration from start_time to now (in CST)
+            let helpDuration = 0;
+            if (helpStarted) {
+              const startDt = parseTime(helpStarted, person.date);
+              const now = new Date();
+              if (startDt) {
+                const deltaMs = now.getTime() - startDt.getTime();
+                helpDuration = Math.max(0, Math.round((deltaMs / (1000 * 60)) * 10) / 10);
+              }
+            }
             
             beingHelped.push({
               name: person.attendee_name,
@@ -203,12 +208,17 @@ export async function GET(request: NextRequest) {
           } else {
             // Waiting
             const entered = person.entered ? person.entered.toString() : '';
-            const waitDuration = entered ?
-              calculateDurationMinutes(entered, new Date().toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit', 
-                hour12: true
-              }), person.date) : 0;
+            
+            // Calculate wait duration from entered to now
+            let waitDuration = 0;
+            if (entered) {
+              const enteredDt = parseTime(entered, person.date);
+              const now = new Date();
+              if (enteredDt) {
+                const deltaMs = now.getTime() - enteredDt.getTime();
+                waitDuration = Math.max(0, Math.round((deltaMs / (1000 * 60)) * 10) / 10);
+              }
+            }
             
             waiting.push({
               name: person.attendee_name,
