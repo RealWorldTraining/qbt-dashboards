@@ -51,3 +51,4 @@ All dashboard routes are protected with HTTP Basic Auth. Set `DASHBOARD_USER` an
 ├── .recap-data/             # Cached data
 └── pl-report-workflow/      # Legacy HTML reports
 ```
+# Force rebuild Mon Feb  2 16:55:10 CST 2026
