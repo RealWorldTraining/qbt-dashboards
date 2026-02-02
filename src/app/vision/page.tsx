@@ -46,17 +46,38 @@ export default function VisionDashboard() {
       const response = await fetch('/api/vision-keywords');
       const result = await response.json();
       
-      // Filter to last 90 days and active campaigns only
+      // Calculate most recent complete week and the week before
+      // Week starts Monday, so find the most recent Monday that's in the past
       const now = new Date();
-      const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Days since last Monday
+      
+      // Most recent complete week: Monday of last week to Sunday
+      const lastMonday = new Date(now);
+      lastMonday.setDate(now.getDate() - daysToMonday - 7); // Go back to last Monday
+      lastMonday.setHours(0, 0, 0, 0);
+      
+      const lastSunday = new Date(lastMonday);
+      lastSunday.setDate(lastMonday.getDate() + 6); // Sunday of that week
+      lastSunday.setHours(23, 59, 59, 999);
+      
+      // Week before: Monday of 2 weeks ago to Sunday
+      const twoWeeksAgoMonday = new Date(lastMonday);
+      twoWeeksAgoMonday.setDate(lastMonday.getDate() - 7);
+      
+      const twoWeeksAgoSunday = new Date(twoWeeksAgoMonday);
+      twoWeeksAgoSunday.setDate(twoWeeksAgoMonday.getDate() + 6);
       
       const filtered = (result.data || []).filter((row: KeywordData) => {
         const weekDate = new Date(row['Week (Monday)']);
         const clicks = parseInt(row['Clicks']) || 0;
         const conversions = parseFloat(row['Conversions']) || 0;
         
-        // Keep only recent data with some activity
-        return weekDate >= ninetyDaysAgo && (clicks > 0 || conversions > 0);
+        // Keep only data from the two complete weeks with some activity
+        const isInPriorWeek = weekDate >= lastMonday && weekDate <= lastSunday;
+        const isInTwoWeeksAgo = weekDate >= twoWeeksAgoMonday && weekDate <= twoWeeksAgoSunday;
+        
+        return (isInPriorWeek || isInTwoWeeksAgo) && (clicks > 0 || conversions > 0);
       });
       
       setKeywordData(filtered);
@@ -96,6 +117,21 @@ export default function VisionDashboard() {
     if (keywordData.length === 0) return '';
     const weeks = [...new Set(keywordData.map(r => r['Week (Monday)']))].sort();
     if (weeks.length === 0) return '';
+    
+    // Should have exactly 2 weeks: prior week and 2 weeks ago
+    if (weeks.length >= 2) {
+      const week1 = new Date(weeks[0]);
+      const week1End = new Date(week1);
+      week1End.setDate(week1.getDate() + 6);
+      
+      const week2 = new Date(weeks[1]);
+      const week2End = new Date(week2);
+      week2End.setDate(week2.getDate() + 6);
+      
+      const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+      return `Prior week: ${week2.toLocaleDateString('en-US', opts)} - ${week2End.toLocaleDateString('en-US', opts)} vs 2 weeks ago: ${week1.toLocaleDateString('en-US', opts)} - ${week1End.toLocaleDateString('en-US', opts)}`;
+    }
+    
     const first = new Date(weeks[0]);
     const last = new Date(weeks[weeks.length - 1]);
     return `${first.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${last.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
@@ -299,7 +335,7 @@ export default function VisionDashboard() {
         <h1 className="text-4xl font-bold mb-2">Vision Analytics Dashboard</h1>
         <p className="text-gray-600 mb-2">Keyword-level insights and bid optimization</p>
         {dateRange && (
-          <p className="text-sm text-gray-500 mb-6">📅 Data range: {dateRange} (Last 90 days, active campaigns only)</p>
+          <p className="text-sm text-gray-500 mb-6">📅 {dateRange} (Complete weeks, active campaigns only)</p>
         )}
 
         {/* Section 1: Bid vs Actual CPC Efficiency */}
