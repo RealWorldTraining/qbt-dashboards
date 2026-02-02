@@ -192,7 +192,6 @@ export async function GET(request: NextRequest) {
             
             beingHelped.push({
               name: person.attendee_name,
-              trainer: trainer,
               entered: person.entered.toString(),
               left: '',
               trainer_name: trainer,

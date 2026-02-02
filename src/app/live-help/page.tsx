@@ -44,7 +44,7 @@ declare global {
 export default function LiveHelpDashboard() {
   const chartsInitialized = useRef(false);
   const chartInstances = useRef<Record<string, any>>({});
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   
   const [currentStatus, setCurrentStatus] = useState<Record<string, RoomStatus>>({});
   const [todayStats, setTodayStats] = useState<TodayStats>({
