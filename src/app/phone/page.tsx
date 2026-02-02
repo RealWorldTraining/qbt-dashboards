@@ -199,15 +199,15 @@ export default function PhoneDashboard() {
           <div className="text-white text-6xl font-bold mb-4">{metrics.today.total}</div>
           <div className="space-y-1.5">
             <div className="text-sm text-center">
-              <span className="text-gray-400">LW @ {metrics.today.timestamp}</span>
+              <span className="text-gray-400">LW</span>
               <span className="text-white font-medium ml-2">{metrics.today.lastWeek}</span>
             </div>
             <div className="text-sm text-center">
-              <span className="text-gray-400">2WA @ {metrics.today.timestamp}</span>
+              <span className="text-gray-400">2WA</span>
               <span className="text-white font-medium ml-2">{metrics.today.twoWeeksAgo}</span>
             </div>
             <div className="text-sm text-center">
-              <span className="text-gray-400">3WA @ {metrics.today.timestamp}</span>
+              <span className="text-gray-400">3WA</span>
               <span className="text-white font-medium ml-2">{metrics.today.threeWeeksAgo}</span>
             </div>
           </div>
@@ -254,63 +254,89 @@ export default function PhoneDashboard() {
       </div>
 
       {/* Hourly Comparison - 2pm to EOD */}
-      <div className="bg-white rounded-2xl p-4 mb-6 overflow-x-auto">
-        <h3 className="text-gray-900 font-semibold text-sm mb-3">📊 Hourly Sales (2pm-EOD)</h3>
+      <div className="bg-[#1D1D1F] rounded-2xl p-4 mb-6 overflow-x-auto">
+        <h3 className="text-white font-semibold text-sm mb-3">📊 Hourly Sales (2pm-EOD)</h3>
         <div className="text-xs">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-2 px-2 text-gray-600 font-medium">Period</th>
-                <th className="text-center py-2 px-1 text-gray-600 font-medium">2pm</th>
-                <th className="text-center py-2 px-1 text-gray-600 font-medium">3pm</th>
-                <th className="text-center py-2 px-1 text-gray-600 font-medium">4pm</th>
-                <th className="text-center py-2 px-1 text-gray-600 font-medium">5pm</th>
-                <th className="text-center py-2 px-1 text-gray-600 font-medium">6pm</th>
-                <th className="text-center py-2 px-1 text-gray-600 font-medium">7pm</th>
-                <th className="text-center py-2 px-1 text-gray-600 font-medium">EOD</th>
+              <tr className="border-b border-white/10">
+                <th className="text-left py-2 px-2 text-white/60 font-medium">Period</th>
+                <th className="text-center py-2 px-1 text-white/60 font-medium">2pm</th>
+                <th className="text-center py-2 px-1 text-white/60 font-medium">3pm</th>
+                <th className="text-center py-2 px-1 text-white/60 font-medium">4pm</th>
+                <th className="text-center py-2 px-1 text-white/60 font-medium">5pm</th>
+                <th className="text-center py-2 px-1 text-white/60 font-medium">6pm</th>
+                <th className="text-center py-2 px-1 text-white/60 font-medium">7pm</th>
+                <th className="text-center py-2 px-1 text-white font-medium bg-[#2D2D2F]">EOD</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-gray-100">
-                <td className="py-2 px-2 font-medium text-gray-900">Today</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['2pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['3pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['4pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['5pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['6pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.today['7pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 font-semibold text-blue-600">{hourlyData?.todayEOD ?? '-'}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2 px-2 text-gray-600">LW</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['2pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['3pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['4pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['5pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['6pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.lastWeek['7pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 font-semibold text-gray-700">{hourlyData?.lastWeekEOD ?? '-'}</td>
-              </tr>
-              <tr className="border-b border-gray-100">
-                <td className="py-2 px-2 text-gray-600">2WA</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['2pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['3pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['4pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['5pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['6pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.twoWeeks['7pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 font-semibold text-gray-700">{hourlyData?.twoWeeksEOD ?? '-'}</td>
-              </tr>
-              <tr>
-                <td className="py-2 px-2 text-gray-600">3WA</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['2pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['3pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['4pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['5pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['6pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 text-gray-700">{hourlyData?.threeWeeks['7pm'] ?? '-'}</td>
-                <td className="text-center py-2 px-1 font-semibold text-gray-700">{hourlyData?.threeWeeksEOD ?? '-'}</td>
-              </tr>
+              {(() => {
+                // Calculate max value for heatmap
+                const hours = ['2pm', '3pm', '4pm', '5pm', '6pm', '7pm']
+                const allValues = [
+                  ...(hourlyData?.today ? hours.map(h => hourlyData.today[h]).filter((v): v is number => typeof v === 'number') : []),
+                  ...(hourlyData?.lastWeek ? hours.map(h => hourlyData.lastWeek[h]).filter((v): v is number => typeof v === 'number') : []),
+                  ...(hourlyData?.twoWeeks ? hours.map(h => hourlyData.twoWeeks[h]).filter((v): v is number => typeof v === 'number') : []),
+                  ...(hourlyData?.threeWeeks ? hours.map(h => hourlyData.threeWeeks[h]).filter((v): v is number => typeof v === 'number') : []),
+                ]
+                const maxValue = Math.max(...allValues, 1)
+                
+                const getHeatmapClass = (value: number | string | undefined) => {
+                  if (!value || value === '-' || typeof value !== 'number') return 'bg-[#1D1D1F]'
+                  const intensity = Math.round((value / maxValue) * 100)
+                  if (intensity > 80) return 'bg-blue-600'
+                  if (intensity > 60) return 'bg-blue-500'
+                  if (intensity > 40) return 'bg-blue-600/60'
+                  if (intensity > 20) return 'bg-blue-600/40'
+                  return 'bg-blue-600/20'
+                }
+                
+                return (
+                  <>
+                    <tr className="border-b border-white/5">
+                      <td className="py-2 px-2 font-medium text-white bg-[#1A3A52]">Today</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.today['2pm'])}`}>{hourlyData?.today['2pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.today['3pm'])}`}>{hourlyData?.today['3pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.today['4pm'])}`}>{hourlyData?.today['4pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.today['5pm'])}`}>{hourlyData?.today['5pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.today['6pm'])}`}>{hourlyData?.today['6pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.today['7pm'])}`}>{hourlyData?.today['7pm'] ?? '-'}</td>
+                      <td className="text-center py-2 px-1 font-semibold text-white bg-[#2D2D2F]">{hourlyData?.todayEOD ?? '-'}</td>
+                    </tr>
+                    <tr className="border-b border-white/5">
+                      <td className="py-2 px-2 text-white/60 bg-[#1D1D1F]">LW</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['2pm'])}`}>{hourlyData?.lastWeek['2pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['3pm'])}`}>{hourlyData?.lastWeek['3pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['4pm'])}`}>{hourlyData?.lastWeek['4pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['5pm'])}`}>{hourlyData?.lastWeek['5pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['6pm'])}`}>{hourlyData?.lastWeek['6pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.lastWeek['7pm'])}`}>{hourlyData?.lastWeek['7pm'] ?? '-'}</td>
+                      <td className="text-center py-2 px-1 font-semibold text-white bg-[#2D2D2F]">{hourlyData?.lastWeekEOD ?? '-'}</td>
+                    </tr>
+                    <tr className="border-b border-white/5">
+                      <td className="py-2 px-2 text-white/60 bg-[#1D1D1F]">2WA</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.twoWeeks['2pm'])}`}>{hourlyData?.twoWeeks['2pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.twoWeeks['3pm'])}`}>{hourlyData?.twoWeeks['3pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.twoWeeks['4pm'])}`}>{hourlyData?.twoWeeks['4pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.twoWeeks['5pm'])}`}>{hourlyData?.twoWeeks['5pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.twoWeeks['6pm'])}`}>{hourlyData?.twoWeeks['6pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.twoWeeks['7pm'])}`}>{hourlyData?.twoWeeks['7pm'] ?? '-'}</td>
+                      <td className="text-center py-2 px-1 font-semibold text-white bg-[#2D2D2F]">{hourlyData?.twoWeeksEOD ?? '-'}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-2 text-white/60 bg-[#1D1D1F]">3WA</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.threeWeeks['2pm'])}`}>{hourlyData?.threeWeeks['2pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.threeWeeks['3pm'])}`}>{hourlyData?.threeWeeks['3pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.threeWeeks['4pm'])}`}>{hourlyData?.threeWeeks['4pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.threeWeeks['5pm'])}`}>{hourlyData?.threeWeeks['5pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.threeWeeks['6pm'])}`}>{hourlyData?.threeWeeks['6pm'] ?? '-'}</td>
+                      <td className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(hourlyData?.threeWeeks['7pm'])}`}>{hourlyData?.threeWeeks['7pm'] ?? '-'}</td>
+                      <td className="text-center py-2 px-1 font-semibold text-white bg-[#2D2D2F]">{hourlyData?.threeWeeksEOD ?? '-'}</td>
+                    </tr>
+                  </>
+                )
+              })()}
             </tbody>
           </table>
         </div>
