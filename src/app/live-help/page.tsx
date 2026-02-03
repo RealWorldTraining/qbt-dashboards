@@ -531,6 +531,8 @@ const TRAINER_NAMES: Record<string, string> = {
   'cassie': 'Cassie',
   'JRuvaldt': 'Jason',
   'jruvaldt': 'Jason',
+  'sue_restum': 'Sue',
+  'srestum': 'Sue',
 };
 
 function normalizeTrainerName(name: string): string {
