@@ -124,7 +124,8 @@ function getTodayString(): string {
   const today = new Date();
   const month = today.getMonth() + 1;
   const day = today.getDate();
-  return `${month}/${day}`;
+  const year = today.getFullYear() % 100;
+  return `${month}/${day}/${year}`;
 }
 
 function calculateDurationMinutes(startStr: string, endStr: string, dateStr: string): number {
