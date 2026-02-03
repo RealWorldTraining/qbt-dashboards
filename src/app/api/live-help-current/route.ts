@@ -121,10 +121,12 @@ function parseTime(timeStr: string, dateStr?: string): Date | null {
 }
 
 function getTodayString(): string {
+  // Get today's date in CST (Chicago timezone)
   const today = new Date();
-  const month = today.getMonth() + 1;
-  const day = today.getDate();
-  const year = today.getFullYear() % 100;
+  const cstDate = new Date(today.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+  const month = cstDate.getMonth() + 1;
+  const day = cstDate.getDate();
+  const year = cstDate.getFullYear() % 100;
   return `${month}/${day}/${year}`;
 }
 
