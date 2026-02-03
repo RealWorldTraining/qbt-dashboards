@@ -141,6 +141,27 @@ function calculateDurationMinutes(startStr: string, endStr: string, dateStr: str
   return 0;
 }
 
+function normalizeTrainerName(name: string): string {
+  if (!name) return name;
+  const lowerName = name.toLowerCase();
+  
+  const TRAINER_NAMES: Record<string, string> = {
+    'bpittenger': 'Brandon',
+    'eotero': 'Ericka',
+    'wsandin': 'Whitney',
+    'sthompson': 'Shauna',
+    'amarks': 'Amy',
+    'casse': 'Cassie',
+    'cassie': 'Cassie',
+    'jruvaldt': 'Jason',
+    'sue_restum': 'Sue',
+    'srestum': 'Sue',
+    'sue': 'Sue',
+  };
+  
+  return TRAINER_NAMES[lowerName] || name;
+}
+
 async function getRoomData(sheets: ReturnType<typeof google.sheets>, roomName: string): Promise<any[]> {
   try {
     const result = await sheets.spreadsheets.values.get({
@@ -350,8 +371,11 @@ export async function GET(request: NextRequest) {
       const trainerStats: Record<string, { sessions: number; total_duration: number; avg_duration: number }> = {};
       
       for (const row of allTodayData) {
-        const trainer = row.trainer_name ? row.trainer_name.toString().trim() : '';
-        if (trainer && trainer !== 'X') {
+        const rawTrainer = row.trainer_name ? row.trainer_name.toString().trim() : '';
+        if (rawTrainer && rawTrainer !== 'X') {
+          // Normalize trainer name to combine variants (e.g., Sue_Restum, srestum, Sue -> Sue)
+          const trainer = normalizeTrainerName(rawTrainer);
+          
           if (!trainerStats[trainer]) {
             trainerStats[trainer] = { sessions: 0, total_duration: 0, avg_duration: 0 };
           }

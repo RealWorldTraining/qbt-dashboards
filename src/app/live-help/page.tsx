@@ -185,15 +185,18 @@ export default function LiveHelpDashboard() {
 
   // Update chart when todayStats changes
   useEffect(() => {
-    if (todayStats.hourly_logins && todayStats.hourly_logins.length > 0) {
-      setTimeout(() => updateHourlyChart(todayStats), 100);
+    if (todayStats.hourly_logins && todayStats.hourly_logins.length > 0 && typeof window !== 'undefined' && window.Chart) {
+      // Use a longer delay to ensure Chart.js is fully loaded
+      const timer = setTimeout(() => updateHourlyChart(todayStats), 250);
+      return () => clearTimeout(timer);
     }
   }, [todayStats]);
 
   // Update top attendees chart when data changes
   useEffect(() => {
-    if (topAttendees && topAttendees.length > 0) {
-      setTimeout(() => updateTopAttendeesChart(topAttendees), 100);
+    if (topAttendees && topAttendees.length > 0 && typeof window !== 'undefined' && window.Chart) {
+      const timer = setTimeout(() => updateTopAttendeesChart(topAttendees), 250);
+      return () => clearTimeout(timer);
     }
   }, [topAttendees]);
 
@@ -321,12 +324,15 @@ export default function LiveHelpDashboard() {
     <>
       <Script src="https://cdn.jsdelivr.net/npm/chart.js" onLoad={() => {
         chartsInitialized.current = true;
-        if (todayStats.hourly_logins.length > 0) {
-          updateHourlyChart(todayStats);
-        }
-        if (topAttendees.length > 0) {
-          updateTopAttendeesChart(topAttendees);
-        }
+        // Force chart updates after Chart.js loads
+        setTimeout(() => {
+          if (todayStats.hourly_logins && todayStats.hourly_logins.length > 0) {
+            updateHourlyChart(todayStats);
+          }
+          if (topAttendees && topAttendees.length > 0) {
+            updateTopAttendeesChart(topAttendees);
+          }
+        }, 100);
       }} />
       <div className="min-h-screen bg-gradient-to-br from-[#0f0f23] to-[#1a1a2e] text-white">
         <div className="max-w-[1800px] mx-auto p-5">
