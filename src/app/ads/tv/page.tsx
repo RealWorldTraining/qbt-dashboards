@@ -156,6 +156,14 @@ export default function TVDashboard() {
   const prevTotalConv = adsData.last_week.conversions + bingAdsData.last_week.conversions
   const prevTotalConvRate = prevTotalClicks > 0 ? (prevTotalConv / prevTotalClicks) * 100 : 0
 
+  // Organic traffic totals (everything except paid ads)
+  const organicUsers = organicData.this_week.google_organic.users + organicData.this_week.bing_organic.users + organicData.this_week.direct.users + organicData.this_week.qb_intuit.users + organicData.this_week.other.users
+  const organicPurchases = organicData.this_week.google_organic.purchases + organicData.this_week.bing_organic.purchases + organicData.this_week.direct.purchases + organicData.this_week.qb_intuit.purchases + organicData.this_week.other.purchases
+  const organicConvRate = organicUsers > 0 ? (organicPurchases / organicUsers) * 100 : 0
+  const prevOrganicUsers = organicData.last_week.google_organic.users + organicData.last_week.bing_organic.users + organicData.last_week.direct.users + organicData.last_week.qb_intuit.users + organicData.last_week.other.users
+  const prevOrganicPurchases = organicData.last_week.google_organic.purchases + organicData.last_week.bing_organic.purchases + organicData.last_week.direct.purchases + organicData.last_week.qb_intuit.purchases + organicData.last_week.other.purchases
+  const prevOrganicConvRate = prevOrganicUsers > 0 ? (prevOrganicPurchases / prevOrganicUsers) * 100 : 0
+
   return (
     <div className="w-[2304px] h-[1296px] bg-black text-white p-6 flex flex-col">
       {/* HEADER */}
@@ -204,23 +212,45 @@ export default function TVDashboard() {
           </div>
 
           {/* Combined Paid Ads Totals */}
-          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-2xl p-6 border border-cyan-800/50">
-            <div className="text-cyan-400 text-lg mb-4">PAID ADS COMBINED (Google + Bing)</div>
-            <div className="grid grid-cols-3 gap-4">
+          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-2xl p-5 border border-cyan-800/50">
+            <div className="text-cyan-400 text-base mb-3">PAID ADS (Google + Bing)</div>
+            <div className="grid grid-cols-3 gap-3">
               <div>
-                <div className="text-5xl font-bold text-white">{fmt(totalClicks)}</div>
-                <div className="text-lg text-gray-400 mt-1">Total Clicks</div>
+                <div className="text-4xl font-bold text-white">{fmt(totalClicks)}</div>
+                <div className="text-sm text-gray-400 mt-1">Clicks</div>
                 <Trend current={totalClicks} previous={prevTotalClicks} />
               </div>
               <div>
-                <div className="text-5xl font-bold text-green-400">{totalConv}</div>
-                <div className="text-lg text-gray-400 mt-1">Total Conversions</div>
+                <div className="text-4xl font-bold text-green-400">{totalConv}</div>
+                <div className="text-sm text-gray-400 mt-1">Conversions</div>
                 <Trend current={totalConv} previous={prevTotalConv} />
               </div>
               <div>
-                <div className="text-5xl font-bold text-yellow-400">{fmtPct(totalConvRate)}</div>
-                <div className="text-lg text-gray-400 mt-1">Conv Rate</div>
+                <div className="text-4xl font-bold text-yellow-400">{fmtPct(totalConvRate)}</div>
+                <div className="text-sm text-gray-400 mt-1">Conv Rate</div>
                 <Trend current={totalConvRate} previous={prevTotalConvRate} />
+              </div>
+            </div>
+          </div>
+
+          {/* Organic Traffic Totals */}
+          <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-2xl p-5 border border-green-800/50">
+            <div className="text-green-400 text-base mb-3">ORGANIC TRAFFIC</div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <div className="text-4xl font-bold text-white">{fmtK(organicUsers)}</div>
+                <div className="text-sm text-gray-400 mt-1">Visitors</div>
+                <Trend current={organicUsers} previous={prevOrganicUsers} />
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-green-400">{organicPurchases}</div>
+                <div className="text-sm text-gray-400 mt-1">Conversions</div>
+                <Trend current={organicPurchases} previous={prevOrganicPurchases} />
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-emerald-400">{fmtPct(organicConvRate)}</div>
+                <div className="text-sm text-gray-400 mt-1">Conv Rate</div>
+                <Trend current={organicConvRate} previous={prevOrganicConvRate} />
               </div>
             </div>
           </div>
