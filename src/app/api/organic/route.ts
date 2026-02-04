@@ -157,9 +157,23 @@ export async function GET() {
       })
     }
 
-    // Get last 5 weeks
+    // Get last 5 COMPLETE weeks (where week_end < today)
+    // Use CST timezone for consistency
+    const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    const todayCST = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate())
+    
     const sortedWeeks = Array.from(weeklySourceData.keys()).sort().reverse()
-    const last5Weeks = sortedWeeks.slice(0, 5)
+    
+    // Filter to only complete weeks
+    const completeWeeks = sortedWeeks.filter(weekKey => {
+      const [year, month, day] = weekKey.split('-').map(Number)
+      const weekStart = new Date(year, month - 1, day)
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6) // Saturday
+      return weekEnd < todayCST
+    })
+    
+    const last5Weeks = completeWeeks.slice(0, 5)
 
     const formatWeek = (weekKey: string, label: string) => {
       const sourceData = weeklySourceData.get(weekKey)

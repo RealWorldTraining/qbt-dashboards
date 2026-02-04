@@ -75,8 +75,20 @@ export async function GET() {
       }))
       .sort((a, b) => a.week.localeCompare(b.week))
 
-    // Get last 4 weeks
-    const last4 = allWeeks.slice(-4).reverse()
+    // Filter to only COMPLETE weeks (where week_end < today in CST)
+    const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    const todayCST = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate())
+    
+    const completeWeeks = allWeeks.filter(w => {
+      if (!w.week) return false
+      const weekStart = new Date(w.week)
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6)
+      return weekEnd < todayCST
+    })
+    
+    // Get last 4 complete weeks
+    const last4 = completeWeeks.slice(-4).reverse()
 
     const formatWeek = (w: WeeklyRow, label: string) => ({
       week_label: label,

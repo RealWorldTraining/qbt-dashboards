@@ -87,9 +87,19 @@ export async function GET() {
       conv_value: parseNumber(row[13]),
     }))
 
-    // Get last 5 weeks (most recent at the end)
-    // Skip "this week" (incomplete) - use last_week as primary
-    const last5 = allWeeks.slice(-5).reverse() // [this_week, last_week, 2_weeks, 3_weeks, 4_weeks]
+    // Filter to only COMPLETE weeks (where week_end < today in CST)
+    const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    const todayCST = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate())
+    
+    const completeWeeks = allWeeks.filter(w => {
+      if (!w.week_end) return false
+      const [year, month, day] = w.week_end.split('-').map(Number)
+      const weekEnd = new Date(year, month - 1, day)
+      return weekEnd < todayCST
+    })
+    
+    // Get last 4 complete weeks (most recent first)
+    const last4 = completeWeeks.slice(-4).reverse()
 
     const formatWeek = (w: WeeklyRow, label: string) => ({
       week_label: label,
@@ -104,12 +114,24 @@ export async function GET() {
       roas: w.conv_value / w.spend,
     })
 
-    // Shift: last_week becomes primary (this_week is incomplete)
+    const emptyWeek = {
+      week_label: 'N/A',
+      date_range: 'No data',
+      spend: 0,
+      impressions: 0,
+      clicks: 0,
+      ctr: 0,
+      conversions: 0,
+      conversion_rate: 0,
+      cpa: 0,
+      roas: 0,
+    }
+
     const data = {
-      this_week: formatWeek(last5[1], 'Last Week'),      // Most recent complete week
-      last_week: formatWeek(last5[2], '2 Weeks Ago'),
-      two_weeks_ago: formatWeek(last5[3], '3 Weeks Ago'),
-      three_weeks_ago: formatWeek(last5[4], '4 Weeks Ago'),
+      this_week: last4[0] ? formatWeek(last4[0], 'Last Week') : emptyWeek,
+      last_week: last4[1] ? formatWeek(last4[1], '2 Weeks Ago') : emptyWeek,
+      two_weeks_ago: last4[2] ? formatWeek(last4[2], '3 Weeks Ago') : emptyWeek,
+      three_weeks_ago: last4[3] ? formatWeek(last4[3], '4 Weeks Ago') : emptyWeek,
       last_updated: new Date().toISOString(),
     }
 
