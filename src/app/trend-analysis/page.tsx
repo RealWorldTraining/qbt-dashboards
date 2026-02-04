@@ -175,9 +175,9 @@ interface KeywordWithWeeks {
 }
 
 interface GSCKeywordsWeekly {
-  keywords: KeywordWithWeeks[]
-  weekLabels: string[]
-  lastUpdated: string
+  data: KeywordWithWeeks[]
+  weeks: string[]
+  last_updated: string
 }
 
 export default function TrendAnalysisPage() {
