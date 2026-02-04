@@ -114,6 +114,34 @@ const dashboards = [
 export default function Home() {
   const [recapStatus, setRecapStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [recapMessage, setRecapMessage] = useState('')
+  const [prophetStatus, setProphetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [prophetMessage, setProphetMessage] = useState('')
+
+  const triggerProphetRefresh = async () => {
+    setProphetStatus('loading')
+    setProphetMessage('')
+    try {
+      const response = await fetch('https://n8n.srv1266620.hstgr.cloud/webhook/refresh-prophet-cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggered_by: 'manual' })
+      })
+      if (response.ok) {
+        setProphetStatus('success')
+        setProphetMessage('Dashboard data refreshed!')
+        setTimeout(() => {
+          setProphetStatus('idle')
+          setProphetMessage('')
+        }, 3000)
+      } else {
+        setProphetStatus('error')
+        setProphetMessage('Refresh failed. Try again.')
+      }
+    } catch (error) {
+      setProphetStatus('error')
+      setProphetMessage('Network error. Try again.')
+    }
+  }
 
   const triggerRecapRefresh = async () => {
     setRecapStatus('loading')
@@ -226,6 +254,36 @@ export default function Home() {
             Manual Triggers
           </h2>
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={triggerProphetRefresh}
+              disabled={prophetStatus === 'loading'}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                prophetStatus === 'loading'
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : prophetStatus === 'success'
+                  ? 'bg-green-600 text-white'
+                  : prophetStatus === 'error'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-blue-600 hover:bg-blue-500 text-white'
+              }`}
+            >
+              {prophetStatus === 'loading' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : prophetStatus === 'success' ? (
+                <Check className="h-4 w-4" />
+              ) : prophetStatus === 'error' ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              {prophetStatus === 'loading' ? 'Refreshing...' : 'Refresh All Dashboards'}
+            </button>
+            {prophetMessage && (
+              <span className={`text-sm ${prophetStatus === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {prophetMessage}
+              </span>
+            )}
+
             <button
               onClick={triggerRecapRefresh}
               disabled={recapStatus === 'loading'}
