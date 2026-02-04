@@ -1,8 +1,9 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-const SHEET_ID = '1INXxnW3WVkENN7Brvo3sgPcs96C06r3O6mEkgEABxk8'
-const RANGE = 'Bing Paid: Weekly Account Summary!A:I'
+// Use Adveronix sheet
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'BING: Account Summary Weekly!A:J'
 
 interface WeeklyRow {
   week: string
@@ -10,6 +11,7 @@ interface WeeklyRow {
   clicks: number
   spend: number
   conversions: number
+  cpa: number
 }
 
 function parseNumber(val: string): number {
@@ -19,7 +21,8 @@ function parseNumber(val: string): number {
 }
 
 function getMonthKey(dateStr: string): string {
-  const date = new Date(dateStr)
+  const [year, month] = dateStr.split('-').map(Number)
+  const date = new Date(year, month - 1, 1)
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
@@ -51,64 +54,65 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Parse all rows (skip header)
-    // Columns: A=Week, B=Impressions, C=Clicks, D=CTR, E=Avg CPC, F=Spend, G=Conversions, H=Conv Rate, I=CPA
+    // Adveronix structure: Week | Ad distribution | Impressions | Clicks | CTR | Avg.CPC | Spend | Conversions | Conv.Rate | CPA
     const allWeeks: WeeklyRow[] = rows.slice(1)
       .filter(row => row[0])
       .map(row => ({
         week: row[0],
-        impressions: parseNumber(row[1]),
-        clicks: parseNumber(row[2]),
-        spend: parseNumber(row[5]),
-        conversions: parseNumber(row[6]),
+        impressions: parseNumber(row[2]),
+        clicks: parseNumber(row[3]),
+        spend: parseNumber(row[6]),
+        conversions: parseNumber(row[7]),
+        cpa: parseNumber(row[9]),
       }))
 
-    // Aggregate by month
-    const monthlyMap = new Map<string, {
-      spend: number
-      impressions: number
-      clicks: number
-      conversions: number
-    }>()
-
-    allWeeks.forEach(week => {
-      const monthKey = getMonthKey(week.week)
-      const existing = monthlyMap.get(monthKey) || {
-        spend: 0,
-        impressions: 0,
-        clicks: 0,
-        conversions: 0,
-      }
-      monthlyMap.set(monthKey, {
-        spend: existing.spend + week.spend,
-        impressions: existing.impressions + week.impressions,
-        clicks: existing.clicks + week.clicks,
-        conversions: existing.conversions + week.conversions,
-      })
+    // Filter to only complete weeks
+    const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    const todayCST = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate())
+    
+    const completeWeeks = allWeeks.filter(w => {
+      if (!w.week) return false
+      const [year, month, day] = w.week.split('-').map(Number)
+      const weekStart = new Date(year, month - 1, day)
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6)
+      return weekEnd < todayCST
     })
 
-    // Convert to array and sort by date
-    const monthlyData = Array.from(monthlyMap.entries())
+    // Aggregate by month
+    const monthlyData = new Map<string, { spend: number; impressions: number; clicks: number; conversions: number }>()
+    
+    completeWeeks.forEach(week => {
+      const monthKey = getMonthKey(week.week)
+      const existing = monthlyData.get(monthKey) || { spend: 0, impressions: 0, clicks: 0, conversions: 0 }
+      existing.spend += week.spend
+      existing.impressions += week.impressions
+      existing.clicks += week.clicks
+      existing.conversions += week.conversions
+      monthlyData.set(monthKey, existing)
+    })
+
+    // Convert to array and sort by date (most recent first)
+    const months = Array.from(monthlyData.entries())
       .map(([month, data]) => ({
         month,
         spend: Math.round(data.spend),
-        impressions: data.impressions,
-        clicks: data.clicks,
+        impressions: Math.round(data.impressions),
+        clicks: Math.round(data.clicks),
         conversions: Math.round(data.conversions),
-        ctr: data.impressions > 0 ? (data.clicks / data.impressions) * 100 : 0,
-        conv_rate: data.clicks > 0 ? (data.conversions / data.clicks) * 100 : 0,
-        cpa: data.conversions > 0 ? data.spend / data.conversions : 0,
-        roas: data.spend > 0 && data.conversions > 0 ? (data.conversions * 100) / data.spend : 0,
+        cpa: data.conversions > 0 ? Math.round(data.spend / data.conversions) : 0,
+        ctr: data.impressions > 0 ? Math.round((data.clicks / data.impressions) * 10000) / 100 : 0,
+        conv_rate: data.clicks > 0 ? Math.round((data.conversions / data.clicks) * 10000) / 100 : 0,
       }))
       .sort((a, b) => {
         const dateA = new Date(a.month)
         const dateB = new Date(b.month)
-        return dateA.getTime() - dateB.getTime()
+        return dateB.getTime() - dateA.getTime()
       })
-      .slice(-13) // Last 13 months
+      .slice(0, 12) // Last 12 months
 
     return NextResponse.json({
-      data: monthlyData,
+      data: months,
       last_updated: new Date().toISOString()
     }, {
       headers: {
@@ -118,7 +122,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching Bing Ads monthly data:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch data' },
+      { error: 'Failed to fetch data', details: String(error) },
       { status: 500 }
     )
   }
