@@ -294,12 +294,23 @@ export default function TVDashboard() {
                     <div className="text-xl text-white font-medium">{ch.name}</div>
                     <div className="text-sm text-gray-500">{organicData.this_week[ch.key].purchases} purch</div>
                   </div>
-                  {weeks.map((wk, idx) => (
-                    <div key={idx} className={`text-center bg-gray-800 rounded-lg py-3 ${idx === 0 ? 'bg-gray-700' : ''}`}>
-                      <div className="text-2xl font-bold text-white">{fmtK(wk.users)}</div>
-                      <div className="text-sm text-cyan-400">{fmtPct(wk.pct)}</div>
-                    </div>
-                  ))}
+                  {weeks.map((wk, idx) => {
+                    const allUsers = weeks.map(w => w.users)
+                    const minVal = Math.min(...allUsers)
+                    const maxVal = Math.max(...allUsers)
+                    const intensity = maxVal > minVal ? ((wk.users - minVal) / (maxVal - minVal)) : 0.5
+                    const blueOpacity = 0.2 + (intensity * 0.5) // Range: 0.2 to 0.7
+                    return (
+                      <div 
+                        key={idx} 
+                        className="text-center rounded-lg py-3"
+                        style={{ backgroundColor: `rgba(59, 130, 246, ${blueOpacity})` }}
+                      >
+                        <div className="text-2xl font-bold text-white">{fmtK(wk.users)}</div>
+                        <div className="text-sm text-cyan-400">{fmtPct(wk.pct)}</div>
+                      </div>
+                    )
+                  })}
                 </div>
               )
             })}
@@ -343,12 +354,23 @@ export default function TVDashboard() {
                     <div className="text-xl text-white font-medium">{ch.name}</div>
                     <div className="text-sm text-gray-500">{organicData.this_week[ch.key].conv_rate.toFixed(1)}% rate</div>
                   </div>
-                  {weeks.map((wk, idx) => (
-                    <div key={idx} className={`text-center bg-gray-800 rounded-lg py-3 ${idx === 0 ? 'bg-gray-700' : ''}`}>
-                      <div className="text-2xl font-bold text-green-400">{wk.purchases}</div>
-                      <div className="text-sm text-orange-400">{fmtPct(wk.pct)}</div>
-                    </div>
-                  ))}
+                  {weeks.map((wk, idx) => {
+                    const allPurchases = weeks.map(w => w.purchases)
+                    const minVal = Math.min(...allPurchases)
+                    const maxVal = Math.max(...allPurchases)
+                    const intensity = maxVal > minVal ? ((wk.purchases - minVal) / (maxVal - minVal)) : 0.5
+                    const greenOpacity = 0.2 + (intensity * 0.5) // Range: 0.2 to 0.7
+                    return (
+                      <div 
+                        key={idx} 
+                        className="text-center rounded-lg py-3"
+                        style={{ backgroundColor: `rgba(34, 197, 94, ${greenOpacity})` }}
+                      >
+                        <div className="text-2xl font-bold text-white">{wk.purchases}</div>
+                        <div className="text-sm text-orange-400">{fmtPct(wk.pct)}</div>
+                      </div>
+                    )
+                  })}
                 </div>
               )
             })}
