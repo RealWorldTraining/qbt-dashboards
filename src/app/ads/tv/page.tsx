@@ -99,6 +99,7 @@ const fmt = (n: number) => new Intl.NumberFormat("en-US").format(Math.round(n))
 const fmtK = (n: number) => n >= 1000 ? (n/1000).toFixed(1) + "k" : fmt(n)
 const fmtCurrency = (n: number) => "$" + fmt(n)
 const fmtPct = (n: number) => n.toFixed(2) + "%"
+const fmtPctWhole = (n: number) => Math.round(n) + "%"
 
 function Trend({ current, previous, inverse = false }: { current: number; previous: number; inverse?: boolean }) {
   if (!previous) return null
@@ -308,7 +309,7 @@ export default function TVDashboard() {
                         style={{ backgroundColor: `rgba(59, 130, 246, ${blueOpacity})` }}
                       >
                         <div className="text-2xl font-bold text-white">{fmtK(wk.users)}</div>
-                        <div className="text-lg font-semibold text-cyan-400">{fmtPct(wk.pct)}</div>
+                        <div className="text-lg font-semibold text-cyan-400">{fmtPctWhole(wk.pct)}</div>
                       </div>
                     )
                   })}
@@ -368,7 +369,7 @@ export default function TVDashboard() {
                         style={{ backgroundColor: `rgba(34, 197, 94, ${greenOpacity})` }}
                       >
                         <div className="text-2xl font-bold text-white">{wk.purchases}</div>
-                        <div className="text-lg font-semibold text-yellow-300">{fmtPct(wk.pct)}</div>
+                        <div className="text-lg font-semibold text-yellow-300">{fmtPctWhole(wk.pct)}</div>
                       </div>
                     )
                   })}
