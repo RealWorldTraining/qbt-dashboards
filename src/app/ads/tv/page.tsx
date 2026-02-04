@@ -284,16 +284,16 @@ export default function TVDashboard() {
                     <div className="text-xl text-gray-300 font-medium min-w-[200px]">{ch.name}</div>
                     <div className="text-2xl text-white font-bold">{fmtK(organicData.this_week[ch.key].users)}</div>
                   </div>
-                  <div className="flex items-end gap-2 h-16">
+                  <div className="flex items-end gap-2 h-20">
                     {weeks.map((val, idx) => {
-                      const heightPct = maxVal > 0 ? (val / maxVal) * 100 : 0
+                      const heightPx = maxVal > 0 ? Math.max(4, (val / maxVal) * 80) : 4
                       return (
-                        <div key={idx} className="flex-1 flex flex-col items-center justify-end">
+                        <div key={idx} className="flex-1 flex flex-col items-center justify-end gap-1">
                           <div 
                             className={`w-full ${ch.color} rounded-t transition-all ${idx === 4 ? 'opacity-100' : 'opacity-60'}`}
-                            style={{ height: `${heightPct}%` }}
+                            style={{ height: `${heightPx}px` }}
                           />
-                          <div className="text-xs text-gray-500 mt-1">{fmtK(val)}</div>
+                          <div className="text-xs text-gray-500">{fmtK(val)}</div>
                         </div>
                       )
                     })}
@@ -338,16 +338,16 @@ export default function TVDashboard() {
                     <div className="text-xl text-gray-300 font-medium min-w-[200px]">{ch.name}</div>
                     <div className="text-2xl text-green-400 font-bold">{organicData.this_week[ch.key].purchases}</div>
                   </div>
-                  <div className="flex items-end gap-2 h-16">
+                  <div className="flex items-end gap-2 h-20">
                     {weeks.map((val, idx) => {
-                      const heightPct = maxVal > 0 ? (val / maxVal) * 100 : 0
+                      const heightPx = maxVal > 0 ? Math.max(4, (val / maxVal) * 80) : 4
                       return (
-                        <div key={idx} className="flex-1 flex flex-col items-center justify-end">
+                        <div key={idx} className="flex-1 flex flex-col items-center justify-end gap-1">
                           <div 
                             className={`w-full ${ch.color} rounded-t transition-all ${idx === 4 ? 'opacity-100' : 'opacity-60'}`}
-                            style={{ height: `${heightPct}%` }}
+                            style={{ height: `${heightPx}px` }}
                           />
-                          <div className="text-xs text-gray-500 mt-1">{val}</div>
+                          <div className="text-xs text-gray-500">{val}</div>
                         </div>
                       )
                     })}
