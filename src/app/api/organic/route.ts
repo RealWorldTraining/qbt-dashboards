@@ -289,6 +289,7 @@ export async function GET() {
       last_week: buildWeekResponse(formattedWeeks[1]),
       two_weeks_ago: buildWeekResponse(formattedWeeks[2]),
       three_weeks_ago: buildWeekResponse(formattedWeeks[3]),
+      four_weeks_ago: buildWeekResponse(formattedWeeks[4]),
       data: formattedWeeks,
       last_updated: new Date().toISOString()
     }, {

@@ -50,6 +50,7 @@ interface OrganicData {
   last_week: OrganicWeek
   two_weeks_ago: OrganicWeek
   three_weeks_ago: OrganicWeek
+  four_weeks_ago: OrganicWeek
   last_updated: string
 }
 
@@ -88,6 +89,7 @@ const LOADING_ORGANIC: OrganicData = {
   last_week: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   two_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   three_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  four_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   last_updated: ""
 }
 const LOADING_CAMPAIGNS: CampaignData = { weeks: [], campaigns: [], last_updated: "" }
@@ -255,32 +257,54 @@ export default function TVDashboard() {
             </div>
           </div>
 
-          {/* Traffic Channels */}
+          {/* Traffic Channels - Multi-Week View */}
           <div className="bg-gray-900 rounded-2xl p-5 flex-1">
             <div className="text-gray-400 text-lg mb-3">TRAFFIC BY CHANNEL</div>
-            <div className="space-y-3">
+            {/* Week Headers */}
+            <div className="flex items-center mb-2 text-xs text-gray-500">
+              <div className="w-32" />
+              <div className="flex-1 grid grid-cols-5 gap-1 text-center">
+                <span>This Wk</span>
+                <span>Last Wk</span>
+                <span>2 Wks</span>
+                <span>3 Wks</span>
+                <span>4 Wks</span>
+              </div>
+            </div>
+            <div className="space-y-2">
               {[
-                { name: "Google Ads", data: organicData.this_week.google_ads, prev: organicData.last_week.google_ads, color: "bg-green-500" },
-                { name: "Google Organic", data: organicData.this_week.google_organic, prev: organicData.last_week.google_organic, color: "bg-blue-500" },
-                { name: "Direct", data: organicData.this_week.direct, prev: organicData.last_week.direct, color: "bg-gray-500" },
-                { name: "Bing Organic", data: organicData.this_week.bing_organic, prev: organicData.last_week.bing_organic, color: "bg-teal-500" },
-                { name: "QB Intuit", data: organicData.this_week.qb_intuit, prev: organicData.last_week.qb_intuit, color: "bg-emerald-500" },
-                { name: "Other", data: organicData.this_week.other, prev: organicData.last_week.other, color: "bg-purple-500" },
-              ].map((ch, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className={`w-2 h-10 rounded ${ch.color}`} />
-                  <div className="flex-1">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-lg text-gray-300">{ch.name}</span>
-                      <span className="text-2xl font-bold">{fmtK(ch.data.users)}</span>
+                { name: "Google Ads", key: "google_ads" as const, color: "bg-green-500" },
+                { name: "Google Organic", key: "google_organic" as const, color: "bg-blue-500" },
+                { name: "Direct", key: "direct" as const, color: "bg-gray-500" },
+                { name: "Bing Organic", key: "bing_organic" as const, color: "bg-teal-500" },
+                { name: "QB Intuit", key: "qb_intuit" as const, color: "bg-emerald-500" },
+                { name: "Other", key: "other" as const, color: "bg-purple-500" },
+              ].map((ch, i) => {
+                const weeks = [
+                  organicData.this_week[ch.key],
+                  organicData.last_week[ch.key],
+                  organicData.two_weeks_ago[ch.key],
+                  organicData.three_weeks_ago[ch.key],
+                  organicData.four_weeks_ago[ch.key],
+                ]
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className={`w-1.5 h-8 rounded ${ch.color}`} />
+                    <div className="w-28">
+                      <div className="text-sm text-gray-300 truncate">{ch.name}</div>
+                      <div className="text-xs text-gray-500">{weeks[0].purchases} purch</div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">{ch.data.purchases} purchases</span>
-                      <span className="text-lg text-cyan-400">{fmtPct(ch.data.pct_of_users)}</span>
+                    <div className="flex-1 grid grid-cols-5 gap-1">
+                      {weeks.map((wk, idx) => (
+                        <div key={idx} className={`text-center py-1 rounded ${idx === 0 ? 'bg-gray-800' : ''}`}>
+                          <div className="text-lg font-bold">{fmtK(wk.users)}</div>
+                          <div className="text-xs text-cyan-400">{fmtPct(wk.pct_of_users)}</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
