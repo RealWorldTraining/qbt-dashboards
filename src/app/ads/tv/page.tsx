@@ -147,9 +147,14 @@ export default function TVDashboard() {
 
   const gCampaigns = sortCampaigns(campaignData.campaigns)
   const bCampaigns = sortCampaigns(bingCampaignData.campaigns)
-  const totalSpend = adsData.this_week.spend + bingAdsData.this_week.spend
+  
+  // Combined paid ads totals
+  const totalClicks = adsData.this_week.clicks + bingAdsData.this_week.clicks
   const totalConv = adsData.this_week.conversions + bingAdsData.this_week.conversions
-  const blendedCPA = totalConv > 0 ? totalSpend / totalConv : 0
+  const totalConvRate = totalClicks > 0 ? (totalConv / totalClicks) * 100 : 0
+  const prevTotalClicks = adsData.last_week.clicks + bingAdsData.last_week.clicks
+  const prevTotalConv = adsData.last_week.conversions + bingAdsData.last_week.conversions
+  const prevTotalConvRate = prevTotalClicks > 0 ? (prevTotalConv / prevTotalClicks) * 100 : 0
 
   return (
     <div className="w-[2304px] h-[1296px] bg-black text-white p-6 flex flex-col">
@@ -173,27 +178,49 @@ export default function TVDashboard() {
       {/* MAIN GRID - 3 columns */}
       <div className="flex-1 grid grid-cols-3 gap-4">
         
-        {/* LEFT COLUMN - Overview + Traffic */}
+        {/* LEFT COLUMN - Overview + Paid Totals + Traffic */}
         <div className="flex flex-col gap-4">
-          {/* Big Numbers */}
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 flex-1">
-            <div className="text-gray-400 text-lg mb-2">SITE OVERVIEW</div>
-            <div className="grid grid-cols-3 gap-4 h-full">
-              <div className="flex flex-col justify-center">
-                <div className="text-6xl font-bold text-white">{fmtK(organicData.this_week.totals.users)}</div>
-                <div className="text-xl text-gray-400 mt-1">New Visitors</div>
+          {/* Site Overview */}
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6">
+            <div className="text-gray-400 text-lg mb-4">SITE OVERVIEW</div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <div className="text-5xl font-bold text-white">{fmtK(organicData.this_week.totals.users)}</div>
+                <div className="text-lg text-gray-400 mt-1">New Visitors</div>
                 <Trend current={organicData.this_week.totals.users} previous={organicData.last_week.totals.users} />
               </div>
-              <div className="flex flex-col justify-center">
-                <div className="text-6xl font-bold text-green-400">{organicData.this_week.totals.purchases}</div>
-                <div className="text-xl text-gray-400 mt-1">Conversions</div>
+              <div>
+                <div className="text-5xl font-bold text-green-400">{organicData.this_week.totals.purchases}</div>
+                <div className="text-lg text-gray-400 mt-1">Conversions</div>
                 <Trend current={organicData.this_week.totals.purchases} previous={organicData.last_week.totals.purchases} />
               </div>
-              <div className="flex flex-col justify-center">
-                <div className="text-6xl font-bold text-cyan-400">
+              <div>
+                <div className="text-5xl font-bold text-cyan-400">
                   {organicData.this_week.totals.users > 0 ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(1) : "0"}%
                 </div>
-                <div className="text-xl text-gray-400 mt-1">Conv Rate</div>
+                <div className="text-lg text-gray-400 mt-1">Conv Rate</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Combined Paid Ads Totals */}
+          <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-2xl p-6 border border-cyan-800/50">
+            <div className="text-cyan-400 text-lg mb-4">PAID ADS COMBINED (Google + Bing)</div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <div className="text-5xl font-bold text-white">{fmt(totalClicks)}</div>
+                <div className="text-lg text-gray-400 mt-1">Total Clicks</div>
+                <Trend current={totalClicks} previous={prevTotalClicks} />
+              </div>
+              <div>
+                <div className="text-5xl font-bold text-green-400">{totalConv}</div>
+                <div className="text-lg text-gray-400 mt-1">Total Conversions</div>
+                <Trend current={totalConv} previous={prevTotalConv} />
+              </div>
+              <div>
+                <div className="text-5xl font-bold text-yellow-400">{fmtPct(totalConvRate)}</div>
+                <div className="text-lg text-gray-400 mt-1">Conv Rate</div>
+                <Trend current={totalConvRate} previous={prevTotalConvRate} />
               </div>
             </div>
           </div>
@@ -288,7 +315,7 @@ export default function TVDashboard() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN - Bing Ads + Totals */}
+        {/* RIGHT COLUMN - Bing Ads */}
         <div className="flex flex-col gap-4">
           <div className="bg-gray-900 rounded-2xl p-5">
             <div className="flex items-center gap-3 mb-4">
@@ -311,57 +338,38 @@ export default function TVDashboard() {
             </div>
           </div>
 
-          {/* Bing Campaigns */}
-          <div className="bg-gray-900 rounded-2xl p-5">
+          {/* Bing Campaigns - Expanded */}
+          <div className="bg-gray-900 rounded-2xl p-5 flex-1">
             <div className="text-gray-400 text-sm mb-3">BING CAMPAIGNS</div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {bCampaigns.slice(0, 4).map((campaign, idx) => {
                 const c = campaign.data[0]
-                if (!c) return <div key={idx} className="bg-gray-800 rounded-xl p-3 opacity-50 text-gray-500 text-center">No data</div>
+                if (!c) return <div key={idx} className="bg-gray-800 rounded-xl p-4 opacity-50 text-gray-500 text-center">No data</div>
                 const cpa = c.conversions > 0 ? c.cost / c.conversions : 0
                 return (
-                  <div key={campaign.name} className="bg-gray-800 rounded-xl p-4 border-l-4 border-teal-500">
-                    <div className="text-sm text-gray-400 truncate mb-2">{campaign.name.split('-')[0]}</div>
-                    <div className="flex justify-between items-end">
+                  <div key={campaign.name} className="bg-gray-800 rounded-xl p-5 border-l-4 border-teal-500">
+                    <div className="text-lg text-gray-400 truncate mb-3">{campaign.name.split('-')[0]}</div>
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <div className="text-2xl font-bold">{fmt(c.clicks)}</div>
-                        <div className="text-xs text-gray-500">clicks</div>
+                        <div className="text-4xl font-bold">{fmt(c.clicks)}</div>
+                        <div className="text-sm text-gray-500">clicks</div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-green-400">{c.conversions}</div>
-                        <div className="text-xs text-gray-500">conv</div>
+                      <div>
+                        <div className="text-4xl font-bold text-green-400">{c.conversions}</div>
+                        <div className="text-sm text-gray-500">conv</div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-yellow-400">{fmtCurrency(cpa)}</div>
-                        <div className="text-xs text-gray-500">CPA</div>
+                      <div>
+                        <div className="text-4xl font-bold text-yellow-400">{fmtCurrency(cpa)}</div>
+                        <div className="text-sm text-gray-500">CPA</div>
                       </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-gray-700 flex justify-between">
+                      <span className="text-gray-400">Cost: <span className="text-white font-semibold">{fmtCurrency(c.cost)}</span></span>
+                      <span className="text-gray-400">CTR: <span className="text-cyan-400 font-semibold">{fmtPct(c.ctr)}</span></span>
                     </div>
                   </div>
                 )
               })}
-            </div>
-          </div>
-
-          {/* Combined Totals */}
-          <div className="bg-gradient-to-br from-cyan-900/50 to-blue-900/50 rounded-2xl p-6 flex-1 border border-cyan-700/50">
-            <div className="text-cyan-400 text-xl font-semibold mb-4">COMBINED TOTALS</div>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <div className="text-gray-400 text-lg">Total Spend</div>
-                <div className="text-5xl font-bold">{fmtCurrency(totalSpend)}</div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-lg">Total Clicks</div>
-                <div className="text-5xl font-bold">{fmt(adsData.this_week.clicks + bingAdsData.this_week.clicks)}</div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-lg">Total Conversions</div>
-                <div className="text-5xl font-bold text-green-400">{totalConv}</div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-lg">Blended CPA</div>
-                <div className="text-5xl font-bold text-yellow-400">{fmtCurrency(blendedCPA)}</div>
-              </div>
             </div>
           </div>
         </div>
