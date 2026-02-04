@@ -309,7 +309,7 @@ export default function TVDashboard() {
                         style={{ backgroundColor: `rgba(59, 130, 246, ${blueOpacity})` }}
                       >
                         <div className="text-2xl font-bold text-white">{fmtK(wk.users)}</div>
-                        <div className="text-lg font-semibold text-cyan-400">{fmtPctWhole(wk.pct)}</div>
+                        <div className="text-xl font-bold text-cyan-400">{fmtPctWhole(wk.pct)}</div>
                       </div>
                     )
                   })}
@@ -369,7 +369,7 @@ export default function TVDashboard() {
                         style={{ backgroundColor: `rgba(34, 197, 94, ${greenOpacity})` }}
                       >
                         <div className="text-2xl font-bold text-white">{wk.purchases}</div>
-                        <div className="text-lg font-semibold text-yellow-300">{fmtPctWhole(wk.pct)}</div>
+                        <div className="text-xl font-bold text-yellow-300">{fmtPctWhole(wk.pct)}</div>
                       </div>
                     )
                   })}
