@@ -119,17 +119,16 @@ export default function Home() {
     setRecapStatus('loading')
     setRecapMessage('')
     try {
-      const response = await fetch('https://n8n.srv1266620.hstgr.cloud/webhook/recap-refresh', {
+      const response = await fetch('/api/trigger-recap', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ triggered: 'manual', timestamp: new Date().toISOString() }),
       })
+      const data = await response.json()
       if (response.ok) {
         setRecapStatus('success')
-        setRecapMessage('P&L Recap refresh triggered successfully!')
+        setRecapMessage(data.message || 'P&L Recap refresh triggered successfully!')
         setTimeout(() => setRecapStatus('idle'), 5000)
       } else {
-        throw new Error(`HTTP ${response.status}`)
+        throw new Error(data.error || `HTTP ${response.status}`)
       }
     } catch (err) {
       setRecapStatus('error')
