@@ -36,10 +36,10 @@
 | `/api/ads` | Google Sheet | Adveronix (`1T8PZjlf...`) | `GADS: Account: Weekly (Devices)` |
 | `/api/organic` | Google Sheet | Adveronix (`1T8PZjlf...`) | `GA4: Traffic Weekly Session Source` + `GA4: Traffic Weekly Channel` |
 | `/api/campaigns` | Google Sheet | Adveronix (`1T8PZjlf...`) | `GADS: Campaign: Weekly (Devices)` |
-| `/api/bing-ads` | Google Sheet | ⚠️ OLD (`1INXxnW3...`) | `Bing Paid: Weekly Account Summary` |
+| `/api/bing-ads` | Google Sheet | Adveronix (`1T8PZjlf...`) | `BING: Account Summary Weekly` |
 | `/api/bing-campaigns` | Google Sheet | Adveronix (`1T8PZjlf...`) | `Bing: Campaign Weekly` |
 
-**⚠️ ISSUE:** `/api/bing-ads` uses OLD sheet, not Adveronix
+✅ All sources now using Adveronix (fixed 2026-02-03)
 
 ---
 
@@ -211,11 +211,13 @@
 
 ## APIs Using WRONG/OLD Data Sources
 
-| API | Current Source | Should Use |
-|-----|----------------|------------|
-| `/api/bing-ads` | OLD sheet `1INXxnW3...` | Adveronix `BING: Account Summary Weekly` |
-| `/api/bing-ads-monthly` | OLD sheet `1INXxnW3...` | Adveronix (needs monthly tab) |
-| `/api/google-ads-monthly` | OLD sheet `1WeRmk0b...` | Adveronix (needs monthly tab) |
+~~All fixed as of 2026-02-03~~
+
+| API | Status | Source |
+|-----|--------|--------|
+| `/api/bing-ads` | ✅ FIXED | Adveronix `BING: Account Summary Weekly` |
+| `/api/bing-ads-monthly` | ✅ FIXED | Adveronix `BING: Account Summary Weekly` |
+| `/api/google-ads-monthly` | ✅ FIXED | Adveronix `GADS: Account: Weekly (Devices)` |
 
 ---
 
@@ -230,11 +232,18 @@
 
 ## Summary of Issues
 
-1. **`/api/bing-ads`** - Uses old Bing sheet, needs to switch to Adveronix
-2. **`/api/bing-ads-monthly`** - Uses old Bing sheet
-3. **`/api/google-ads-monthly`** - Uses old Google Ads sheet
-4. **`/api/gsc-tracker`** - Stub, not pulling real data
-5. **`/api/vision-analysis`** - Static JSON, not dynamic
+### Fixed (2026-02-03)
+1. ~~**`/api/bing-ads`** - Uses old Bing sheet~~ ✅ Now uses Adveronix
+2. ~~**`/api/bing-ads-monthly`** - Uses old Bing sheet~~ ✅ Now uses Adveronix
+3. ~~**`/api/google-ads-monthly`** - Uses old Google Ads sheet~~ ✅ Now uses Adveronix
+4. ~~**`/api/bing-campaigns`** - Missing complete week filter~~ ✅ Added filter
+
+### Remaining Issues
+5. **`/api/gsc-tracker`** - Stub, not pulling real data
+6. **`/api/vision-analysis`** - Static JSON, not dynamic
+
+### Date Filtering
+All weekly APIs now filter to show only **complete weeks** where `week_end < today (CST)`. This ensures dashboards show prior week data, not partial current week.
 
 ---
 
