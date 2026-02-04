@@ -101,18 +101,22 @@ export async function GET() {
     // Get last 4 complete weeks (most recent first)
     const last4 = completeWeeks.slice(-4).reverse()
 
-    const formatWeek = (w: WeeklyRow, label: string) => ({
-      week_label: label,
-      date_range: formatDateRange(w.week_start, w.week_end),
-      spend: Math.round(w.spend), // Whole numbers per Aaron
-      impressions: w.impressions,
-      clicks: w.clicks,
-      ctr: w.ctr,
-      conversions: Math.round(w.conversions), // Whole numbers per Aaron
-      conversion_rate: w.conv_rate,
-      cpa: Math.round(w.cpa), // Whole numbers per Aaron
-      roas: w.conv_value / w.spend,
-    })
+    const formatWeek = (w: WeeklyRow, label: string) => {
+      // Calculate CPA ourselves since sheet may have 0
+      const calculatedCPA = w.conversions > 0 ? w.spend / w.conversions : 0
+      return {
+        week_label: label,
+        date_range: formatDateRange(w.week_start, w.week_end),
+        spend: Math.round(w.spend),
+        impressions: w.impressions,
+        clicks: w.clicks,
+        ctr: w.ctr,
+        conversions: Math.round(w.conversions),
+        conversion_rate: w.conv_rate,
+        cpa: Math.round(calculatedCPA), // Calculate: spend / conversions
+        roas: w.spend > 0 ? w.conv_value / w.spend : 0,
+      }
+    }
 
     const emptyWeek = {
       week_label: 'N/A',
