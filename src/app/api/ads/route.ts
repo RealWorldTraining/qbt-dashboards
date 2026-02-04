@@ -64,13 +64,19 @@ export async function GET() {
     }
 
     // Aggregate by week (sum across device types)
-    // Columns: A=week_start, B=week_end, C=device, D=spend, E=impressions, F=clicks, G=ctr, H=avg_cpc, I=conversions, J=conv_rate, K=cost_per_conv, L=conv_value
+    // Actual columns: A=Week(Monday), B=Account, C=Device, D=Clicks, E=Impressions, F=CTR, G=Avg.CPC, H=Cost, I=Avg.CPM, J=Conversions, K=Cross-device, L=Cost/conv
     const weeklyAgg = new Map<string, WeeklyRow>()
     
     rows.slice(1).forEach(row => {
       const weekStart = row[0]
-      const weekEnd = row[1]
-      if (!weekStart || !weekEnd) return
+      if (!weekStart) return
+      
+      // Calculate week_end as week_start + 6 days
+      const [year, month, day] = weekStart.split('-').map(Number)
+      const startDate = new Date(year, month - 1, day)
+      const endDate = new Date(startDate)
+      endDate.setDate(startDate.getDate() + 6)
+      const weekEnd = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
       
       const key = weekStart
       const existing = weeklyAgg.get(key) || {
@@ -86,11 +92,10 @@ export async function GET() {
         conv_value: 0,
       }
       
-      existing.spend += parseNumber(row[3])
+      existing.clicks += parseNumber(row[3])
       existing.impressions += parseNumber(row[4])
-      existing.clicks += parseNumber(row[5])
-      existing.conversions += parseNumber(row[8])
-      existing.conv_value += parseNumber(row[11])
+      existing.spend += parseNumber(row[7])
+      existing.conversions += parseNumber(row[9])
       
       weeklyAgg.set(key, existing)
     })
