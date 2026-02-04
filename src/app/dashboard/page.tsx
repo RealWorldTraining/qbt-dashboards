@@ -2280,6 +2280,79 @@ export default function DashboardPage() {
               </>
             ) : null}
 
+            {/* Weekly Trends Heatmap - Direct QTY */}
+            {extendedWeeklyTrends && (
+              <div className="mt-8">
+                <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-[#0066CC]" />
+                      Weekly Trends (Direct QTY)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-[#D2D2D7]">
+                          <th className="text-left py-3 px-2 font-semibold text-[#1D1D1F] min-w-[100px]">Week</th>
+                          {extendedWeeklyTrends.days.map((day) => (
+                            <th key={day} className="text-center py-3 px-2 font-medium text-[#6E6E73]">{day}</th>
+                          ))}
+                          <th className="text-center py-3 px-2 font-semibold text-[#1D1D1F] bg-[#F5F5F7]">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          // Calculate max value for heatmap
+                          const days = extendedWeeklyTrends.days
+                          const allValues = extendedWeeklyTrends.direct_qty.flatMap(week => 
+                            days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                          )
+                          const maxValue = Math.max(...allValues, 1)
+                          
+                          const getHeatmapClass = (value: number | null | undefined) => {
+                            if (value === null || value === undefined) return 'bg-white'
+                            const intensity = Math.round((value / maxValue) * 100)
+                            if (intensity > 80) return 'bg-blue-600 text-white'
+                            if (intensity > 60) return 'bg-blue-500 text-white'
+                            if (intensity > 40) return 'bg-blue-400 text-white'
+                            if (intensity > 20) return 'bg-blue-300 text-[#1D1D1F]'
+                            return 'bg-blue-200 text-[#1D1D1F]'
+                          }
+                          
+                          return extendedWeeklyTrends.direct_qty.map((week, idx) => {
+                            const isCurrentWeek = week.week_label === "Current Week"
+                            return (
+                              <tr key={idx} className="border-b border-[#E5E5E5]">
+                                <td className={`py-3 px-2 ${isCurrentWeek ? 'bg-[#E8F4FF]' : 'bg-white'}`}>
+                                  <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
+                                  <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
+                                </td>
+                                {days.map(day => {
+                                  const value = week.daily_cumulative[day]
+                                  return (
+                                    <td 
+                                      key={day} 
+                                      className={`text-center py-3 px-2 font-semibold ${getHeatmapClass(value)}`}
+                                    >
+                                      {value ?? '-'}
+                                    </td>
+                                  )
+                                })}
+                                <td className="text-center py-3 px-2 font-semibold text-[#0066CC] bg-[#F5F5F7]">
+                                  {week.week_total ?? '-'}
+                                </td>
+                              </tr>
+                            )
+                          })
+                        })()}
+                      </tbody>
+                    </table>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Weekly Trends Section */}
             <div className="mt-8">
               <h2 className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2 mb-4">
