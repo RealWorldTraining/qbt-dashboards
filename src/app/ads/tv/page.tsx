@@ -5,6 +5,7 @@ import { RefreshCw } from "lucide-react"
 
 // ============================================
 // TV DASHBOARD - Optimized for 2304x1296
+// Uses CSS Grid to fill the entire space
 // ============================================
 
 // Types
@@ -145,7 +146,8 @@ export default function TVDashboard() {
 
   useEffect(() => {
     fetchData()
-    const interval = setInterval(fetchData, 5 * 60 * 1000)
+    // Refresh once per hour for TV display
+    const interval = setInterval(fetchData, 60 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -162,218 +164,232 @@ export default function TVDashboard() {
   const googleCampaigns = sortCampaigns(campaignData.campaigns)
   const bingCampaigns = sortCampaigns(bingCampaignData.campaigns)
 
+  // Calculate totals
+  const totalSpend = adsData.this_week.spend + bingAdsData.this_week.spend
+  const totalClicks = adsData.this_week.clicks + bingAdsData.this_week.clicks
+  const totalConversions = adsData.this_week.conversions + bingAdsData.this_week.conversions
+  const blendedCPA = totalConversions > 0 ? totalSpend / totalConversions : 0
+
   return (
-    <div className="w-[2304px] h-[1296px] bg-[#0a0a0a] p-3 overflow-hidden">
-      {/* ===== HEADER ===== */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-4">
-          <h1 className="text-white text-xl font-bold">Marketing Dashboard</h1>
-          <span className="text-gray-400 text-sm">{adsData.this_week.date_range}</span>
+    <div className="w-[2304px] h-[1296px] bg-[#0a0a0a] p-4 grid grid-rows-[auto_1fr_1fr_1fr_1fr_auto] gap-3 overflow-hidden">
+      
+      {/* ===== ROW 0: HEADER ===== */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <h1 className="text-white text-2xl font-bold">Marketing Dashboard</h1>
+          <span className="text-cyan-400 text-lg font-medium">{adsData.this_week.date_range}</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-gray-500 text-sm">{lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
-          <button onClick={fetchData} className="p-1 rounded hover:bg-gray-800">
-            <RefreshCw className={`h-4 w-4 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <span className="text-gray-400">Live</span>
+          </div>
+          <span className="text-gray-500">{lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+          <button onClick={fetchData} className="p-2 rounded hover:bg-gray-800">
+            <RefreshCw className={`h-5 w-5 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* ===== ROW 1: Top KPIs + Traffic Channels ===== */}
-      <div className="flex gap-3 mb-3">
-        {/* Top 3 KPIs */}
-        <div className="flex gap-2 shrink-0">
-          {/* New Visitors */}
-          <div className="w-[180px] bg-[#1a1a1a] rounded-lg p-3">
-            <div className="text-gray-400 text-xs mb-1">NEW VISITORS</div>
-            <div className="text-white text-3xl font-bold">{fmt(organicData.this_week.totals.users)}</div>
-            <div className="flex justify-between text-xs mt-2">
-              <span className="text-gray-500">vs 2w</span>
-              <Delta current={organicData.this_week.totals.users} previous={organicData.last_week.totals.users} />
-            </div>
+      {/* ===== ROW 1: TOP KPIs + TRAFFIC CHANNELS ===== */}
+      <div className="grid grid-cols-[1fr_1fr_1fr_2fr_2fr_2fr_2fr_2fr_2fr] gap-3">
+        {/* Top 3 KPIs - larger */}
+        <div className="bg-[#1a1a1a] rounded-xl p-4 flex flex-col justify-center">
+          <div className="text-gray-400 text-sm mb-1">NEW VISITORS</div>
+          <div className="text-white text-4xl font-bold">{fmt(organicData.this_week.totals.users)}</div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-gray-500 text-sm">vs 2w</span>
+            <span className="text-lg"><Delta current={organicData.this_week.totals.users} previous={organicData.last_week.totals.users} /></span>
           </div>
-          {/* Conversions */}
-          <div className="w-[180px] bg-[#1a1a1a] rounded-lg p-3">
-            <div className="text-gray-400 text-xs mb-1">CONVERSIONS</div>
-            <div className="text-white text-3xl font-bold">{organicData.this_week.totals.purchases}</div>
-            <div className="flex justify-between text-xs mt-2">
-              <span className="text-gray-500">vs 2w</span>
-              <Delta current={organicData.this_week.totals.purchases} previous={organicData.last_week.totals.purchases} />
-            </div>
+        </div>
+        <div className="bg-[#1a1a1a] rounded-xl p-4 flex flex-col justify-center">
+          <div className="text-gray-400 text-sm mb-1">CONVERSIONS</div>
+          <div className="text-white text-4xl font-bold">{organicData.this_week.totals.purchases}</div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-gray-500 text-sm">vs 2w</span>
+            <span className="text-lg"><Delta current={organicData.this_week.totals.purchases} previous={organicData.last_week.totals.purchases} /></span>
           </div>
-          {/* Conv Rate */}
-          <div className="w-[180px] bg-[#1a1a1a] rounded-lg p-3">
-            <div className="text-gray-400 text-xs mb-1">CONV RATE</div>
-            <div className="text-white text-3xl font-bold">
-              {organicData.this_week.totals.users > 0 ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(2) : "0"}%
-            </div>
-            <div className="flex justify-between text-xs mt-2">
-              <span className="text-gray-500">vs 2w</span>
+        </div>
+        <div className="bg-[#1a1a1a] rounded-xl p-4 flex flex-col justify-center">
+          <div className="text-gray-400 text-sm mb-1">CONV RATE</div>
+          <div className="text-white text-4xl font-bold">
+            {organicData.this_week.totals.users > 0 ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(2) : "0"}%
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-gray-500 text-sm">vs 2w</span>
+            <span className="text-lg">
               <Delta 
                 current={organicData.this_week.totals.users > 0 ? organicData.this_week.totals.purchases / organicData.this_week.totals.users : 0} 
                 previous={organicData.last_week.totals.users > 0 ? organicData.last_week.totals.purchases / organicData.last_week.totals.users : 0} 
               />
-            </div>
+            </span>
           </div>
         </div>
 
-        {/* Traffic by Channel - 6 cards */}
-        <div className="flex-1 grid grid-cols-6 gap-2">
-          {[
-            { name: "GOOGLE ADS", data: organicData.this_week.google_ads, prev: organicData.last_week.google_ads, color: "bg-green-500" },
-            { name: "GOOGLE ORG", data: organicData.this_week.google_organic, prev: organicData.last_week.google_organic, color: "bg-blue-500" },
-            { name: "DIRECT", data: organicData.this_week.direct, prev: organicData.last_week.direct, color: "bg-gray-500" },
-            { name: "BING ORG", data: organicData.this_week.bing_organic, prev: organicData.last_week.bing_organic, color: "bg-teal-500" },
-            { name: "QB INTUIT", data: organicData.this_week.qb_intuit, prev: organicData.last_week.qb_intuit, color: "bg-emerald-500" },
-            { name: "OTHER", data: organicData.this_week.other, prev: organicData.last_week.other, color: "bg-purple-500" },
-          ].map((ch, i) => (
-            <div key={i} className="bg-[#1a1a1a] rounded-lg overflow-hidden">
-              <div className={`h-1 ${ch.color}`} />
-              <div className="p-2">
-                <div className="text-gray-400 text-[10px] font-medium">{ch.name}</div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-white text-lg font-bold">{fmt(ch.data.users)}</span>
-                  <span className="text-cyan-400 text-sm">{fmtPct(ch.data.pct_of_users)}</span>
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-gray-400 text-sm">{ch.data.purchases} purch</span>
-                  <Delta current={ch.data.users} previous={ch.prev.users} />
-                </div>
+        {/* Traffic Channels - 6 cards */}
+        {[
+          { name: "GOOGLE ADS", data: organicData.this_week.google_ads, prev: organicData.last_week.google_ads, color: "border-green-500" },
+          { name: "GOOGLE ORGANIC", data: organicData.this_week.google_organic, prev: organicData.last_week.google_organic, color: "border-blue-500" },
+          { name: "DIRECT", data: organicData.this_week.direct, prev: organicData.last_week.direct, color: "border-gray-500" },
+          { name: "BING ORGANIC", data: organicData.this_week.bing_organic, prev: organicData.last_week.bing_organic, color: "border-teal-500" },
+          { name: "QB INTUIT", data: organicData.this_week.qb_intuit, prev: organicData.last_week.qb_intuit, color: "border-emerald-500" },
+          { name: "OTHER", data: organicData.this_week.other, prev: organicData.last_week.other, color: "border-purple-500" },
+        ].map((ch, i) => (
+          <div key={i} className={`bg-[#1a1a1a] rounded-xl p-4 border-l-4 ${ch.color} flex flex-col justify-between`}>
+            <div className="text-gray-400 text-xs font-medium mb-2">{ch.name}</div>
+            <div>
+              <div className="flex items-baseline justify-between mb-1">
+                <span className="text-white text-2xl font-bold">{fmt(ch.data.users)}</span>
+                <span className="text-cyan-400 text-lg">{fmtPct(ch.data.pct_of_users)}</span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-gray-400">{ch.data.purchases} purchases</span>
+                <Delta current={ch.data.users} previous={ch.prev.users} />
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
-      {/* ===== ROW 2: Google Ads Performance ===== */}
-      <div className="mb-2">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-2 h-2 bg-red-500 rounded-full" />
-          <span className="text-gray-400 text-xs font-medium">GOOGLE ADS</span>
+      {/* ===== ROW 2: GOOGLE ADS METRICS ===== */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-red-500 rounded-full" />
+          <span className="text-white text-lg font-semibold">Google Ads Performance</span>
         </div>
-        <div className="grid grid-cols-8 gap-2">
+        <div className="grid grid-cols-8 gap-3 flex-1">
           {[
             { label: "SPEND", value: fmtCurrency(adsData.this_week.spend), prev: adsData.last_week.spend, curr: adsData.this_week.spend },
             { label: "IMPRESSIONS", value: fmt(adsData.this_week.impressions), prev: adsData.last_week.impressions, curr: adsData.this_week.impressions },
             { label: "CLICKS", value: fmt(adsData.this_week.clicks), prev: adsData.last_week.clicks, curr: adsData.this_week.clicks },
             { label: "CTR", value: fmtPct(adsData.this_week.ctr), prev: adsData.last_week.ctr, curr: adsData.this_week.ctr },
-            { label: "CONVERSIONS", value: adsData.this_week.conversions, prev: adsData.last_week.conversions, curr: adsData.this_week.conversions },
+            { label: "CONVERSIONS", value: String(adsData.this_week.conversions), prev: adsData.last_week.conversions, curr: adsData.this_week.conversions },
             { label: "CONV RATE", value: fmtPct(adsData.this_week.conversion_rate), prev: adsData.last_week.conversion_rate, curr: adsData.this_week.conversion_rate },
             { label: "CPA", value: fmtCurrency(adsData.this_week.cpa), prev: adsData.last_week.cpa, curr: adsData.this_week.cpa, inverse: true },
             { label: "ROAS", value: adsData.this_week.roas.toFixed(2) + "x", prev: adsData.last_week.roas, curr: adsData.this_week.roas },
           ].map((m, i) => (
-            <div key={i} className="bg-[#1a1a1a] rounded-lg p-2">
-              <div className="text-gray-500 text-[10px]">{m.label}</div>
-              <div className="text-white text-xl font-bold">{m.value}</div>
-              <div className="text-xs"><Delta current={m.curr} previous={m.prev} inverse={m.inverse} /></div>
+            <div key={i} className="bg-[#1a1a1a] rounded-xl p-4 flex flex-col justify-center">
+              <div className="text-gray-500 text-xs mb-1">{m.label}</div>
+              <div className="text-white text-3xl font-bold">{m.value}</div>
+              <div className="text-lg mt-1"><Delta current={m.curr} previous={m.prev} inverse={m.inverse} /></div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ===== ROW 3: Google Campaigns (8 cards in 1 row) ===== */}
-      <div className="grid grid-cols-8 gap-2 mb-2">
+      {/* ===== ROW 3: GOOGLE CAMPAIGNS ===== */}
+      <div className="grid grid-cols-8 gap-3">
         {googleCampaigns.slice(0, 8).map((campaign, idx) => {
           const c = campaign.data[0]
-          if (!c) return <div key={idx} className="bg-[#1a1a1a] rounded-lg p-2 opacity-50"><div className="text-gray-500 text-xs">No data</div></div>
+          if (!c) return <div key={idx} className="bg-[#1a1a1a] rounded-xl p-4 opacity-50 flex items-center justify-center"><span className="text-gray-500">No data</span></div>
           return (
-            <div key={campaign.name} className="bg-[#1a1a1a] rounded-lg p-2">
-              <div className="text-gray-400 text-[9px] font-medium truncate mb-1">{campaign.name.replace(/-/g, ' ').toUpperCase()}</div>
-              <div className="grid grid-cols-3 gap-1 text-[10px]">
-                <div><div className="text-white font-bold">{fmt(c.clicks)}</div><div className="text-gray-600">Clk</div></div>
-                <div><div className="text-white font-bold">{fmtCurrency(c.cost)}</div><div className="text-gray-600">Cost</div></div>
-                <div><div className="text-white font-bold">{c.conversions}</div><div className="text-gray-600">Conv</div></div>
+            <div key={campaign.name} className="bg-[#1a1a1a] rounded-xl p-4 flex flex-col justify-between">
+              <div className="text-gray-400 text-xs font-medium truncate mb-2">{campaign.name.replace(/-/g, ' ').toUpperCase()}</div>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div>
+                  <div className="text-white text-xl font-bold">{fmt(c.clicks)}</div>
+                  <div className="text-gray-500 text-xs">Clicks</div>
+                </div>
+                <div>
+                  <div className="text-white text-xl font-bold">{fmtCurrency(c.cost)}</div>
+                  <div className="text-gray-500 text-xs">Cost</div>
+                </div>
+                <div>
+                  <div className="text-white text-xl font-bold">{c.conversions}</div>
+                  <div className="text-gray-500 text-xs">Conv</div>
+                </div>
               </div>
-              <div className="flex justify-between text-[10px] mt-1 pt-1 border-t border-gray-800">
-                <span className="text-cyan-400">{fmtPct(c.search_impression_share)} IS</span>
-                <span className="text-orange-400">{fmtPct(c.search_abs_top_impression_share)} Top</span>
+              <div className="flex justify-between pt-2 border-t border-gray-800">
+                <span className="text-cyan-400 text-sm">{fmtPct(c.search_impression_share)} IS</span>
+                <span className="text-orange-400 text-sm">{fmtPct(c.search_abs_top_impression_share)} Top</span>
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* ===== ROW 4: Bing Ads Performance ===== */}
-      <div className="mb-2">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-2 h-2 bg-blue-400 rounded-full" />
-          <span className="text-gray-400 text-xs font-medium">BING ADS</span>
-        </div>
-        <div className="grid grid-cols-8 gap-2">
-          {[
-            { label: "SPEND", value: fmtCurrency(bingAdsData.this_week.spend), prev: bingAdsData.last_week.spend, curr: bingAdsData.this_week.spend },
-            { label: "IMPRESSIONS", value: fmt(bingAdsData.this_week.impressions), prev: bingAdsData.last_week.impressions, curr: bingAdsData.this_week.impressions },
-            { label: "CLICKS", value: fmt(bingAdsData.this_week.clicks), prev: bingAdsData.last_week.clicks, curr: bingAdsData.this_week.clicks },
-            { label: "CTR", value: fmtPct(bingAdsData.this_week.ctr), prev: bingAdsData.last_week.ctr, curr: bingAdsData.this_week.ctr },
-            { label: "CONVERSIONS", value: bingAdsData.this_week.conversions, prev: bingAdsData.last_week.conversions, curr: bingAdsData.this_week.conversions },
-            { label: "CONV RATE", value: fmtPct(bingAdsData.this_week.conversion_rate), prev: bingAdsData.last_week.conversion_rate, curr: bingAdsData.this_week.conversion_rate },
-            { label: "CPA", value: fmtCurrency(bingAdsData.this_week.cpa), prev: bingAdsData.last_week.cpa, curr: bingAdsData.this_week.cpa, inverse: true },
-            { label: "ROAS", value: bingAdsData.this_week.roas.toFixed(2) + "x", prev: bingAdsData.last_week.roas, curr: bingAdsData.this_week.roas },
-          ].map((m, i) => (
-            <div key={i} className="bg-[#1a1a1a] rounded-lg p-2">
-              <div className="text-gray-500 text-[10px]">{m.label}</div>
-              <div className="text-white text-xl font-bold">{m.value}</div>
-              <div className="text-xs"><Delta current={m.curr} previous={m.prev} inverse={m.inverse} /></div>
+      {/* ===== ROW 4: BING ADS + CAMPAIGNS + TOTALS ===== */}
+      <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr_2fr] gap-3">
+        {/* Bing Ads Metrics - 4 key metrics */}
+        <div className="col-span-4 grid grid-cols-4 gap-3">
+          <div className="bg-[#1a1a1a] rounded-xl p-3 flex flex-col justify-center border-l-4 border-blue-400">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 bg-blue-400 rounded-full" />
+              <span className="text-gray-500 text-xs">BING SPEND</span>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ===== ROW 5: Bing Campaigns (4 cards) + Summary Stats ===== */}
-      <div className="flex gap-3">
-        {/* Bing Campaigns */}
-        <div className="grid grid-cols-4 gap-2 flex-1">
-          {bingCampaigns.slice(0, 4).map((campaign, idx) => {
-            const c = campaign.data[0]
-            if (!c) return <div key={idx} className="bg-[#1a1a1a] rounded-lg p-2 opacity-50"><div className="text-gray-500 text-xs">No data</div></div>
-            return (
-              <div key={campaign.name} className="bg-[#1a1a1a] rounded-lg p-2">
-                <div className="text-gray-400 text-[9px] font-medium truncate mb-1">{campaign.name.replace(/-/g, ' ').toUpperCase()}</div>
-                <div className="grid grid-cols-3 gap-1 text-[10px]">
-                  <div><div className="text-white font-bold">{fmt(c.clicks)}</div><div className="text-gray-600">Clk</div></div>
-                  <div><div className="text-white font-bold">{fmtCurrency(c.cost)}</div><div className="text-gray-600">Cost</div></div>
-                  <div><div className="text-white font-bold">{c.conversions}</div><div className="text-gray-600">Conv</div></div>
-                </div>
-                <div className="flex justify-between text-[10px] mt-1 pt-1 border-t border-gray-800">
-                  <span className="text-cyan-400">{fmtPct(c.conv_rate)} CR</span>
-                  <span className="text-orange-400">{c.cost > 0 && c.conversions > 0 ? fmtCurrency(c.cost / c.conversions) : '$0'} CPA</span>
-                </div>
-              </div>
-            )
-          })}
+            <div className="text-white text-2xl font-bold">{fmtCurrency(bingAdsData.this_week.spend)}</div>
+            <Delta current={bingAdsData.this_week.spend} previous={bingAdsData.last_week.spend} />
+          </div>
+          <div className="bg-[#1a1a1a] rounded-xl p-3 flex flex-col justify-center">
+            <div className="text-gray-500 text-xs mb-1">CLICKS</div>
+            <div className="text-white text-2xl font-bold">{fmt(bingAdsData.this_week.clicks)}</div>
+            <Delta current={bingAdsData.this_week.clicks} previous={bingAdsData.last_week.clicks} />
+          </div>
+          <div className="bg-[#1a1a1a] rounded-xl p-3 flex flex-col justify-center">
+            <div className="text-gray-500 text-xs mb-1">CONVERSIONS</div>
+            <div className="text-white text-2xl font-bold">{bingAdsData.this_week.conversions}</div>
+            <Delta current={bingAdsData.this_week.conversions} previous={bingAdsData.last_week.conversions} />
+          </div>
+          <div className="bg-[#1a1a1a] rounded-xl p-3 flex flex-col justify-center">
+            <div className="text-gray-500 text-xs mb-1">CPA</div>
+            <div className="text-white text-2xl font-bold">{fmtCurrency(bingAdsData.this_week.cpa)}</div>
+            <Delta current={bingAdsData.this_week.cpa} previous={bingAdsData.last_week.cpa} inverse />
+          </div>
         </div>
 
-        {/* Weekly Totals Summary */}
-        <div className="w-[500px] bg-[#1a1a1a] rounded-lg p-3">
-          <div className="text-gray-400 text-xs font-medium mb-2">COMBINED WEEKLY TOTALS</div>
-          <div className="grid grid-cols-4 gap-3">
-            <div>
-              <div className="text-gray-500 text-[10px]">TOTAL SPEND</div>
-              <div className="text-white text-2xl font-bold">{fmtCurrency(adsData.this_week.spend + bingAdsData.this_week.spend)}</div>
-            </div>
-            <div>
-              <div className="text-gray-500 text-[10px]">TOTAL CLICKS</div>
-              <div className="text-white text-2xl font-bold">{fmt(adsData.this_week.clicks + bingAdsData.this_week.clicks)}</div>
-            </div>
-            <div>
-              <div className="text-gray-500 text-[10px]">TOTAL CONV</div>
-              <div className="text-white text-2xl font-bold">{adsData.this_week.conversions + bingAdsData.this_week.conversions}</div>
-            </div>
-            <div>
-              <div className="text-gray-500 text-[10px]">BLENDED CPA</div>
-              <div className="text-white text-2xl font-bold">
-                {(adsData.this_week.conversions + bingAdsData.this_week.conversions) > 0 
-                  ? fmtCurrency((adsData.this_week.spend + bingAdsData.this_week.spend) / (adsData.this_week.conversions + bingAdsData.this_week.conversions))
-                  : '$0'}
+        {/* Bing Campaigns - 4 cards */}
+        {bingCampaigns.slice(0, 4).map((campaign, idx) => {
+          const c = campaign.data[0]
+          if (!c) return <div key={idx} className="bg-[#1a1a1a] rounded-xl p-3 opacity-50"><span className="text-gray-500 text-xs">No data</span></div>
+          const cpa = c.conversions > 0 ? c.cost / c.conversions : 0
+          return (
+            <div key={campaign.name} className="bg-[#1a1a1a] rounded-xl p-3 flex flex-col justify-between">
+              <div className="text-gray-400 text-[10px] font-medium truncate mb-1">{campaign.name.replace(/-/g, ' ')}</div>
+              <div className="flex justify-between items-end">
+                <div>
+                  <div className="text-white text-lg font-bold">{fmt(c.clicks)}</div>
+                  <div className="text-gray-500 text-xs">clicks</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-white text-lg font-bold">{c.conversions}</div>
+                  <div className="text-gray-500 text-xs">conv</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-orange-400 text-lg font-bold">{fmtCurrency(cpa)}</div>
+                  <div className="text-gray-500 text-xs">CPA</div>
+                </div>
               </div>
+            </div>
+          )
+        })}
+
+        {/* Combined Totals */}
+        <div className="bg-gradient-to-br from-[#1a1a1a] to-[#252525] rounded-xl p-4 border border-gray-700">
+          <div className="text-cyan-400 text-sm font-semibold mb-3">COMBINED TOTALS</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-gray-500 text-xs">TOTAL SPEND</div>
+              <div className="text-white text-3xl font-bold">{fmtCurrency(totalSpend)}</div>
+            </div>
+            <div>
+              <div className="text-gray-500 text-xs">TOTAL CLICKS</div>
+              <div className="text-white text-3xl font-bold">{fmt(totalClicks)}</div>
+            </div>
+            <div>
+              <div className="text-gray-500 text-xs">TOTAL CONV</div>
+              <div className="text-white text-3xl font-bold">{totalConversions}</div>
+            </div>
+            <div>
+              <div className="text-gray-500 text-xs">BLENDED CPA</div>
+              <div className="text-white text-3xl font-bold">{fmtCurrency(blendedCPA)}</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ===== FOOTER ===== */}
-      <div className="flex items-center justify-center gap-2 mt-3">
-        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-        <span className="text-gray-600 text-xs">TV Dashboard • 2304×1296 • Auto-refresh 5min</span>
+      {/* ===== ROW 5: FOOTER ===== */}
+      <div className="flex items-center justify-center">
+        <span className="text-gray-600 text-sm">QuickBooks Training • Marketing TV Dashboard • 2304×1296</span>
       </div>
     </div>
   )
