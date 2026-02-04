@@ -255,113 +255,103 @@ export default function TVDashboard() {
         </div>
       </div>
 
-      {/* BOTTOM ROW - 2 Charts */}
+      {/* BOTTOM ROW - 2 Tables */}
       <div className="grid grid-cols-2 gap-6 flex-1">
-        {/* Traffic by Channel Chart */}
-        <div className="bg-gray-900 rounded-2xl p-8 flex flex-col">
-          <div className="text-gray-400 text-2xl mb-6 font-semibold">TRAFFIC BY CHANNEL (Last 4 Weeks)</div>
-          <div className="flex-1 flex flex-col justify-between">
+        {/* Traffic by Channel */}
+        <div className="bg-gray-900 rounded-2xl p-8">
+          <div className="text-gray-400 text-2xl mb-6 font-semibold uppercase tracking-wide">Traffic by Channel</div>
+          
+          {/* Column Headers */}
+          <div className="grid grid-cols-[200px_repeat(5,1fr)] gap-4 mb-4 pb-3 border-b border-gray-800">
+            <div />
+            <div className="text-center text-gray-500 text-sm">This Wk</div>
+            <div className="text-center text-gray-500 text-sm">Last Wk</div>
+            <div className="text-center text-gray-500 text-sm">2 Wks</div>
+            <div className="text-center text-gray-500 text-sm">3 Wks</div>
+            <div className="text-center text-gray-500 text-sm">4 Wks</div>
+          </div>
+
+          {/* Data Rows */}
+          <div className="space-y-3">
             {[
-              { name: "Google Ads", key: "google_ads" as const, color: "bg-green-500" },
-              { name: "Google Organic", key: "google_organic" as const, color: "bg-blue-500" },
-              { name: "Direct", key: "direct" as const, color: "bg-gray-500" },
-              { name: "Bing Organic", key: "bing_organic" as const, color: "bg-teal-500" },
-              { name: "QB Intuit", key: "qb_intuit" as const, color: "bg-emerald-500" },
-              { name: "Other", key: "other" as const, color: "bg-purple-500" },
-            ].map((ch, i) => {
+              { name: "Google Ads", key: "google_ads" as const, color: "border-green-500" },
+              { name: "Google Organic", key: "google_organic" as const, color: "border-blue-500" },
+              { name: "Direct", key: "direct" as const, color: "border-gray-500" },
+              { name: "Bing Organic", key: "bing_organic" as const, color: "border-teal-500" },
+              { name: "QB Intuit", key: "qb_intuit" as const, color: "border-emerald-500" },
+              { name: "Other", key: "other" as const, color: "border-purple-500" },
+            ].map((ch) => {
               const weeks = [
-                organicData.four_weeks_ago[ch.key].users,
-                organicData.three_weeks_ago[ch.key].users,
-                organicData.two_weeks_ago[ch.key].users,
-                organicData.last_week[ch.key].users,
-                organicData.this_week[ch.key].users,
+                { users: organicData.this_week[ch.key].users, pct: organicData.this_week[ch.key].pct_of_users },
+                { users: organicData.last_week[ch.key].users, pct: organicData.last_week[ch.key].pct_of_users },
+                { users: organicData.two_weeks_ago[ch.key].users, pct: organicData.two_weeks_ago[ch.key].pct_of_users },
+                { users: organicData.three_weeks_ago[ch.key].users, pct: organicData.three_weeks_ago[ch.key].pct_of_users },
+                { users: organicData.four_weeks_ago[ch.key].users, pct: organicData.four_weeks_ago[ch.key].pct_of_users },
               ]
-              const maxVal = Math.max(...weeks)
               return (
-                <div key={i} className="mb-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-3 h-3 rounded ${ch.color}`} />
-                    <div className="text-xl text-gray-300 font-medium min-w-[200px]">{ch.name}</div>
-                    <div className="text-2xl text-white font-bold">{fmtK(organicData.this_week[ch.key].users)}</div>
+                <div key={ch.key} className={`grid grid-cols-[200px_repeat(5,1fr)] gap-4 items-center border-l-4 ${ch.color} pl-4 py-2`}>
+                  <div>
+                    <div className="text-xl text-white font-medium">{ch.name}</div>
+                    <div className="text-sm text-gray-500">{organicData.this_week[ch.key].purchases} purch</div>
                   </div>
-                  <div className="flex items-end gap-2 h-20">
-                    {weeks.map((val, idx) => {
-                      const heightPx = maxVal > 0 ? Math.max(4, (val / maxVal) * 80) : 4
-                      return (
-                        <div key={idx} className="flex-1 flex flex-col items-center justify-end gap-1">
-                          <div 
-                            className={`w-full ${ch.color} rounded-t transition-all ${idx === 4 ? 'opacity-100' : 'opacity-60'}`}
-                            style={{ height: `${heightPx}px` }}
-                          />
-                          <div className="text-xs text-gray-500">{fmtK(val)}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                  {weeks.map((wk, idx) => (
+                    <div key={idx} className={`text-center bg-gray-800 rounded-lg py-3 ${idx === 0 ? 'bg-gray-700' : ''}`}>
+                      <div className="text-2xl font-bold text-white">{fmtK(wk.users)}</div>
+                      <div className="text-sm text-cyan-400">{fmtPct(wk.pct)}</div>
+                    </div>
+                  ))}
                 </div>
               )
             })}
-            <div className="flex justify-around text-sm text-gray-600 mt-4">
-              <span>4w ago</span>
-              <span>3w ago</span>
-              <span>2w ago</span>
-              <span>Last wk</span>
-              <span className="text-cyan-400 font-semibold">This wk</span>
-            </div>
           </div>
         </div>
 
-        {/* Conversions by Channel Chart */}
-        <div className="bg-gray-900 rounded-2xl p-8 flex flex-col">
-          <div className="text-gray-400 text-2xl mb-6 font-semibold">CONVERSIONS BY CHANNEL (Last 4 Weeks)</div>
-          <div className="flex-1 flex flex-col justify-between">
+        {/* Conversions by Channel */}
+        <div className="bg-gray-900 rounded-2xl p-8">
+          <div className="text-gray-400 text-2xl mb-6 font-semibold uppercase tracking-wide">Conversions by Channel</div>
+          
+          {/* Column Headers */}
+          <div className="grid grid-cols-[200px_repeat(5,1fr)] gap-4 mb-4 pb-3 border-b border-gray-800">
+            <div />
+            <div className="text-center text-gray-500 text-sm">This Wk</div>
+            <div className="text-center text-gray-500 text-sm">Last Wk</div>
+            <div className="text-center text-gray-500 text-sm">2 Wks</div>
+            <div className="text-center text-gray-500 text-sm">3 Wks</div>
+            <div className="text-center text-gray-500 text-sm">4 Wks</div>
+          </div>
+
+          {/* Data Rows */}
+          <div className="space-y-3">
             {[
-              { name: "Google Ads", key: "google_ads" as const, color: "bg-green-500" },
-              { name: "Google Organic", key: "google_organic" as const, color: "bg-blue-500" },
-              { name: "Direct", key: "direct" as const, color: "bg-gray-500" },
-              { name: "Bing Organic", key: "bing_organic" as const, color: "bg-teal-500" },
-              { name: "QB Intuit", key: "qb_intuit" as const, color: "bg-emerald-500" },
-              { name: "Other", key: "other" as const, color: "bg-purple-500" },
-            ].map((ch, i) => {
+              { name: "Google Ads", key: "google_ads" as const, color: "border-green-500" },
+              { name: "Google Organic", key: "google_organic" as const, color: "border-blue-500" },
+              { name: "Direct", key: "direct" as const, color: "border-gray-500" },
+              { name: "Bing Organic", key: "bing_organic" as const, color: "border-teal-500" },
+              { name: "QB Intuit", key: "qb_intuit" as const, color: "border-emerald-500" },
+              { name: "Other", key: "other" as const, color: "border-purple-500" },
+            ].map((ch) => {
               const weeks = [
-                organicData.four_weeks_ago[ch.key].purchases,
-                organicData.three_weeks_ago[ch.key].purchases,
-                organicData.two_weeks_ago[ch.key].purchases,
-                organicData.last_week[ch.key].purchases,
-                organicData.this_week[ch.key].purchases,
+                { purchases: organicData.this_week[ch.key].purchases, pct: organicData.this_week[ch.key].pct_of_purchases },
+                { purchases: organicData.last_week[ch.key].purchases, pct: organicData.last_week[ch.key].pct_of_purchases },
+                { purchases: organicData.two_weeks_ago[ch.key].purchases, pct: organicData.two_weeks_ago[ch.key].pct_of_purchases },
+                { purchases: organicData.three_weeks_ago[ch.key].purchases, pct: organicData.three_weeks_ago[ch.key].pct_of_purchases },
+                { purchases: organicData.four_weeks_ago[ch.key].purchases, pct: organicData.four_weeks_ago[ch.key].pct_of_purchases },
               ]
-              const maxVal = Math.max(...weeks, 1) // Avoid division by zero
               return (
-                <div key={i} className="mb-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-3 h-3 rounded ${ch.color}`} />
-                    <div className="text-xl text-gray-300 font-medium min-w-[200px]">{ch.name}</div>
-                    <div className="text-2xl text-green-400 font-bold">{organicData.this_week[ch.key].purchases}</div>
+                <div key={ch.key} className={`grid grid-cols-[200px_repeat(5,1fr)] gap-4 items-center border-l-4 ${ch.color} pl-4 py-2`}>
+                  <div>
+                    <div className="text-xl text-white font-medium">{ch.name}</div>
+                    <div className="text-sm text-gray-500">{organicData.this_week[ch.key].conv_rate.toFixed(1)}% rate</div>
                   </div>
-                  <div className="flex items-end gap-2 h-20">
-                    {weeks.map((val, idx) => {
-                      const heightPx = maxVal > 0 ? Math.max(4, (val / maxVal) * 80) : 4
-                      return (
-                        <div key={idx} className="flex-1 flex flex-col items-center justify-end gap-1">
-                          <div 
-                            className={`w-full ${ch.color} rounded-t transition-all ${idx === 4 ? 'opacity-100' : 'opacity-60'}`}
-                            style={{ height: `${heightPx}px` }}
-                          />
-                          <div className="text-xs text-gray-500">{val}</div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                  {weeks.map((wk, idx) => (
+                    <div key={idx} className={`text-center bg-gray-800 rounded-lg py-3 ${idx === 0 ? 'bg-gray-700' : ''}`}>
+                      <div className="text-2xl font-bold text-green-400">{wk.purchases}</div>
+                      <div className="text-sm text-orange-400">{fmtPct(wk.pct)}</div>
+                    </div>
+                  ))}
                 </div>
               )
             })}
-            <div className="flex justify-around text-sm text-gray-600 mt-4">
-              <span>4w ago</span>
-              <span>3w ago</span>
-              <span>2w ago</span>
-              <span>Last wk</span>
-              <span className="text-cyan-400 font-semibold">This wk</span>
-            </div>
           </div>
         </div>
       </div>
