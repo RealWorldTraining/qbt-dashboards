@@ -5,7 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   PieChart, Pie, Cell
 } from 'recharts';
-import { DashboardNav } from '@/components/DashboardNav';
+// DashboardNav removed to prevent navigation to other reports
 import './recap.css';
 
 // Types
@@ -315,12 +315,9 @@ export default function RecapPage() {
       {/* Header */}
       <header className="recap-header">
         <div className="recap-header-top">
-          <div className="recap-header-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <DashboardNav theme="light" />
-            <div>
-              <h1>How We&apos;re Doing</h1>
-              <div className="recap-header-subtitle">{data.displayMonth} Monthly Recap</div>
-            </div>
+          <div className="recap-header-title">
+            <h1>How We&apos;re Doing</h1>
+            <div className="recap-header-subtitle">{data.displayMonth} Monthly Recap</div>
           </div>
           <div className="recap-header-brand">
             <img className="recap-header-logo" src={logoDataUri} alt="QuickBooks Training" />
