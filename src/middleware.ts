@@ -1,35 +1,37 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Credentials for different sections
-const HOMEPAGE_USER = process.env.HOMEPAGE_USER || 'admin'
-const HOMEPAGE_PASSWORD = process.env.HOMEPAGE_PASSWORD || 'qbtraining2026'
+// Master account - access to EVERYTHING
+const MASTER_USER = process.env.MASTER_USER || 'admin'
+const MASTER_PASSWORD = process.env.MASTER_PASSWORD || 'qbtraining2026'
 
+// Recap-only account - access to /recap ONLY
 const RECAP_USER = process.env.RECAP_USER || 'david'
 const RECAP_PASSWORD = process.env.RECAP_PASSWORD || 'recap2026'
 
-// Routes that use RECAP credentials
+// Routes accessible by recap-only account
 const RECAP_ROUTES = ['/recap']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const authHeader = request.headers.get('authorization')
 
-  // Determine which credentials to use based on route
   const isRecapRoute = RECAP_ROUTES.some(route => 
     pathname === route || pathname.startsWith(route + '/')
   )
-  
-  const expectedUser = isRecapRoute ? RECAP_USER : HOMEPAGE_USER
-  const expectedPassword = isRecapRoute ? RECAP_PASSWORD : HOMEPAGE_PASSWORD
-  const realm = isRecapRoute ? 'P&L Recap Access' : 'Dashboard Access'
 
   if (authHeader) {
     try {
       const authValue = authHeader.split(' ')[1]
       const [user, pwd] = atob(authValue).split(':')
 
-      if (user === expectedUser && pwd === expectedPassword) {
+      // Master account can access everything
+      if (user === MASTER_USER && pwd === MASTER_PASSWORD) {
+        return NextResponse.next()
+      }
+
+      // Recap-only account can only access recap routes
+      if (user === RECAP_USER && pwd === RECAP_PASSWORD && isRecapRoute) {
         return NextResponse.next()
       }
     } catch {
@@ -41,7 +43,7 @@ export function middleware(request: NextRequest) {
   return new NextResponse('Authentication required', {
     status: 401,
     headers: {
-      'WWW-Authenticate': `Basic realm="${realm}"`,
+      'WWW-Authenticate': 'Basic realm="Dashboard Access"',
     },
   })
 }
@@ -50,10 +52,10 @@ export const config = {
   matcher: [
     // Homepage
     '/',
-    // Recap (separate credentials)
+    // Recap
     '/recap/:path*',
     '/recap',
-    // Other dashboards (use homepage credentials)
+    // Other dashboards
     '/data/:path*',
     '/data',
     '/sales/:path*',
