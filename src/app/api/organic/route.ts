@@ -12,15 +12,27 @@ function parseNumber(val: string): number {
   return parseFloat(cleaned) || 0
 }
 
-function parseWeekDate(weekStr: string): Date {
+function parseDate(dateStr: string): Date {
   // Handle both formats: "2025-12-28" and "M/D/YYYY"
-  if (weekStr.includes('/')) {
-    const [month, day, year] = weekStr.split('/').map(Number)
+  if (dateStr.includes('/')) {
+    const [month, day, year] = dateStr.split('/').map(Number)
     return new Date(year, month - 1, day)
   } else {
-    const [year, month, day] = weekStr.split('-').map(Number)
+    const [year, month, day] = dateStr.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
+}
+
+function getWeekStart(date: Date): string {
+  // Get Monday of the week containing this date
+  const dayOfWeek = date.getDay() // 0=Sun, 1=Mon, ..., 6=Sat
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(date)
+  monday.setDate(date.getDate() + daysToMonday)
+  const year = monday.getFullYear()
+  const month = String(monday.getMonth() + 1).padStart(2, '0')
+  const day = String(monday.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function formatWeekLabel(weekDate: Date): string {
@@ -67,17 +79,17 @@ export async function GET() {
       return NextResponse.json({ error: 'No session source data found' }, { status: 404 })
     }
 
-    // Group session source data by week
-    // Structure: Week | Session source/medium | New users | Total users | Purchases
+    // Group session source data by week (daily data → weekly aggregation)
+    // Structure: Date | Session source/medium | New users | Total users | Purchases
     const weeklySourceData = new Map<string, Map<string, { users: number; purchases: number }>>()
     
     sessionSourceRows.slice(1).forEach(row => {
-      const weekStr = row[0]
+      const dateStr = row[0]
       const sourceMedium = row[1]?.toLowerCase() || ''
-      if (!weekStr) return
+      if (!dateStr) return
       
-      const weekDate = parseWeekDate(weekStr)
-      const weekKey = weekDate.toISOString().split('T')[0]
+      const date = parseDate(dateStr)
+      const weekKey = getWeekStart(date)
       
       if (!weeklySourceData.has(weekKey)) {
         weeklySourceData.set(weekKey, new Map())
@@ -107,7 +119,7 @@ export async function GET() {
       weekData.set(category, existing)
     })
 
-    // Group channel data by week for totals
+    // Group channel data by week for totals (daily data → weekly aggregation)
     const weeklyChannelData = new Map<string, { total_users: number; total_purchases: number; paid_users: number; paid_purchases: number }>()
     
     if (channelGroupRows && channelGroupRows.length > 1) {
@@ -115,12 +127,12 @@ export async function GET() {
       const weekTotals = new Map<string, Map<string, { users: number; purchases: number }>>()
       
       channelGroupRows.slice(1).forEach(row => {
-        const weekStr = row[0]
+        const dateStr = row[0]
         const channelGroup = row[1]?.toLowerCase() || ''
-        if (!weekStr) return
+        if (!dateStr) return
         
-        const weekDate = parseWeekDate(weekStr)
-        const weekKey = weekDate.toISOString().split('T')[0]
+        const date = parseDate(dateStr)
+        const weekKey = getWeekStart(date)
         
         if (!weekTotals.has(weekKey)) {
           weekTotals.set(weekKey, new Map())
@@ -196,7 +208,7 @@ export async function GET() {
       const otherUsers = Math.max(0, totalUsers - knownUsers)
       const otherPurchases = Math.max(0, totalPurchases - knownPurchases)
       
-      const weekDate = parseWeekDate(weekKey)
+      const weekDate = parseDate(weekKey)
       
       return {
         week: formatWeekLabel(weekDate),

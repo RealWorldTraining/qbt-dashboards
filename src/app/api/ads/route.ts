@@ -24,15 +24,35 @@ function parseNumber(val: string): number {
   return parseFloat(cleaned) || 0
 }
 
-function formatDateRange(start: string, end: string): string {
-  const [startYear, startMonth, startDay] = start.split('-').map(Number)
-  const [endYear, endMonth, endDay] = end.split('-').map(Number)
-  
-  const startDate = new Date(startYear, startMonth - 1, startDay)
-  const endDate = new Date(endYear, endMonth - 1, endDay)
+function parseDate(dateStr: string): Date {
+  if (dateStr.includes('/')) {
+    const [month, day, year] = dateStr.split('/').map(Number)
+    return new Date(year, month - 1, day)
+  } else {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+}
+
+function getWeekStart(date: Date): string {
+  // Get Monday of the week containing this date
+  const dayOfWeek = date.getDay()
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(date)
+  monday.setDate(date.getDate() + daysToMonday)
+  const year = monday.getFullYear()
+  const month = String(monday.getMonth() + 1).padStart(2, '0')
+  const day = String(monday.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDateRange(weekStart: string): string {
+  const start = parseDate(weekStart)
+  const end = new Date(start)
+  end.setDate(start.getDate() + 6)
   
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
-  return `${startDate.toLocaleDateString('en-US', opts)} - ${endDate.toLocaleDateString('en-US', opts)}`
+  return `${start.toLocaleDateString('en-US', opts)} - ${end.toLocaleDateString('en-US', opts)}`
 }
 
 export async function GET() {
@@ -63,17 +83,20 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Aggregate by week (sum across device types)
-    // Actual columns: A=Week(Monday), B=Account, C=Device, D=Clicks, E=Impressions, F=CTR, G=Avg.CPC, H=Cost, I=Avg.CPM, J=Conversions, K=Cross-device, L=Cost/conv
+    // Aggregate by week (daily data → weekly aggregation, sum across device types)
+    // Columns: A=Date, B=Account, C=Device, D=Clicks, E=Impressions, F=CTR, G=Avg.CPC, H=Cost, I=Avg.CPM, J=Conversions, K=Cross-device, L=Cost/conv
     const weeklyAgg = new Map<string, WeeklyRow>()
     
     rows.slice(1).forEach(row => {
-      const weekStart = row[0]
-      if (!weekStart) return
+      const dateStr = row[0]
+      if (!dateStr) return
+      
+      // Determine which week this date belongs to
+      const date = parseDate(dateStr)
+      const weekStart = getWeekStart(date)
       
       // Calculate week_end as week_start + 6 days
-      const [year, month, day] = weekStart.split('-').map(Number)
-      const startDate = new Date(year, month - 1, day)
+      const startDate = parseDate(weekStart)
       const endDate = new Date(startDate)
       endDate.setDate(startDate.getDate() + 6)
       const weekEnd = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
@@ -138,7 +161,7 @@ export async function GET() {
       
       return {
         week_label: label,
-        date_range: formatDateRange(w.week_start, w.week_end),
+        date_range: formatDateRange(w.week_start),
         spend: Math.round(w.spend),
         impressions: Math.round(w.impressions),
         clicks: Math.round(w.clicks),

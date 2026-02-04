@@ -11,9 +11,30 @@ function parseNumber(val: string): number {
   return parseFloat(cleaned) || 0
 }
 
+function parseDate(dateStr: string): Date {
+  if (dateStr.includes('/')) {
+    const [month, day, year] = dateStr.split('/').map(Number)
+    return new Date(year, month - 1, day)
+  } else {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+}
+
+function getWeekStart(date: Date): string {
+  // Get Monday of the week containing this date
+  const dayOfWeek = date.getDay()
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(date)
+  monday.setDate(date.getDate() + daysToMonday)
+  const year = monday.getFullYear()
+  const month = String(monday.getMonth() + 1).padStart(2, '0')
+  const day = String(monday.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function formatDateRange(weekStart: string): string {
-  const [year, month, day] = weekStart.split('-').map(Number)
-  const start = new Date(year, month - 1, day)
+  const start = parseDate(weekStart)
   const end = new Date(start)
   end.setDate(start.getDate() + 6)
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
@@ -48,19 +69,53 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Adveronix structure: Week | Ad distribution | Impressions | Clicks | CTR | Avg.CPC | Spend | Conversions | Conv.Rate | CPA
-    const allWeeks = rows.slice(1)
-      .filter(row => row[0])
-      .map(row => ({
-        week_start: row[0],
-        impressions: parseNumber(row[2]),
-        clicks: parseNumber(row[3]),
-        ctr: parseNumber(row[4]),
-        avg_cpc: parseNumber(row[5]),
-        spend: parseNumber(row[6]),
-        conversions: parseNumber(row[7]),
-        conv_rate: parseNumber(row[8]),
-        cpa: parseNumber(row[9]),
+    // Adveronix structure (daily): Date | Ad distribution | Impressions | Clicks | CTR | Avg.CPC | Spend | Conversions | Conv.Rate | CPA
+    // Aggregate daily data into weeks
+    const weeklyAgg = new Map<string, {
+      week_start: string
+      impressions: number
+      clicks: number
+      spend: number
+      conversions: number
+      conv_value: number
+    }>()
+    
+    rows.slice(1).forEach(row => {
+      const dateStr = row[0]
+      if (!dateStr) return
+      
+      const date = parseDate(dateStr)
+      const weekStart = getWeekStart(date)
+      
+      const existing = weeklyAgg.get(weekStart) || {
+        week_start: weekStart,
+        impressions: 0,
+        clicks: 0,
+        spend: 0,
+        conversions: 0,
+        conv_value: 0,
+      }
+      
+      existing.impressions += parseNumber(row[2])
+      existing.clicks += parseNumber(row[3])
+      existing.spend += parseNumber(row[6])
+      existing.conversions += parseNumber(row[7])
+      // Bing sheet doesn't have conv_value, use 0
+      
+      weeklyAgg.set(weekStart, existing)
+    })
+    
+    const allWeeks = Array.from(weeklyAgg.values())
+      .map(w => ({
+        week_start: w.week_start,
+        impressions: w.impressions,
+        clicks: w.clicks,
+        ctr: w.impressions > 0 ? (w.clicks / w.impressions) * 100 : 0,
+        avg_cpc: w.clicks > 0 ? w.spend / w.clicks : 0,
+        spend: w.spend,
+        conversions: w.conversions,
+        conv_rate: w.clicks > 0 ? (w.conversions / w.clicks) * 100 : 0,
+        cpa: w.conversions > 0 ? w.spend / w.conversions : 0,
       }))
       .sort((a, b) => a.week_start.localeCompare(b.week_start))
 
