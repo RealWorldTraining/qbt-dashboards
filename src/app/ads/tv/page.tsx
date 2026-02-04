@@ -43,6 +43,7 @@ interface OrganicWeek {
   bing_organic: ChannelMetrics
   qb_intuit: ChannelMetrics
   other: ChannelMetrics
+  organic_search?: ChannelMetrics
 }
 
 interface OrganicData {
