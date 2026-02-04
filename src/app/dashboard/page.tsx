@@ -2290,64 +2290,67 @@ export default function DashboardPage() {
                       Weekly Trends (Direct QTY)
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-[#D2D2D7]">
-                          <th className="text-left py-3 px-2 font-semibold text-[#1D1D1F] min-w-[100px]">Week</th>
-                          {extendedWeeklyTrends.days.map((day) => (
-                            <th key={day} className="text-center py-3 px-2 font-medium text-[#6E6E73]">{day}</th>
-                          ))}
-                          <th className="text-center py-3 px-2 font-semibold text-[#1D1D1F] bg-[#F5F5F7]">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(() => {
-                          // Calculate max value for heatmap
-                          const days = extendedWeeklyTrends.days
-                          const allValues = extendedWeeklyTrends.direct_qty.flatMap(week => 
-                            days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
-                          )
-                          const maxValue = Math.max(...allValues, 1)
-                          
-                          const getHeatmapClass = (value: number | null | undefined) => {
-                            if (value === null || value === undefined) return 'bg-white'
-                            const intensity = Math.round((value / maxValue) * 100)
-                            if (intensity > 80) return 'bg-blue-600 text-white'
-                            if (intensity > 60) return 'bg-blue-500 text-white'
-                            if (intensity > 40) return 'bg-blue-400 text-white'
-                            if (intensity > 20) return 'bg-blue-300 text-[#1D1D1F]'
-                            return 'bg-blue-200 text-[#1D1D1F]'
-                          }
-                          
-                          return extendedWeeklyTrends.direct_qty.map((week, idx) => {
-                            const isCurrentWeek = week.week_label === "Current Week"
-                            return (
-                              <tr key={idx} className="border-b border-[#E5E5E5]">
-                                <td className={`py-3 px-2 ${isCurrentWeek ? 'bg-[#E8F4FF]' : 'bg-white'}`}>
-                                  <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
-                                  <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
-                                </td>
-                                {days.map(day => {
-                                  const value = week.daily_cumulative[day]
-                                  return (
-                                    <td 
-                                      key={day} 
-                                      className={`text-center py-3 px-2 font-semibold ${getHeatmapClass(value)}`}
-                                    >
-                                      {value ?? '-'}
-                                    </td>
-                                  )
-                                })}
-                                <td className="text-center py-3 px-2 font-semibold text-[#0066CC] bg-[#F5F5F7]">
-                                  {week.week_total ?? '-'}
-                                </td>
-                              </tr>
+                  <CardContent>
+                    <div className="overflow-x-auto rounded-xl">
+                      <table className="w-full text-lg bg-[#1D1D1F]">
+                        <thead>
+                          <tr className="border-b border-[#3D3D3F]">
+                            <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
+                            {extendedWeeklyTrends.days.map((day) => (
+                              <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
+                            ))}
+                            <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            // Calculate max value for heatmap
+                            const days = extendedWeeklyTrends.days
+                            const allValues = extendedWeeklyTrends.direct_qty.flatMap(week => 
+                              days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
                             )
-                          })
-                        })()}
-                      </tbody>
-                    </table>
+                            const maxValue = Math.max(...allValues, 1)
+                            
+                            const getHeatmapClass = (value: number | null | undefined) => {
+                              if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                              const intensity = Math.round((value / maxValue) * 100)
+                              if (intensity > 80) return 'bg-blue-600'
+                              if (intensity > 60) return 'bg-blue-500'
+                              if (intensity > 40) return 'bg-blue-600/60'
+                              if (intensity > 20) return 'bg-blue-600/40'
+                              return 'bg-blue-600/20'
+                            }
+                            
+                            return extendedWeeklyTrends.direct_qty.map((week, idx) => {
+                              const isCurrentWeek = week.week_label === "Current Week"
+                              const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                              return (
+                                <tr key={idx} className="border-b border-white/5">
+                                  <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                    <div className="font-semibold text-white">{week.week_label}</div>
+                                    <div className="text-xs text-white/40">{week.week_start}</div>
+                                  </td>
+                                  {days.map(day => {
+                                    const value = week.daily_cumulative[day]
+                                    return (
+                                      <td 
+                                        key={day} 
+                                        className={`text-center py-3 px-1 ${getHeatmapClass(value)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                      >
+                                        {value ?? '-'}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${week.week_total === null ? "text-white/20" : "text-white"}`}>
+                                    {week.week_total ?? '-'}
+                                  </td>
+                                </tr>
+                              )
+                            })
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
