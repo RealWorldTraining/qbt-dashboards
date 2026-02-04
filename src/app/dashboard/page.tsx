@@ -2284,7 +2284,7 @@ export default function DashboardPage() {
             {extendedWeeklyTrends && (
               <div className="mt-8">
                 <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-1">
                     <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-[#0066CC]" />
                       Weekly Trends (Direct QTY)
