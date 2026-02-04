@@ -193,7 +193,7 @@ export default function TVDashboard() {
           <div className="text-gray-400 text-xl mb-6 font-semibold">SITE OVERVIEW</div>
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <div className="text-6xl font-bold text-white mb-2">{fmtK(organicData.this_week.totals.users)}</div>
+              <div className="text-6xl font-bold text-white mb-2">{fmt(organicData.this_week.totals.users)}</div>
               <div className="text-lg text-gray-400 mb-3">New Visitors</div>
               <Trend current={organicData.this_week.totals.users} previous={organicData.last_week.totals.users} />
             </div>
@@ -238,7 +238,7 @@ export default function TVDashboard() {
           <div className="text-green-400 text-xl mb-6 font-semibold">ORGANIC SEARCH</div>
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <div className="text-6xl font-bold text-white mb-2">{fmtK(organicUsers)}</div>
+              <div className="text-6xl font-bold text-white mb-2">{fmt(organicUsers)}</div>
               <div className="text-lg text-gray-400 mb-3">Visitors</div>
               <Trend current={organicUsers} previous={prevOrganicUsers} />
             </div>
