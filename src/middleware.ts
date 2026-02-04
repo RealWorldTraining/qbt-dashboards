@@ -1,19 +1,39 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-// Simple basic auth for dashboard protection
-const DASHBOARD_USER = process.env.DASHBOARD_USER || 'admin'
-const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'qbtraining2026'
+// Credentials for different sections
+const HOMEPAGE_USER = process.env.HOMEPAGE_USER || 'admin'
+const HOMEPAGE_PASSWORD = process.env.HOMEPAGE_PASSWORD || 'qbtraining2026'
+
+const RECAP_USER = process.env.RECAP_USER || 'david'
+const RECAP_PASSWORD = process.env.RECAP_PASSWORD || 'recap2026'
+
+// Routes that use RECAP credentials
+const RECAP_ROUTES = ['/recap']
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
   const authHeader = request.headers.get('authorization')
 
-  if (authHeader) {
-    const authValue = authHeader.split(' ')[1]
-    const [user, pwd] = atob(authValue).split(':')
+  // Determine which credentials to use based on route
+  const isRecapRoute = RECAP_ROUTES.some(route => 
+    pathname === route || pathname.startsWith(route + '/')
+  )
+  
+  const expectedUser = isRecapRoute ? RECAP_USER : HOMEPAGE_USER
+  const expectedPassword = isRecapRoute ? RECAP_PASSWORD : HOMEPAGE_PASSWORD
+  const realm = isRecapRoute ? 'P&L Recap Access' : 'Dashboard Access'
 
-    if (user === DASHBOARD_USER && pwd === DASHBOARD_PASSWORD) {
-      return NextResponse.next()
+  if (authHeader) {
+    try {
+      const authValue = authHeader.split(' ')[1]
+      const [user, pwd] = atob(authValue).split(':')
+
+      if (user === expectedUser && pwd === expectedPassword) {
+        return NextResponse.next()
+      }
+    } catch {
+      // Invalid auth header format
     }
   }
 
@@ -21,21 +41,25 @@ export function middleware(request: NextRequest) {
   return new NextResponse('Authentication required', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="Site Access"',
+      'WWW-Authenticate': `Basic realm="${realm}"`,
     },
   })
 }
 
 export const config = {
   matcher: [
+    // Homepage
+    '/',
+    // Recap (separate credentials)
     '/recap/:path*',
     '/recap',
+    // Other dashboards (use homepage credentials)
     '/data/:path*',
     '/data',
     '/sales/:path*',
     '/sales',
     '/team/:path*',
     '/team',
-    // Note: /api/recap excluded - it has its own Bearer token auth
+    // Note: /api routes excluded - they have their own auth
   ],
 }
