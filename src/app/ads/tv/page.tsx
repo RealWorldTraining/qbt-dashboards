@@ -346,115 +346,96 @@ export default function TVDashboard() {
         </div>
 
         {/* RIGHT COLUMN - Bing Ads */}
-        <div className="flex flex-col gap-4">
-          <div className="bg-gray-900 rounded-2xl p-5">
-            <div className="flex items-center gap-3 mb-4">
+        <div className="flex flex-col gap-3">
+          <div className="bg-gray-900 rounded-2xl p-4">
+            <div className="flex items-center gap-3 mb-3">
               <div className="w-4 h-4 bg-blue-400 rounded-full" />
               <span className="text-xl font-semibold">Bing Ads</span>
             </div>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-2">
               {[
                 { label: "Spend", value: fmtCurrency(bingAdsData.this_week.spend), prev: bingAdsData.last_week.spend, curr: bingAdsData.this_week.spend },
                 { label: "Clicks", value: fmt(bingAdsData.this_week.clicks), prev: bingAdsData.last_week.clicks, curr: bingAdsData.this_week.clicks },
                 { label: "Conv", value: String(bingAdsData.this_week.conversions), prev: bingAdsData.last_week.conversions, curr: bingAdsData.this_week.conversions },
                 { label: "CPA", value: fmtCurrency(bingAdsData.this_week.cpa), prev: bingAdsData.last_week.cpa, curr: bingAdsData.this_week.cpa, inverse: true },
               ].map((m, i) => (
-                <div key={i} className="bg-gray-800 rounded-xl p-4 text-center">
-                  <div className="text-gray-500 text-sm">{m.label}</div>
-                  <div className="text-3xl font-bold mt-1">{m.value}</div>
+                <div key={i} className="bg-gray-800 rounded-xl p-3 text-center">
+                  <div className="text-gray-500 text-xs">{m.label}</div>
+                  <div className="text-2xl font-bold mt-1">{m.value}</div>
                   <div className="mt-1"><Trend current={m.curr} previous={m.prev} inverse={m.inverse} /></div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* 4-Week Trends */}
-          <div className="bg-gray-900 rounded-2xl p-5 flex-1">
-            <div className="text-gray-400 text-lg mb-4">4-WEEK TREND (Google + Bing Combined)</div>
-            <div className="space-y-4">
-              {/* Spend Trend */}
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-gray-500 text-sm mb-2">TOTAL SPEND</div>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { label: "4w ago", g: adsData.three_weeks_ago, b: bingAdsData.three_weeks_ago },
-                    { label: "3w ago", g: adsData.two_weeks_ago, b: bingAdsData.two_weeks_ago },
-                    { label: "2w ago", g: adsData.last_week, b: bingAdsData.last_week },
-                    { label: "Last wk", g: adsData.this_week, b: bingAdsData.this_week },
-                  ].map((w, i) => (
-                    <div key={i} className={`text-center ${i === 3 ? 'bg-gray-700 rounded-lg p-2' : 'p-2'}`}>
-                      <div className="text-xs text-gray-500 mb-1">{w.label}</div>
-                      <div className={`text-2xl font-bold ${i === 3 ? 'text-white' : 'text-gray-400'}`}>
-                        {fmtCurrency(w.g.spend + w.b.spend)}
+          {/* Bing Campaigns */}
+          <div className="bg-gray-900 rounded-2xl p-4">
+            <div className="text-gray-400 text-sm mb-2">BING CAMPAIGNS</div>
+            <div className="grid grid-cols-2 gap-2">
+              {bCampaigns.slice(0, 4).map((campaign, idx) => {
+                const c = campaign.data[0]
+                if (!c) return <div key={idx} className="bg-gray-800 rounded-xl p-3 opacity-50 text-gray-500 text-center text-sm">No data</div>
+                const cpa = c.conversions > 0 ? c.cost / c.conversions : 0
+                return (
+                  <div key={campaign.name} className="bg-gray-800 rounded-xl p-3 border-l-4 border-teal-500">
+                    <div className="text-xs text-gray-400 truncate mb-2">{campaign.name.split('-')[0]}</div>
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <div className="text-xl font-bold">{fmt(c.clicks)}</div>
+                        <div className="text-[10px] text-gray-500">clicks</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-green-400">{c.conversions}</div>
+                        <div className="text-[10px] text-gray-500">conv</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-yellow-400">{fmtCurrency(cpa)}</div>
+                        <div className="text-[10px] text-gray-500">CPA</div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
 
-              {/* Clicks Trend */}
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-gray-500 text-sm mb-2">TOTAL CLICKS</div>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { label: "4w ago", g: adsData.three_weeks_ago, b: bingAdsData.three_weeks_ago },
-                    { label: "3w ago", g: adsData.two_weeks_ago, b: bingAdsData.two_weeks_ago },
-                    { label: "2w ago", g: adsData.last_week, b: bingAdsData.last_week },
-                    { label: "Last wk", g: adsData.this_week, b: bingAdsData.this_week },
-                  ].map((w, i) => (
-                    <div key={i} className={`text-center ${i === 3 ? 'bg-gray-700 rounded-lg p-2' : 'p-2'}`}>
-                      <div className="text-xs text-gray-500 mb-1">{w.label}</div>
-                      <div className={`text-2xl font-bold ${i === 3 ? 'text-cyan-400' : 'text-gray-400'}`}>
-                        {fmt(w.g.clicks + w.b.clicks)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Conversions Trend */}
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-gray-500 text-sm mb-2">TOTAL CONVERSIONS</div>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { label: "4w ago", g: adsData.three_weeks_ago, b: bingAdsData.three_weeks_ago },
-                    { label: "3w ago", g: adsData.two_weeks_ago, b: bingAdsData.two_weeks_ago },
-                    { label: "2w ago", g: adsData.last_week, b: bingAdsData.last_week },
-                    { label: "Last wk", g: adsData.this_week, b: bingAdsData.this_week },
-                  ].map((w, i) => (
-                    <div key={i} className={`text-center ${i === 3 ? 'bg-gray-700 rounded-lg p-2' : 'p-2'}`}>
-                      <div className="text-xs text-gray-500 mb-1">{w.label}</div>
-                      <div className={`text-2xl font-bold ${i === 3 ? 'text-green-400' : 'text-gray-400'}`}>
-                        {w.g.conversions + w.b.conversions}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* CPA Trend */}
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-gray-500 text-sm mb-2">BLENDED CPA</div>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { label: "4w ago", g: adsData.three_weeks_ago, b: bingAdsData.three_weeks_ago },
-                    { label: "3w ago", g: adsData.two_weeks_ago, b: bingAdsData.two_weeks_ago },
-                    { label: "2w ago", g: adsData.last_week, b: bingAdsData.last_week },
-                    { label: "Last wk", g: adsData.this_week, b: bingAdsData.this_week },
-                  ].map((w, i) => {
-                    const totalSpend = w.g.spend + w.b.spend
-                    const totalConv = w.g.conversions + w.b.conversions
-                    const cpa = totalConv > 0 ? totalSpend / totalConv : 0
-                    return (
-                      <div key={i} className={`text-center ${i === 3 ? 'bg-gray-700 rounded-lg p-2' : 'p-2'}`}>
-                        <div className="text-xs text-gray-500 mb-1">{w.label}</div>
-                        <div className={`text-2xl font-bold ${i === 3 ? 'text-yellow-400' : 'text-gray-400'}`}>
-                          {fmtCurrency(cpa)}
+          {/* 4-Week Trends - Compact */}
+          <div className="bg-gray-900 rounded-2xl p-4 flex-1">
+            <div className="text-gray-400 text-sm mb-3">4-WEEK TREND (Combined)</div>
+            <div className="space-y-2">
+              {[
+                { label: "Spend", getValue: (g: WeeklyMetrics, b: WeeklyMetrics) => fmtCurrency(g.spend + b.spend), color: "text-white" },
+                { label: "Clicks", getValue: (g: WeeklyMetrics, b: WeeklyMetrics) => fmt(g.clicks + b.clicks), color: "text-cyan-400" },
+                { label: "Conv", getValue: (g: WeeklyMetrics, b: WeeklyMetrics) => String(g.conversions + b.conversions), color: "text-green-400" },
+                { label: "CPA", getValue: (g: WeeklyMetrics, b: WeeklyMetrics) => {
+                  const spend = g.spend + b.spend
+                  const conv = g.conversions + b.conversions
+                  return conv > 0 ? fmtCurrency(spend / conv) : "$0"
+                }, color: "text-yellow-400" },
+              ].map((metric, idx) => (
+                <div key={idx} className="bg-gray-800 rounded-lg p-2 flex items-center">
+                  <div className="w-16 text-xs text-gray-500">{metric.label}</div>
+                  <div className="flex-1 grid grid-cols-4 gap-1">
+                    {[
+                      { g: adsData.three_weeks_ago, b: bingAdsData.three_weeks_ago },
+                      { g: adsData.two_weeks_ago, b: bingAdsData.two_weeks_ago },
+                      { g: adsData.last_week, b: bingAdsData.last_week },
+                      { g: adsData.this_week, b: bingAdsData.this_week },
+                    ].map((w, i) => (
+                      <div key={i} className={`text-center py-1 ${i === 3 ? 'bg-gray-700 rounded' : ''}`}>
+                        <div className={`text-lg font-bold ${i === 3 ? metric.color : 'text-gray-500'}`}>
+                          {metric.getValue(w.g, w.b)}
                         </div>
                       </div>
-                    )
-                  })}
+                    ))}
+                  </div>
                 </div>
+              ))}
+              <div className="flex justify-between text-[10px] text-gray-600 px-16">
+                <span>4w ago</span>
+                <span>3w ago</span>
+                <span>2w ago</span>
+                <span>Last wk</span>
               </div>
             </div>
           </div>
