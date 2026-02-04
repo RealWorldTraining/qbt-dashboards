@@ -22,12 +22,12 @@ import {
 
 const dashboards = [
   { 
-    name: "Sales Snapshot", 
-    href: "/data", 
-    icon: Tv, 
-    description: "Real-time forecasts for the office TV",
-    color: "from-cyan-500 to-blue-600",
-    stats: "Today • Week • Month"
+    name: "Dashboard", 
+    href: "/dashboard", 
+    icon: LayoutGrid, 
+    description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
+    color: "from-purple-500 to-indigo-600",
+    stats: "All-in-one"
   },
   { 
     name: "Phone", 
@@ -36,14 +36,6 @@ const dashboards = [
     description: "Mobile-optimized sales dashboard for iPhone",
     color: "from-slate-500 to-gray-600",
     stats: "Today • Yesterday • Week • MTD"
-  },
-  { 
-    name: "Dashboard", 
-    href: "/dashboard", 
-    icon: LayoutGrid, 
-    description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
-    color: "from-purple-500 to-indigo-600",
-    stats: "All-in-one"
   },
   { 
     name: "Marketing Dashboard", 
@@ -108,6 +100,14 @@ const dashboards = [
     description: "Keyword-level bid optimization & CPA trend analysis",
     color: "from-fuchsia-500 to-pink-600",
     stats: "Bids • Keywords • CPA"
+  },
+  { 
+    name: "Sales Snapshot", 
+    href: "/data", 
+    icon: Tv, 
+    description: "Real-time forecasts for the office TV",
+    color: "from-cyan-500 to-blue-600",
+    stats: "Today • Week • Month"
   },
 ]
 
