@@ -97,7 +97,7 @@ const LOADING_CAMPAIGNS: CampaignData = { weeks: [], campaigns: [], last_updated
 const fmt = (n: number) => new Intl.NumberFormat("en-US").format(Math.round(n))
 const fmtK = (n: number) => n >= 1000 ? (n/1000).toFixed(1) + "k" : fmt(n)
 const fmtCurrency = (n: number) => "$" + fmt(n)
-const fmtPct = (n: number) => Math.round(n) + "%"
+const fmtPct = (n: number) => n.toFixed(2) + "%"
 
 function Trend({ current, previous, inverse = false }: { current: number; previous: number; inverse?: boolean }) {
   if (!previous) return null
@@ -203,7 +203,7 @@ export default function TVDashboard() {
             </div>
             <div>
               <div className="text-6xl font-bold text-cyan-400 mb-2">
-                {organicData.this_week.totals.users > 0 ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(1) : "0"}%
+                {organicData.this_week.totals.users > 0 ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(2) : "0.00"}%
               </div>
               <div className="text-lg text-gray-400 mb-3">Conv Rate</div>
             </div>
