@@ -25,13 +25,13 @@ export function middleware(request: NextRequest) {
       const authValue = authHeader.split(' ')[1]
       const [user, pwd] = atob(authValue).split(':')
 
-      // Master account can access everything
-      if (user === MASTER_USER && pwd === MASTER_PASSWORD) {
+      // Master account can access everything (username case-insensitive)
+      if (user.toLowerCase() === MASTER_USER.toLowerCase() && pwd === MASTER_PASSWORD) {
         return NextResponse.next()
       }
 
-      // Recap-only account can only access recap routes
-      if (user === RECAP_USER && pwd === RECAP_PASSWORD && isRecapRoute) {
+      // Recap-only account can only access recap routes (username case-insensitive)
+      if (user.toLowerCase() === RECAP_USER.toLowerCase() && pwd === RECAP_PASSWORD && isRecapRoute) {
         return NextResponse.next()
       }
     } catch {
