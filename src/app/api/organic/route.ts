@@ -233,7 +233,48 @@ export async function GET() {
     const weekLabels = ['Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
     const formattedWeeks = last5Weeks.map((weekKey, idx) => formatWeek(weekKey, weekLabels[idx]))
 
+    // Build response in expected format for /ads page
+    const buildWeekResponse = (weekData: ReturnType<typeof formatWeek> | undefined) => {
+      if (!weekData) {
+        return {
+          week_label: 'N/A',
+          date_range: 'No data',
+          totals: { users: 0, purchases: 0 },
+          google_ads: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          google_organic: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          direct: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          bing_organic: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          qb_intuit: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          other: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+        }
+      }
+      
+      const formatChannel = (ch: { users: number; purchases: number; percent_users: number; percent_purchases: number }) => ({
+        users: ch.users,
+        purchases: ch.purchases,
+        conv_rate: ch.users > 0 ? (ch.purchases / ch.users) * 100 : 0,
+        pct_of_users: ch.percent_users,
+        pct_of_purchases: ch.percent_purchases,
+      })
+      
+      return {
+        week_label: weekData.label,
+        date_range: weekData.week,
+        totals: weekData.total,
+        google_ads: formatChannel(weekData.paid),
+        google_organic: formatChannel(weekData.google_organic),
+        direct: formatChannel(weekData.direct),
+        bing_organic: formatChannel(weekData.bing_organic),
+        qb_intuit: formatChannel(weekData.qb_intuit),
+        other: formatChannel(weekData.other),
+      }
+    }
+
     return NextResponse.json({
+      this_week: buildWeekResponse(formattedWeeks[0]),
+      last_week: buildWeekResponse(formattedWeeks[1]),
+      two_weeks_ago: buildWeekResponse(formattedWeeks[2]),
+      three_weeks_ago: buildWeekResponse(formattedWeeks[3]),
       data: formattedWeeks,
       last_updated: new Date().toISOString()
     }, {
