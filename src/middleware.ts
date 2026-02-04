@@ -36,7 +36,6 @@ export const config = {
     '/sales',
     '/team/:path*',
     '/team',
-    '/api/recap/:path*',
-    '/api/recap',
+    // Note: /api/recap excluded - it has its own Bearer token auth
   ],
 }
