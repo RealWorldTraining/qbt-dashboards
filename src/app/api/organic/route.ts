@@ -80,7 +80,7 @@ export async function GET() {
     }
 
     // Group session source data by week (daily data → weekly aggregation)
-    // Structure: Date | Session source/medium | New users | Total users | Purchases
+    // Structure: Date | Session source/medium | New users (used) | Total users | Purchases
     const weeklySourceData = new Map<string, Map<string, { users: number; purchases: number }>>()
     
     sessionSourceRows.slice(1).forEach(row => {
@@ -96,7 +96,7 @@ export async function GET() {
       }
       
       const weekData = weeklySourceData.get(weekKey)!
-      const users = parseNumber(row[3]) // Total users column
+      const users = parseNumber(row[2]) // New users column
       const purchases = parseNumber(row[4]) // Ecommerce purchases column
       
       // Categorize sources
@@ -139,7 +139,7 @@ export async function GET() {
         }
         
         const weekData = weekTotals.get(weekKey)!
-        const users = parseNumber(row[3])
+        const users = parseNumber(row[2]) // New users column
         const purchases = parseNumber(row[4])
         
         const existing = weekData.get(channelGroup) || { users: 0, purchases: 0 }
