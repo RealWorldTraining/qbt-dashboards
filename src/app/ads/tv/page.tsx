@@ -158,12 +158,12 @@ export default function TVDashboard() {
   const prevTotalConv = adsData.last_week.conversions + bingAdsData.last_week.conversions
   const prevTotalConvRate = prevTotalClicks > 0 ? (prevTotalConv / prevTotalClicks) * 100 : 0
 
-  // Organic traffic totals (everything except paid ads)
-  const organicUsers = organicData.this_week.google_organic.users + organicData.this_week.bing_organic.users + organicData.this_week.direct.users + organicData.this_week.qb_intuit.users + organicData.this_week.other.users
-  const organicPurchases = organicData.this_week.google_organic.purchases + organicData.this_week.bing_organic.purchases + organicData.this_week.direct.purchases + organicData.this_week.qb_intuit.purchases + organicData.this_week.other.purchases
+  // Organic Search traffic (from GA4 "Organic Search" channel group only)
+  const organicUsers = organicData.this_week.organic_search?.users || 0
+  const organicPurchases = organicData.this_week.organic_search?.purchases || 0
   const organicConvRate = organicUsers > 0 ? (organicPurchases / organicUsers) * 100 : 0
-  const prevOrganicUsers = organicData.last_week.google_organic.users + organicData.last_week.bing_organic.users + organicData.last_week.direct.users + organicData.last_week.qb_intuit.users + organicData.last_week.other.users
-  const prevOrganicPurchases = organicData.last_week.google_organic.purchases + organicData.last_week.bing_organic.purchases + organicData.last_week.direct.purchases + organicData.last_week.qb_intuit.purchases + organicData.last_week.other.purchases
+  const prevOrganicUsers = organicData.last_week.organic_search?.users || 0
+  const prevOrganicPurchases = organicData.last_week.organic_search?.purchases || 0
   const prevOrganicConvRate = prevOrganicUsers > 0 ? (prevOrganicPurchases / prevOrganicUsers) * 100 : 0
 
   return (
@@ -232,9 +232,9 @@ export default function TVDashboard() {
           </div>
         </div>
 
-        {/* Organic Traffic */}
+        {/* Organic Search */}
         <div className="bg-gradient-to-br from-green-900/40 to-emerald-900/40 rounded-2xl p-8 border-t-4 border-green-500">
-          <div className="text-green-400 text-xl mb-6 font-semibold">ORGANIC TRAFFIC</div>
+          <div className="text-green-400 text-xl mb-6 font-semibold">ORGANIC SEARCH</div>
           <div className="grid grid-cols-3 gap-6">
             <div>
               <div className="text-6xl font-bold text-white mb-2">{fmtK(organicUsers)}</div>

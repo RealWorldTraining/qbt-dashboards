@@ -120,7 +120,7 @@ export async function GET() {
     })
 
     // Group channel data by week for totals (daily data → weekly aggregation)
-    const weeklyChannelData = new Map<string, { total_users: number; total_purchases: number; paid_users: number; paid_purchases: number }>()
+    const weeklyChannelData = new Map<string, { total_users: number; total_purchases: number; paid_users: number; paid_purchases: number; organic_search_users: number; organic_search_purchases: number }>()
     
     if (channelGroupRows && channelGroupRows.length > 1) {
       // First, aggregate by week (sum all channels)
@@ -148,12 +148,14 @@ export async function GET() {
         weekData.set(channelGroup, existing)
       })
       
-      // Calculate totals and paid totals per week
+      // Calculate totals, paid totals, and organic search per week
       weekTotals.forEach((channelMap, weekKey) => {
         let total_users = 0
         let total_purchases = 0
         let paid_users = 0
         let paid_purchases = 0
+        let organic_search_users = 0
+        let organic_search_purchases = 0
         
         channelMap.forEach((data, channel) => {
           total_users += data.users
@@ -163,9 +165,14 @@ export async function GET() {
             paid_users += data.users
             paid_purchases += data.purchases
           }
+          
+          if (channel === 'organic search') {
+            organic_search_users += data.users
+            organic_search_purchases += data.purchases
+          }
         })
         
-        weeklyChannelData.set(weekKey, { total_users, total_purchases, paid_users, paid_purchases })
+        weeklyChannelData.set(weekKey, { total_users, total_purchases, paid_users, paid_purchases, organic_search_users, organic_search_purchases })
       })
     }
 
@@ -201,6 +208,8 @@ export async function GET() {
       const totalPurchases = channelData?.total_purchases || 1
       const paidUsers = channelData?.paid_users || 0
       const paidPurchases = channelData?.paid_purchases || 0
+      const organicSearchUsers = channelData?.organic_search_users || 0
+      const organicSearchPurchases = channelData?.organic_search_purchases || 0
       
       // Calculate "Other" as residual
       const knownUsers = paidUsers + googleOrganic.users + direct.users + bingOrganic.users + qbIntuit.users
@@ -249,6 +258,12 @@ export async function GET() {
           percent_users: (otherUsers / totalUsers) * 100,
           percent_purchases: (otherPurchases / totalPurchases) * 100
         },
+        organic_search: {
+          users: organicSearchUsers,
+          purchases: organicSearchPurchases,
+          percent_users: (organicSearchUsers / totalUsers) * 100,
+          percent_purchases: (organicSearchPurchases / totalPurchases) * 100
+        },
         total: {
           users: totalUsers,
           purchases: totalPurchases
@@ -272,6 +287,7 @@ export async function GET() {
           bing_organic: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
           qb_intuit: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
           other: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          organic_search: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
         }
       }
       
@@ -293,6 +309,7 @@ export async function GET() {
         bing_organic: formatChannel(weekData.bing_organic),
         qb_intuit: formatChannel(weekData.qb_intuit),
         other: formatChannel(weekData.other),
+        organic_search: formatChannel(weekData.organic_search),
       }
     }
 
