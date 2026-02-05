@@ -506,9 +506,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
           {schedule.downhill.length === 0 ? (
             <div className="text-xs text-gray-500 italic">No coverage</div>
           ) : (
-            schedule.downhill.map((event, idx) => (
-              <div key={idx} className="text-sm text-white">{extractName(event.trainer || event.summary)}</div>
-            ))
+            <div className="text-sm text-white">{extractName(schedule.downhill[0].trainer || schedule.downhill[0].summary)}</div>
           )}
         </div>
         <div>
@@ -516,9 +514,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
           {schedule.orchard.length === 0 ? (
             <div className="text-xs text-gray-500 italic">No coverage</div>
           ) : (
-            schedule.orchard.map((event, idx) => (
-              <div key={idx} className="text-sm text-white">{extractName(event.trainer || event.summary)}</div>
-            ))
+            <div className="text-sm text-white">{extractName(schedule.orchard[0].trainer || schedule.orchard[0].summary)}</div>
           )}
         </div>
         <div>
@@ -526,9 +522,7 @@ function ScheduleHourCard({ schedule, isCurrent }: { schedule: HourSchedule; isC
           {schedule.backup.length === 0 ? (
             <div className="text-xs text-gray-500 italic">No coverage</div>
           ) : (
-            schedule.backup.map((event, idx) => (
-              <div key={idx} className="text-sm text-white">{extractName(event.trainer || event.summary)}</div>
-            ))
+            <div className="text-sm text-white">{extractName(schedule.backup[0].trainer || schedule.backup[0].summary)}</div>
           )}
         </div>
       </div>
