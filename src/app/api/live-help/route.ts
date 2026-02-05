@@ -384,17 +384,13 @@ function getLastThreeWeeksByDayByYear(rows: RawRow[]): Record<string, number[]> 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Get the previous complete week (last week), not the current partial week
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  // Get current week number
+  const currentWeek = getWeekNumber(today);
+  const lastWeek = currentWeek - 1;
+  const twoWeeksAgo = currentWeek - 2;
   
-  // Get the week number for yesterday and go back one week to avoid incomplete weeks
-  const yesterdayWeek = getWeekNumber(yesterday);
-  const lastCompleteWeek = yesterdayWeek - 1;
-  const twoWeeksAgo = lastCompleteWeek - 1;
-  const threeWeeksAgo = lastCompleteWeek - 2;
-  
-  const targetWeeks = [lastCompleteWeek, twoWeeksAgo, threeWeeksAgo];
+  // Order: oldest on left, newest on right
+  const targetWeeks = [twoWeeksAgo, lastWeek, currentWeek];
   
   // Initialize data for each year: 15 data points (Mon-Fri × 3 weeks)
   const yearData: Record<string, number[]> = {
