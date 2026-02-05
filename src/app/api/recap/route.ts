@@ -13,7 +13,7 @@ const STATIC_FILE = path.join(process.cwd(), '.recap-data', 'recap-data.json');
 let inMemoryData: RecapData | null = null;
 
 // GitHub persistence config
-const GITHUB_OWNER = 'QuickBooksTraining';
+const GITHUB_OWNER = 'RealWorldTraining';
 const GITHUB_REPO = 'qbt-dashboards';
 const GITHUB_FILE_PATH = '.recap-data/recap-data.json';
 const GITHUB_BRANCH = 'main';
