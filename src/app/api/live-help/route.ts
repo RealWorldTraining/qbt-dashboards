@@ -384,21 +384,12 @@ function getLastThreeWeeksByDayByYear(rows: RawRow[]): Record<string, number[]> 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Get Monday of current week
-  const todayDayOfWeek = today.getDay();
-  const mondayOfThisWeek = new Date(today);
-  mondayOfThisWeek.setDate(today.getDate() - (todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1));
+  // Get current week number
+  const currentWeek = getWeekNumber(today);
+  const lastWeek = currentWeek - 1;
+  const twoWeeksAgo = currentWeek - 2;
   
-  // Get date ranges for the 3 weeks (Mon-Fri only) - as month/day pairs
-  const week1Start = { month: mondayOfThisWeek.getMonth(), day: mondayOfThisWeek.getDate() }; // This week
-  const week2Start = new Date(mondayOfThisWeek);
-  week2Start.setDate(week2Start.getDate() - 7); // Last week
-  const week2StartMD = { month: week2Start.getMonth(), day: week2Start.getDate() };
-  const week3Start = new Date(mondayOfThisWeek);
-  week3Start.setDate(week3Start.getDate() - 14); // 2 weeks ago
-  const week3StartMD = { month: week3Start.getMonth(), day: week3Start.getDate() };
-  
-  const weekStartsMonthDay = [week1Start, week2StartMD, week3StartMD];
+  const targetWeeks = [currentWeek, lastWeek, twoWeeksAgo];
   
   // Initialize data for each year: 15 data points (Mon-Fri × 3 weeks)
   const yearData: Record<string, number[]> = {
@@ -413,50 +404,22 @@ function getLastThreeWeeksByDayByYear(rows: RawRow[]): Record<string, number[]> 
     const year = row.date.getFullYear().toString();
     if (!yearData[year]) continue; // Skip unknown years
     
-    const rowMonth = row.date.getMonth();
-    const rowDay = row.date.getDate();
+    const rowWeek = getWeekNumber(row.date);
     const dayOfWeek = row.date.getDay();
     
     // Skip Sunday and Saturday
     if (dayOfWeek === 0 || dayOfWeek === 6) continue;
     
-    // Check which week this date belongs to (by month/day)
-    for (let weekIdx = 0; weekIdx < weekStartsMonthDay.length; weekIdx++) {
-      const weekStart = weekStartsMonthDay[weekIdx];
+    // Check if this row's week matches one of our target weeks
+    const weekIdx = targetWeeks.indexOf(rowWeek);
+    if (weekIdx !== -1) {
+      // Calculate index in the 15-point array
+      // weekIdx * 5 gives the starting index for the week
+      // (dayOfWeek - 1) gives the day index within the week (0-4)
+      const dataIndex = weekIdx * 5 + (dayOfWeek - 1);
       
-      // Calculate the end date of the week (Friday = +4 days from Monday)
-      // We need to handle month boundaries
-      let endDay = weekStart.day + 4;
-      let endMonth = weekStart.month;
-      
-      // Get days in the start month to handle month boundaries
-      const daysInMonth = new Date(2026, weekStart.month + 1, 0).getDate();
-      if (endDay > daysInMonth) {
-        endDay -= daysInMonth;
-        endMonth = (weekStart.month + 1) % 12;
-      }
-      
-      // Check if row falls in this week's date range
-      let inWeek = false;
-      if (endMonth === weekStart.month) {
-        // Week doesn't cross month boundary
-        inWeek = rowMonth === weekStart.month && rowDay >= weekStart.day && rowDay <= endDay;
-      } else {
-        // Week crosses month boundary
-        inWeek = (rowMonth === weekStart.month && rowDay >= weekStart.day) ||
-                 (rowMonth === endMonth && rowDay <= endDay);
-      }
-      
-      if (inWeek) {
-        // Calculate index in the 15-point array
-        // weekIdx * 5 gives the starting index for the week
-        // (dayOfWeek - 1) gives the day index within the week (0-4)
-        const dataIndex = weekIdx * 5 + (dayOfWeek - 1);
-        
-        if (dataIndex >= 0 && dataIndex < 15) {
-          yearData[year][dataIndex]++;
-        }
-        break;
+      if (dataIndex >= 0 && dataIndex < 15) {
+        yearData[year][dataIndex]++;
       }
     }
   }
