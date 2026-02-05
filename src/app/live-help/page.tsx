@@ -20,7 +20,9 @@ interface RoomStatus {
 
 interface TodayStats {
   total_visits: number;
+  unique_visits: number;
   completed_visits: number;
+  unique_helped: number;
   average_help_duration_minutes: number;
   hourly_logins: { hour: number; logins: number }[];
   help_sessions: number;
@@ -71,7 +73,9 @@ export default function LiveHelpDashboard() {
   const [currentStatus, setCurrentStatus] = useState<Record<string, RoomStatus>>({});
   const [todayStats, setTodayStats] = useState<TodayStats>({
     total_visits: 0,
+    unique_visits: 0,
     completed_visits: 0,
+    unique_helped: 0,
     average_help_duration_minutes: 0,
     hourly_logins: [],
     help_sessions: 0
@@ -347,8 +351,8 @@ export default function LiveHelpDashboard() {
                       />
                       <StatusCard 
                         label="Today's Visits" 
-                        value={todayStats.total_visits} 
-                        subtext={`${todayStats.help_sessions} helped`}
+                        value={`${todayStats.total_visits} (${todayStats.unique_visits} unique)`} 
+                        subtext={`${todayStats.completed_visits} helped (${todayStats.unique_helped} unique)`}
                         color="blue"
                       />
                     </div>

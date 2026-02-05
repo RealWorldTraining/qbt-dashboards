@@ -307,8 +307,17 @@ export async function GET(request: NextRequest) {
       const totalVisits = allTodayData.length;
       const completedVisits = allTodayData.filter(row => row.left && row.left.toString().trim() !== '');
       
+      // Count unique users for total visits
+      const uniqueVisitNames = new Set<string>();
+      for (const row of allTodayData) {
+        const name = row.name ? row.name.toString().trim() : '';
+        if (name) uniqueVisitNames.add(name);
+      }
+      const uniqueVisits = uniqueVisitNames.size;
+      
       // Average help duration (for completed sessions with trainer)
       const helpDurations: number[] = [];
+      const helpedUserNames = new Set<string>();
       for (const row of completedVisits) {
         const trainer = row.trainer_name ? row.trainer_name.toString().trim() : '';
         if (trainer && trainer !== 'X') {
@@ -319,9 +328,12 @@ export async function GET(request: NextRequest) {
           );
           if (duration > 0) {
             helpDurations.push(duration);
+            const name = row.name ? row.name.toString().trim() : '';
+            if (name) helpedUserNames.add(name);
           }
         }
       }
+      const uniqueHelpedUsers = helpedUserNames.size;
       
       const avgHelpDuration = helpDurations.length > 0 
         ? helpDurations.reduce((a, b) => a + b, 0) / helpDurations.length 
@@ -348,7 +360,9 @@ export async function GET(request: NextRequest) {
       
       return NextResponse.json({
         total_visits: totalVisits,
+        unique_visits: uniqueVisits,
         completed_visits: completedVisits.length,
+        unique_helped: uniqueHelpedUsers,
         average_help_duration_minutes: Math.round(avgHelpDuration * 10) / 10,
         hourly_logins: hourlyData,
         help_sessions: helpDurations.length
