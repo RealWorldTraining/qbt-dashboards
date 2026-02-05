@@ -404,8 +404,8 @@ export default function LiveHelpDashboard() {
                           <div className="font-medium">#{idx + 1} {attendee.name}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-bold text-green-400">{Math.round(attendee.minutes)}</div>
-                          <div className="text-xs text-gray-400">{attendee.sessions} sessions</div>
+                          <div className="text-2xl font-bold text-green-400">{Math.round(attendee.minutes)} minutes</div>
+                          <div className="text-xs text-gray-400">{attendee.sessions} {attendee.sessions === 1 ? 'session' : 'sessions'}</div>
                         </div>
                       </div>
                     ))}
