@@ -41,6 +41,7 @@ interface OrganicWeek {
   google_organic: ChannelMetrics
   direct: ChannelMetrics
   bing_organic: ChannelMetrics
+  bing_cpc: ChannelMetrics
   qb_intuit: ChannelMetrics
   other: ChannelMetrics
   organic_search?: ChannelMetrics
@@ -86,11 +87,11 @@ const LOADING_ADS: AdsData = {
   last_updated: ""
 }
 const LOADING_ORGANIC: OrganicData = {
-  this_week: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
-  last_week: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
-  two_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
-  three_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
-  four_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  this_week: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, bing_cpc: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  last_week: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, bing_cpc: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  two_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, bing_cpc: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  three_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, bing_cpc: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  four_weeks_ago: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, bing_cpc: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   last_updated: ""
 }
 const LOADING_CAMPAIGNS: CampaignData = { weeks: [], campaigns: [], last_updated: "" }
@@ -280,6 +281,7 @@ export default function TVDashboard() {
               { name: "Google Organic", key: "google_organic" as const, color: "border-blue-500" },
               { name: "Direct", key: "direct" as const, color: "border-gray-500" },
               { name: "Bing Organic", key: "bing_organic" as const, color: "border-teal-500" },
+              { name: "Bing CPC", key: "bing_cpc" as const, color: "border-sky-500" },
               { name: "QB Intuit", key: "qb_intuit" as const, color: "border-emerald-500" },
               { name: "Other", key: "other" as const, color: "border-purple-500" },
             ].map((ch) => {
@@ -356,6 +358,7 @@ export default function TVDashboard() {
               { name: "Google Organic", key: "google_organic" as const, color: "border-blue-500" },
               { name: "Direct", key: "direct" as const, color: "border-gray-500" },
               { name: "Bing Organic", key: "bing_organic" as const, color: "border-teal-500" },
+              { name: "Bing CPC", key: "bing_cpc" as const, color: "border-sky-500" },
               { name: "QB Intuit", key: "qb_intuit" as const, color: "border-emerald-500" },
               { name: "Other", key: "other" as const, color: "border-purple-500" },
             ].map((ch) => {
