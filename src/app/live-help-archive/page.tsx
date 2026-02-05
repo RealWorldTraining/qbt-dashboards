@@ -1,5 +1,6 @@
 'use client';
 
+// Force rebuild - Last 3 Weeks chart update
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Script from 'next/script';
 
