@@ -496,7 +496,7 @@ export default function LiveHelpDashboard() {
         <div className="max-w-[1600px] mx-auto p-5">
           <header className="text-center py-8 border-b border-white/10 mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent mb-2 flex items-center justify-center gap-3">
-              <img src="/qb-logo.png" alt="QuickBooks" className="h-10" /> Live Help Dashboard
+              <img src="/qb-logo.png" alt="QuickBooks" className="h-10" /> Live Help Archive
             </h1>
             <p className="text-gray-400 text-sm">
               QuickBooksTraining.com | Live Data from Google Sheets
