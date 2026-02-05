@@ -405,8 +405,7 @@ export default function LiveHelpDashboard() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-green-400">{Math.round(attendee.minutes)}</div>
-                          <div className="text-xs text-gray-400">{Math.round(attendee.minutes)} minutes • {attendee.sessions}</div>
-                          <div className="text-xs text-gray-400">sessions</div>
+                          <div className="text-xs text-gray-400">minutes • {attendee.sessions} sessions</div>
                         </div>
                       </div>
                     ))}
