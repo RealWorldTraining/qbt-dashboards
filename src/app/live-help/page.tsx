@@ -386,7 +386,6 @@ export default function LiveHelpDashboard() {
                   <h3 className="text-xl font-semibold mb-5">⚡ Today's Trainer Performance</h3>
                   <div className="space-y-3 max-h-80 overflow-y-auto">
                     {Object.entries(trainerPerformance)
-                      .sort(([,a], [,b]) => b.sessions - a.sessions)
                       .map(([name, stats]) => (
                         <TrainerRow key={name} name={name} stats={stats} />
                       ))}

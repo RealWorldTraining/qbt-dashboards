@@ -386,9 +386,9 @@ export async function GET(request: NextRequest) {
       
       for (const row of allTodayData) {
         const rawTrainer = row.trainer_name ? row.trainer_name.toString().trim() : '';
-        if (rawTrainer && rawTrainer !== 'X') {
+        if (rawTrainer) {
           // Normalize trainer name to combine variants (e.g., Sue_Restum, srestum, Sue -> Sue)
-          const trainer = normalizeTrainerName(rawTrainer);
+          const trainer = rawTrainer === 'X' ? 'X' : normalizeTrainerName(rawTrainer);
           
           if (!trainerStats[trainer]) {
             trainerStats[trainer] = { sessions: 0, total_duration: 0, avg_duration: 0 };
@@ -412,7 +412,21 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      return NextResponse.json(trainerStats);
+      // Sort: named trainers first (by sessions desc), then X at the bottom
+      const sortedStats: Record<string, { sessions: number; total_duration: number; avg_duration: number }> = {};
+      const namedTrainers = Object.entries(trainerStats)
+        .filter(([name]) => name !== 'X')
+        .sort((a, b) => b[1].sessions - a[1].sessions);
+      
+      for (const [name, stats] of namedTrainers) {
+        sortedStats[name] = stats;
+      }
+      
+      if (trainerStats['X']) {
+        sortedStats['X'] = trainerStats['X'];
+      }
+      
+      return NextResponse.json(sortedStats);
     }
     
     if (action === 'top-attendees') {
