@@ -361,7 +361,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         total_visits: totalVisits,
         unique_visits: uniqueVisits,
-        completed_visits: completedVisits.length,
+        completed_visits: helpDurations.length,
         unique_helped: uniqueHelpedUsers,
         average_help_duration_minutes: Math.round(avgHelpDuration * 10) / 10,
         hourly_logins: hourlyData,
