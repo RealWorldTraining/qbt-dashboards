@@ -385,17 +385,15 @@ export default function LiveHelpDashboard() {
                 <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
                   <h3 className="text-xl font-semibold mb-5">⚡ Today's Trainer Performance</h3>
                   <div className="space-y-3 max-h-80 overflow-y-auto">
-                    {Object.entries(trainerPerformance)
-                      .sort(([nameA, statsA], [nameB, statsB]) => {
-                        // X always goes to the bottom
-                        if (nameA === 'X') return 1;
-                        if (nameB === 'X') return -1;
-                        // Otherwise sort by sessions descending
-                        return statsB.sessions - statsA.sessions;
-                      })
-                      .map(([name, stats]) => (
+                    {(() => {
+                      const entries = Object.entries(trainerPerformance);
+                      const namedTrainers = entries.filter(([name]) => name !== 'X').sort((a, b) => b[1].sessions - a[1].sessions);
+                      const xTrainer = entries.find(([name]) => name === 'X');
+                      const sorted = [...namedTrainers, ...(xTrainer ? [xTrainer] : [])];
+                      return sorted.map(([name, stats]) => (
                         <TrainerRow key={name} name={name} stats={stats} />
-                      ))}
+                      ));
+                    })()}
                     {Object.keys(trainerPerformance).length === 0 && (
                       <p className="text-gray-400 text-center py-8">No trainer sessions yet today</p>
                     )}
