@@ -414,7 +414,7 @@ export async function GET(request: NextRequest) {
       }
       
       // Calculate total HELP DURATION per attendee (start_time → end_time)
-      const attendeeTotals: Record<string, number> = {};
+      const attendeeTotals: Record<string, { minutes: number; sessions: number }> = {};
       
       for (const row of allTodayData) {
         const name = row.attendee_name ? row.attendee_name.toString().trim() : '';
@@ -442,18 +442,20 @@ export async function GET(request: NextRequest) {
         
         if (duration > 0) {
           if (!attendeeTotals[name]) {
-            attendeeTotals[name] = 0;
+            attendeeTotals[name] = { minutes: 0, sessions: 0 };
           }
-          attendeeTotals[name] += duration;
+          attendeeTotals[name].minutes += duration;
+          attendeeTotals[name].sessions += 1;
         }
       }
       
       // Sort and get top 5
       const top5 = Object.entries(attendeeTotals)
-        .map(([name, minutes]) => ({
+        .map(([name, stats]) => ({
           name,
-          minutes: Math.round(minutes * 10) / 10,
-          hours: Math.round((minutes / 60) * 100) / 100
+          minutes: Math.round(stats.minutes * 10) / 10,
+          hours: Math.round((stats.minutes / 60) * 100) / 100,
+          sessions: stats.sessions
         }))
         .sort((a, b) => b.minutes - a.minutes)
         .slice(0, 5);

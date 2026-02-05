@@ -38,6 +38,7 @@ interface AttendeeTime {
   name: string;
   minutes: number;
   hours: number;
+  sessions: number;
 }
 
 interface CalendarEvent {
@@ -393,23 +394,26 @@ export default function LiveHelpDashboard() {
               </div>
 
               {/* Top 5 Attendees by Total Time */}
-              <div className="bg-white/5 rounded-2xl p-6 border border-white/10 mb-8">
-                <h3 className="text-xl font-semibold mb-5">🏆 Top 5 Attendees by Total Time Today</h3>
-                <div className="space-y-3">
-                  {topAttendees.map((attendee, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/10">
-                      <div>
-                        <div className="font-medium">#{idx + 1} {attendee.name}</div>
+              <div className="mx-auto mb-8" style={{ maxWidth: '50%' }}>
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-xl font-semibold mb-5">🏆 Top 5 Attendees by Total Time Today</h3>
+                  <div className="space-y-3">
+                    {topAttendees.map((attendee, idx) => (
+                      <div key={idx} className="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/10">
+                        <div>
+                          <div className="font-medium">#{idx + 1} {attendee.name}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-400">{Math.round(attendee.minutes)}</div>
+                          <div className="text-xs text-gray-400">{Math.round(attendee.minutes)} minutes • {attendee.sessions}</div>
+                          <div className="text-xs text-gray-400">sessions</div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-green-400">{Math.round(attendee.minutes)}</div>
-                        <div className="text-xs text-gray-400">minutes</div>
-                      </div>
-                    </div>
-                  ))}
-                  {topAttendees.length === 0 && (
-                    <p className="text-gray-400 text-center py-8">No attendance data yet today</p>
-                  )}
+                    ))}
+                    {topAttendees.length === 0 && (
+                      <p className="text-gray-400 text-center py-8">No attendance data yet today</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
