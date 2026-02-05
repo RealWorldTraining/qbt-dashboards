@@ -267,18 +267,20 @@ export default function LiveHelpDashboard() {
     // Last Three Weeks by Day Chart
     const threeWeeksCtx = document.getElementById('threeWeeksChart') as HTMLCanvasElement;
     if (threeWeeksCtx && data.charts.lastThreeWeeksByDay) {
-      const weekLabels = ['This Week', 'Last Week', 'Two Weeks Ago'];
+      // Create 15-day labels (Mon-Fri repeated 3 times)
       const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-      const datasets: any[] = [];
+      const dayLabelsRepeated = [...dayLabels, ...dayLabels, ...dayLabels];
       
+      const datasets: any[] = [];
       const colors = ['#ffd700', '#00ff88', '#00d9ff'];
       const bgColors = ['rgba(255,215,0,0.1)', 'rgba(0,255,136,0.1)', 'rgba(0,217,255,0.1)'];
+      const years = ['2024', '2025', '2026'];
       
-      weekLabels.forEach((week, idx) => {
-        if (data.charts.lastThreeWeeksByDay[week]) {
+      years.forEach((year, idx) => {
+        if (data.charts.lastThreeWeeksByDay[year]) {
           datasets.push({
-            label: week,
-            data: data.charts.lastThreeWeeksByDay[week],
+            label: year,
+            data: data.charts.lastThreeWeeksByDay[year],
             borderColor: colors[idx],
             backgroundColor: bgColors[idx],
             tension: 0.4,
@@ -291,7 +293,7 @@ export default function LiveHelpDashboard() {
       
       chartInstances.current.threeWeeks = new Chart(threeWeeksCtx, {
         type: 'line',
-        data: { labels: dayLabels, datasets },
+        data: { labels: dayLabelsRepeated, datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
