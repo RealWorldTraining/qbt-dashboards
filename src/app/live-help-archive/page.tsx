@@ -41,6 +41,7 @@ interface ApiResponse {
     dayOfWeekByYear: Record<string, number[]>;
     topics: TopicData[];
     monthlyByYear: Record<string, number[]>;
+    lastThreeWeeksByDay: Record<string, number[]>;
     trainerComparison: TrainerComparison[];
   };
   dateRange: {
@@ -99,6 +100,7 @@ export default function LiveHelpDashboard() {
     dayOfWeekByYear: {} as Record<string, number[]>,
     topics: [] as TopicData[],
     monthlyByYear: {} as Record<string, number[]>,
+    lastThreeWeeksByDay: {} as Record<string, number[]>,
     trainerComparison: [] as TrainerComparison[],
   });
   
@@ -261,46 +263,34 @@ export default function LiveHelpDashboard() {
       });
     }
     
-    // Monthly by Year Chart
-    const monthlyCtx = document.getElementById('monthlyChart') as HTMLCanvasElement;
-    if (monthlyCtx) {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    // Last Three Weeks by Day Chart
+    const threeWeeksCtx = document.getElementById('threeWeeksChart') as HTMLCanvasElement;
+    if (threeWeeksCtx && data.charts.lastThreeWeeksByDay) {
+      const weekLabels = ['This Week', 'Last Week', 'Two Weeks Ago'];
+      const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
       const datasets = [];
       
-      if (data.charts.monthlyByYear['2024']) {
-        datasets.push({
-          label: '2024',
-          data: data.charts.monthlyByYear['2024'],
-          borderColor: '#00d9ff',
-          backgroundColor: 'rgba(0,217,255,0.1)',
-          tension: 0.4,
-          fill: false,
-        });
-      }
-      if (data.charts.monthlyByYear['2025']) {
-        datasets.push({
-          label: '2025',
-          data: data.charts.monthlyByYear['2025'],
-          borderColor: '#00ff88',
-          backgroundColor: 'rgba(0,255,136,0.1)',
-          tension: 0.4,
-          fill: false,
-        });
-      }
-      if (data.charts.monthlyByYear['2026']) {
-        datasets.push({
-          label: '2026',
-          data: data.charts.monthlyByYear['2026'],
-          borderColor: '#ffd700',
-          backgroundColor: 'rgba(255,215,0,0.1)',
-          tension: 0.4,
-          fill: false,
-        });
-      }
+      const colors = ['#ffd700', '#00ff88', '#00d9ff'];
+      const bgColors = ['rgba(255,215,0,0.1)', 'rgba(0,255,136,0.1)', 'rgba(0,217,255,0.1)'];
       
-      chartInstances.current.monthly = new Chart(monthlyCtx, {
+      weekLabels.forEach((week, idx) => {
+        if (data.charts.lastThreeWeeksByDay[week]) {
+          datasets.push({
+            label: week,
+            data: data.charts.lastThreeWeeksByDay[week],
+            borderColor: colors[idx],
+            backgroundColor: bgColors[idx],
+            tension: 0.4,
+            fill: false,
+            pointRadius: 5,
+            pointBackgroundColor: colors[idx],
+          });
+        }
+      });
+      
+      chartInstances.current.threeWeeks = new Chart(threeWeeksCtx, {
         type: 'line',
-        data: { labels: months, datasets },
+        data: { labels: dayLabels, datasets },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -558,8 +548,8 @@ export default function LiveHelpDashboard() {
 
               {/* Charts Section */}
               <div className="grid md:grid-cols-2 gap-5 mb-8">
-                <ChartCard title="📈 Monthly Sessions by Year (Jan-Dec)">
-                  <canvas id="monthlyChart"></canvas>
+                <ChartCard title="📈 Sessions by Day (Last 3 Weeks)">
+                  <canvas id="threeWeeksChart"></canvas>
                 </ChartCard>
                 <ChartCard title="📆 Sessions by Day this Week">
                   <canvas id="dowChart"></canvas>
