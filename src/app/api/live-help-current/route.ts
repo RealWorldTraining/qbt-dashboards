@@ -310,7 +310,7 @@ export async function GET(request: NextRequest) {
       // Count unique users for total visits
       const uniqueVisitNames = new Set<string>();
       for (const row of allTodayData) {
-        const name = row.name ? row.name.toString().trim() : '';
+        const name = row.attendee_name ? row.attendee_name.toString().trim() : '';
         if (name) uniqueVisitNames.add(name);
       }
       const uniqueVisits = uniqueVisitNames.size;
@@ -328,7 +328,7 @@ export async function GET(request: NextRequest) {
           );
           if (duration > 0) {
             helpDurations.push(duration);
-            const name = row.name ? row.name.toString().trim() : '';
+            const name = row.attendee_name ? row.attendee_name.toString().trim() : '';
             if (name) helpedUserNames.add(name);
           }
         }
