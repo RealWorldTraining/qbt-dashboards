@@ -412,21 +412,7 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      // Sort: named trainers first (by sessions desc), then X at the bottom
-      const sortedStats: Record<string, { sessions: number; total_duration: number; avg_duration: number }> = {};
-      const namedTrainers = Object.entries(trainerStats)
-        .filter(([name]) => name !== 'X')
-        .sort((a, b) => b[1].sessions - a[1].sessions);
-      
-      for (const [name, stats] of namedTrainers) {
-        sortedStats[name] = stats;
-      }
-      
-      if (trainerStats['X']) {
-        sortedStats['X'] = trainerStats['X'];
-      }
-      
-      return NextResponse.json(sortedStats);
+      return NextResponse.json(trainerStats);
     }
     
     if (action === 'top-attendees') {

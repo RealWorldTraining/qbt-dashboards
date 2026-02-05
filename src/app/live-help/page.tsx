@@ -386,6 +386,13 @@ export default function LiveHelpDashboard() {
                   <h3 className="text-xl font-semibold mb-5">⚡ Today's Trainer Performance</h3>
                   <div className="space-y-3 max-h-80 overflow-y-auto">
                     {Object.entries(trainerPerformance)
+                      .sort(([nameA, statsA], [nameB, statsB]) => {
+                        // X always goes to the bottom
+                        if (nameA === 'X') return 1;
+                        if (nameB === 'X') return -1;
+                        // Otherwise sort by sessions descending
+                        return statsB.sessions - statsA.sessions;
+                      })
                       .map(([name, stats]) => (
                         <TrainerRow key={name} name={name} stats={stats} />
                       ))}
