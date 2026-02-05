@@ -335,49 +335,53 @@ function getLastThreeWeeksByDay(rows: RawRow[]): Record<string, number[]> {
   const mondayOfThisWeek = new Date(today);
   mondayOfThisWeek.setDate(today.getDate() - (todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1));
   
-  // Get Mondays for the 3 weeks
+  // Get date ranges for the 3 weeks (Mon-Fri only)
   const week1Start = new Date(mondayOfThisWeek); // This week
   const week2Start = new Date(mondayOfThisWeek);
   week2Start.setDate(week2Start.getDate() - 7); // Last week
   const week3Start = new Date(mondayOfThisWeek);
   week3Start.setDate(week3Start.getDate() - 14); // 2 weeks ago
   
-  const weekData: Record<string, number[]> = {
-    'This Week': [0, 0, 0, 0, 0], // Mon-Fri
-    'Last Week': [0, 0, 0, 0, 0],
-    'Two Weeks Ago': [0, 0, 0, 0, 0],
-  };
+  const weekStarts = [week1Start, week2Start, week3Start];
   
-  // Map for easy lookup
-  const weekMap = {
-    'This Week': week1Start,
-    'Last Week': week2Start,
-    'Two Weeks Ago': week3Start,
+  // Initialize data for each year: 15 data points (Mon-Fri × 3 weeks)
+  const yearData: Record<string, number[]> = {
+    '2024': new Array(15).fill(0),
+    '2025': new Array(15).fill(0),
+    '2026': new Array(15).fill(0),
   };
   
   for (const row of rows) {
     if (!row.date) continue;
     
-    // Check which week this date belongs to
-    for (const [weekLabel, weekStart] of Object.entries(weekMap)) {
+    const year = row.date.getFullYear().toString();
+    if (!yearData[year]) continue; // Skip unknown years
+    
+    // Check which week and day this date belongs to
+    for (let weekIdx = 0; weekIdx < weekStarts.length; weekIdx++) {
+      const weekStart = weekStarts[weekIdx];
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekEnd.getDate() + 4); // Friday (Mon + 4 days)
       
       if (row.date >= weekStart && row.date <= weekEnd) {
-        // Get day of week index (0 = Mon, 4 = Fri)
+        // Get day of week (1 = Mon, 5 = Fri)
         const dayOfWeek = row.date.getDay();
-        if (dayOfWeek === 0) continue; // Skip Sunday
-        const dayIndex = dayOfWeek === 6 ? 4 : dayOfWeek - 1; // Sat shouldn't happen, Fri is index 4
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip Sunday and Saturday
         
-        if (dayIndex >= 0 && dayIndex < 5) {
-          weekData[weekLabel][dayIndex]++;
+        // Calculate index in the 15-point array
+        // weekIdx * 5 gives the starting index for the week
+        // (dayOfWeek - 1) gives the day index within the week (0-4)
+        const dataIndex = weekIdx * 5 + (dayOfWeek - 1);
+        
+        if (dataIndex >= 0 && dataIndex < 15) {
+          yearData[year][dataIndex]++;
         }
         break;
       }
     }
   }
   
-  return weekData;
+  return yearData;
 }
 
 function getBusiestDay(rows: RawRow[]): string {
