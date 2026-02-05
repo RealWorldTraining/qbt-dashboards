@@ -197,9 +197,9 @@ export async function GET() {
       const organicSearchUsers = channelData?.organic_search_users || 0
       const organicSearchPurchases = channelData?.organic_search_purchases || 0
       
-      // Calculate "Other" as residual
-      const knownUsers = paidUsers + googleOrganic.users + direct.users + bingOrganic.users + qbIntuit.users
-      const knownPurchases = paidPurchases + googleOrganic.purchases + direct.purchases + bingOrganic.purchases + qbIntuit.purchases
+      // Calculate "Other" as residual (excluding Bing CPC since it's tracked separately)
+      const knownUsers = paidUsers + googleOrganic.users + direct.users + bingOrganic.users + qbIntuit.users + bingCpc.users
+      const knownPurchases = paidPurchases + googleOrganic.purchases + direct.purchases + bingOrganic.purchases + qbIntuit.purchases + bingCpc.purchases
       const otherUsers = Math.max(0, totalUsers - knownUsers)
       const otherPurchases = Math.max(0, totalPurchases - knownPurchases)
       
@@ -225,6 +225,12 @@ export async function GET() {
           purchases: bingOrganic.purchases,
           percent_users: (bingOrganic.users / totalUsers) * 100,
           percent_purchases: (bingOrganic.purchases / totalPurchases) * 100
+        },
+        bing_cpc: {
+          users: bingCpc.users,
+          purchases: bingCpc.purchases,
+          percent_users: (bingCpc.users / totalUsers) * 100,
+          percent_purchases: (bingCpc.purchases / totalPurchases) * 100
         },
         qb_intuit: {
           users: qbIntuit.users,
@@ -271,6 +277,7 @@ export async function GET() {
           google_organic: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
           direct: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
           bing_organic: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          bing_cpc: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
           qb_intuit: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
           other: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
           organic_search: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
@@ -293,6 +300,7 @@ export async function GET() {
         google_organic: formatChannel(weekData.google_organic),
         direct: formatChannel(weekData.direct),
         bing_organic: formatChannel(weekData.bing_organic),
+        bing_cpc: formatChannel(weekData.bing_cpc),
         qb_intuit: formatChannel(weekData.qb_intuit),
         other: formatChannel(weekData.other),
         organic_search: formatChannel(weekData.organic_search),
