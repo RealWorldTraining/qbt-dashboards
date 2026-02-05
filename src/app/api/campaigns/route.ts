@@ -117,11 +117,22 @@ export async function GET() {
     }))
 
     // Get unique weeks and campaigns
-    const weeks = [...new Set(allData.map(r => r.week))].sort().reverse()
+    const allWeeks = [...new Set(allData.map(r => r.week))].sort().reverse()
     const campaigns = [...new Set(allData.map(r => r.campaign))]
 
-    // Get last 4 weeks (skip current incomplete week if needed)
-    const recentWeeks = weeks.slice(0, 4)
+    // Filter to only complete weeks (week_end < today)
+    // Week starts are in YYYY-MM-DD format, add 6 days to get week_end
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const completeWeeks = allWeeks.filter(weekStart => {
+      const [year, month, day] = weekStart.split('-').map(Number)
+      const weekEnd = new Date(year, month - 1, day + 6)
+      return weekEnd < today
+    })
+    
+    // Get last 4 complete weeks
+    const recentWeeks = completeWeeks.slice(0, 4)
     
     // Group by campaign, then by week
     const campaignData: Record<string, Record<string, CampaignRow>> = {}

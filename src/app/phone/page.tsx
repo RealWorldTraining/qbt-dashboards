@@ -69,18 +69,30 @@ interface HourlyData {
   threeWeeksEOD: number | null
 }
 
+interface WeeklyTrendsData {
+  weeks: {
+    week_label: string
+    week_start: string
+    daily_cumulative: { [day: string]: number | null }
+    week_total: number
+  }[]
+  days: string[]
+}
+
 export default function PhoneDashboard() {
   const [metrics, setMetrics] = useState<SalesMetrics | null>(null)
   const [hourlyData, setHourlyData] = useState<HourlyData | null>(null)
+  const [weeklyTrends, setWeeklyTrends] = useState<WeeklyTrendsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
   async function fetchData() {
     setLoading(true)
     try {
-      const [metricsResponse, hourlyResponse] = await Promise.all([
+      const [metricsResponse, hourlyResponse, weeklyResponse] = await Promise.all([
         fetch(`${RAILWAY_API_URL}/metrics`),
-        fetch(`${RAILWAY_API_URL}/hourly-comparison`)
+        fetch(`${RAILWAY_API_URL}/hourly-comparison`),
+        fetch(`${RAILWAY_API_URL}/weekly-trends`)
       ])
       
       if (!metricsResponse.ok || !hourlyResponse.ok) {
@@ -89,6 +101,12 @@ export default function PhoneDashboard() {
       
       const metricsData: MetricsResponse = await metricsResponse.json()
       const hourlyData = await hourlyResponse.json()
+      
+      // Fetch weekly trends
+      if (weeklyResponse.ok) {
+        const weeklyData: WeeklyTrendsData = await weeklyResponse.json()
+        setWeeklyTrends(weeklyData)
+      }
       
       // Get current timestamp and hour
       const now = new Date()
@@ -341,6 +359,76 @@ export default function PhoneDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Weekly Trends - Direct QTY */}
+      {weeklyTrends && (
+        <div className="bg-[#1D1D1F] rounded-2xl p-4 mb-6 overflow-x-auto">
+          <h3 className="text-white font-semibold text-sm mb-3">Weekly Trends (Direct QTY)</h3>
+          <div className="text-xs">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-2 px-1 text-white/60 font-medium">Week</th>
+                  <th className="text-center py-2 px-1 text-white/60 font-medium">Sun</th>
+                  <th className="text-center py-2 px-1 text-white/60 font-medium">Mon</th>
+                  <th className="text-center py-2 px-1 text-white/60 font-medium">Tue</th>
+                  <th className="text-center py-2 px-1 text-white/60 font-medium">Wed</th>
+                  <th className="text-center py-2 px-1 text-white/60 font-medium">Thu</th>
+                  <th className="text-center py-2 px-1 text-white/60 font-medium">Fri</th>
+                  <th className="text-center py-2 px-1 text-white/60 font-medium">Sat</th>
+                  <th className="text-center py-2 px-1 text-white font-medium bg-[#2D2D2F]">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  // Calculate max value for heatmap
+                  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                  const allValues = weeklyTrends.weeks.flatMap(week => 
+                    days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                  )
+                  const maxValue = Math.max(...allValues, 1)
+                  
+                  const getHeatmapClass = (value: number | null | undefined) => {
+                    if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                    const intensity = Math.round((value / maxValue) * 100)
+                    if (intensity > 80) return 'bg-blue-600'
+                    if (intensity > 60) return 'bg-blue-500'
+                    if (intensity > 40) return 'bg-blue-600/60'
+                    if (intensity > 20) return 'bg-blue-600/40'
+                    return 'bg-blue-600/20'
+                  }
+                  
+                  return weeklyTrends.weeks.map((week, idx) => (
+                    <tr key={idx} className="border-b border-white/5">
+                      <td className={`py-2 px-1 text-white ${idx === 0 ? 'bg-[#1A3A52] font-medium' : 'bg-[#1D1D1F]'}`}>
+                        <div className="text-[10px] leading-tight">
+                          {week.week_label}
+                          <br />
+                          <span className="text-white/50">{week.week_start}</span>
+                        </div>
+                      </td>
+                      {days.map(day => {
+                        const value = week.daily_cumulative[day]
+                        return (
+                          <td 
+                            key={day} 
+                            className={`text-center py-2 px-1 text-white font-semibold ${getHeatmapClass(value)}`}
+                          >
+                            {value ?? '-'}
+                          </td>
+                        )
+                      })}
+                      <td className="text-center py-2 px-1 font-semibold text-orange-400 bg-[#2D2D2F]">
+                        {week.week_total}
+                      </td>
+                    </tr>
+                  ))
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Last Updated Footer */}
       <div className="text-center text-xs text-gray-500 mt-4">

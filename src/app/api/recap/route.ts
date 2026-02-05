@@ -12,6 +12,79 @@ const STATIC_FILE = path.join(process.cwd(), '.recap-data', 'recap-data.json');
 // In-memory cache for fast access within a serverless function instance
 let inMemoryData: RecapData | null = null;
 
+// GitHub persistence config
+const GITHUB_OWNER = 'QuickBooksTraining';
+const GITHUB_REPO = 'qbt-dashboards';
+const GITHUB_FILE_PATH = '.recap-data/recap-data.json';
+const GITHUB_BRANCH = 'main';
+
+// Commit data to GitHub for permanent persistence
+async function commitToGitHub(data: RecapData): Promise<{ success: boolean; error?: string }> {
+  const token = process.env.GITHUB_PAT;
+  if (!token) {
+    return { success: false, error: 'GITHUB_PAT not configured' };
+  }
+
+  try {
+    // 1. Get the current file SHA (required for updates)
+    const getResponse = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}?ref=${GITHUB_BRANCH}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'qbt-dashboards-recap'
+        }
+      }
+    );
+
+    let sha: string | undefined;
+    if (getResponse.ok) {
+      const fileData = await getResponse.json();
+      sha = fileData.sha;
+    } else if (getResponse.status !== 404) {
+      const errorText = await getResponse.text();
+      return { success: false, error: `GitHub GET failed: ${getResponse.status} - ${errorText}` };
+    }
+
+    // 2. Commit the new content
+    const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
+    const commitMessage = `Update recap data for ${data.displayMonth} (auto-commit from n8n)`;
+
+    const putBody: Record<string, string> = {
+      message: commitMessage,
+      content,
+      branch: GITHUB_BRANCH
+    };
+    if (sha) {
+      putBody.sha = sha;
+    }
+
+    const putResponse = await fetch(
+      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'qbt-dashboards-recap',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(putBody)
+      }
+    );
+
+    if (!putResponse.ok) {
+      const errorText = await putResponse.text();
+      return { success: false, error: `GitHub PUT failed: ${putResponse.status} - ${errorText}` };
+    }
+
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: `GitHub commit error: ${String(err)}` };
+  }
+}
+
 export interface RecapData {
   displayMonth: string;
   months: string[];
@@ -62,10 +135,18 @@ export async function POST(request: NextRequest) {
       console.log('Could not write to /tmp, using in-memory only:', fileError);
     }
 
+    // Persist to GitHub (survives cold starts and redeploys)
+    const gitResult = await commitToGitHub(data);
+    if (!gitResult.success) {
+      console.error('GitHub persistence failed:', gitResult.error);
+    }
+
     return NextResponse.json({
       success: true,
       message: `Recap data updated for ${data.displayMonth}`,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      githubPersisted: gitResult.success,
+      githubError: gitResult.error
     });
   } catch (error) {
     console.error('Error saving recap data:', error);

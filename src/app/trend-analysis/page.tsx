@@ -175,9 +175,9 @@ interface KeywordWithWeeks {
 }
 
 interface GSCKeywordsWeekly {
-  keywords: KeywordWithWeeks[]
-  weekLabels: string[]
-  lastUpdated: string
+  data: KeywordWithWeeks[]
+  weeks: string[]
+  last_updated: string
 }
 
 export default function TrendAnalysisPage() {
@@ -781,7 +781,7 @@ export default function TrendAnalysisPage() {
           )}
           
           {/* Top Keywords - 4-Week Breakdown */}
-          {gscKeywordsWeekly && gscKeywordsWeekly.keywords.length > 0 ? (
+          {gscKeywordsWeekly && gscKeywordsWeekly.data && gscKeywordsWeekly.data.length > 0 ? (
             <>
               <h3 className="text-gray-400 text-sm uppercase tracking-wide mb-4">Top Keywords — 4-Week Breakdown</h3>
               <div className="overflow-x-auto">
@@ -819,7 +819,7 @@ export default function TrendAnalysisPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {gscKeywordsWeekly.keywords.map((kw, idx) => (
+                    {gscKeywordsWeekly.data.map((kw, idx) => (
                       <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50">
                         <td className="py-2 px-3 text-white font-medium">{kw.query}</td>
                         {kw.weeks.map((week, wIdx) => (

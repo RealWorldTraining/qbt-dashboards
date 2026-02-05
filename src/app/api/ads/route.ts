@@ -1,15 +1,13 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
-const SHEET_ID = '1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM'
-const RANGE = 'Weekly_Summary!A:N'
+// Use Adveronix sheet (same as google-ads-weekly)
+const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
+const RANGE = 'GADS: Account: Weekly (Devices)!A:L'
 
 interface WeeklyRow {
   week_start: string
   week_end: string
-  week_num: number
-  year: number
-  platform: string
   spend: number
   impressions: number
   clicks: number
@@ -17,32 +15,48 @@ interface WeeklyRow {
   avg_cpc: number
   conversions: number
   conv_rate: number
-  cpa: number
   conv_value: number
 }
 
 function parseNumber(val: string): number {
   if (!val) return 0
-  // Remove commas and % signs
-  const cleaned = val.replace(/,/g, '').replace(/%/g, '')
+  const cleaned = val.replace(/[$,]/g, '').replace(/%/g, '')
   return parseFloat(cleaned) || 0
 }
 
-function formatDateRange(start: string, end: string): string {
-  // Parse dates without timezone shift (YYYY-MM-DD format)
-  const [startYear, startMonth, startDay] = start.split('-').map(Number)
-  const [endYear, endMonth, endDay] = end.split('-').map(Number)
-  
-  const startDate = new Date(startYear, startMonth - 1, startDay)
-  const endDate = new Date(endYear, endMonth - 1, endDay)
+function parseDate(dateStr: string): Date {
+  if (dateStr.includes('/')) {
+    const [month, day, year] = dateStr.split('/').map(Number)
+    return new Date(year, month - 1, day)
+  } else {
+    const [year, month, day] = dateStr.split('-').map(Number)
+    return new Date(year, month - 1, day)
+  }
+}
+
+function getWeekStart(date: Date): string {
+  // Get Monday of the week containing this date
+  const dayOfWeek = date.getDay()
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(date)
+  monday.setDate(date.getDate() + daysToMonday)
+  const year = monday.getFullYear()
+  const month = String(monday.getMonth() + 1).padStart(2, '0')
+  const day = String(monday.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDateRange(weekStart: string): string {
+  const start = parseDate(weekStart)
+  const end = new Date(start)
+  end.setDate(start.getDate() + 6)
   
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
-  return `${startDate.toLocaleDateString('en-US', opts)} - ${endDate.toLocaleDateString('en-US', opts)}`
+  return `${start.toLocaleDateString('en-US', opts)} - ${end.toLocaleDateString('en-US', opts)}`
 }
 
 export async function GET() {
   try {
-    // Get credentials from environment variable (base64 encoded JSON)
     const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
     if (!credsJson) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 500 })
@@ -69,47 +83,101 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Skip header, parse all rows
-    const allWeeks: WeeklyRow[] = rows.slice(1).map((row) => ({
-      week_start: row[0] || '',
-      week_end: row[1] || '',
-      week_num: parseInt(row[2]) || 0,
-      year: parseInt(row[3]) || 0,
-      platform: row[4] || '',
-      spend: parseNumber(row[5]),
-      impressions: parseNumber(row[6]),
-      clicks: parseNumber(row[7]),
-      ctr: parseNumber(row[8]),
-      avg_cpc: parseNumber(row[9]),
-      conversions: parseNumber(row[10]),
-      conv_rate: parseNumber(row[11]),
-      cpa: parseNumber(row[12]),
-      conv_value: parseNumber(row[13]),
-    }))
-
-    // Get last 5 weeks (most recent at the end)
-    // Skip "this week" (incomplete) - use last_week as primary
-    const last5 = allWeeks.slice(-5).reverse() // [this_week, last_week, 2_weeks, 3_weeks, 4_weeks]
-
-    const formatWeek = (w: WeeklyRow, label: string) => ({
-      week_label: label,
-      date_range: formatDateRange(w.week_start, w.week_end),
-      spend: Math.round(w.spend), // Whole numbers per Aaron
-      impressions: w.impressions,
-      clicks: w.clicks,
-      ctr: w.ctr,
-      conversions: Math.round(w.conversions), // Whole numbers per Aaron
-      conversion_rate: w.conv_rate,
-      cpa: Math.round(w.cpa), // Whole numbers per Aaron
-      roas: w.conv_value / w.spend,
+    // Aggregate by week (daily data → weekly aggregation, sum across device types)
+    // Columns: A=Date, B=Account, C=Device, D=Clicks, E=Impressions, F=CTR, G=Avg.CPC, H=Cost, I=Avg.CPM, J=Conversions, K=Cross-device, L=Cost/conv
+    const weeklyAgg = new Map<string, WeeklyRow>()
+    
+    rows.slice(1).forEach(row => {
+      const dateStr = row[0]
+      if (!dateStr) return
+      
+      // Determine which week this date belongs to
+      const date = parseDate(dateStr)
+      const weekStart = getWeekStart(date)
+      
+      // Calculate week_end as week_start + 6 days
+      const startDate = parseDate(weekStart)
+      const endDate = new Date(startDate)
+      endDate.setDate(startDate.getDate() + 6)
+      const weekEnd = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
+      
+      const key = weekStart
+      const existing = weeklyAgg.get(key) || {
+        week_start: weekStart,
+        week_end: weekEnd,
+        spend: 0,
+        impressions: 0,
+        clicks: 0,
+        ctr: 0,
+        avg_cpc: 0,
+        conversions: 0,
+        conv_rate: 0,
+        conv_value: 0,
+      }
+      
+      existing.clicks += parseNumber(row[3])
+      existing.impressions += parseNumber(row[4])
+      existing.spend += parseNumber(row[7])
+      existing.conversions += parseNumber(row[9])
+      
+      weeklyAgg.set(key, existing)
     })
 
-    // Shift: last_week becomes primary (this_week is incomplete)
+    // Convert to array and sort by week_start descending
+    const allWeeks = Array.from(weeklyAgg.values())
+      .sort((a, b) => b.week_start.localeCompare(a.week_start))
+
+    // Filter to only COMPLETE weeks (where week_end < today in CST)
+    const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    const todayCST = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate())
+    
+    const completeWeeks = allWeeks.filter(w => {
+      if (!w.week_end) return false
+      const [year, month, day] = w.week_end.split('-').map(Number)
+      const weekEnd = new Date(year, month - 1, day)
+      return weekEnd < todayCST
+    })
+
+    const formatWeek = (w: WeeklyRow | undefined, label: string) => {
+      if (!w) {
+        return {
+          week_label: label,
+          date_range: 'No data',
+          spend: 0,
+          impressions: 0,
+          clicks: 0,
+          ctr: 0,
+          conversions: 0,
+          conversion_rate: 0,
+          cpa: 0,
+          roas: 0,
+        }
+      }
+      
+      const ctr = w.impressions > 0 ? (w.clicks / w.impressions) * 100 : 0
+      const convRate = w.clicks > 0 ? (w.conversions / w.clicks) * 100 : 0
+      const cpa = w.conversions > 0 ? w.spend / w.conversions : 0
+      const roas = w.spend > 0 ? w.conv_value / w.spend : 0
+      
+      return {
+        week_label: label,
+        date_range: formatDateRange(w.week_start),
+        spend: Math.round(w.spend),
+        impressions: Math.round(w.impressions),
+        clicks: Math.round(w.clicks),
+        ctr: Math.round(ctr * 100) / 100,
+        conversions: Math.round(w.conversions),
+        conversion_rate: Math.round(convRate * 100) / 100,
+        cpa: Math.round(cpa),
+        roas: Math.round(roas * 100) / 100,
+      }
+    }
+
     const data = {
-      this_week: formatWeek(last5[1], 'Last Week'),      // Most recent complete week
-      last_week: formatWeek(last5[2], '2 Weeks Ago'),
-      two_weeks_ago: formatWeek(last5[3], '3 Weeks Ago'),
-      three_weeks_ago: formatWeek(last5[4], '4 Weeks Ago'),
+      this_week: formatWeek(completeWeeks[0], 'Last Week'),
+      last_week: formatWeek(completeWeeks[1], '2 Weeks Ago'),
+      two_weeks_ago: formatWeek(completeWeeks[2], '3 Weeks Ago'),
+      three_weeks_ago: formatWeek(completeWeeks[3], '4 Weeks Ago'),
       last_updated: new Date().toISOString(),
     }
 
@@ -121,7 +189,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching ads data:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch data' },
+      { error: 'Failed to fetch data', details: String(error) },
       { status: 500 }
     )
   }

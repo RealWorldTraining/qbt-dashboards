@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { 
   LayoutGrid, 
@@ -14,16 +15,19 @@ import {
   Zap,
   Search,
   Smartphone,
+  RefreshCw,
+  Check,
+  AlertCircle,
 } from "lucide-react"
 
 const dashboards = [
   { 
-    name: "Sales Snapshot", 
-    href: "/data", 
-    icon: Tv, 
-    description: "Real-time forecasts for the office TV",
-    color: "from-cyan-500 to-blue-600",
-    stats: "Today • Week • Month"
+    name: "Dashboard", 
+    href: "/dashboard", 
+    icon: LayoutGrid, 
+    description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
+    color: "from-purple-500 to-indigo-600",
+    stats: "All-in-one"
   },
   { 
     name: "Phone", 
@@ -32,14 +36,6 @@ const dashboards = [
     description: "Mobile-optimized sales dashboard for iPhone",
     color: "from-slate-500 to-gray-600",
     stats: "Today • Yesterday • Week • MTD"
-  },
-  { 
-    name: "Dashboard", 
-    href: "/dashboard", 
-    icon: LayoutGrid, 
-    description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
-    color: "from-purple-500 to-indigo-600",
-    stats: "All-in-one"
   },
   { 
     name: "Marketing Dashboard", 
@@ -105,9 +101,70 @@ const dashboards = [
     color: "from-fuchsia-500 to-pink-600",
     stats: "Bids • Keywords • CPA"
   },
+  { 
+    name: "Sales Snapshot", 
+    href: "/data", 
+    icon: Tv, 
+    description: "Real-time forecasts for the office TV",
+    color: "from-cyan-500 to-blue-600",
+    stats: "Today • Week • Month"
+  },
 ]
 
 export default function Home() {
+  const [recapStatus, setRecapStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [recapMessage, setRecapMessage] = useState('')
+  const [prophetStatus, setProphetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [prophetMessage, setProphetMessage] = useState('')
+
+  const triggerProphetRefresh = async () => {
+    setProphetStatus('loading')
+    setProphetMessage('')
+    try {
+      const response = await fetch('https://n8n.srv1266620.hstgr.cloud/webhook/refresh-prophet-cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ triggered_by: 'manual' })
+      })
+      if (response.ok) {
+        setProphetStatus('success')
+        setProphetMessage('Dashboard data refreshed!')
+        setTimeout(() => {
+          setProphetStatus('idle')
+          setProphetMessage('')
+        }, 3000)
+      } else {
+        setProphetStatus('error')
+        setProphetMessage('Refresh failed. Try again.')
+      }
+    } catch (error) {
+      setProphetStatus('error')
+      setProphetMessage('Network error. Try again.')
+    }
+  }
+
+  const triggerRecapRefresh = async () => {
+    setRecapStatus('loading')
+    setRecapMessage('')
+    try {
+      const response = await fetch('/api/trigger-recap', {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setRecapStatus('success')
+        setRecapMessage(data.message || 'P&L Recap refresh triggered successfully!')
+        setTimeout(() => setRecapStatus('idle'), 5000)
+      } else {
+        throw new Error(data.error || `HTTP ${response.status}`)
+      }
+    } catch (err) {
+      setRecapStatus('error')
+      setRecapMessage(`Failed to trigger: ${err}`)
+      setTimeout(() => setRecapStatus('idle'), 5000)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Header */}
@@ -188,6 +245,74 @@ export default function Home() {
             >
               Main Site ↗
             </a>
+          </div>
+        </div>
+
+        {/* Manual Triggers */}
+        <div className="mt-8 pt-8 border-t border-gray-800">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            Manual Triggers
+          </h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={triggerProphetRefresh}
+              disabled={prophetStatus === 'loading'}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                prophetStatus === 'loading'
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : prophetStatus === 'success'
+                  ? 'bg-green-600 text-white'
+                  : prophetStatus === 'error'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-blue-600 hover:bg-blue-500 text-white'
+              }`}
+            >
+              {prophetStatus === 'loading' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : prophetStatus === 'success' ? (
+                <Check className="h-4 w-4" />
+              ) : prophetStatus === 'error' ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              {prophetStatus === 'loading' ? 'Refreshing...' : 'Refresh All Dashboards'}
+            </button>
+            {prophetMessage && (
+              <span className={`text-sm ${prophetStatus === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {prophetMessage}
+              </span>
+            )}
+
+            <button
+              onClick={triggerRecapRefresh}
+              disabled={recapStatus === 'loading'}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                recapStatus === 'loading'
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                  : recapStatus === 'success'
+                  ? 'bg-green-600 text-white'
+                  : recapStatus === 'error'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              }`}
+            >
+              {recapStatus === 'loading' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : recapStatus === 'success' ? (
+                <Check className="h-4 w-4" />
+              ) : recapStatus === 'error' ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              {recapStatus === 'loading' ? 'Running...' : 'Refresh P&L Recap'}
+            </button>
+            {recapMessage && (
+              <span className={`text-sm ${recapStatus === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+                {recapMessage}
+              </span>
+            )}
           </div>
         </div>
       </div>

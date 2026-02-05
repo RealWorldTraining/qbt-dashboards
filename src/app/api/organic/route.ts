@@ -12,15 +12,27 @@ function parseNumber(val: string): number {
   return parseFloat(cleaned) || 0
 }
 
-function parseWeekDate(weekStr: string): Date {
+function parseDate(dateStr: string): Date {
   // Handle both formats: "2025-12-28" and "M/D/YYYY"
-  if (weekStr.includes('/')) {
-    const [month, day, year] = weekStr.split('/').map(Number)
+  if (dateStr.includes('/')) {
+    const [month, day, year] = dateStr.split('/').map(Number)
     return new Date(year, month - 1, day)
   } else {
-    const [year, month, day] = weekStr.split('-').map(Number)
+    const [year, month, day] = dateStr.split('-').map(Number)
     return new Date(year, month - 1, day)
   }
+}
+
+function getWeekStart(date: Date): string {
+  // Get Monday of the week containing this date
+  const dayOfWeek = date.getDay() // 0=Sun, 1=Mon, ..., 6=Sat
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(date)
+  monday.setDate(date.getDate() + daysToMonday)
+  const year = monday.getFullYear()
+  const month = String(monday.getMonth() + 1).padStart(2, '0')
+  const day = String(monday.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function formatWeekLabel(weekDate: Date): string {
@@ -67,24 +79,24 @@ export async function GET() {
       return NextResponse.json({ error: 'No session source data found' }, { status: 404 })
     }
 
-    // Group session source data by week
-    // Structure: Week | Session source/medium | New users | Total users | Purchases
+    // Group session source data by week (daily data → weekly aggregation)
+    // Structure: Date | Session source/medium | New users (used) | Total users | Purchases
     const weeklySourceData = new Map<string, Map<string, { users: number; purchases: number }>>()
     
     sessionSourceRows.slice(1).forEach(row => {
-      const weekStr = row[0]
+      const dateStr = row[0]
       const sourceMedium = row[1]?.toLowerCase() || ''
-      if (!weekStr) return
+      if (!dateStr) return
       
-      const weekDate = parseWeekDate(weekStr)
-      const weekKey = weekDate.toISOString().split('T')[0]
+      const date = parseDate(dateStr)
+      const weekKey = getWeekStart(date)
       
       if (!weeklySourceData.has(weekKey)) {
         weeklySourceData.set(weekKey, new Map())
       }
       
       const weekData = weeklySourceData.get(weekKey)!
-      const users = parseNumber(row[3]) // Total users column
+      const users = parseNumber(row[2]) // New users column
       const purchases = parseNumber(row[4]) // Ecommerce purchases column
       
       // Categorize sources
@@ -107,27 +119,27 @@ export async function GET() {
       weekData.set(category, existing)
     })
 
-    // Group channel data by week for totals
-    const weeklyChannelData = new Map<string, { total_users: number; total_purchases: number; paid_users: number; paid_purchases: number }>()
+    // Group channel data by week for totals (daily data → weekly aggregation)
+    const weeklyChannelData = new Map<string, { total_users: number; total_purchases: number; paid_users: number; paid_purchases: number; organic_search_users: number; organic_search_purchases: number }>()
     
     if (channelGroupRows && channelGroupRows.length > 1) {
       // First, aggregate by week (sum all channels)
       const weekTotals = new Map<string, Map<string, { users: number; purchases: number }>>()
       
       channelGroupRows.slice(1).forEach(row => {
-        const weekStr = row[0]
+        const dateStr = row[0]
         const channelGroup = row[1]?.toLowerCase() || ''
-        if (!weekStr) return
+        if (!dateStr) return
         
-        const weekDate = parseWeekDate(weekStr)
-        const weekKey = weekDate.toISOString().split('T')[0]
+        const date = parseDate(dateStr)
+        const weekKey = getWeekStart(date)
         
         if (!weekTotals.has(weekKey)) {
           weekTotals.set(weekKey, new Map())
         }
         
         const weekData = weekTotals.get(weekKey)!
-        const users = parseNumber(row[3])
+        const users = parseNumber(row[2]) // New users column
         const purchases = parseNumber(row[4])
         
         const existing = weekData.get(channelGroup) || { users: 0, purchases: 0 }
@@ -136,12 +148,14 @@ export async function GET() {
         weekData.set(channelGroup, existing)
       })
       
-      // Calculate totals and paid totals per week
+      // Calculate totals, paid totals, and organic search per week
       weekTotals.forEach((channelMap, weekKey) => {
         let total_users = 0
         let total_purchases = 0
         let paid_users = 0
         let paid_purchases = 0
+        let organic_search_users = 0
+        let organic_search_purchases = 0
         
         channelMap.forEach((data, channel) => {
           total_users += data.users
@@ -151,15 +165,34 @@ export async function GET() {
             paid_users += data.users
             paid_purchases += data.purchases
           }
+          
+          if (channel === 'organic search') {
+            organic_search_users += data.users
+            organic_search_purchases += data.purchases
+          }
         })
         
-        weeklyChannelData.set(weekKey, { total_users, total_purchases, paid_users, paid_purchases })
+        weeklyChannelData.set(weekKey, { total_users, total_purchases, paid_users, paid_purchases, organic_search_users, organic_search_purchases })
       })
     }
 
-    // Get last 5 weeks
+    // Get last 5 COMPLETE weeks (where week_end < today)
+    // Use CST timezone for consistency
+    const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+    const todayCST = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate())
+    
     const sortedWeeks = Array.from(weeklySourceData.keys()).sort().reverse()
-    const last5Weeks = sortedWeeks.slice(0, 5)
+    
+    // Filter to only complete weeks
+    const completeWeeks = sortedWeeks.filter(weekKey => {
+      const [year, month, day] = weekKey.split('-').map(Number)
+      const weekStart = new Date(year, month - 1, day)
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekStart.getDate() + 6) // Saturday
+      return weekEnd < todayCST
+    })
+    
+    const last5Weeks = completeWeeks.slice(0, 5)
 
     const formatWeek = (weekKey: string, label: string) => {
       const sourceData = weeklySourceData.get(weekKey)
@@ -175,6 +208,8 @@ export async function GET() {
       const totalPurchases = channelData?.total_purchases || 1
       const paidUsers = channelData?.paid_users || 0
       const paidPurchases = channelData?.paid_purchases || 0
+      const organicSearchUsers = channelData?.organic_search_users || 0
+      const organicSearchPurchases = channelData?.organic_search_purchases || 0
       
       // Calculate "Other" as residual
       const knownUsers = paidUsers + googleOrganic.users + direct.users + bingOrganic.users + qbIntuit.users
@@ -182,7 +217,7 @@ export async function GET() {
       const otherUsers = Math.max(0, totalUsers - knownUsers)
       const otherPurchases = Math.max(0, totalPurchases - knownPurchases)
       
-      const weekDate = parseWeekDate(weekKey)
+      const weekDate = parseDate(weekKey)
       
       return {
         week: formatWeekLabel(weekDate),
@@ -223,6 +258,12 @@ export async function GET() {
           percent_users: (otherUsers / totalUsers) * 100,
           percent_purchases: (otherPurchases / totalPurchases) * 100
         },
+        organic_search: {
+          users: organicSearchUsers,
+          purchases: organicSearchPurchases,
+          percent_users: (organicSearchUsers / totalUsers) * 100,
+          percent_purchases: (organicSearchPurchases / totalPurchases) * 100
+        },
         total: {
           users: totalUsers,
           purchases: totalPurchases
@@ -233,7 +274,51 @@ export async function GET() {
     const weekLabels = ['Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
     const formattedWeeks = last5Weeks.map((weekKey, idx) => formatWeek(weekKey, weekLabels[idx]))
 
+    // Build response in expected format for /ads page
+    const buildWeekResponse = (weekData: ReturnType<typeof formatWeek> | undefined) => {
+      if (!weekData) {
+        return {
+          week_label: 'N/A',
+          date_range: 'No data',
+          totals: { users: 0, purchases: 0 },
+          google_ads: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          google_organic: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          direct: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          bing_organic: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          qb_intuit: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          other: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+          organic_search: { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 },
+        }
+      }
+      
+      const formatChannel = (ch: { users: number; purchases: number; percent_users: number; percent_purchases: number }) => ({
+        users: ch.users,
+        purchases: ch.purchases,
+        conv_rate: ch.users > 0 ? (ch.purchases / ch.users) * 100 : 0,
+        pct_of_users: ch.percent_users,
+        pct_of_purchases: ch.percent_purchases,
+      })
+      
+      return {
+        week_label: weekData.label,
+        date_range: weekData.week,
+        totals: weekData.total,
+        google_ads: formatChannel(weekData.paid),
+        google_organic: formatChannel(weekData.google_organic),
+        direct: formatChannel(weekData.direct),
+        bing_organic: formatChannel(weekData.bing_organic),
+        qb_intuit: formatChannel(weekData.qb_intuit),
+        other: formatChannel(weekData.other),
+        organic_search: formatChannel(weekData.organic_search),
+      }
+    }
+
     return NextResponse.json({
+      this_week: buildWeekResponse(formattedWeeks[0]),
+      last_week: buildWeekResponse(formattedWeeks[1]),
+      two_weeks_ago: buildWeekResponse(formattedWeeks[2]),
+      three_weeks_ago: buildWeekResponse(formattedWeeks[3]),
+      four_weeks_ago: buildWeekResponse(formattedWeeks[4]),
       data: formattedWeeks,
       last_updated: new Date().toISOString()
     }, {
