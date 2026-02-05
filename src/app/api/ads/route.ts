@@ -123,20 +123,9 @@ export async function GET() {
       weeklyAgg.set(key, existing)
     })
 
-    // Convert to array and sort by week_start descending
+    // Convert to array and sort by week_start descending (include incomplete weeks)
     const allWeeks = Array.from(weeklyAgg.values())
       .sort((a, b) => b.week_start.localeCompare(a.week_start))
-
-    // Filter to only COMPLETE weeks (where week_end < today in CST)
-    const nowCST = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }))
-    const todayCST = new Date(nowCST.getFullYear(), nowCST.getMonth(), nowCST.getDate())
-    
-    const completeWeeks = allWeeks.filter(w => {
-      if (!w.week_end) return false
-      const [year, month, day] = w.week_end.split('-').map(Number)
-      const weekEnd = new Date(year, month - 1, day)
-      return weekEnd < todayCST
-    })
 
     const formatWeek = (w: WeeklyRow | undefined, label: string) => {
       if (!w) {
@@ -174,10 +163,10 @@ export async function GET() {
     }
 
     const data = {
-      this_week: formatWeek(completeWeeks[0], 'Last Week'),
-      last_week: formatWeek(completeWeeks[1], '2 Weeks Ago'),
-      two_weeks_ago: formatWeek(completeWeeks[2], '3 Weeks Ago'),
-      three_weeks_ago: formatWeek(completeWeeks[3], '4 Weeks Ago'),
+      this_week: formatWeek(allWeeks[0], 'This Week'),
+      last_week: formatWeek(allWeeks[1], 'Last Week'),
+      two_weeks_ago: formatWeek(allWeeks[2], '2 Weeks Ago'),
+      three_weeks_ago: formatWeek(allWeeks[3], '3 Weeks Ago'),
       last_updated: new Date().toISOString(),
     }
 
