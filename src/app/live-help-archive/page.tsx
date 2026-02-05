@@ -269,7 +269,7 @@ export default function LiveHelpDashboard() {
     if (threeWeeksCtx && data.charts.lastThreeWeeksByDay) {
       const weekLabels = ['This Week', 'Last Week', 'Two Weeks Ago'];
       const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-      const datasets = [];
+      const datasets: any[] = [];
       
       const colors = ['#ffd700', '#00ff88', '#00d9ff'];
       const bgColors = ['rgba(255,215,0,0.1)', 'rgba(0,255,136,0.1)', 'rgba(0,217,255,0.1)'];
