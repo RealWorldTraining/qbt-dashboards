@@ -212,18 +212,21 @@ export default function LiveHelpDashboard() {
       // Get current hour for highlighting
       const currentHour = new Date().getHours();
       
+      // Filter data to only show 7 AM to 6 PM (hours 7-18)
+      const filteredData = data.hourly_logins.filter(h => h.hour >= 7 && h.hour <= 18);
+      
       chartInstances.current.hourly = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: data.hourly_logins.map(h => {
+          labels: filteredData.map(h => {
             const hour12 = h.hour === 0 ? 12 : h.hour > 12 ? h.hour - 12 : h.hour;
             const ampm = h.hour < 12 ? 'AM' : 'PM';
             return `${hour12}${ampm}`;
           }),
           datasets: [{
             label: 'Logins',
-            data: data.hourly_logins.map(h => h.logins),
-            backgroundColor: data.hourly_logins.map(h => 
+            data: filteredData.map(h => h.logins),
+            backgroundColor: filteredData.map(h => 
               h.hour === currentHour ? '#00ff88' : '#00d9ff'
             ),
             borderRadius: 4
