@@ -43,6 +43,7 @@ interface ApiResponse {
     topics: TopicData[];
     monthlyByYear: Record<string, number[]>;
     lastThreeWeeksByDay: Record<string, number[]>;
+    lastThreeWeeksByDayByYear: Record<string, number[]>;
     trainerComparison: TrainerComparison[];
   };
   dateRange: {
@@ -102,6 +103,7 @@ export default function LiveHelpDashboard() {
     topics: [] as TopicData[],
     monthlyByYear: {} as Record<string, number[]>,
     lastThreeWeeksByDay: {} as Record<string, number[]>,
+    lastThreeWeeksByDayByYear: {} as Record<string, number[]>,
     trainerComparison: [] as TrainerComparison[],
   });
   
@@ -266,7 +268,7 @@ export default function LiveHelpDashboard() {
     
     // Last Three Weeks by Day Chart
     const threeWeeksCtx = document.getElementById('threeWeeksChart') as HTMLCanvasElement;
-    if (threeWeeksCtx && data.charts.lastThreeWeeksByDay) {
+    if (threeWeeksCtx && data.charts.lastThreeWeeksByDayByYear) {
       // Create 15-day labels (Mon-Fri repeated 3 times)
       const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
       const dayLabelsRepeated = [...dayLabels, ...dayLabels, ...dayLabels];
@@ -277,10 +279,10 @@ export default function LiveHelpDashboard() {
       const years = ['2024', '2025', '2026'];
       
       years.forEach((year, idx) => {
-        if (data.charts.lastThreeWeeksByDay[year]) {
+        if (data.charts.lastThreeWeeksByDayByYear[year]) {
           datasets.push({
             label: year,
-            data: data.charts.lastThreeWeeksByDay[year],
+            data: data.charts.lastThreeWeeksByDayByYear[year],
             borderColor: colors[idx],
             backgroundColor: bgColors[idx],
             tension: 0.4,

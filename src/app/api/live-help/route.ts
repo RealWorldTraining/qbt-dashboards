@@ -335,6 +335,60 @@ function getLastThreeWeeksByDay(rows: RawRow[]): Record<string, number[]> {
   const mondayOfThisWeek = new Date(today);
   mondayOfThisWeek.setDate(today.getDate() - (todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1));
   
+  // Get Mondays for the 3 weeks
+  const week1Start = new Date(mondayOfThisWeek); // This week
+  const week2Start = new Date(mondayOfThisWeek);
+  week2Start.setDate(week2Start.getDate() - 7); // Last week
+  const week3Start = new Date(mondayOfThisWeek);
+  week3Start.setDate(week3Start.getDate() - 14); // 2 weeks ago
+  
+  const weekData: Record<string, number[]> = {
+    'This Week': [0, 0, 0, 0, 0], // Mon-Fri
+    'Last Week': [0, 0, 0, 0, 0],
+    'Two Weeks Ago': [0, 0, 0, 0, 0],
+  };
+  
+  // Map for easy lookup
+  const weekMap = {
+    'This Week': week1Start,
+    'Last Week': week2Start,
+    'Two Weeks Ago': week3Start,
+  };
+  
+  for (const row of rows) {
+    if (!row.date) continue;
+    
+    // Check which week this date belongs to
+    for (const [weekLabel, weekStart] of Object.entries(weekMap)) {
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 4); // Friday (Mon + 4 days)
+      
+      if (row.date >= weekStart && row.date <= weekEnd) {
+        // Get day of week index (0 = Mon, 4 = Fri)
+        const dayOfWeek = row.date.getDay();
+        if (dayOfWeek === 0) continue; // Skip Sunday
+        const dayIndex = dayOfWeek === 6 ? 4 : dayOfWeek - 1; // Sat shouldn't happen, Fri is index 4
+        
+        if (dayIndex >= 0 && dayIndex < 5) {
+          weekData[weekLabel][dayIndex]++;
+        }
+        break;
+      }
+    }
+  }
+  
+  return weekData;
+}
+
+function getLastThreeWeeksByDayByYear(rows: RawRow[]): Record<string, number[]> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Get Monday of current week
+  const todayDayOfWeek = today.getDay();
+  const mondayOfThisWeek = new Date(today);
+  mondayOfThisWeek.setDate(today.getDate() - (todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1));
+  
   // Get date ranges for the 3 weeks (Mon-Fri only)
   const week1Start = new Date(mondayOfThisWeek); // This week
   const week2Start = new Date(mondayOfThisWeek);
@@ -490,6 +544,9 @@ export async function GET(request: NextRequest) {
     // Last 3 weeks by day (Mon-Fri only)
     const lastThreeWeeksByDay = getLastThreeWeeksByDay(fetchResult.rows);
     
+    // Last 3 weeks by day by year (15 day points, comparing 2024/2025/2026)
+    const lastThreeWeeksByDayByYear = getLastThreeWeeksByDayByYear(fetchResult.rows);
+    
     // Trainer comparison to average
     const trainerComparison = trainerData
       .filter(t => t.sessions >= 3 && t.avg > 0)
@@ -518,6 +575,7 @@ export async function GET(request: NextRequest) {
         topics: topicStats,
         monthlyByYear,
         lastThreeWeeksByDay,
+        lastThreeWeeksByDayByYear,
         trainerComparison,
       },
       dateRange: {
