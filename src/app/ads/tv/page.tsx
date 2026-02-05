@@ -316,6 +316,22 @@ export default function TVDashboard() {
                 </div>
               )
             })}
+            
+            {/* Total Row */}
+            <div className="grid grid-cols-[200px_repeat(5,1fr)] gap-4 items-center border-t-2 border-gray-700 pt-3 mt-3">
+              <div className="text-xl text-white font-bold">TOTAL</div>
+              {[
+                organicData.this_week.totals.users,
+                organicData.last_week.totals.users,
+                organicData.two_weeks_ago.totals.users,
+                organicData.three_weeks_ago.totals.users,
+                organicData.four_weeks_ago.totals.users,
+              ].map((total, idx) => (
+                <div key={idx} className="text-center rounded-lg py-3 bg-gray-800">
+                  <div className="text-2xl font-bold text-white">{fmtK(total)}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -376,6 +392,22 @@ export default function TVDashboard() {
                 </div>
               )
             })}
+            
+            {/* Total Row */}
+            <div className="grid grid-cols-[200px_repeat(5,1fr)] gap-4 items-center border-t-2 border-gray-700 pt-3 mt-3">
+              <div className="text-xl text-white font-bold">TOTAL</div>
+              {[
+                organicData.this_week.totals.purchases,
+                organicData.last_week.totals.purchases,
+                organicData.two_weeks_ago.totals.purchases,
+                organicData.three_weeks_ago.totals.purchases,
+                organicData.four_weeks_ago.totals.purchases,
+              ].map((total, idx) => (
+                <div key={idx} className="text-center rounded-lg py-3 bg-gray-800">
+                  <div className="text-2xl font-bold text-white">{total}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
