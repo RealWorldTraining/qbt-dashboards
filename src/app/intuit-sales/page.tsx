@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DashboardNav } from '@/components/DashboardNav';
+import './intuit-sales.css';
 
 interface CategoryData {
   amount: number;
@@ -33,12 +34,12 @@ export default function IntuitSalesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <DashboardNav />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <p className="mt-4 text-gray-600">Loading Intuit sales data...</p>
+      <div className="intuit-sales-page">
+        <DashboardNav theme="light" />
+        <div className="max-w-full mx-auto px-8 py-8">
+          <div className="text-center py-16">
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-green-600"></div>
+            <p className="mt-4 text-gray-600 font-medium">Loading Intuit sales data...</p>
           </div>
         </div>
       </div>
@@ -47,12 +48,12 @@ export default function IntuitSalesPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <DashboardNav />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-red-600 text-lg font-semibold">Error loading data</div>
-            <p className="mt-2 text-gray-600">{error || 'Unknown error'}</p>
+      <div className="intuit-sales-page">
+        <DashboardNav theme="light" />
+        <div className="max-w-full mx-auto px-8 py-8">
+          <div className="text-center py-16 intuit-sales-card max-w-2xl mx-auto p-12">
+            <div className="text-red-600 text-xl font-bold mb-3">⚠️ Error Loading Data</div>
+            <p className="text-gray-600">{error || 'Unknown error'}</p>
           </div>
         </div>
       </div>
@@ -69,44 +70,40 @@ export default function IntuitSalesPage() {
   };
 
   const getHeatmapColor = (percentage: number) => {
-    if (percentage === 0) return 'bg-white';
-    if (percentage < 10) return 'bg-green-50';
-    if (percentage < 20) return 'bg-green-100';
-    if (percentage < 30) return 'bg-green-200';
-    if (percentage < 40) return 'bg-green-300';
-    if (percentage < 50) return 'bg-green-400';
-    return 'bg-green-500';
+    if (percentage === 0) return 'heat-0';
+    if (percentage < 5) return 'heat-1';
+    if (percentage < 10) return 'heat-2';
+    if (percentage < 15) return 'heat-3';
+    if (percentage < 20) return 'heat-4';
+    if (percentage < 25) return 'heat-5';
+    if (percentage < 35) return 'heat-6';
+    if (percentage < 45) return 'heat-7';
+    if (percentage < 60) return 'heat-8';
+    return 'heat-9';
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardNav />
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Intuit Sales Revenue</h1>
-          <p className="mt-2 text-gray-600">Monthly revenue breakdown by category</p>
+    <div className="intuit-sales-page">
+      <DashboardNav theme="light" />
+      <div className="max-w-full mx-auto px-8 py-8">
+        <div className="intuit-sales-header">
+          <h1>Intuit Sales Revenue</h1>
+          <p>Monthly revenue breakdown by category • {data.months[0]} – {data.months[data.months.length - 1]}</p>
         </div>
 
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+        <div className="intuit-sales-card">
+          <div className="intuit-sales-table-wrapper">
+            <table className="intuit-sales-table">
+              <thead>
                 <tr>
-                  <th
-                    scope="col"
-                    className="sticky left-0 z-10 bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200"
-                  >
+                  <th scope="col">
                     Category
                   </th>
                   {data.months.map((month) => {
                     const [monthName, year] = month.split(' ');
                     return (
-                      <th
-                        key={month}
-                        scope="col"
-                        className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        <div className="flex flex-col">
+                      <th key={month} scope="col">
+                        <div className="intuit-sales-month-header">
                           <span>{monthName}</span>
                           <span>{year}</span>
                         </div>
@@ -115,21 +112,21 @@ export default function IntuitSalesPage() {
                   })}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {data.categories.map((category, idx) => (
-                  <tr key={category.key} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="sticky left-0 z-10 px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-inherit border-r border-gray-200">
+              <tbody>
+                {data.categories.map((category) => (
+                  <tr key={category.key}>
+                    <td>
                       {category.label}
                     </td>
                     {data.months.map((month) => {
                       const cellData = data.data[month]?.[category.key] || { amount: 0, percentage: 0 };
                       const heatmapColor = getHeatmapColor(cellData.percentage);
                       return (
-                        <td key={`${category.key}-${month}`} className={`px-6 py-4 text-center ${heatmapColor}`}>
-                          <div className="text-sm font-semibold text-gray-900">
+                        <td key={`${category.key}-${month}`} className={heatmapColor}>
+                          <div className="intuit-sales-cell-amount">
                             {formatCurrency(cellData.amount)}
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="intuit-sales-cell-percentage">
                             {cellData.percentage > 0 ? `${cellData.percentage.toFixed(1)}%` : '—'}
                           </div>
                         </td>
@@ -137,14 +134,13 @@ export default function IntuitSalesPage() {
                     })}
                   </tr>
                 ))}
-                {/* Total row */}
-                <tr className="bg-gray-100 font-semibold">
-                  <td className="sticky left-0 z-10 px-6 py-4 whitespace-nowrap text-sm text-gray-900 bg-gray-100 border-r border-gray-200">
-                    TOTAL
-                  </td>
+                <tr className="intuit-sales-total-row">
+                  <td>TOTAL</td>
                   {data.months.map((month) => (
-                    <td key={`total-${month}`} className="px-6 py-4 text-center text-sm text-gray-900">
-                      {formatCurrency(data.monthTotals[month] || 0)}
+                    <td key={`total-${month}`}>
+                      <div className="intuit-sales-cell-amount">
+                        {formatCurrency(data.monthTotals[month] || 0)}
+                      </div>
                     </td>
                   ))}
                 </tr>
@@ -153,9 +149,12 @@ export default function IntuitSalesPage() {
           </div>
         </div>
 
-        <div className="mt-6 text-sm text-gray-500">
-          <p>Data source: Intuit Sales Revenue Google Sheet</p>
-          <p className="mt-1">Last updated: {new Date().toLocaleString()}</p>
+        <div className="intuit-sales-footer">
+          <p><strong>Data source:</strong> Intuit Sales Revenue Google Sheet</p>
+          <p><strong>Last updated:</strong> {new Date().toLocaleString('en-US', { 
+            dateStyle: 'medium', 
+            timeStyle: 'short' 
+          })}</p>
         </div>
       </div>
     </div>

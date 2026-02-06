@@ -1,0 +1,197 @@
+/* Intuit Sales Dashboard Styles */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --qb-green: #2CA01C;
+  --qb-green-light: #e8f5e6;
+  --qb-blue: #0071eb;
+  --bg-primary: #fff;
+  --bg-secondary: #f5f5f7;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --border-light: #e5e5e7;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --radius-md: 12px;
+}
+
+.intuit-sales-page {
+  font-family: 'Nunito Sans', -apple-system, sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.intuit-sales-header {
+  background: linear-gradient(135deg, var(--qb-green) 0%, #228a15 100%);
+  color: #fff;
+  padding: 32px;
+  margin-bottom: 24px;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.intuit-sales-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+}
+
+.intuit-sales-header p {
+  font-size: 16px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.intuit-sales-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.intuit-sales-table-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.intuit-sales-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.intuit-sales-table thead th {
+  background: linear-gradient(to bottom, #f8f9fa, #f1f3f5);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 16px 12px;
+  border-bottom: 2px solid var(--border-light);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.intuit-sales-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  border-right: 2px solid var(--border-light);
+}
+
+.intuit-sales-table tbody td {
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.15s ease;
+}
+
+.intuit-sales-table tbody tr:hover td {
+  background-color: rgba(44, 160, 28, 0.04) !important;
+}
+
+.intuit-sales-table tbody td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--bg-primary);
+  font-weight: 600;
+  color: var(--text-primary);
+  border-right: 2px solid var(--border-light);
+  z-index: 5;
+}
+
+.intuit-sales-table tbody tr:hover td:first-child {
+  background-color: rgba(44, 160, 28, 0.04) !important;
+}
+
+.intuit-sales-month-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.intuit-sales-month-header span:first-child {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.intuit-sales-month-header span:last-child {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.intuit-sales-cell-amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.intuit-sales-cell-percentage {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.intuit-sales-total-row td {
+  background: linear-gradient(to bottom, #f8f9fa, #f1f3f5) !important;
+  font-weight: 700;
+  border-top: 3px solid var(--qb-green);
+  padding: 20px 12px;
+}
+
+.intuit-sales-total-row td:first-child {
+  color: var(--qb-green);
+  font-size: 15px;
+  letter-spacing: 0.05em;
+}
+
+.intuit-sales-footer {
+  margin-top: 24px;
+  padding: 16px 32px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.intuit-sales-footer p {
+  margin: 4px 0;
+}
+
+/* Heatmap colors */
+.heat-0 { background-color: #ffffff; }
+.heat-1 { background-color: #f0fdf4; }
+.heat-2 { background-color: #dcfce7; }
+.heat-3 { background-color: #bbf7d0; }
+.heat-4 { background-color: #86efac; }
+.heat-5 { background-color: #4ade80; }
+.heat-6 { background-color: #22c55e; }
+.heat-7 { background-color: #16a34a; }
+.heat-8 { background-color: #15803d; }
+.heat-9 { background-color: #166534; }
+
+.heat-high {
+  background-color: #166534;
+}
+
+.heat-high .intuit-sales-cell-amount,
+.heat-9 .intuit-sales-cell-amount,
+.heat-8 .intuit-sales-cell-amount {
+  color: #fff !important;
+}
+
+.heat-high .intuit-sales-cell-percentage,
+.heat-9 .intuit-sales-cell-percentage,
+.heat-8 .intuit-sales-cell-percentage {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
