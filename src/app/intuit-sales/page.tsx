@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { DashboardNav } from '@/components/DashboardNav';
 import { IntuitRevenueChart } from '@/components/IntuitRevenueChart';
+import { IntuitPercentageChart } from '@/components/IntuitPercentageChart';
 import './intuit-sales.css';
 
 interface CategoryData {
@@ -151,6 +152,12 @@ export default function IntuitSalesPage() {
         </div>
 
         <IntuitRevenueChart
+          months={data.months}
+          categories={data.categories}
+          data={data.data}
+        />
+
+        <IntuitPercentageChart
           months={data.months}
           categories={data.categories}
           data={data.data}
