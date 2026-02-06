@@ -68,6 +68,16 @@ export default function IntuitSalesPage() {
     }).format(amount);
   };
 
+  const getHeatmapColor = (percentage: number) => {
+    if (percentage === 0) return 'bg-white';
+    if (percentage < 10) return 'bg-green-50';
+    if (percentage < 20) return 'bg-green-100';
+    if (percentage < 30) return 'bg-green-200';
+    if (percentage < 40) return 'bg-green-300';
+    if (percentage < 50) return 'bg-green-400';
+    return 'bg-green-500';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <DashboardNav />
@@ -88,15 +98,21 @@ export default function IntuitSalesPage() {
                   >
                     Category
                   </th>
-                  {data.months.map((month) => (
-                    <th
-                      key={month}
-                      scope="col"
-                      className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {month}
-                    </th>
-                  ))}
+                  {data.months.map((month) => {
+                    const [monthName, year] = month.split(' ');
+                    return (
+                      <th
+                        key={month}
+                        scope="col"
+                        className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        <div className="flex flex-col">
+                          <span>{monthName}</span>
+                          <span>{year}</span>
+                        </div>
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -107,8 +123,9 @@ export default function IntuitSalesPage() {
                     </td>
                     {data.months.map((month) => {
                       const cellData = data.data[month]?.[category.key] || { amount: 0, percentage: 0 };
+                      const heatmapColor = getHeatmapColor(cellData.percentage);
                       return (
-                        <td key={`${category.key}-${month}`} className="px-6 py-4 text-center">
+                        <td key={`${category.key}-${month}`} className={`px-6 py-4 text-center ${heatmapColor}`}>
                           <div className="text-sm font-semibold text-gray-900">
                             {formatCurrency(cellData.amount)}
                           </div>
