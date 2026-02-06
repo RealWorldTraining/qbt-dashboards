@@ -3,15 +3,15 @@
 
 :root {
   --qb-green: #2CA01C;
-  --qb-green-light: #e8f5e6;
+  --qb-green-light: #1a7010;
   --qb-blue: #0071eb;
-  --bg-primary: #fff;
-  --bg-secondary: #f5f5f7;
-  --text-primary: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --border-light: #e5e5e7;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #0d0d0d;
+  --text-primary: #f5f5f5;
+  --text-secondary: #a0a0a0;
+  --border-light: #2a2a2a;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
   --radius-md: 12px;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .intuit-sales-table thead th {
-  background: linear-gradient(to bottom, #f8f9fa, #f1f3f5);
+  background: linear-gradient(to bottom, #252525, #1f1f1f);
   color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
@@ -142,7 +142,7 @@
 }
 
 .intuit-sales-total-row td {
-  background: linear-gradient(to bottom, #f8f9fa, #f1f3f5) !important;
+  background: linear-gradient(to bottom, #252525, #1f1f1f) !important;
   font-weight: 700;
   border-top: 3px solid var(--qb-green);
   padding: 20px 12px;
@@ -168,30 +168,36 @@
   margin: 4px 0;
 }
 
-/* Heatmap colors */
-.heat-0 { background-color: #ffffff; }
-.heat-1 { background-color: #f0fdf4; }
-.heat-2 { background-color: #dcfce7; }
-.heat-3 { background-color: #bbf7d0; }
-.heat-4 { background-color: #86efac; }
-.heat-5 { background-color: #4ade80; }
-.heat-6 { background-color: #22c55e; }
-.heat-7 { background-color: #16a34a; }
-.heat-8 { background-color: #15803d; }
-.heat-9 { background-color: #166534; }
+/* Heatmap colors - Dark theme */
+.heat-0 { background-color: #1a1a1a; }
+.heat-1 { background-color: #1d2d1f; }
+.heat-2 { background-color: #214025; }
+.heat-3 { background-color: #25532b; }
+.heat-4 { background-color: #2a6631; }
+.heat-5 { background-color: #2e7938; }
+.heat-6 { background-color: #338c3e; }
+.heat-7 { background-color: #37a045; }
+.heat-8 { background-color: #3cb34b; }
+.heat-9 { background-color: #41c651; }
 
 .heat-high {
-  background-color: #166534;
+  background-color: #41c651;
 }
 
-.heat-high .intuit-sales-cell-amount,
+.heat-5 .intuit-sales-cell-amount,
+.heat-6 .intuit-sales-cell-amount,
+.heat-7 .intuit-sales-cell-amount,
+.heat-8 .intuit-sales-cell-amount,
 .heat-9 .intuit-sales-cell-amount,
-.heat-8 .intuit-sales-cell-amount {
-  color: #fff !important;
+.heat-high .intuit-sales-cell-amount {
+  color: #000 !important;
 }
 
-.heat-high .intuit-sales-cell-percentage,
+.heat-5 .intuit-sales-cell-percentage,
+.heat-6 .intuit-sales-cell-percentage,
+.heat-7 .intuit-sales-cell-percentage,
+.heat-8 .intuit-sales-cell-percentage,
 .heat-9 .intuit-sales-cell-percentage,
-.heat-8 .intuit-sales-cell-percentage {
-  color: rgba(255, 255, 255, 0.8) !important;
+.heat-high .intuit-sales-cell-percentage {
+  color: rgba(0, 0, 0, 0.7) !important;
 }
