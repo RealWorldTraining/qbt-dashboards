@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DashboardNav } from '@/components/DashboardNav';
 import { 
   AreaChart, Area, LineChart, Line, BarChart, Bar,
@@ -87,32 +87,38 @@ export default function IntuitSalesPage() {
   };
 
   // Prepare chart data
-  const chartData = data?.months.map((month) => {
-    const monthData = data.data[month];
-    return {
-      month: month.split(' ')[0], // Just month name
-      IES: monthData?.ies?.amount || 0,
-      'Priority Circle': monthData?.priorityCircle?.amount || 0,
-      Classes: monthData?.classes?.amount || 0,
-      Videos: monthData?.videos?.amount || 0,
-      Webinars: monthData?.webinars?.amount || 0,
-      Other: monthData?.other?.amount || 0,
-      Total: data.monthTotals[month] || 0,
-    };
-  }) || [];
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    return data.months.map((month) => {
+      const monthData = data.data[month];
+      return {
+        month: month.split(' ')[0], // Just month name
+        IES: monthData?.ies?.amount || 0,
+        'Priority Circle': monthData?.priorityCircle?.amount || 0,
+        Classes: monthData?.classes?.amount || 0,
+        Videos: monthData?.videos?.amount || 0,
+        Webinars: monthData?.webinars?.amount || 0,
+        Other: monthData?.other?.amount || 0,
+        Total: data.monthTotals[month] || 0,
+      };
+    });
+  }, [data]);
 
   // Year-over-year data
-  const yoyData = data?.months.reduce((acc: any[], month) => {
-    const [monthName, year] = month.split(' ');
-    const total = data.monthTotals[month] || 0;
-    const existing = acc.find(d => d.month === monthName);
-    if (existing) {
-      existing[`Y${year}`] = total;
-    } else {
-      acc.push({ month: monthName, [`Y${year}`]: total });
-    }
-    return acc;
-  }, []) || [];
+  const yoyData = useMemo(() => {
+    if (!data) return [];
+    return data.months.reduce((acc: any[], month) => {
+      const [monthName, year] = month.split(' ');
+      const total = data.monthTotals[month] || 0;
+      const existing = acc.find((d: any) => d.month === monthName);
+      if (existing) {
+        existing[`Y${year}`] = total;
+      } else {
+        acc.push({ month: monthName, [`Y${year}`]: total });
+      }
+      return acc;
+    }, []);
+  }, [data]);
 
   return (
     <div className="intuit-sales-page">
@@ -120,7 +126,7 @@ export default function IntuitSalesPage() {
       <div className="max-w-full mx-auto px-4 py-6">
         <div className="intuit-sales-header">
           <h1>Intuit Revenue</h1>
-          <p>Monthly revenue breakdown by category • {data.months[0]} – {data.months[data.months.length - 1]}</p>
+          <p>Monthly revenue breakdown by category • {data?.months[0]} – {data?.months[data.months.length - 1]}</p>
         </div>
 
         <div className="intuit-sales-card">
