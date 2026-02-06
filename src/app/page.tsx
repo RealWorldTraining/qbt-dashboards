@@ -54,6 +54,14 @@ const dashboards = [
     stats: "Monthly reports"
   },
   { 
+    name: "Intuit Sales", 
+    href: "/intuit-sales", 
+    icon: DollarSign, 
+    description: "Intuit revenue breakdown by category (IES, Priority Circle, Classes, Videos, Webinars)",
+    color: "from-blue-500 to-cyan-600",
+    stats: "Feb 2024 → Present"
+  },
+  { 
     name: "Sales", 
     href: "/sales", 
     icon: DollarSign, 

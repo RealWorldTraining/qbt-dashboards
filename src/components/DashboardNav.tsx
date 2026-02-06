@@ -28,6 +28,7 @@ const dashboards = [
   { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
   { name: "Live Help Archive", href: "/live-help-archive", icon: BarChart3, description: "Historical trainer data" },
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
+  { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
   { name: "Sales", href: "/sales", icon: DollarSign, description: "Sales analytics" },
   { name: "Team", href: "/team", icon: Users, description: "Team performance" },
   { name: "GA4 Summary", href: "/playground", icon: BarChart3, description: "Monthly traffic by channel" },
