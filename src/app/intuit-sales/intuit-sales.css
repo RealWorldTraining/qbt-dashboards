@@ -67,7 +67,7 @@
 }
 
 .intuit-sales-table thead th {
-  background: linear-gradient(to bottom, #252525, #1f1f1f);
+  background: linear-gradient(to bottom, #0d0d0d, #080808);
   color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
