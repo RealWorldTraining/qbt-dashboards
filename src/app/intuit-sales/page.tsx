@@ -36,7 +36,7 @@ export default function IntuitSalesPage() {
     return (
       <div className="intuit-sales-page">
         <DashboardNav theme="dark" />
-        <div className="max-w-full mx-auto px-8 py-8">
+        <div className="max-w-full mx-auto px-4 py-6">
           <div className="text-center py-16">
             <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-green-600"></div>
             <p className="mt-4 text-gray-600 font-medium">Loading Intuit sales data...</p>
@@ -50,7 +50,7 @@ export default function IntuitSalesPage() {
     return (
       <div className="intuit-sales-page">
         <DashboardNav theme="dark" />
-        <div className="max-w-full mx-auto px-8 py-8">
+        <div className="max-w-full mx-auto px-4 py-6">
           <div className="text-center py-16 intuit-sales-card max-w-2xl mx-auto p-12">
             <div className="text-red-600 text-xl font-bold mb-3">⚠️ Error Loading Data</div>
             <p className="text-gray-600">{error || 'Unknown error'}</p>
@@ -85,7 +85,7 @@ export default function IntuitSalesPage() {
   return (
     <div className="intuit-sales-page">
       <DashboardNav theme="dark" />
-      <div className="max-w-full mx-auto px-8 py-8">
+      <div className="max-w-full mx-auto px-4 py-6">
         <div className="intuit-sales-header">
           <h1>Intuit Sales Revenue</h1>
           <p>Monthly revenue breakdown by category • {data.months[0]} – {data.months[data.months.length - 1]}</p>

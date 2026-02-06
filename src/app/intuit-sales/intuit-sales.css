@@ -27,21 +27,21 @@
 .intuit-sales-header {
   background: linear-gradient(135deg, var(--qb-green) 0%, #228a15 100%);
   color: #fff;
-  padding: 32px;
-  margin-bottom: 24px;
+  padding: 24px 16px;
+  margin-bottom: 16px;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   box-shadow: var(--shadow-md);
 }
 
 .intuit-sales-header h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .intuit-sales-header p {
-  font-size: 16px;
+  font-size: 14px;
   opacity: 0.9;
   margin: 0;
 }
@@ -54,15 +54,16 @@
 }
 
 .intuit-sales-table-wrapper {
-  overflow-x: auto;
+  overflow-x: hidden;
   max-width: 100%;
 }
 
 .intuit-sales-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .intuit-sales-table thead th {
@@ -70,13 +71,14 @@
   color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: 9px;
   letter-spacing: 0.05em;
-  padding: 16px 12px;
+  padding: 10px 6px;
   border-bottom: 2px solid var(--border-light);
   position: sticky;
   top: 0;
   z-index: 10;
+  width: auto;
 }
 
 .intuit-sales-table thead th:first-child {
@@ -84,12 +86,15 @@
   left: 0;
   z-index: 20;
   border-right: 2px solid var(--border-light);
+  width: 140px;
+  min-width: 140px;
 }
 
 .intuit-sales-table tbody td {
-  padding: 16px 12px;
+  padding: 10px 6px;
   border-bottom: 1px solid var(--border-light);
   transition: background-color 0.15s ease;
+  text-align: center;
 }
 
 .intuit-sales-table tbody tr:hover td {
@@ -101,43 +106,47 @@
   left: 0;
   background: var(--bg-primary);
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff !important;
   border-right: 2px solid var(--border-light);
   z-index: 5;
+  text-align: left;
+  padding-left: 12px;
+  width: 140px;
+  min-width: 140px;
 }
 
 .intuit-sales-table tbody tr:hover td:first-child {
-  background-color: rgba(44, 160, 28, 0.04) !important;
+  background-color: rgba(44, 160, 28, 0.08) !important;
 }
 
 .intuit-sales-month-header {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   align-items: center;
 }
 
 .intuit-sales-month-header span:first-child {
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .intuit-sales-month-header span:last-child {
-  font-size: 10px;
-  color: var(--text-tertiary);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
 }
 
 .intuit-sales-cell-amount {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
+  color: #ffffff !important;
+  margin-bottom: 2px;
 }
 
 .intuit-sales-cell-percentage {
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7) !important;
   font-weight: 500;
 }
 
@@ -145,13 +154,17 @@
   background: linear-gradient(to bottom, #252525, #1f1f1f) !important;
   font-weight: 700;
   border-top: 3px solid var(--qb-green);
-  padding: 20px 12px;
+  padding: 14px 6px;
 }
 
 .intuit-sales-total-row td:first-child {
   color: var(--qb-green);
-  font-size: 15px;
+  font-size: 13px;
   letter-spacing: 0.05em;
+}
+
+.intuit-sales-total-row .intuit-sales-cell-amount {
+  font-size: 14px;
 }
 
 .intuit-sales-footer {
@@ -182,22 +195,4 @@
 
 .heat-high {
   background-color: #41c651;
-}
-
-.heat-5 .intuit-sales-cell-amount,
-.heat-6 .intuit-sales-cell-amount,
-.heat-7 .intuit-sales-cell-amount,
-.heat-8 .intuit-sales-cell-amount,
-.heat-9 .intuit-sales-cell-amount,
-.heat-high .intuit-sales-cell-amount {
-  color: #000 !important;
-}
-
-.heat-5 .intuit-sales-cell-percentage,
-.heat-6 .intuit-sales-cell-percentage,
-.heat-7 .intuit-sales-cell-percentage,
-.heat-8 .intuit-sales-cell-percentage,
-.heat-9 .intuit-sales-cell-percentage,
-.heat-high .intuit-sales-cell-percentage {
-  color: rgba(0, 0, 0, 0.7) !important;
 }
