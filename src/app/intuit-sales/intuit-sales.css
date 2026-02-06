@@ -25,7 +25,7 @@
 }
 
 .intuit-sales-header {
-  background: linear-gradient(135deg, var(--qb-green) 0%, #228a15 100%);
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
   color: #fff;
   padding: 24px 16px;
   margin-bottom: 16px;
@@ -129,10 +129,11 @@
 .intuit-sales-month-header span:first-child {
   font-weight: 700;
   color: #ffffff;
+  font-size: 12.6px;
 }
 
 .intuit-sales-month-header span:last-child {
-  font-size: 9px;
+  font-size: 12.6px;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 500;
 }
@@ -181,17 +182,17 @@
   margin: 4px 0;
 }
 
-/* Heatmap colors - Dark theme */
+/* Heatmap colors - Dark theme (inverted: bigger % = darker) */
 .heat-0 { background-color: #1a1a1a; }
-.heat-1 { background-color: #1d2d1f; }
-.heat-2 { background-color: #214025; }
-.heat-3 { background-color: #25532b; }
-.heat-4 { background-color: #2a6631; }
+.heat-1 { background-color: #41c651; }
+.heat-2 { background-color: #3cb34b; }
+.heat-3 { background-color: #37a045; }
+.heat-4 { background-color: #338c3e; }
 .heat-5 { background-color: #2e7938; }
-.heat-6 { background-color: #338c3e; }
-.heat-7 { background-color: #37a045; }
-.heat-8 { background-color: #3cb34b; }
-.heat-9 { background-color: #41c651; }
+.heat-6 { background-color: #2a6631; }
+.heat-7 { background-color: #25532b; }
+.heat-8 { background-color: #214025; }
+.heat-9 { background-color: #1d2d1f; }
 
 .heat-high {
   background-color: #41c651;
