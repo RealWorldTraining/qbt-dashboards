@@ -92,12 +92,6 @@ export default function IntuitSalesPage() {
           <p>Monthly revenue breakdown by category • {data?.months[0]} – {data?.months[data.months.length - 1]}</p>
         </div>
 
-        <IntuitRevenueChart
-          months={data.months}
-          categories={data.categories}
-          data={data.data}
-        />
-
         <div className="intuit-sales-card">
           <div className="intuit-sales-table-wrapper">
             <table className="intuit-sales-table">
@@ -155,6 +149,12 @@ export default function IntuitSalesPage() {
             </table>
           </div>
         </div>
+
+        <IntuitRevenueChart
+          months={data.months}
+          categories={data.categories}
+          data={data.data}
+        />
 
         <div className="intuit-sales-footer">
           <p><strong>Data source:</strong> Intuit Sales Revenue Google Sheet</p>
