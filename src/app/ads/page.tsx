@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
 import { DashboardNav } from "@/components/DashboardNav"
+import { PerformanceChart } from "@/components/PerformanceChart"
+import { ChannelChart } from "@/components/ChannelChart"
 
 // Types for Google Ads data
 interface WeeklyMetrics {
@@ -421,6 +423,11 @@ export default function AdsPage() {
           </div>
         </div>
 
+        {/* Channel Performance Chart */}
+        <div className="mb-6">
+          <ChannelChart data={organicData} />
+        </div>
+
         {/* Traffic Channels - 6 columns */}
         <div className="mb-6">
           <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Traffic by Channel</h2>
@@ -480,6 +487,26 @@ export default function AdsPage() {
             <AdsCard title="CPA" value={formatCurrency(adsData.this_week.cpa)} accentColor="bg-red-500" comparisons={buildAdsComparisons('cpa')} inverse={true} />
             <AdsCard title="ROAS" value={`${adsData.this_week.roas.toFixed(2)}x`} accentColor="bg-pink-500" comparisons={buildAdsComparisons('roas')} />
           </div>
+        </div>
+
+        {/* Google Ads Trend Charts */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <PerformanceChart
+            title="Google Ads: Spend & Conversions"
+            data={adsData}
+            metrics={[
+              { key: 'spend', label: 'Spend', color: '#10B981' },
+              { key: 'conversions', label: 'Conversions', color: '#F97316', yAxisID: 'y1' }
+            ]}
+          />
+          <PerformanceChart
+            title="Google Ads: CPA & ROAS"
+            data={adsData}
+            metrics={[
+              { key: 'cpa', label: 'CPA', color: '#EF4444' },
+              { key: 'roas', label: 'ROAS', color: '#EC4899', yAxisID: 'y1' }
+            ]}
+          />
         </div>
 
         {/* Campaign Performance */}
@@ -584,6 +611,26 @@ export default function AdsPage() {
             <AdsCard title="CPA" value={formatCurrency(bingAdsData.this_week.cpa)} accentColor="bg-red-500" comparisons={buildBingComparisons('cpa')} inverse={true} />
             <AdsCard title="ROAS" value={`${bingAdsData.this_week.roas.toFixed(2)}x`} accentColor="bg-pink-500" comparisons={buildBingComparisons('roas')} />
           </div>
+        </div>
+
+        {/* Bing Ads Trend Charts */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <PerformanceChart
+            title="Bing Ads: Spend & Conversions"
+            data={bingAdsData}
+            metrics={[
+              { key: 'spend', label: 'Spend', color: '#14B8A6' },
+              { key: 'conversions', label: 'Conversions', color: '#F59E0B', yAxisID: 'y1' }
+            ]}
+          />
+          <PerformanceChart
+            title="Bing Ads: CPA & CTR"
+            data={bingAdsData}
+            metrics={[
+              { key: 'cpa', label: 'CPA', color: '#EF4444' },
+              { key: 'ctr', label: 'CTR', color: '#06B6D4', yAxisID: 'y1' }
+            ]}
+          />
         </div>
 
         {/* Bing Campaign Performance */}
