@@ -168,6 +168,29 @@
   font-size: 14px;
 }
 
+/* Charts Section */
+.intuit-sales-charts {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.intuit-sales-chart-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.intuit-sales-chart-card h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
 .intuit-sales-footer {
   margin-top: 24px;
   padding: 16px 32px;
