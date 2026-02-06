@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import DashboardNav from '@/components/DashboardNav';
+import { DashboardNav } from '@/components/DashboardNav';
 
 interface CategoryData {
   amount: number;
