@@ -87,7 +87,7 @@ export default function IntuitSalesPage() {
       <DashboardNav theme="dark" />
       <div className="max-w-full mx-auto px-4 py-6">
         <div className="intuit-sales-header">
-          <h1>Sales Revenue</h1>
+          <h1>Intuit Revenue</h1>
           <p>Monthly revenue breakdown by category • {data.months[0]} – {data.months[data.months.length - 1]}</p>
         </div>
 
