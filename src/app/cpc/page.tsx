@@ -199,21 +199,41 @@ export default function CPCPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <div className="bg-[#1a1a1a] rounded-lg p-4">
+          <div 
+            onClick={() => setFilter('ALL')}
+            className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${
+              filter === 'ALL' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'
+            }`}
+          >
             <div className="text-gray-400 text-xs mb-1">TOTAL KEYWORDS</div>
             <div className="text-white text-3xl font-bold">{data.summary.total}</div>
           </div>
-          <div className="bg-[#1a1a1a] rounded-lg p-4">
+          <div 
+            onClick={() => setFilter('RAISE')}
+            className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${
+              filter === 'RAISE' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'
+            }`}
+          >
             <div className="text-gray-400 text-xs mb-1">RAISE BIDS</div>
             <div className="text-green-500 text-3xl font-bold">{data.summary.actions.RAISE || 0}</div>
             <div className="text-gray-500 text-xs">+${data.summary.totalBidIncrease.toFixed(2)}</div>
           </div>
-          <div className="bg-[#1a1a1a] rounded-lg p-4">
+          <div 
+            onClick={() => setFilter('LOWER')}
+            className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${
+              filter === 'LOWER' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'
+            }`}
+          >
             <div className="text-gray-400 text-xs mb-1">LOWER BIDS</div>
             <div className="text-red-500 text-3xl font-bold">{data.summary.actions.LOWER || 0}</div>
             <div className="text-gray-500 text-xs">-${data.summary.totalBidDecrease.toFixed(2)}</div>
           </div>
-          <div className="bg-[#1a1a1a] rounded-lg p-4">
+          <div 
+            onClick={() => setFilter('HOLD')}
+            className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${
+              filter === 'HOLD' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'
+            }`}
+          >
             <div className="text-gray-400 text-xs mb-1">HOLD</div>
             <div className="text-gray-400 text-3xl font-bold">{data.summary.actions.HOLD || 0}</div>
           </div>
