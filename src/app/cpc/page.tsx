@@ -186,7 +186,15 @@ export default function CPCPage() {
       <div className="max-w-[1920px] mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-white text-2xl font-bold">Max CPC Recommendations</h1>
-          <span className="text-gray-500 text-sm">Updated: {data.summary.lastUpdated}</span>
+          <div className="flex items-center gap-4">
+            <a
+              href="/cpc/trends"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              📊 View Keyword Trends
+            </a>
+            <span className="text-gray-500 text-sm">Updated: {data.summary.lastUpdated}</span>
+          </div>
         </div>
 
         {/* Summary Cards */}
