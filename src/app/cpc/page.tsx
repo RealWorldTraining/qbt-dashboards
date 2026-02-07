@@ -336,9 +336,9 @@ export default function CPCPage() {
               <tbody>
                 {filtered.map((rec, i) => {
                   const isTrainingOrClasses = rec.campaign.includes('Training-') || rec.campaign.includes('Classes-')
-                  const bgClass = isTrainingOrClasses ? 'bg-gray-900/50' : ''
+                  const bgClass = isTrainingOrClasses ? 'bg-gray-800' : ''
                   return (
-                  <tr key={i} className={`border-t border-gray-800 hover:bg-gray-900 ${bgClass}`}>
+                  <tr key={i} className={`border-t border-gray-800 hover:bg-gray-700 ${bgClass}`}>
                     <td className="p-3 text-gray-300">{rec.keyword}</td>
                     <td className="p-3 text-gray-500 text-xs">{rec.campaign}</td>
                     <td className="p-3 text-center">
