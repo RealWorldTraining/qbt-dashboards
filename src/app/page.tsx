@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Check,
   AlertCircle,
+  Target,
 } from "lucide-react"
 
 const dashboards = [
@@ -44,6 +45,14 @@ const dashboards = [
     description: "Traffic by channel, Google Ads & Bing Ads performance",
     color: "from-orange-500 to-red-600",
     stats: "Traffic • Ads • ROI"
+  },
+  { 
+    name: "CPC Optimizer", 
+    href: "/cpc", 
+    icon: Target, 
+    description: "Max CPC bid recommendations with confidence scores & performance metrics",
+    color: "from-cyan-500 to-teal-600",
+    stats: "Keywords • Bids • Signals"
   },
   { 
     name: "P&L Recap", 

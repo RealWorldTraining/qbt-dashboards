@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Search,
   Smartphone,
+  Target,
 } from "lucide-react"
 
 const dashboards = [
@@ -24,6 +25,7 @@ const dashboards = [
   { name: "Sales Snapshot", href: "/data", icon: Tv, description: "TV display - forecasts" },
   { name: "Dashboard", href: "/dashboard", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
   { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },
+  { name: "CPC Optimizer", href: "/cpc", icon: Target, description: "Max CPC bid recommendations" },
   { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
   { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
   { name: "Live Help Archive", href: "/live-help-archive", icon: BarChart3, description: "Historical trainer data" },
