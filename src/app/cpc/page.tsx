@@ -334,8 +334,11 @@ export default function CPCPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((rec, i) => (
-                  <tr key={i} className="border-t border-gray-800 hover:bg-gray-900">
+                {filtered.map((rec, i) => {
+                  const isTrainingOrClasses = rec.campaign.includes('Training-') || rec.campaign.includes('Classes-')
+                  const bgClass = isTrainingOrClasses ? 'bg-gray-900/50' : ''
+                  return (
+                  <tr key={i} className={`border-t border-gray-800 hover:bg-gray-900 ${bgClass}`}>
                     <td className="p-3 text-gray-300">{rec.keyword}</td>
                     <td className="p-3 text-gray-500 text-xs">{rec.campaign}</td>
                     <td className="p-3 text-center">
@@ -394,7 +397,7 @@ export default function CPCPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
