@@ -110,9 +110,27 @@ export default function CPCPage() {
     )
   }
 
-  const filtered = filter === 'ALL' 
+  // Define campaign order
+  const campaignOrder = [
+    'Certification-Desktop',
+    'Training-Desktop',
+    'Courses-Desktop',
+    'Classes-Desktop',
+    'Certification-Mobile',
+    'Training-Mobile',
+    'Courses-Mobile',
+    'Classes-Mobile'
+  ]
+
+  const getCampaignSortKey = (campaign: string): number => {
+    const index = campaignOrder.findIndex(c => campaign.includes(c))
+    return index === -1 ? 999 : index
+  }
+
+  const filtered = (filter === 'ALL' 
     ? data.recommendations 
     : data.recommendations.filter(r => r.action === filter)
+  ).sort((a, b) => getCampaignSortKey(a.campaign) - getCampaignSortKey(b.campaign))
 
   // Action distribution chart
   const actionData = {
