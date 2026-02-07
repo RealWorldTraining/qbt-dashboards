@@ -24,48 +24,31 @@ ChartJS.register(
   Legend
 )
 
-interface CPCRecommendation {
-  analysisDate: string
-  campaign: string
+interface KeywordWeek {
+  date: string
   keyword: string
-  device: string
-  action: string
-  currentMaxCPC: number
-  suggestedMaxCPC: number
-  changeAmount: number
-  confidence: string
-  imprTopPct: number
-  imprTopClass: string
-  imprAbsTopPct: number
-  imprAbsTopClass: string
+  campaign: string
+  clicks: number
+  impressions: number
+  ctr: number
+  avgCpc: number
+  cost: number
+  conversions: number
+  cpa: number
+  convRate: number
   searchImprShare: number
-  searchImprClass: string
-  clickShare: number
-  clickShareClass: string
+  imprTopPct: number
+  imprAbsTopPct: number
   searchLostIsRank: number
-  searchLostClass: string
-  headroomPct: number
-  headroomClass: string
-  avgCPC: number
-  trendSummary: string
-  primarySignal: string
-  reason: string
-  competitionContext: string
+  clickShare: number
 }
 
-interface CPCData {
-  recommendations: CPCRecommendation[]
-  summary: {
-    total: number
-    actions: Record<string, number>
-    confidence: Record<string, number>
-    totalBidIncrease: number
-    totalBidDecrease: number
-    lastUpdated: string
-  }
+interface TrendsData {
+  trends: Record<string, Record<string, KeywordWeek[]>>
+  lastUpdated: string
 }
 
-const campaigns = [
+const campaignTabs = [
   'Certification-Desktop',
   'Training-Desktop',
   'Courses-Desktop',
@@ -82,16 +65,16 @@ const metricConfigs = [
   { key: 'searchImprShare', label: 'Impr Share', color: '#F59E0B' },
   { key: 'clickShare', label: 'Click Share', color: '#8B5CF6' },
   { key: 'searchLostIsRank', label: 'Lost IS', color: '#EF4444' },
-  { key: 'currentMaxCPC', label: 'Max CPC', color: '#06B6D4' }
+  { key: 'avgCpc', label: 'Avg CPC', color: '#06B6D4' }
 ]
 
 export default function CPCTrendsPage() {
-  const [data, setData] = useState<CPCData | null>(null)
+  const [data, setData] = useState<TrendsData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedCampaign, setSelectedCampaign] = useState(campaigns[0])
+  const [selectedTab, setSelectedTab] = useState(campaignTabs[0])
 
   useEffect(() => {
-    fetch('/api/cpc-recommendations')
+    fetch('/api/cpc-trends')
       .then(res => res.json())
       .then(setData)
       .catch(console.error)
@@ -121,11 +104,25 @@ export default function CPCTrendsPage() {
     )
   }
 
-  const campaignKeywords = data.recommendations.filter(r => r.campaign === selectedCampaign)
+  // Find campaigns that match the selected tab filter
+  const matchingCampaigns = Object.keys(data.trends).filter(campaign => {
+    const tabFilter = selectedTab.toLowerCase().replace('-', ' ')
+    return campaign.toLowerCase().includes(tabFilter.split(' ')[0]) || 
+           campaign.toLowerCase().includes('base') || 
+           campaign.toLowerCase().includes('2025')
+  })
 
-  // For now, we'll show current snapshot data
-  // As historical data accumulates, this will show 8-week trends
-  const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8']
+  // Collect all keywords across matching campaigns
+  const allKeywords: Record<string, KeywordWeek[]> = {}
+  matchingCampaigns.forEach(campaign => {
+    Object.entries(data.trends[campaign]).forEach(([keyword, weeks]) => {
+      if (!allKeywords[keyword] || weeks.length > allKeywords[keyword].length) {
+        allKeywords[keyword] = weeks
+      }
+    })
+  })
+
+  const keywordNames = Object.keys(allKeywords).slice(0, 8) // Show top 8 keywords
 
   return (
     <div className="min-h-screen bg-black p-4">
@@ -141,57 +138,56 @@ export default function CPCTrendsPage() {
             </a>
             <h1 className="text-white text-2xl font-bold">CPC Keyword Trends</h1>
           </div>
-          <span className="text-gray-500 text-sm">Updated: {data.summary.lastUpdated}</span>
+          <span className="text-gray-500 text-sm">Last week: {data.lastUpdated}</span>
         </div>
 
         {/* Campaign Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {campaigns.map(campaign => (
+          {campaignTabs.map(tab => (
             <button
-              key={campaign}
-              onClick={() => setSelectedCampaign(campaign)}
+              key={tab}
+              onClick={() => setSelectedTab(tab)}
               className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                selectedCampaign === campaign
+                selectedTab === tab
                   ? 'bg-green-600 text-white'
                   : 'bg-[#1a1a1a] text-gray-400 hover:bg-gray-800'
               }`}
             >
-              {campaign.replace('-', ' ')}
+              {tab.replace('-', ' ')}
             </button>
           ))}
         </div>
 
         {/* Keywords Count */}
         <div className="mb-4 text-gray-400">
-          Showing {campaignKeywords.length} keywords for {selectedCampaign}
-        </div>
-
-        {/* Note about historical data */}
-        <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-4 mb-6">
-          <p className="text-yellow-400 text-sm">
-            📊 <strong>Historical Data:</strong> As the sheet updates daily, this page will build an 8-week trend history for each keyword. 
-            Currently showing snapshot from {data.summary.lastUpdated}.
-          </p>
+          Showing {keywordNames.length} keywords for {selectedTab}
         </div>
 
         {/* Metric Charts Grid */}
         <div className="grid grid-cols-2 gap-6 mb-6">
           {metricConfigs.map(metric => (
             <div key={metric.key} className="bg-[#1a1a1a] rounded-lg p-6">
-              <h3 className="text-gray-300 text-sm font-medium mb-4 uppercase">{metric.label} TRENDS</h3>
+              <h3 className="text-gray-300 text-sm font-medium mb-4 uppercase">{metric.label} TRENDS (8 WEEKS)</h3>
               <div className="h-[300px]">
                 <Line
                   data={{
-                    labels: weeks,
-                    datasets: campaignKeywords.slice(0, 5).map((kw, i) => ({
-                      label: kw.keyword.substring(0, 30) + (kw.keyword.length > 30 ? '...' : ''),
-                      data: weeks.map(() => kw[metric.key as keyof CPCRecommendation] as number),
-                      borderColor: metric.color,
-                      backgroundColor: metric.color + '30',
-                      borderWidth: 2,
-                      tension: 0.4,
-                      pointRadius: 3
-                    }))
+                    labels: allKeywords[keywordNames[0]]?.map((w, i) => {
+                      const date = new Date(w.date)
+                      return `${date.getMonth() + 1}/${date.getDate()}`
+                    }) || [],
+                    datasets: keywordNames.map((kw, i) => {
+                      const weeks = allKeywords[kw]
+                      const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#06B6D4', '#EC4899', '#14B8A6']
+                      return {
+                        label: kw.substring(0, 30) + (kw.length > 30 ? '...' : ''),
+                        data: weeks.map(w => w[metric.key as keyof KeywordWeek] as number),
+                        borderColor: colors[i % colors.length],
+                        backgroundColor: colors[i % colors.length] + '30',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3
+                      }
+                    })
                   }}
                   options={{
                     responsive: true,
@@ -230,7 +226,7 @@ export default function CPCTrendsPage() {
                           color: '#9CA3AF', 
                           font: { size: 10 },
                           callback: (value: any) => {
-                            return metric.key === 'currentMaxCPC' ? '$' + value.toFixed(2) : value.toFixed(1) + '%'
+                            return metric.key === 'avgCpc' ? '$' + value.toFixed(2) : value.toFixed(1) + '%'
                           }
                         }
                       }
@@ -245,43 +241,40 @@ export default function CPCTrendsPage() {
         {/* Keywords Table */}
         <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
           <div className="p-4 border-b border-gray-800">
-            <h3 className="text-gray-300 text-sm font-medium">CURRENT SNAPSHOT</h3>
+            <h3 className="text-gray-300 text-sm font-medium">KEYWORD SUMMARIES (MOST RECENT WEEK)</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-black">
                 <tr className="text-gray-400 text-xs">
                   <th className="text-left p-3">KEYWORD</th>
-                  <th className="text-center p-3">ACTION</th>
-                  <th className="text-right p-3">MAX CPC</th>
+                  <th className="text-right p-3">AVG CPC</th>
                   <th className="text-center p-3">TOP%</th>
                   <th className="text-center p-3">ABS TOP%</th>
                   <th className="text-center p-3">IMPR SHARE</th>
                   <th className="text-center p-3">CLICK SHARE</th>
                   <th className="text-center p-3">LOST IS</th>
+                  <th className="text-right p-3">CONVERSIONS</th>
+                  <th className="text-right p-3">CPA</th>
                 </tr>
               </thead>
               <tbody>
-                {campaignKeywords.map((kw, i) => (
-                  <tr key={i} className="border-t border-gray-800 hover:bg-gray-900">
-                    <td className="p-3 text-gray-300">{kw.keyword}</td>
-                    <td className="p-3 text-center">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        kw.action === 'RAISE' ? 'bg-green-900 text-green-300' :
-                        kw.action === 'LOWER' ? 'bg-red-900 text-red-300' :
-                        'bg-gray-800 text-gray-400'
-                      }`}>
-                        {kw.action}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right text-white font-medium">${kw.currentMaxCPC.toFixed(2)}</td>
-                    <td className="p-3 text-center text-gray-300">{kw.imprTopPct.toFixed(0)}%</td>
-                    <td className="p-3 text-center text-gray-300">{kw.imprAbsTopPct.toFixed(0)}%</td>
-                    <td className="p-3 text-center text-gray-300">{kw.searchImprShare.toFixed(0)}%</td>
-                    <td className="p-3 text-center text-gray-300">{kw.clickShare.toFixed(0)}%</td>
-                    <td className="p-3 text-center text-gray-300">{kw.searchLostIsRank.toFixed(1)}%</td>
-                  </tr>
-                ))}
+                {keywordNames.map((kw, i) => {
+                  const latest = allKeywords[kw][allKeywords[kw].length - 1]
+                  return (
+                    <tr key={i} className="border-t border-gray-800 hover:bg-gray-900">
+                      <td className="p-3 text-gray-300">{kw}</td>
+                      <td className="p-3 text-right text-white font-medium">${latest.avgCpc.toFixed(2)}</td>
+                      <td className="p-3 text-center text-gray-300">{latest.imprTopPct.toFixed(0)}%</td>
+                      <td className="p-3 text-center text-gray-300">{latest.imprAbsTopPct.toFixed(0)}%</td>
+                      <td className="p-3 text-center text-gray-300">{latest.searchImprShare.toFixed(0)}%</td>
+                      <td className="p-3 text-center text-gray-300">{latest.clickShare.toFixed(0)}%</td>
+                      <td className="p-3 text-center text-gray-300">{latest.searchLostIsRank.toFixed(1)}%</td>
+                      <td className="p-3 text-right text-gray-300">{latest.conversions.toFixed(1)}</td>
+                      <td className="p-3 text-right text-gray-300">${latest.cpa.toFixed(2)}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
