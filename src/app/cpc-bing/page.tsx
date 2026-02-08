@@ -109,16 +109,12 @@ export default function BingCPCPage() {
     )
   }
 
-  // Define campaign order
+  // Define campaign order (Bing only has Desktop campaigns)
   const campaignOrder = [
     'Certification-Desktop',
     'Training-Desktop',
     'Courses-Desktop',
-    'Classes-Desktop',
-    'Certification-Mobile',
-    'Training-Mobile',
-    'Courses-Mobile',
-    'Classes-Mobile'
+    'Classes-Desktop'
   ]
 
   const getCampaignSortKey = (campaign: string): number => {

@@ -47,11 +47,7 @@ const campaignTabs = [
   'Certification-Desktop',
   'Training-Desktop',
   'Courses-Desktop',
-  'Classes-Desktop',
-  'Certification-Mobile',
-  'Training-Mobile',
-  'Courses-Mobile',
-  'Classes-Mobile'
+  'Classes-Desktop'
 ]
 
 const metricConfigs = [
