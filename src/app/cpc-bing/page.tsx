@@ -73,15 +73,31 @@ const classColors: Record<string, string> = {
   RED: '#EF4444'
 }
 
+interface FourWeekData {
+  impressions: number
+  clicks: number
+  cost: number
+  conversions: number
+  weeks: number
+  startDate: string
+  endDate: string
+}
+
 export default function BingCPCPage() {
   const [data, setData] = useState<BingCPCData | null>(null)
+  const [fourWeekData, setFourWeekData] = useState<FourWeekData | null>(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('ALL')
 
   useEffect(() => {
-    fetch('/api/cpc-bing-recommendations')
-      .then(res => res.json())
-      .then(setData)
+    Promise.all([
+      fetch('/api/cpc-bing-recommendations').then(res => res.json()),
+      fetch('/api/cpc-bing-four-week').then(res => res.json())
+    ])
+      .then(([recommendations, fourWeek]) => {
+        setData(recommendations)
+        setFourWeekData(fourWeek)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
@@ -184,7 +200,7 @@ export default function BingCPCPage() {
             >
               📊 View Bing Ads Trends
             </a>
-            <span className="text-gray-500 text-sm">Updated: {data.summary.lastUpdated}</span>
+            <span className="text-gray-500 text-sm">Prior Week: {data.summary.lastUpdated}</span>
           </div>
         </div>
 
@@ -249,24 +265,33 @@ export default function BingCPCPage() {
           </div>
 
           <div className="bg-[#1a1a1a] rounded-lg p-6">
-            <h3 className="text-gray-300 text-sm font-medium mb-4">FILTERED TOTALS</h3>
-            <div className="h-[280px] flex flex-col justify-center gap-4">
-              <div className="border-b border-gray-800 pb-3">
-                <div className="text-gray-500 text-xs mb-1">IMPRESSIONS</div>
-                <div className="text-white text-2xl font-bold">{totalMetrics.impressions.toLocaleString()}</div>
-              </div>
-              <div className="border-b border-gray-800 pb-3">
-                <div className="text-gray-500 text-xs mb-1">CLICKS</div>
-                <div className="text-white text-2xl font-bold">{totalMetrics.clicks.toLocaleString()}</div>
-              </div>
-              <div className="border-b border-gray-800 pb-3">
-                <div className="text-gray-500 text-xs mb-1">COST</div>
-                <div className="text-white text-2xl font-bold">${Math.round(totalMetrics.cost).toLocaleString()}</div>
-              </div>
-              <div>
-                <div className="text-gray-500 text-xs mb-1">CONVERSIONS</div>
-                <div className="text-white text-2xl font-bold">{Math.round(totalMetrics.conversions)}</div>
-              </div>
+            <h3 className="text-gray-300 text-sm font-medium mb-2">TRAILING 4-WEEK TOTALS</h3>
+            {fourWeekData && (
+              <div className="text-gray-500 text-xs mb-4">{fourWeekData.startDate} → {fourWeekData.endDate}</div>
+            )}
+            <div className="h-[250px] flex flex-col justify-center gap-4">
+              {fourWeekData ? (
+                <>
+                  <div className="border-b border-gray-800 pb-3">
+                    <div className="text-gray-500 text-xs mb-1">IMPRESSIONS</div>
+                    <div className="text-white text-2xl font-bold">{fourWeekData.impressions.toLocaleString()}</div>
+                  </div>
+                  <div className="border-b border-gray-800 pb-3">
+                    <div className="text-gray-500 text-xs mb-1">CLICKS</div>
+                    <div className="text-white text-2xl font-bold">{fourWeekData.clicks.toLocaleString()}</div>
+                  </div>
+                  <div className="border-b border-gray-800 pb-3">
+                    <div className="text-gray-500 text-xs mb-1">COST</div>
+                    <div className="text-white text-2xl font-bold">${Math.round(fourWeekData.cost).toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">CONVERSIONS</div>
+                    <div className="text-white text-2xl font-bold">{Math.round(fourWeekData.conversions)}</div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-gray-500 text-center">Loading...</div>
+              )}
             </div>
           </div>
 
