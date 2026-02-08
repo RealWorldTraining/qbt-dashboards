@@ -76,14 +76,16 @@ const classColors: Record<string, string> = {
   RED: '#EF4444'
 }
 
-interface FourWeekData {
+interface WeekData {
+  date: string
   impressions: number
   clicks: number
   cost: number
   conversions: number
-  weeks: number
-  startDate: string
-  endDate: string
+}
+
+interface FourWeekData {
+  weeks: WeekData[]
 }
 
 export default function CPCPage() {
@@ -253,8 +255,48 @@ export default function CPCPage() {
           </div>
         </div>
 
+        {/* 4-Week Performance */}
+        <div className="mb-6">
+          <div className="bg-[#1a1a1a] rounded-lg p-6">
+            <h3 className="text-gray-300 text-sm font-medium mb-4">TRAILING 4-WEEK PERFORMANCE</h3>
+            {fourWeekData && fourWeekData.weeks.length > 0 ? (
+              <div className="grid grid-cols-4 gap-4">
+                {fourWeekData.weeks.map((week, idx) => {
+                  const labels = ['Prior Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago']
+                  return (
+                    <div key={week.date} className="border border-gray-800 rounded-lg p-4">
+                      <div className="text-cyan-400 text-xs font-medium mb-2">{labels[idx]}</div>
+                      <div className="text-gray-500 text-xs mb-3">{week.date}</div>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="text-gray-500 text-xs mb-1">IMPR</div>
+                          <div className="text-white text-lg font-bold">{week.impressions.toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 text-xs mb-1">CLICKS</div>
+                          <div className="text-white text-lg font-bold">{week.clicks.toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 text-xs mb-1">COST</div>
+                          <div className="text-white text-lg font-bold">${Math.round(week.cost).toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 text-xs mb-1">CONV</div>
+                          <div className="text-white text-lg font-bold">{Math.round(week.conversions)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-gray-500 text-center py-16">Loading...</div>
+            )}
+          </div>
+        </div>
+
         {/* Charts */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-[#1a1a1a] rounded-lg p-6">
             <h3 className="text-gray-300 text-sm font-medium mb-4">ACTION DISTRIBUTION</h3>
             <div className="h-[280px] flex items-center justify-center">
@@ -268,37 +310,6 @@ export default function CPCPage() {
                   }
                 }
               }} />
-            </div>
-          </div>
-
-          <div className="bg-[#1a1a1a] rounded-lg p-6">
-            <h3 className="text-gray-300 text-sm font-medium mb-2">TRAILING 4-WEEK TOTALS</h3>
-            {fourWeekData && (
-              <div className="text-gray-500 text-xs mb-4">{fourWeekData.startDate} → {fourWeekData.endDate}</div>
-            )}
-            <div className="h-[250px] flex flex-col justify-center gap-4">
-              {fourWeekData ? (
-                <>
-                  <div className="border-b border-gray-800 pb-3">
-                    <div className="text-gray-500 text-xs mb-1">IMPRESSIONS</div>
-                    <div className="text-white text-2xl font-bold">{fourWeekData.impressions.toLocaleString()}</div>
-                  </div>
-                  <div className="border-b border-gray-800 pb-3">
-                    <div className="text-gray-500 text-xs mb-1">CLICKS</div>
-                    <div className="text-white text-2xl font-bold">{fourWeekData.clicks.toLocaleString()}</div>
-                  </div>
-                  <div className="border-b border-gray-800 pb-3">
-                    <div className="text-gray-500 text-xs mb-1">COST</div>
-                    <div className="text-white text-2xl font-bold">${Math.round(fourWeekData.cost).toLocaleString()}</div>
-                  </div>
-                  <div>
-                    <div className="text-gray-500 text-xs mb-1">CONVERSIONS</div>
-                    <div className="text-white text-2xl font-bold">{Math.round(fourWeekData.conversions)}</div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-gray-500 text-center">Loading...</div>
-              )}
             </div>
           </div>
 

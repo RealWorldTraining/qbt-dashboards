@@ -64,21 +64,19 @@ export async function GET() {
     // Get unique dates (weeks) and take the 4 most recent
     const uniqueWeeks = [...new Set(weeklyData.map(d => d.date))].slice(0, 4)
     
-    // Filter data to only those 4 weeks
-    const fourWeekData = weeklyData.filter(d => uniqueWeeks.includes(d.date))
+    // Calculate totals for each week
+    const weeklyTotals = uniqueWeeks.map(week => {
+      const weekData = weeklyData.filter(d => d.date === week)
+      return {
+        date: week,
+        impressions: weekData.reduce((sum, d) => sum + d.impressions, 0),
+        clicks: weekData.reduce((sum, d) => sum + d.clicks, 0),
+        cost: weekData.reduce((sum, d) => sum + d.cost, 0),
+        conversions: weekData.reduce((sum, d) => sum + d.conversions, 0)
+      }
+    })
 
-    // Calculate totals
-    const totals = {
-      impressions: fourWeekData.reduce((sum, d) => sum + d.impressions, 0),
-      clicks: fourWeekData.reduce((sum, d) => sum + d.clicks, 0),
-      cost: fourWeekData.reduce((sum, d) => sum + d.cost, 0),
-      conversions: fourWeekData.reduce((sum, d) => sum + d.conversions, 0),
-      weeks: uniqueWeeks.length,
-      startDate: uniqueWeeks[uniqueWeeks.length - 1],
-      endDate: uniqueWeeks[0]
-    }
-
-    return NextResponse.json(totals)
+    return NextResponse.json({ weeks: weeklyTotals })
   } catch (error: any) {
     console.error('Error fetching 4-week Bing Ads data:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
