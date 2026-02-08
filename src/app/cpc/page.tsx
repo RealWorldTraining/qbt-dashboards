@@ -268,11 +268,11 @@ export default function CPCPage() {
               </div>
               <div className="border-b border-gray-800 pb-3">
                 <div className="text-gray-500 text-xs mb-1">COST</div>
-                <div className="text-white text-2xl font-bold">${totalMetrics.cost.toFixed(2)}</div>
+                <div className="text-white text-2xl font-bold">${Math.round(totalMetrics.cost).toLocaleString()}</div>
               </div>
               <div>
                 <div className="text-gray-500 text-xs mb-1">CONVERSIONS</div>
-                <div className="text-white text-2xl font-bold">{totalMetrics.conversions.toFixed(1)}</div>
+                <div className="text-white text-2xl font-bold">{Math.round(totalMetrics.conversions)}</div>
               </div>
             </div>
           </div>
@@ -368,9 +368,9 @@ export default function CPCPage() {
                     <td className="p-3 text-gray-500 text-xs">{rec.campaign}</td>
                     <td className="p-3 text-right text-gray-400">{rec.impressions.toLocaleString()}</td>
                     <td className="p-3 text-right text-gray-400">{rec.clicks.toLocaleString()}</td>
-                    <td className="p-3 text-right text-gray-400">${rec.cost.toFixed(2)}</td>
-                    <td className="p-3 text-right text-gray-400">{rec.conversions.toFixed(1)}</td>
-                    <td className="p-3 text-right text-gray-400">${rec.costPerConv.toFixed(2)}</td>
+                    <td className="p-3 text-right text-gray-400">${Math.round(rec.cost)}</td>
+                    <td className="p-3 text-right text-gray-400">{Math.round(rec.conversions)}</td>
+                    <td className="p-3 text-right text-gray-400">${Math.round(rec.costPerConv)}</td>
                     <td className="p-3 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
                         rec.action === 'RAISE' ? 'bg-green-900 text-green-300' :
