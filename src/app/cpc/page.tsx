@@ -262,7 +262,7 @@ export default function CPCPage() {
             {fourWeekData && fourWeekData.weeks.length > 0 ? (
               <div className="grid grid-cols-4 gap-4">
                 {fourWeekData.weeks.map((week, idx) => {
-                  const labels = ['Prior Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago']
+                  const labels = ['Current Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago']
                   return (
                     <div key={week.date} className="border border-gray-800 rounded-lg p-4">
                       <div className="text-cyan-400 text-xs font-medium mb-2">{labels[idx]}</div>
