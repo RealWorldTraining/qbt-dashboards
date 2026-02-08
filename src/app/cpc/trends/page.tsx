@@ -104,12 +104,10 @@ export default function CPCTrendsPage() {
     )
   }
 
-  // Find campaigns that match the selected tab filter
+  // Find campaigns that match the selected tab - exact match preferred
   const matchingCampaigns = Object.keys(data.trends).filter(campaign => {
-    const tabFilter = selectedTab.toLowerCase().replace('-', ' ')
-    return campaign.toLowerCase().includes(tabFilter.split(' ')[0]) || 
-           campaign.toLowerCase().includes('base') || 
-           campaign.toLowerCase().includes('2025')
+    return campaign === selectedTab || 
+           campaign.toLowerCase() === selectedTab.toLowerCase()
   })
 
   // Collect all keywords across matching campaigns

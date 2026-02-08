@@ -2,7 +2,7 @@ import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
 const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
-const RANGE = 'GADS: Search Keyword: Weekly with analytics!A:T'
+const RANGE = 'GADS: Search Keyword: Weekly with Campaigns!A:T'
 
 interface KeywordWeek {
   date: string
@@ -74,11 +74,11 @@ export async function GET() {
       clicks: parseNumber(row[5]),
       impressions: parseNumber(row[6]),
       ctr: parseNumber(row[7]) * 100, // Convert to percentage
-      avgCpc: parseNumber(row[8]),
-      cost: parseNumber(row[9]),
-      conversions: parseNumber(row[10]),
-      cpa: parseNumber(row[12]),
-      convRate: parseNumber(row[13]) * 100, // Convert to percentage
+      avgCpc: parseNumber(row[9]),
+      cost: parseNumber(row[10]),
+      conversions: parseNumber(row[11]),
+      cpa: parseNumber(row[13]),
+      convRate: parseNumber(row[14]) * 100, // Convert to percentage
       searchImprShare: parseNumber(row[15]) * 100, // Convert to percentage
       imprTopPct: parseNumber(row[16]) * 100, // Convert to percentage
       imprAbsTopPct: parseNumber(row[17]) * 100, // Convert to percentage
