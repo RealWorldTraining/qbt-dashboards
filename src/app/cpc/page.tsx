@@ -354,10 +354,10 @@ export default function CPCPage() {
                   <th className="text-right p-3">SUGGESTED</th>
                   <th className="text-right p-3">CHANGE</th>
                   <th className="text-center p-3">CONFIDENCE</th>
-                  <th className="text-center p-3">TOP%</th>
-                  <th className="text-center p-3">ABS TOP%</th>
                   <th className="text-center p-3">IMPR SHARE</th>
+                  <th className="text-center p-3">TOP%</th>
                   <th className="text-center p-3">CLICK SHARE</th>
+                  <th className="text-center p-3">ABS TOP%</th>
                   <th className="text-center p-3">LOST IS</th>
                 </tr>
               </thead>
@@ -396,26 +396,26 @@ export default function CPCPage() {
                     </td>
                     <td className="p-3 text-center">
                       <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
-                           style={{ backgroundColor: classColors[rec.imprTopClass], color: 'white' }}>
-                        {rec.imprTopPct.toFixed(0)}%
-                      </div>
-                    </td>
-                    <td className="p-3 text-center">
-                      <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
-                           style={{ backgroundColor: classColors[rec.imprAbsTopClass], color: 'white' }}>
-                        {rec.imprAbsTopPct.toFixed(0)}%
-                      </div>
-                    </td>
-                    <td className="p-3 text-center">
-                      <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
                            style={{ backgroundColor: classColors[rec.searchImprClass], color: 'white' }}>
                         {rec.searchImprShare.toFixed(0)}%
                       </div>
                     </td>
                     <td className="p-3 text-center">
                       <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
+                           style={{ backgroundColor: classColors[rec.imprTopClass], color: 'white' }}>
+                        {rec.imprTopPct.toFixed(0)}%
+                      </div>
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
                            style={{ backgroundColor: classColors[rec.clickShareClass], color: 'white' }}>
                         {rec.clickShare.toFixed(0)}%
+                      </div>
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
+                           style={{ backgroundColor: classColors[rec.imprAbsTopClass], color: 'white' }}>
+                        {rec.imprAbsTopPct.toFixed(0)}%
                       </div>
                     </td>
                     <td className="p-3 text-center">
