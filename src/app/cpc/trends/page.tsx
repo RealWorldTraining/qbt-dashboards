@@ -134,7 +134,7 @@ export default function CPCTrendsPage() {
             >
               ← Back to Recommendations
             </a>
-            <h1 className="text-white text-2xl font-bold">CPC Keyword Trends</h1>
+            <h1 className="text-white text-2xl font-bold">Google Ads - CPC Keyword Trends</h1>
           </div>
           <span className="text-gray-500 text-sm">Last week: {data.lastUpdated}</span>
         </div>
@@ -158,7 +158,7 @@ export default function CPCTrendsPage() {
 
         {/* Keywords Count */}
         <div className="mb-4 text-gray-400">
-          Showing {keywordNames.length} keywords for {selectedTab}
+          Showing {keywordNames.length} Google Ads keywords for {selectedTab}
         </div>
 
         {/* Metric Charts Grid */}
@@ -239,7 +239,7 @@ export default function CPCTrendsPage() {
         {/* Keywords Table */}
         <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
           <div className="p-4 border-b border-gray-800">
-            <h3 className="text-gray-300 text-sm font-medium">KEYWORD SUMMARIES (MOST RECENT WEEK)</h3>
+            <h3 className="text-gray-300 text-sm font-medium">GOOGLE ADS KEYWORD SUMMARIES (MOST RECENT WEEK)</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
