@@ -32,18 +32,23 @@ interface CPCRecommendation {
   keyword: string
   device: string
   action: string
+  impressions: number
+  clicks: number
+  cost: number
+  conversions: number
+  costPerConv: number
   currentMaxCPC: number
   suggestedMaxCPC: number
   changeAmount: number
-  confidence: string
-  imprTopPct: number
-  imprTopClass: string
-  imprAbsTopPct: number
-  imprAbsTopClass: string
+  signals: string
   searchImprShare: number
   searchImprClass: string
+  imprTopPct: number
+  imprTopClass: string
   clickShare: number
   clickShareClass: string
+  imprAbsTopPct: number
+  imprAbsTopClass: string
   searchLostIsRank: number
   searchLostClass: string
   headroomPct: number
@@ -51,8 +56,6 @@ interface CPCRecommendation {
   avgCPC: number
   trendSummary: string
   primarySignal: string
-  reason: string
-  competitionContext: string
 }
 
 interface CPCData {
@@ -60,7 +63,6 @@ interface CPCData {
   summary: {
     total: number
     actions: Record<string, number>
-    confidence: Record<string, number>
     totalBidIncrease: number
     totalBidDecrease: number
     lastUpdated: string
@@ -142,16 +144,12 @@ export default function CPCPage() {
     }]
   }
 
-  // Confidence distribution
-  const confidenceData = {
-    labels: Object.keys(data.summary.confidence).map(k => k.toUpperCase()),
-    datasets: [{
-      label: 'Keywords',
-      data: Object.values(data.summary.confidence),
-      backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
-      borderWidth: 0,
-      borderRadius: 4
-    }]
+  // Total metrics summary
+  const totalMetrics = {
+    impressions: filtered.reduce((sum, r) => sum + r.impressions, 0),
+    clicks: filtered.reduce((sum, r) => sum + r.clicks, 0),
+    cost: filtered.reduce((sum, r) => sum + r.cost, 0),
+    conversions: filtered.reduce((sum, r) => sum + r.conversions, 0)
   }
 
   // Current vs Suggested CPC scatter
@@ -258,30 +256,24 @@ export default function CPCPage() {
           </div>
 
           <div className="bg-[#1a1a1a] rounded-lg p-6">
-            <h3 className="text-gray-300 text-sm font-medium mb-4">CONFIDENCE LEVELS</h3>
-            <div className="h-[280px]">
-              <Bar data={confidenceData} options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { display: false },
-                  tooltip: {
-                    backgroundColor: '#1F2937',
-                    titleColor: '#F3F4F6',
-                    bodyColor: '#D1D5DB'
-                  }
-                },
-                scales: {
-                  x: {
-                    grid: { display: false },
-                    ticks: { color: '#9CA3AF', font: { size: 11 } }
-                  },
-                  y: {
-                    grid: { color: '#1F2937' },
-                    ticks: { color: '#9CA3AF', font: { size: 11 } }
-                  }
-                }
-              }} />
+            <h3 className="text-gray-300 text-sm font-medium mb-4">FILTERED TOTALS</h3>
+            <div className="h-[280px] flex flex-col justify-center gap-4">
+              <div className="border-b border-gray-800 pb-3">
+                <div className="text-gray-500 text-xs mb-1">IMPRESSIONS</div>
+                <div className="text-white text-2xl font-bold">{totalMetrics.impressions.toLocaleString()}</div>
+              </div>
+              <div className="border-b border-gray-800 pb-3">
+                <div className="text-gray-500 text-xs mb-1">CLICKS</div>
+                <div className="text-white text-2xl font-bold">{totalMetrics.clicks.toLocaleString()}</div>
+              </div>
+              <div className="border-b border-gray-800 pb-3">
+                <div className="text-gray-500 text-xs mb-1">COST</div>
+                <div className="text-white text-2xl font-bold">${totalMetrics.cost.toFixed(2)}</div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-xs mb-1">CONVERSIONS</div>
+                <div className="text-white text-2xl font-bold">{totalMetrics.conversions.toFixed(1)}</div>
+              </div>
             </div>
           </div>
 
@@ -349,11 +341,16 @@ export default function CPCPage() {
                 <tr className="text-gray-400 text-xs">
                   <th className="text-left p-3">KEYWORD</th>
                   <th className="text-left p-3">CAMPAIGN</th>
+                  <th className="text-right p-3">IMPR</th>
+                  <th className="text-right p-3">CLICKS</th>
+                  <th className="text-right p-3">COST</th>
+                  <th className="text-right p-3">CONV</th>
+                  <th className="text-right p-3">CPA</th>
                   <th className="text-center p-3">ACTION</th>
                   <th className="text-right p-3">CURRENT</th>
                   <th className="text-right p-3">SUGGESTED</th>
                   <th className="text-right p-3">CHANGE</th>
-                  <th className="text-center p-3">CONFIDENCE</th>
+                  <th className="text-center p-3">SIGNALS</th>
                   <th className="text-center p-3">IMPR SHARE</th>
                   <th className="text-center p-3">TOP%</th>
                   <th className="text-center p-3">CLICK SHARE</th>
@@ -369,6 +366,11 @@ export default function CPCPage() {
                   <tr key={i} className={`border-t border-gray-800 hover:bg-gray-700 ${bgClass}`}>
                     <td className="p-3 text-gray-300">{rec.keyword}</td>
                     <td className="p-3 text-gray-500 text-xs">{rec.campaign}</td>
+                    <td className="p-3 text-right text-gray-400">{rec.impressions.toLocaleString()}</td>
+                    <td className="p-3 text-right text-gray-400">{rec.clicks.toLocaleString()}</td>
+                    <td className="p-3 text-right text-gray-400">${rec.cost.toFixed(2)}</td>
+                    <td className="p-3 text-right text-gray-400">{rec.conversions.toFixed(1)}</td>
+                    <td className="p-3 text-right text-gray-400">${rec.costPerConv.toFixed(2)}</td>
                     <td className="p-3 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
                         rec.action === 'RAISE' ? 'bg-green-900 text-green-300' :
@@ -385,15 +387,7 @@ export default function CPCPage() {
                     }`}>
                       {rec.changeAmount > 0 ? '+' : ''}${rec.changeAmount.toFixed(2)}
                     </td>
-                    <td className="p-3 text-center">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        rec.confidence === 'high' ? 'bg-green-900 text-green-300' :
-                        rec.confidence === 'medium' ? 'bg-yellow-900 text-yellow-300' :
-                        'bg-red-900 text-red-300'
-                      }`}>
-                        {rec.confidence}
-                      </span>
-                    </td>
+                    <td className="p-3 text-center text-gray-300 text-xs">{rec.signals}</td>
                     <td className="p-3 text-center">
                       <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
                            style={{ backgroundColor: classColors[rec.searchImprClass], color: 'white' }}>

@@ -2,7 +2,7 @@ import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
 const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
-const RANGE = 'Max CPC Recommendations!A:Z'
+const RANGE = 'Max CPC Recommendations!A:AC'
 
 interface CPCRecommendation {
   analysisDate: string
@@ -10,18 +10,23 @@ interface CPCRecommendation {
   keyword: string
   device: string
   action: string
+  impressions: number
+  clicks: number
+  cost: number
+  conversions: number
+  costPerConv: number
   currentMaxCPC: number
   suggestedMaxCPC: number
   changeAmount: number
-  confidence: string
-  imprTopPct: number
-  imprTopClass: string
-  imprAbsTopPct: number
-  imprAbsTopClass: string
+  signals: string
   searchImprShare: number
   searchImprClass: string
+  imprTopPct: number
+  imprTopClass: string
   clickShare: number
   clickShareClass: string
+  imprAbsTopPct: number
+  imprAbsTopClass: string
   searchLostIsRank: number
   searchLostClass: string
   headroomPct: number
@@ -29,8 +34,6 @@ interface CPCRecommendation {
   avgCPC: number
   trendSummary: string
   primarySignal: string
-  reason: string
-  competitionContext: string
 }
 
 function parseNumber(val: string): number {
@@ -73,27 +76,30 @@ export async function GET() {
       keyword: row[2] || '',
       device: row[3] || '',
       action: row[4] || '',
-      currentMaxCPC: parseNumber(row[5]),
-      suggestedMaxCPC: parseNumber(row[6]),
-      changeAmount: parseNumber(row[7]),
-      confidence: row[8] || '',
-      imprTopPct: parseNumber(row[9]),
-      imprTopClass: row[10] || '',
-      imprAbsTopPct: parseNumber(row[11]),
-      imprAbsTopClass: row[12] || '',
-      searchImprShare: parseNumber(row[13]),
-      searchImprClass: row[14] || '',
-      clickShare: parseNumber(row[15]),
-      clickShareClass: row[16] || '',
-      searchLostIsRank: parseNumber(row[17]),
-      searchLostClass: row[18] || '',
-      headroomPct: parseNumber(row[19]),
-      headroomClass: row[20] || '',
-      avgCPC: parseNumber(row[21]),
-      trendSummary: row[22] || '',
-      primarySignal: row[23] || '',
-      reason: row[24] || '',
-      competitionContext: row[25] || ''
+      impressions: parseNumber(row[5]),
+      clicks: parseNumber(row[6]),
+      cost: parseNumber(row[7]),
+      conversions: parseNumber(row[8]),
+      costPerConv: parseNumber(row[9]),
+      currentMaxCPC: parseNumber(row[10]),
+      suggestedMaxCPC: parseNumber(row[11]),
+      changeAmount: parseNumber(row[12]),
+      signals: row[13] || '',
+      searchImprShare: parseNumber(row[14]),
+      searchImprClass: row[15] || '',
+      imprTopPct: parseNumber(row[16]),
+      imprTopClass: row[17] || '',
+      clickShare: parseNumber(row[18]),
+      clickShareClass: row[19] || '',
+      imprAbsTopPct: parseNumber(row[20]),
+      imprAbsTopClass: row[21] || '',
+      searchLostIsRank: parseNumber(row[22]),
+      searchLostClass: row[23] || '',
+      headroomPct: parseNumber(row[24]),
+      headroomClass: row[25] || '',
+      avgCPC: parseNumber(row[26]),
+      trendSummary: row[27] || '',
+      primarySignal: row[28] || ''
     }))
 
     // Calculate summary stats
@@ -102,13 +108,8 @@ export async function GET() {
       return acc
     }, {} as Record<string, number>)
 
-    const confidenceCounts = recommendations.reduce((acc, rec) => {
-      acc[rec.confidence] = (acc[rec.confidence] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
-
     const totalBidIncrease = recommendations
-      .filter(r => r.action === 'RAISE')
+      .filter(r => r.action === 'RAISE' || r.action === 'RAISE_WITH_CPA_CONCERN')
       .reduce((sum, r) => sum + r.changeAmount, 0)
 
     const totalBidDecrease = recommendations
@@ -120,7 +121,6 @@ export async function GET() {
       summary: {
         total: recommendations.length,
         actions: actionCounts,
-        confidence: confidenceCounts,
         totalBidIncrease,
         totalBidDecrease,
         lastUpdated: recommendations[0]?.analysisDate || new Date().toISOString().split('T')[0]
