@@ -47,12 +47,20 @@ const dashboards = [
     stats: "Traffic • Ads • ROI"
   },
   { 
-    name: "CPC Optimizer", 
+    name: "Google Ads CPC Optimizer", 
     href: "/cpc", 
     icon: Target, 
-    description: "Max CPC bid recommendations with confidence scores & performance metrics",
+    description: "Google Ads Max CPC bid recommendations with confidence scores & performance metrics",
     color: "from-cyan-500 to-teal-600",
     stats: "Keywords • Bids • Signals"
+  },
+  { 
+    name: "Bing Ads CPC Optimizer", 
+    href: "/cpc-bing", 
+    icon: Target, 
+    description: "Bing Ads Max CPC bid recommendations with urgency levels & performance metrics",
+    color: "from-blue-500 to-purple-600",
+    stats: "Keywords • Bids • Urgency"
   },
   { 
     name: "P&L Recap", 
