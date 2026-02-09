@@ -320,16 +320,16 @@ export default function AdsTVPage() {
 
           {/* Landing Pages Section */}
           <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-600/20 rounded-3xl p-6 border border-cyan-500/30 overflow-hidden">
-            <div className="text-6xl text-cyan-400 font-medium mb-6">TOP LANDING PAGES (5 WEEKS)</div>
+            <div className="text-3xl text-cyan-400 font-medium mb-4">TOP LANDING PAGES (5 WEEKS)</div>
             <div className="overflow-x-auto">
-              <table className="w-full text-2xl">
+              <table className="w-full">
                 <thead>
                   <tr className="border-b border-cyan-500/30">
-                    <th className="text-left py-3 px-3 text-cyan-300 font-medium text-2xl">Landing Page</th>
+                    <th className="text-left py-2 px-2 text-cyan-300 font-medium text-sm">Landing Page</th>
                     {landingPagesData.landing_pages[0]?.weeks.map((week, idx) => (
-                      <th key={idx} className="text-center py-3 px-3">
-                        <div className="text-cyan-300 font-medium text-2xl">{week.label}</div>
-                        <div className="text-gray-400 text-xl">{week.date_range}</div>
+                      <th key={idx} className="text-center py-2 px-2">
+                        <div className="text-cyan-300 font-medium text-xl">{week.label}</div>
+                        <div className="text-gray-400 text-sm">{week.date_range}</div>
                       </th>
                     ))}
                   </tr>
@@ -337,14 +337,14 @@ export default function AdsTVPage() {
                 <tbody>
                   {landingPagesData.landing_pages.slice(0, 8).map((lp, lpIdx) => (
                     <tr key={lpIdx} className="border-b border-cyan-500/20 hover:bg-cyan-900/20">
-                      <td className="py-4 px-3 text-white font-medium text-2xl truncate max-w-[300px]" title={lp.landing_page}>
+                      <td className="py-3 px-2 text-white font-medium text-sm truncate max-w-[200px]" title={lp.landing_page}>
                         {lp.landing_page}
                       </td>
                       {lp.weeks.map((week, weekIdx) => (
-                        <td key={weekIdx} className="text-center py-4 px-3">
-                          <div className="text-white font-semibold text-3xl">{formatNumber(week.users)}</div>
-                          <div className="text-cyan-300 text-2xl">{week.purchases} conv</div>
-                          <div className="text-green-400 text-2xl font-semibold">{formatPercent(week.conversion_rate)}</div>
+                        <td key={weekIdx} className="text-center py-3 px-2">
+                          <div className="text-white font-bold text-5xl mb-1">{formatNumber(week.users)}</div>
+                          <div className="text-cyan-300 text-base">{week.purchases} conv</div>
+                          <div className="text-green-400 text-base font-semibold">{formatPercent(week.conversion_rate)}</div>
                         </td>
                       ))}
                     </tr>
