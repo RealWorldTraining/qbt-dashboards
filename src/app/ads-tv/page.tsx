@@ -337,12 +337,12 @@ export default function AdsTVPage() {
                 <tbody>
                   {landingPagesData.landing_pages.slice(0, 8).map((lp, lpIdx) => (
                     <tr key={lpIdx} className="border-b border-cyan-500/20 hover:bg-cyan-900/20">
-                      <td className="py-3 px-2 text-white font-medium text-sm truncate max-w-[200px]" title={lp.landing_page}>
+                      <td className="py-3 px-2 text-white font-medium text-lg truncate max-w-[200px]" title={lp.landing_page}>
                         {lp.landing_page}
                       </td>
                       {lp.weeks.map((week, weekIdx) => (
                         <td key={weekIdx} className="text-center py-3 px-2">
-                          <div className="text-white font-bold text-5xl mb-1">{formatNumber(week.users)}</div>
+                          <div className="text-white font-bold text-base mb-1">{formatNumber(week.users)}</div>
                           <div className="text-cyan-300 text-base">{week.purchases} conv</div>
                           <div className="text-green-400 text-base font-semibold">{formatPercent(week.conversion_rate)}</div>
                         </td>
