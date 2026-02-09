@@ -123,9 +123,16 @@ export async function GET() {
       weeklyAgg.set(key, existing)
     })
 
-    // Convert to array and sort by week_start descending (include incomplete weeks)
+    // Convert to array and sort by week_start descending
     const allWeeks = Array.from(weeklyAgg.values())
       .sort((a, b) => b.week_start.localeCompare(a.week_start))
+    
+    // Determine current week's Monday to filter out incomplete weeks
+    const now = new Date()
+    const currentWeekStart = getWeekStart(now)
+    
+    // Filter out the current week (incomplete) - only show complete weeks
+    const completeWeeks = allWeeks.filter(w => w.week_start < currentWeekStart)
 
     const formatWeek = (w: WeeklyRow | undefined, label: string) => {
       if (!w) {
@@ -163,10 +170,10 @@ export async function GET() {
     }
 
     const data = {
-      this_week: formatWeek(allWeeks[0], 'Last Week'),
-      last_week: formatWeek(allWeeks[1], '2 Weeks Ago'),
-      two_weeks_ago: formatWeek(allWeeks[2], '3 Weeks Ago'),
-      three_weeks_ago: formatWeek(allWeeks[3], '4 Weeks Ago'),
+      this_week: formatWeek(completeWeeks[0], 'Prior Week'),
+      last_week: formatWeek(completeWeeks[1], '2 Weeks Ago'),
+      two_weeks_ago: formatWeek(completeWeeks[2], '3 Weeks Ago'),
+      three_weeks_ago: formatWeek(completeWeeks[3], '4 Weeks Ago'),
       last_updated: new Date().toISOString(),
     }
 

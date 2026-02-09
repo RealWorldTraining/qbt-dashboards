@@ -165,7 +165,7 @@ export async function GET() {
     const result = {
       weeks: recentWeeks.map((w, i) => ({
         week: w,
-        label: i === 0 ? 'Last Week' : i === 1 ? '2 Weeks Ago' : i === 2 ? '3 Weeks Ago' : '4 Weeks Ago',
+        label: i === 0 ? 'Prior Week' : i === 1 ? '2 Weeks Ago' : i === 2 ? '3 Weeks Ago' : '4 Weeks Ago',
         date_range: formatDateRange(w)
       })),
       campaigns: activeCampaigns.map(name => ({

@@ -119,8 +119,13 @@ export async function GET() {
       }))
       .sort((a, b) => a.week_start.localeCompare(b.week_start))
 
-    // Get last 4 weeks INCLUDING incomplete current week (most recent first)
-    const last4 = allWeeks.slice(-4).reverse()
+    // Filter out current week (incomplete)
+    const now = new Date()
+    const currentWeekStart = getWeekStart(now)
+    const completeWeeks = allWeeks.filter(w => w.week_start < currentWeekStart)
+
+    // Get last 4 complete weeks (most recent first)
+    const last4 = completeWeeks.slice(-4).reverse()
 
     const formatWeek = (w: typeof allWeeks[0] | undefined, label: string) => {
       if (!w) {
@@ -157,7 +162,7 @@ export async function GET() {
     }
 
     const data = {
-      this_week: formatWeek(last4[0], 'Last Week'),
+      this_week: formatWeek(last4[0], 'Prior Week'),
       last_week: formatWeek(last4[1], '2 Weeks Ago'),
       two_weeks_ago: formatWeek(last4[2], '3 Weeks Ago'),
       three_weeks_ago: formatWeek(last4[3], '4 Weeks Ago'),

@@ -176,9 +176,13 @@ export async function GET() {
       })
     }
 
-    // Get last 5 weeks INCLUDING incomplete current week
+    // Get last 5 weeks EXCLUDING incomplete current week
+    const now = new Date()
+    const currentWeekStart = getWeekStart(now)
+    
     const sortedWeeks = Array.from(weeklySourceData.keys()).sort().reverse()
-    const last5Weeks = sortedWeeks.slice(0, 5)
+    const completeWeeks = sortedWeeks.filter(w => w < currentWeekStart)
+    const last5Weeks = completeWeeks.slice(0, 5)
 
     const formatWeek = (weekKey: string, label: string) => {
       const sourceData = weeklySourceData.get(weekKey)
@@ -263,7 +267,7 @@ export async function GET() {
       }
     }
 
-    const weekLabels = ['Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
+    const weekLabels = ['Prior Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
     const formattedWeeks = last5Weeks.map((weekKey, idx) => formatWeek(weekKey, weekLabels[idx]))
 
     // Build response in expected format for /ads page
