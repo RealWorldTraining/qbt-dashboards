@@ -88,6 +88,24 @@ interface YoYData {
   last_updated: string
 }
 
+interface LandingPageWeekData {
+  label: string
+  date_range: string
+  users: number
+  purchases: number
+  conversion_rate: number
+}
+
+interface LandingPageData {
+  landing_page: string
+  weeks: LandingPageWeekData[]
+}
+
+interface LandingPagesData {
+  landing_pages: LandingPageData[]
+  last_updated: string
+}
+
 const formatNumber = (n: number) => Math.round(n).toLocaleString()
 const formatPercent = (n: number) => n.toFixed(2) + '%'
 const formatDollar = (n: number) => '$' + Math.round(n).toLocaleString()
@@ -97,21 +115,24 @@ export default function AdsTVPage() {
   const [bingAdsData, setBingAdsData] = useState<BingAdsData | null>(null)
   const [organicData, setOrganicData] = useState<OrganicData | null>(null)
   const [yoyData, setYoyData] = useState<YoYData | null>(null)
+  const [landingPagesData, setLandingPagesData] = useState<LandingPagesData | null>(null)
   const [time, setTime] = useState(new Date())
 
   const fetchData = async () => {
     try {
-      const [adsRes, bingRes, organicRes, yoyRes] = await Promise.all([
+      const [adsRes, bingRes, organicRes, yoyRes, lpRes] = await Promise.all([
         fetch('/api/ads-split'),
         fetch('/api/bing-ads'),
         fetch('/api/organic'),
-        fetch('/api/organic-yoy')
+        fetch('/api/organic-yoy'),
+        fetch('/api/landing-pages-weekly')
       ])
       
       if (adsRes.ok) setAdsData(await adsRes.json())
       if (bingRes.ok) setBingAdsData(await bingRes.json())
       if (organicRes.ok) setOrganicData(await organicRes.json())
       if (yoyRes.ok) setYoyData(await yoyRes.json())
+      if (lpRes.ok) setLandingPagesData(await lpRes.json())
     } catch (err) {
       console.error('Error fetching data:', err)
     }
@@ -127,7 +148,7 @@ export default function AdsTVPage() {
     }
   }, [])
 
-  if (!adsData || !bingAdsData || !organicData || !yoyData) {
+  if (!adsData || !bingAdsData || !organicData || !yoyData || !landingPagesData) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-6xl">Loading Marketing Dashboard...</div>
@@ -294,6 +315,41 @@ export default function AdsTVPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Landing Pages Section */}
+          <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-600/20 rounded-3xl p-6 border border-cyan-500/30 overflow-hidden">
+            <div className="text-3xl text-cyan-400 font-medium mb-4">TOP LANDING PAGES (5 WEEKS)</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-cyan-500/30">
+                    <th className="text-left py-2 px-2 text-cyan-300 font-medium">Landing Page</th>
+                    {landingPagesData.landing_pages[0]?.weeks.map((week, idx) => (
+                      <th key={idx} className="text-center py-2 px-2">
+                        <div className="text-cyan-300 font-medium text-xs">{week.label}</div>
+                        <div className="text-gray-400 text-[10px]">{week.date_range}</div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {landingPagesData.landing_pages.slice(0, 8).map((lp, lpIdx) => (
+                    <tr key={lpIdx} className="border-b border-cyan-500/20 hover:bg-cyan-900/20">
+                      <td className="py-3 px-2 text-white font-medium text-xs truncate max-w-[200px]" title={lp.landing_page}>
+                        {lp.landing_page}
+                      </td>
+                      {lp.weeks.map((week, weekIdx) => (
+                        <td key={weekIdx} className="text-center py-3 px-2">
+                          <div className="text-white font-semibold text-sm">{formatNumber(week.users)}</div>
+                          <div className="text-cyan-300 text-xs">{week.purchases} conv</div>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
