@@ -74,7 +74,7 @@ export default function AdsTVPage() {
   const fetchData = async () => {
     try {
       const [adsRes, bingRes, organicRes] = await Promise.all([
-        fetch('/api/ads'),
+        fetch('/api/ads-split'),
         fetch('/api/bing-ads'),
         fetch('/api/organic')
       ])
