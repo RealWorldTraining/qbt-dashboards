@@ -89,7 +89,7 @@ interface YoYData {
 }
 
 const formatNumber = (n: number) => Math.round(n).toLocaleString()
-const formatPercent = (n: number) => n.toFixed(1) + '%'
+const formatPercent = (n: number) => n.toFixed(2) + '%'
 const formatDollar = (n: number) => '$' + Math.round(n).toLocaleString()
 
 export default function AdsTVPage() {
