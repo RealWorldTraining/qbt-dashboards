@@ -88,41 +88,6 @@ interface YoYData {
   last_updated: string
 }
 
-interface LandingPageWeekData {
-  label: string
-  date_range: string
-  users: number
-  purchases: number
-  conversion_rate: number
-}
-
-interface LandingPageData {
-  landing_page: string
-  weeks: LandingPageWeekData[]
-}
-
-interface LandingPagesData {
-  landing_pages: LandingPageData[]
-  last_updated: string
-}
-
-interface GadsLandingPageMonthData {
-  label: string
-  month: string
-  clicks: number
-  conversions: number
-  conversion_rate: number
-}
-
-interface GadsLandingPageData {
-  landing_page: string
-  months: GadsLandingPageMonthData[]
-}
-
-interface GadsLandingPagesData {
-  landing_pages: GadsLandingPageData[]
-  last_updated: string
-}
 
 const formatNumber = (n: number) => Math.round(n).toLocaleString()
 const formatPercent = (n: number) => n.toFixed(2) + '%'
@@ -133,27 +98,21 @@ export default function AdsTVPage() {
   const [bingAdsData, setBingAdsData] = useState<BingAdsData | null>(null)
   const [organicData, setOrganicData] = useState<OrganicData | null>(null)
   const [yoyData, setYoyData] = useState<YoYData | null>(null)
-  const [landingPagesData, setLandingPagesData] = useState<LandingPagesData | null>(null)
-  const [gadsLandingPagesData, setGadsLandingPagesData] = useState<GadsLandingPagesData | null>(null)
   const [time, setTime] = useState(new Date())
 
   const fetchData = async () => {
     try {
-      const [adsRes, bingRes, organicRes, yoyRes, lpRes, gadsLpRes] = await Promise.all([
+      const [adsRes, bingRes, organicRes, yoyRes] = await Promise.all([
         fetch('/api/ads-split'),
         fetch('/api/bing-ads'),
         fetch('/api/organic'),
-        fetch('/api/organic-yoy'),
-        fetch('/api/landing-pages-weekly'),
-        fetch('/api/gads-landing-pages-monthly')
+        fetch('/api/organic-yoy')
       ])
-      
+
       if (adsRes.ok) setAdsData(await adsRes.json())
       if (bingRes.ok) setBingAdsData(await bingRes.json())
       if (organicRes.ok) setOrganicData(await organicRes.json())
       if (yoyRes.ok) setYoyData(await yoyRes.json())
-      if (lpRes.ok) setLandingPagesData(await lpRes.json())
-      if (gadsLpRes.ok) setGadsLandingPagesData(await gadsLpRes.json())
     } catch (err) {
       console.error('Error fetching data:', err)
     }
@@ -169,7 +128,7 @@ export default function AdsTVPage() {
     }
   }, [])
 
-  if (!adsData || !bingAdsData || !organicData || !yoyData || !landingPagesData || !gadsLandingPagesData) {
+  if (!adsData || !bingAdsData || !organicData || !yoyData) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-6xl">Loading Marketing Dashboard...</div>
@@ -339,41 +298,6 @@ export default function AdsTVPage() {
             </div>
           </div>
 
-          {/* Landing Pages Section */}
-          <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-600/20 rounded-3xl p-6 border border-cyan-500/30 overflow-hidden">
-            <div className="text-3xl text-cyan-400 font-medium mb-4">TOP LANDING PAGES (5 WEEKS)</div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-cyan-500/30">
-                    <th className="text-left py-2 px-2 text-cyan-300 font-medium text-sm">Landing Page</th>
-                    {landingPagesData.landing_pages[0]?.weeks.map((week, idx) => (
-                      <th key={idx} className="text-center py-2 px-2">
-                        <div className="text-cyan-300 font-medium text-xl">{week.label}</div>
-                        <div className="text-gray-400 text-sm">{week.date_range}</div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {landingPagesData.landing_pages.slice(0, 8).map((lp, lpIdx) => (
-                    <tr key={lpIdx} className="border-b border-cyan-500/20 hover:bg-cyan-900/20">
-                      <td className="py-3 px-2 text-white font-medium text-lg truncate max-w-[200px]" title={lp.landing_page}>
-                        {lp.landing_page}
-                      </td>
-                      {lp.weeks.map((week, weekIdx) => (
-                        <td key={weekIdx} className="text-center py-3 px-2">
-                          <div className="text-white font-bold text-base mb-1">{formatNumber(week.users)}</div>
-                          <div className="text-cyan-300 text-base">{week.purchases} conv</div>
-                          <div className="text-green-400 text-base font-semibold">{formatPercent(week.conversion_rate)}</div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
 
         {/* Right Panel: Details (60%) */}
@@ -480,41 +404,6 @@ export default function AdsTVPage() {
             </div>
           </div>
 
-          {/* Google Ads Landing Pages - Monthly */}
-          <div className="bg-[#1a1a1a] rounded-3xl p-10 border border-gray-800 mt-6">
-            <h2 className="text-5xl font-bold mb-8">Top Google Ads Landing Pages (5 Months)</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="text-left py-2 px-2 text-gray-400 font-medium text-lg">Landing Page</th>
-                    {gadsLandingPagesData.landing_pages[0]?.months.map((month, idx) => (
-                      <th key={idx} className="text-center py-2 px-2">
-                        <div className="text-gray-300 font-medium text-xl">{month.label}</div>
-                        <div className="text-gray-500 text-sm">{month.month}</div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {gadsLandingPagesData.landing_pages.slice(0, 8).map((lp, lpIdx) => (
-                    <tr key={lpIdx} className="border-b border-gray-800 hover:bg-gray-900/50">
-                      <td className="py-3 px-2 text-white font-medium text-lg truncate max-w-[200px]" title={lp.landing_page}>
-                        {lp.landing_page}
-                      </td>
-                      {lp.months.map((month, monthIdx) => (
-                        <td key={monthIdx} className="text-center py-3 px-2">
-                          <div className="text-white font-bold text-base mb-1">{formatNumber(month.clicks)}</div>
-                          <div className="text-cyan-400 text-base">{Math.round(month.conversions)} conv</div>
-                          <div className="text-green-400 text-base font-semibold">{formatPercent(month.conversion_rate)}</div>
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       </div>
     </div>
