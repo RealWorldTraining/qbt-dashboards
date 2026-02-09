@@ -5,6 +5,7 @@ import { RefreshCw } from "lucide-react"
 import { DashboardNav } from "@/components/DashboardNav"
 import { PerformanceChart } from "@/components/PerformanceChart"
 import { ChannelChart } from "@/components/ChannelChart"
+import { MiniLineChart } from "@/components/MiniLineChart"
 
 // Types for Google Ads data (now split by device)
 interface WeeklyMetrics {
@@ -59,6 +60,11 @@ interface OrganicData {
   last_week: OrganicWeek
   two_weeks_ago: OrganicWeek
   three_weeks_ago: OrganicWeek
+  trends?: {
+    users: number[]
+    purchases: number[]
+    conversionRate: number[]
+  }
   last_updated: string
 }
 
@@ -127,6 +133,7 @@ const LOADING_ORGANIC: OrganicData = {
   last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
+  trends: { users: [0, 0, 0, 0, 0, 0], purchases: [0, 0, 0, 0, 0, 0], conversionRate: [0, 0, 0, 0, 0, 0] },
   last_updated: new Date().toISOString()
 }
 
@@ -415,23 +422,12 @@ export default function AdsPage() {
             <div className="p-6">
               <div className="text-gray-400 text-sm mb-2">NEW VISITORS</div>
               <div className="text-white text-5xl font-bold mb-4">{formatNumber(organicData.this_week.totals.users)}</div>
-              <div className="space-y-2">
-                {[
-                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
-                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
-                  { label: "vs 2 wks", data: organicData.last_week }
-                ].map((comp, i) => {
-                  const change = comp.data.totals.users > 0 
-                    ? ((organicData.this_week.totals.users - comp.data.totals.users) / comp.data.totals.users * 100) : 0
-                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
-                  return (
-                    <div key={i} className="flex justify-between text-sm">
-                      <span className="text-gray-500">{comp.label}</span>
-                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
-                    </div>
-                  )
-                })}
-              </div>
+              {organicData.trends && (
+                <div className="mt-4">
+                  <MiniLineChart data={organicData.trends.users} color="#3B82F6" height={60} />
+                  <div className="text-gray-500 text-xs mt-2 text-center">Last 6 weeks</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -441,23 +437,12 @@ export default function AdsPage() {
             <div className="p-6">
               <div className="text-gray-400 text-sm mb-2">CONVERSIONS</div>
               <div className="text-white text-5xl font-bold mb-4">{organicData.this_week.totals.purchases}</div>
-              <div className="space-y-2">
-                {[
-                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
-                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
-                  { label: "vs 2 wks", data: organicData.last_week }
-                ].map((comp, i) => {
-                  const change = comp.data.totals.purchases > 0 
-                    ? ((organicData.this_week.totals.purchases - comp.data.totals.purchases) / comp.data.totals.purchases * 100) : 0
-                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
-                  return (
-                    <div key={i} className="flex justify-between text-sm">
-                      <span className="text-gray-500">{comp.label}</span>
-                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
-                    </div>
-                  )
-                })}
-              </div>
+              {organicData.trends && (
+                <div className="mt-4">
+                  <MiniLineChart data={organicData.trends.purchases} color="#10B981" height={60} />
+                  <div className="text-gray-500 text-xs mt-2 text-center">Last 6 weeks</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -471,26 +456,12 @@ export default function AdsPage() {
                   ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(2) 
                   : "0"}%
               </div>
-              <div className="space-y-2">
-                {[
-                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
-                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
-                  { label: "vs 2 wks", data: organicData.last_week }
-                ].map((comp, i) => {
-                  const currentRate = organicData.this_week.totals.users > 0 
-                    ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100) : 0
-                  const prevRate = comp.data.totals.users > 0 
-                    ? (comp.data.totals.purchases / comp.data.totals.users * 100) : 0
-                  const change = prevRate > 0 ? ((currentRate - prevRate) / prevRate * 100) : 0
-                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
-                  return (
-                    <div key={i} className="flex justify-between text-sm">
-                      <span className="text-gray-500">{comp.label}</span>
-                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
-                    </div>
-                  )
-                })}
-              </div>
+              {organicData.trends && (
+                <div className="mt-4">
+                  <MiniLineChart data={organicData.trends.conversionRate} color="#A855F7" height={60} />
+                  <div className="text-gray-500 text-xs mt-2 text-center">Last 6 weeks</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
