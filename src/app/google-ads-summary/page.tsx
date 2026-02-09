@@ -225,6 +225,32 @@ export default function GoogleAdsSummaryPage() {
   const currentMobile = getDeviceMetrics('Mobile', 0)
   const previousMobile = getDeviceMetrics('Mobile', 1)
 
+  // Derive totals from campaign data (sum all campaigns) so top row = Desktop + Mobile
+  const getTotalMetrics = (weekIndex: number) => {
+    if (!campaignData) return null
+
+    let spend = 0, impressions = 0, clicks = 0, conversions = 0
+
+    campaignData.campaigns.forEach(campaign => {
+      const weekData = campaign.data[weekIndex]
+      if (weekData) {
+        spend += weekData.cost
+        impressions += weekData.impressions
+        clicks += weekData.clicks
+        conversions += weekData.conversions
+      }
+    })
+
+    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0
+    const conv_rate = clicks > 0 ? (conversions / clicks) * 100 : 0
+    const cpa = conversions > 0 ? spend / conversions : 0
+
+    return { spend, impressions, clicks, conversions, ctr, conv_rate, cpa }
+  }
+
+  const currentTotal = getTotalMetrics(0)
+  const previousTotal = getTotalMetrics(1)
+
   // Reverse data for charts (oldest first)
   const chartData = [...data].reverse()
 
@@ -252,12 +278,12 @@ export default function GoogleAdsSummaryPage() {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        {currentWeek && (
+        {/* Summary Cards - derived from campaign data so totals = Desktop + Mobile */}
+        {currentTotal && (
           <div className="grid grid-cols-7 gap-3 mb-6">
             {metrics.map((metric) => {
-              const current = currentWeek[metric]
-              const previous = previousWeek?.[metric] || 0
+              const current = currentTotal[metric as keyof typeof currentTotal] as number
+              const previous = previousTotal?.[metric as keyof typeof previousTotal] as number || 0
               const absoluteChange = current - previous
               const color = METRIC_COLORS[metric]
               
