@@ -226,11 +226,11 @@ export default function AdsTVPage() {
           <div className="bg-[#1a1a1a] rounded-3xl p-10 border border-gray-800">
             <h2 className="text-5xl font-bold mb-8">Paid Advertising Performance</h2>
             
-            {/* Desktop | Mobile | Bing Ads - 3 columns */}
-            <div className="grid grid-cols-3 gap-8">
+            {/* GADS Desktop | GADS Mobile | Bing Desktop | Total - 4 columns */}
+            <div className="grid grid-cols-4 gap-8">
               {/* Google Ads Desktop */}
               <div className="border-l-8 border-green-500 pl-6">
-                <div className="text-3xl text-green-400 font-medium mb-6">Desktop</div>
+                <div className="text-3xl text-green-400 font-medium mb-6">GADS Desktop</div>
                 <div className="space-y-3">
                   <MetricRow label="Spend" value={formatDollar(adsData.desktop.this_week.spend)} />
                   <MetricRow label="Clicks" value={formatNumber(adsData.desktop.this_week.clicks)} />
@@ -242,7 +242,7 @@ export default function AdsTVPage() {
 
               {/* Google Ads Mobile */}
               <div className="border-l-8 border-purple-500 pl-6">
-                <div className="text-3xl text-purple-400 font-medium mb-6">Mobile</div>
+                <div className="text-3xl text-purple-400 font-medium mb-6">GADS Mobile</div>
                 <div className="space-y-3">
                   <MetricRow label="Spend" value={formatDollar(adsData.mobile.this_week.spend)} />
                   <MetricRow label="Clicks" value={formatNumber(adsData.mobile.this_week.clicks)} />
@@ -252,15 +252,50 @@ export default function AdsTVPage() {
                 </div>
               </div>
 
-              {/* Bing Ads */}
+              {/* Bing Desktop */}
               <div className="border-l-8 border-cyan-500 pl-6">
-                <div className="text-3xl text-cyan-400 font-medium mb-6">Bing Ads</div>
+                <div className="text-3xl text-cyan-400 font-medium mb-6">Bing Desktop</div>
                 <div className="space-y-3">
                   <MetricRow label="Spend" value={formatDollar(bingSpend)} />
                   <MetricRow label="Clicks" value={formatNumber(bingAdsData.this_week.clicks)} />
                   <MetricRow label="Conv" value={String(bingConv)} />
                   <MetricRow label="CPA" value={formatDollar(bingAdsData.this_week.cpa)} />
                   <MetricRow label="CTR" value={formatPercent(bingAdsData.this_week.ctr)} />
+                </div>
+              </div>
+
+              {/* Total Paid Ads */}
+              <div className="border-l-8 border-yellow-500 pl-6">
+                <div className="text-3xl text-yellow-400 font-medium mb-6">Total</div>
+                <div className="space-y-3">
+                  <MetricRow 
+                    label="Spend" 
+                    value={formatDollar(adsData.desktop.this_week.spend + adsData.mobile.this_week.spend + bingAdsData.this_week.spend)} 
+                  />
+                  <MetricRow 
+                    label="Clicks" 
+                    value={formatNumber(adsData.desktop.this_week.clicks + adsData.mobile.this_week.clicks + bingAdsData.this_week.clicks)} 
+                  />
+                  <MetricRow 
+                    label="Conv" 
+                    value={String(adsData.desktop.this_week.conversions + adsData.mobile.this_week.conversions + bingAdsData.this_week.conversions)} 
+                  />
+                  <MetricRow 
+                    label="CPA" 
+                    value={(() => {
+                      const totalSpend = adsData.desktop.this_week.spend + adsData.mobile.this_week.spend + bingAdsData.this_week.spend
+                      const totalConv = adsData.desktop.this_week.conversions + adsData.mobile.this_week.conversions + bingAdsData.this_week.conversions
+                      return formatDollar(totalConv > 0 ? totalSpend / totalConv : 0)
+                    })()} 
+                  />
+                  <MetricRow 
+                    label="CTR" 
+                    value={(() => {
+                      const totalClicks = adsData.desktop.this_week.clicks + adsData.mobile.this_week.clicks + bingAdsData.this_week.clicks
+                      const totalImpr = adsData.desktop.this_week.impressions + adsData.mobile.this_week.impressions + bingAdsData.this_week.impressions
+                      return formatPercent(totalImpr > 0 ? (totalClicks / totalImpr) * 100 : 0)
+                    })()} 
+                  />
                 </div>
               </div>
             </div>
