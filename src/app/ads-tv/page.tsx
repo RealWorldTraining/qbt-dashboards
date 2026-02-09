@@ -296,12 +296,6 @@ export default function AdsTVPage() {
               ))}
             </div>
           </div>
-
-          {/* Ad Spend Row (no YoY for now) */}
-          <div className="bg-gradient-to-br from-orange-900/40 to-orange-600/20 rounded-3xl p-6 border border-orange-500/30">
-            <div className="text-3xl text-orange-400 font-medium mb-4">TOTAL AD SPEND</div>
-            <div className="text-6xl font-bold">{formatDollar(totalSpend)}</div>
-          </div>
         </div>
 
         {/* Right Panel: Details (60%) */}
