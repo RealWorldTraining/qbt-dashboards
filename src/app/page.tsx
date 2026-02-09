@@ -19,6 +19,7 @@ import {
   Check,
   AlertCircle,
   Target,
+  MapPin,
 } from "lucide-react"
 
 const dashboards = [
@@ -118,10 +119,18 @@ const dashboards = [
     color: "from-violet-500 to-purple-600",
     stats: "Trends • YoY • Analysis"
   },
-  { 
-    name: "Vision Analytics", 
-    href: "/vision", 
-    icon: Zap, 
+  {
+    name: "Landing Pages",
+    href: "/landing-pages",
+    icon: MapPin,
+    description: "GA4 & Google Ads landing page performance by week",
+    color: "from-teal-500 to-cyan-600",
+    stats: "Pages • Conversions • Weekly"
+  },
+  {
+    name: "Vision Analytics",
+    href: "/vision",
+    icon: Zap,
     description: "Keyword-level bid optimization & CPA trend analysis",
     color: "from-fuchsia-500 to-pink-600",
     stats: "Bids • Keywords • CPA"

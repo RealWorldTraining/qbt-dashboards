@@ -17,6 +17,7 @@ import {
   Search,
   Smartphone,
   Target,
+  MapPin,
 } from "lucide-react"
 
 const dashboards = [
@@ -37,6 +38,7 @@ const dashboards = [
   { name: "GA4 Summary", href: "/playground", icon: BarChart3, description: "Monthly traffic by channel" },
   { name: "Google Ads", href: "/google-ads-summary", icon: BarChart3, description: "Google Ads weekly metrics" },
   { name: "Bing Ads", href: "/bing-ads-summary", icon: Search, description: "Bing Ads weekly metrics" },
+  { name: "Landing Pages", href: "/landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
   { name: "Vision Analytics", href: "/vision", icon: TrendingUp, description: "Keyword-level bid optimization" },
 ]
 
