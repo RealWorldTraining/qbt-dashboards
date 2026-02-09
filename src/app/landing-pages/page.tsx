@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { DashboardNav } from '@/components/DashboardNav'
 
 interface LandingPageWeekData {
   label: string
@@ -92,10 +93,12 @@ export default function LandingPagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-6 xl:p-8 overflow-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 xl:mb-8">
-        <h1 className="text-3xl md:text-5xl xl:text-7xl font-bold">Landing Pages</h1>
+    <div className="min-h-screen bg-black text-white overflow-auto">
+      <DashboardNav />
+      <div className="p-4 md:p-6 xl:p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 xl:mb-8">
+          <h1 className="text-3xl md:text-5xl xl:text-7xl font-bold">Landing Pages</h1>
         <div className="text-right">
           <div className="text-2xl md:text-4xl xl:text-6xl font-mono">{time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
           <div className="text-sm md:text-xl xl:text-3xl text-gray-500 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div>
@@ -178,6 +181,7 @@ export default function LandingPagesPage() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
