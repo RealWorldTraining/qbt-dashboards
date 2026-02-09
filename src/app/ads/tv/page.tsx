@@ -17,7 +17,20 @@ interface WeeklyMetrics {
   roas: number
 }
 
-interface AdsData {
+interface DeviceAdsData {
+  this_week: WeeklyMetrics
+  last_week: WeeklyMetrics
+  two_weeks_ago: WeeklyMetrics
+  three_weeks_ago: WeeklyMetrics
+}
+
+interface GoogleAdsData {
+  desktop: DeviceAdsData
+  mobile: DeviceAdsData
+  last_updated: string
+}
+
+interface BingAdsData {
   this_week: WeeklyMetrics
   last_week: WeeklyMetrics
   two_weeks_ago: WeeklyMetrics
@@ -79,13 +92,6 @@ interface CampaignData {
 }
 
 const LOADING_CHANNEL: ChannelMetrics = { users: 0, purchases: 0, conv_rate: 0, pct_of_users: 0, pct_of_purchases: 0 }
-const LOADING_ADS: AdsData = {
-  this_week: { week_label: "", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-  last_week: { week_label: "", date_range: "", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-  two_weeks_ago: { week_label: "", date_range: "", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-  three_weeks_ago: { week_label: "", date_range: "", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-  last_updated: ""
-}
 const LOADING_ORGANIC: OrganicData = {
   this_week: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, bing_cpc: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   last_week: { week_label: "", date_range: "", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, bing_cpc: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
@@ -117,13 +123,34 @@ function Trend({ current, previous, inverse = false }: { current: number; previo
 }
 
 export default function TVDashboard() {
-  const [adsData, setAdsData] = useState<AdsData>(LOADING_ADS)
+  const [googleAdsData, setGoogleAdsData] = useState<GoogleAdsData | null>(null)
   const [organicData, setOrganicData] = useState<OrganicData>(LOADING_ORGANIC)
   const [campaignData, setCampaignData] = useState<CampaignData>(LOADING_CAMPAIGNS)
-  const [bingAdsData, setBingAdsData] = useState<AdsData>(LOADING_ADS)
+  const [bingAdsData, setBingAdsData] = useState<BingAdsData | null>(null)
   const [bingCampaignData, setBingCampaignData] = useState<CampaignData>(LOADING_CAMPAIGNS)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
+
+  // Helper to combine desktop + mobile Google Ads data
+  const combineDeviceData = (desktop: WeeklyMetrics, mobile: WeeklyMetrics): WeeklyMetrics => {
+    const totalSpend = desktop.spend + mobile.spend
+    const totalImpressions = desktop.impressions + mobile.impressions
+    const totalClicks = desktop.clicks + mobile.clicks
+    const totalConversions = desktop.conversions + mobile.conversions
+    
+    return {
+      week_label: desktop.week_label,
+      date_range: desktop.date_range,
+      spend: totalSpend,
+      impressions: totalImpressions,
+      clicks: totalClicks,
+      ctr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
+      conversions: totalConversions,
+      conversion_rate: totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0,
+      cpa: totalConversions > 0 ? totalSpend / totalConversions : 0,
+      roas: totalSpend > 0 ? (totalConversions * 500) / totalSpend : 0
+    }
+  }
 
   const fetchData = async () => {
     setLoading(true)
@@ -131,7 +158,7 @@ export default function TVDashboard() {
       const [adsRes, organicRes, campaignRes, bingAdsRes, bingCampaignRes] = await Promise.all([
         fetch('/api/ads'), fetch('/api/organic'), fetch('/api/campaigns'), fetch('/api/bing-ads'), fetch('/api/bing-campaigns')
       ])
-      if (adsRes.ok) setAdsData(await adsRes.json())
+      if (adsRes.ok) setGoogleAdsData(await adsRes.json())
       if (organicRes.ok) setOrganicData(await organicRes.json())
       if (campaignRes.ok) setCampaignData(await campaignRes.json())
       if (bingAdsRes.ok) setBingAdsData(await bingAdsRes.json())
@@ -142,6 +169,24 @@ export default function TVDashboard() {
   }
 
   useEffect(() => { fetchData() }, [])
+
+  // Show loading state
+  if (!googleAdsData || !bingAdsData) {
+    return (
+      <div className="w-[2304px] h-[1296px] bg-black text-white flex items-center justify-center">
+        <div className="text-4xl">Loading...</div>
+      </div>
+    )
+  }
+
+  // Combine desktop + mobile for Google Ads
+  const adsData = {
+    this_week: combineDeviceData(googleAdsData.desktop.this_week, googleAdsData.mobile.this_week),
+    last_week: combineDeviceData(googleAdsData.desktop.last_week, googleAdsData.mobile.last_week),
+    two_weeks_ago: combineDeviceData(googleAdsData.desktop.two_weeks_ago, googleAdsData.mobile.two_weeks_ago),
+    three_weeks_ago: combineDeviceData(googleAdsData.desktop.three_weeks_ago, googleAdsData.mobile.three_weeks_ago),
+    last_updated: googleAdsData.last_updated
+  }
 
   const campaignOrder = ['Certification-Desktop', 'Training-Desktop', 'Classes-Desktop', 'Courses-Desktop', 'Certification-Mobile', 'Training-Mobile', 'Classes-Mobile', 'Courses-Mobile']
   const sortCampaigns = (campaigns: CampaignData['campaigns']) => [...campaigns].sort((a, b) => {

@@ -202,7 +202,28 @@ export default function BingCPCPage() {
             >
               📊 View Bing Ads Trends
             </a>
-            <span className="text-gray-500 text-sm">Prior Week: {data.summary.lastUpdated}</span>
+            <span className="text-gray-500 text-sm">Data from: {(() => {
+              // Calculate prior week range (Monday-Sunday)
+              const today = new Date()
+              const currentDay = today.getDay()
+              const daysToMonday = currentDay === 0 ? -6 : 1 - currentDay
+              const thisMonday = new Date(today)
+              thisMonday.setDate(today.getDate() + daysToMonday)
+              
+              const priorMonday = new Date(thisMonday)
+              priorMonday.setDate(thisMonday.getDate() - 7)
+              
+              const priorSunday = new Date(priorMonday)
+              priorSunday.setDate(priorMonday.getDate() + 6)
+              
+              const formatDate = (d: Date) => {
+                const month = String(d.getMonth() + 1).padStart(2, '0')
+                const day = String(d.getDate()).padStart(2, '0')
+                return `${month}/${day}`
+              }
+              
+              return `${formatDate(priorMonday)} - ${formatDate(priorSunday)}`
+            })()}</span>
           </div>
         </div>
 

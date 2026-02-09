@@ -83,14 +83,12 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Aggregate by week AND device type (Desktop vs Mobile)
+    // Aggregate by week (daily data → weekly aggregation, sum across device types)
     // Columns: A=Date, B=Account, C=Device, D=Clicks, E=Impressions, F=CTR, G=Avg.CPC, H=Cost, I=Avg.CPM, J=Conversions, K=Cross-device, L=Cost/conv
-    const weeklyDesktopAgg = new Map<string, WeeklyRow>()
-    const weeklyMobileAgg = new Map<string, WeeklyRow>()
+    const weeklyAgg = new Map<string, WeeklyRow>()
     
     rows.slice(1).forEach(row => {
       const dateStr = row[0]
-      const device = (row[2] || '').toLowerCase()
       if (!dateStr) return
       
       // Determine which week this date belongs to
@@ -103,16 +101,8 @@ export async function GET() {
       endDate.setDate(startDate.getDate() + 6)
       const weekEnd = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`
       
-      // Determine which map to use based on device type
-      let targetMap: Map<string, WeeklyRow>
-      if (device.includes('mobile') || device.includes('tablet')) {
-        targetMap = weeklyMobileAgg
-      } else {
-        targetMap = weeklyDesktopAgg
-      }
-      
       const key = weekStart
-      const existing = targetMap.get(key) || {
+      const existing = weeklyAgg.get(key) || {
         week_start: weekStart,
         week_end: weekEnd,
         spend: 0,
@@ -130,13 +120,11 @@ export async function GET() {
       existing.spend += parseNumber(row[7])
       existing.conversions += parseNumber(row[9])
       
-      targetMap.set(key, existing)
+      weeklyAgg.set(key, existing)
     })
 
-    // Convert to arrays and sort by week_start descending
-    const allDesktopWeeks = Array.from(weeklyDesktopAgg.values())
-      .sort((a, b) => b.week_start.localeCompare(a.week_start))
-    const allMobileWeeks = Array.from(weeklyMobileAgg.values())
+    // Convert to array and sort by week_start descending
+    const allWeeks = Array.from(weeklyAgg.values())
       .sort((a, b) => b.week_start.localeCompare(a.week_start))
     
     // Determine current week's Monday to filter out incomplete weeks
@@ -144,8 +132,7 @@ export async function GET() {
     const currentWeekStart = getWeekStart(now)
     
     // Filter out the current week (incomplete) - only show complete weeks
-    const completeDesktopWeeks = allDesktopWeeks.filter(w => w.week_start < currentWeekStart)
-    const completeMobileWeeks = allMobileWeeks.filter(w => w.week_start < currentWeekStart)
+    const completeWeeks = allWeeks.filter(w => w.week_start < currentWeekStart)
 
     const formatWeek = (w: WeeklyRow | undefined, label: string) => {
       if (!w) {
@@ -183,18 +170,10 @@ export async function GET() {
     }
 
     const data = {
-      desktop: {
-        this_week: formatWeek(completeDesktopWeeks[0], 'Prior Week'),
-        last_week: formatWeek(completeDesktopWeeks[1], '2 Weeks Ago'),
-        two_weeks_ago: formatWeek(completeDesktopWeeks[2], '3 Weeks Ago'),
-        three_weeks_ago: formatWeek(completeDesktopWeeks[3], '4 Weeks Ago'),
-      },
-      mobile: {
-        this_week: formatWeek(completeMobileWeeks[0], 'Prior Week'),
-        last_week: formatWeek(completeMobileWeeks[1], '2 Weeks Ago'),
-        two_weeks_ago: formatWeek(completeMobileWeeks[2], '3 Weeks Ago'),
-        three_weeks_ago: formatWeek(completeMobileWeeks[3], '4 Weeks Ago'),
-      },
+      this_week: formatWeek(completeWeeks[0], 'Prior Week'),
+      last_week: formatWeek(completeWeeks[1], '2 Weeks Ago'),
+      two_weeks_ago: formatWeek(completeWeeks[2], '3 Weeks Ago'),
+      three_weeks_ago: formatWeek(completeWeeks[3], '4 Weeks Ago'),
       last_updated: new Date().toISOString(),
     }
 

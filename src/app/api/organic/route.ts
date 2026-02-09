@@ -176,13 +176,13 @@ export async function GET() {
       })
     }
 
-    // Get last 6 weeks EXCLUDING incomplete current week
+    // Get last 5 weeks EXCLUDING incomplete current week
     const now = new Date()
     const currentWeekStart = getWeekStart(now)
     
     const sortedWeeks = Array.from(weeklySourceData.keys()).sort().reverse()
     const completeWeeks = sortedWeeks.filter(w => w < currentWeekStart)
-    const last6Weeks = completeWeeks.slice(0, 6)
+    const last5Weeks = completeWeeks.slice(0, 5)
 
     const formatWeek = (weekKey: string, label: string) => {
       const sourceData = weeklySourceData.get(weekKey)
@@ -267,8 +267,8 @@ export async function GET() {
       }
     }
 
-    const weekLabels = ['Prior Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago', '6 Weeks Ago']
-    const formattedWeeks = last6Weeks.map((weekKey, idx) => formatWeek(weekKey, weekLabels[idx]))
+    const weekLabels = ['Prior Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
+    const formattedWeeks = last5Weeks.map((weekKey, idx) => formatWeek(weekKey, weekLabels[idx]))
 
     // Build response in expected format for /ads page
     const buildWeekResponse = (weekData: ReturnType<typeof formatWeek> | undefined) => {
@@ -311,26 +311,12 @@ export async function GET() {
       }
     }
 
-    // Build 6-week trend arrays for sparklines (oldest to newest for chart display)
-    const reversedWeeks = [...last6Weeks].reverse()
-    const trendData = {
-      users: reversedWeeks.map(wk => weeklyChannelData.get(wk)?.total_users || 0),
-      purchases: reversedWeeks.map(wk => weeklyChannelData.get(wk)?.total_purchases || 0),
-      conversionRate: reversedWeeks.map(wk => {
-        const data = weeklyChannelData.get(wk)
-        if (!data || data.total_users === 0) return 0
-        return (data.total_purchases / data.total_users) * 100
-      })
-    }
-
     return NextResponse.json({
       this_week: buildWeekResponse(formattedWeeks[0]),
       last_week: buildWeekResponse(formattedWeeks[1]),
       two_weeks_ago: buildWeekResponse(formattedWeeks[2]),
       three_weeks_ago: buildWeekResponse(formattedWeeks[3]),
       four_weeks_ago: buildWeekResponse(formattedWeeks[4]),
-      five_weeks_ago: buildWeekResponse(formattedWeeks[5]),
-      trends: trendData,
       data: formattedWeeks,
       last_updated: new Date().toISOString()
     }, {

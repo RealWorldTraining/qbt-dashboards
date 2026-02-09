@@ -5,9 +5,8 @@ import { RefreshCw } from "lucide-react"
 import { DashboardNav } from "@/components/DashboardNav"
 import { PerformanceChart } from "@/components/PerformanceChart"
 import { ChannelChart } from "@/components/ChannelChart"
-import { MiniLineChart } from "@/components/MiniLineChart"
 
-// Types for Google Ads data (now split by device)
+// Types for Google Ads data
 interface WeeklyMetrics {
   week_label: string
   date_range: string
@@ -21,16 +20,11 @@ interface WeeklyMetrics {
   roas: number
 }
 
-interface DeviceAdsData {
+interface AdsData {
   this_week: WeeklyMetrics
   last_week: WeeklyMetrics
   two_weeks_ago: WeeklyMetrics
   three_weeks_ago: WeeklyMetrics
-}
-
-interface AdsData {
-  desktop: DeviceAdsData
-  mobile: DeviceAdsData
   last_updated: string
 }
 
@@ -60,11 +54,6 @@ interface OrganicData {
   last_week: OrganicWeek
   two_weeks_ago: OrganicWeek
   three_weeks_ago: OrganicWeek
-  trends?: {
-    users: number[]
-    purchases: number[]
-    conversionRate: number[]
-  }
   last_updated: string
 }
 
@@ -92,16 +81,11 @@ interface CampaignData {
 }
 
 // Initial loading states
-const LOADING_DEVICE_DATA: DeviceAdsData = {
+const LOADING_ADS: AdsData = {
   this_week: { week_label: "Prior Week", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
   last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
   two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
   three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, conversion_rate: 0, cpa: 0, roas: 0 },
-}
-
-const LOADING_ADS: AdsData = {
-  desktop: LOADING_DEVICE_DATA,
-  mobile: LOADING_DEVICE_DATA,
   last_updated: new Date().toISOString()
 }
 
@@ -133,7 +117,6 @@ const LOADING_ORGANIC: OrganicData = {
   last_week: { week_label: "2 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   two_weeks_ago: { week_label: "3 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
   three_weeks_ago: { week_label: "4 Weeks Ago", date_range: "Loading...", totals: { users: 0, purchases: 0 }, google_ads: LOADING_CHANNEL, google_organic: LOADING_CHANNEL, direct: LOADING_CHANNEL, bing_organic: LOADING_CHANNEL, qb_intuit: LOADING_CHANNEL, other: LOADING_CHANNEL },
-  trends: { users: [0, 0, 0, 0, 0, 0], purchases: [0, 0, 0, 0, 0, 0], conversionRate: [0, 0, 0, 0, 0, 0] },
   last_updated: new Date().toISOString()
 }
 
@@ -145,8 +128,8 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US").format(Math.round(value))
 }
 
-function formatPercent(value: number, decimals: number = 1): string {
-  return `${value.toFixed(decimals)}%`
+function formatPercent(value: number): string {
+  return `${value.toFixed(1)}%`
 }
 
 // Google Ads Hero Card
@@ -263,68 +246,6 @@ function ChannelCard({ name, accentColor, current, weeks }: ChannelCardProps) {
   )
 }
 
-// Campaign Card Component
-interface CampaignCardProps {
-  name: string
-  data: CampaignMetrics | null
-  accentColor: string
-}
-
-function CampaignCard({ name, data, accentColor }: CampaignCardProps) {
-  if (!data) {
-    return (
-      <div className="bg-[#1a1a1a] rounded-lg overflow-hidden opacity-50">
-        <div className={`h-1 ${accentColor}`} />
-        <div className="p-3">
-          <div className="text-gray-400 text-xs font-medium mb-2 truncate" title={name}>
-            {name.toUpperCase()}
-          </div>
-          <div className="text-gray-600 text-xs">No data</div>
-        </div>
-      </div>
-    )
-  }
-  
-  return (
-    <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
-      <div className={`h-1 ${accentColor}`} />
-      <div className="p-3">
-        <div className="text-gray-400 text-xs font-medium mb-3 truncate" title={name}>
-          {name.replace(/-/g, ' ').toUpperCase()}
-        </div>
-        
-        {/* Primary metrics grid */}
-        <div className="grid grid-cols-3 gap-2 text-xs mb-2">
-          <div>
-            <div className="text-white font-bold">{formatCurrency(data.cost)}</div>
-            <div className="text-gray-500">Spend</div>
-          </div>
-          <div>
-            <div className="text-white font-bold">{data.conversions}</div>
-            <div className="text-gray-500">Conv</div>
-          </div>
-          <div>
-            <div className="text-white font-bold">{formatNumber(data.clicks)}</div>
-            <div className="text-gray-500">Clicks</div>
-          </div>
-        </div>
-        
-        {/* Secondary metrics */}
-        <div className="grid grid-cols-2 gap-2 text-xs border-t border-gray-800 pt-2">
-          <div>
-            <div className="text-cyan-400 font-bold">${data.avg_cpc.toFixed(2)}</div>
-            <div className="text-gray-500">Avg CPC</div>
-          </div>
-          <div>
-            <div className="text-orange-400 font-bold">{data.conversions > 0 ? formatCurrency(data.cost / data.conversions) : '$0'}</div>
-            <div className="text-gray-500">CPA</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function AdsPage() {
   const [adsData, setAdsData] = useState<AdsData>(LOADING_ADS)
   const [organicData, setOrganicData] = useState<OrganicData>(LOADING_ORGANIC)
@@ -366,12 +287,12 @@ export default function AdsPage() {
   }, [])
 
   // Build ads comparisons (ascending order: oldest first)
-  const buildAdsComparisons = (deviceData: DeviceAdsData, metric: keyof WeeklyMetrics) => {
-    const current = deviceData.this_week[metric] as number
+  const buildAdsComparisons = (metric: keyof WeeklyMetrics) => {
+    const current = adsData.this_week[metric] as number
     return [
-      { label: "4 wks", value: deviceData.three_weeks_ago[metric] as number, change: ((current - (deviceData.three_weeks_ago[metric] as number)) / (deviceData.three_weeks_ago[metric] as number)) * 100 },
-      { label: "3 wks", value: deviceData.two_weeks_ago[metric] as number, change: ((current - (deviceData.two_weeks_ago[metric] as number)) / (deviceData.two_weeks_ago[metric] as number)) * 100 },
-      { label: "2 wks", value: deviceData.last_week[metric] as number, change: ((current - (deviceData.last_week[metric] as number)) / (deviceData.last_week[metric] as number)) * 100 },
+      { label: "4 wks", value: adsData.three_weeks_ago[metric] as number, change: ((current - (adsData.three_weeks_ago[metric] as number)) / (adsData.three_weeks_ago[metric] as number)) * 100 },
+      { label: "3 wks", value: adsData.two_weeks_ago[metric] as number, change: ((current - (adsData.two_weeks_ago[metric] as number)) / (adsData.two_weeks_ago[metric] as number)) * 100 },
+      { label: "2 wks", value: adsData.last_week[metric] as number, change: ((current - (adsData.last_week[metric] as number)) / (adsData.last_week[metric] as number)) * 100 },
     ]
   }
 
@@ -407,7 +328,7 @@ export default function AdsPage() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm">{adsData.desktop.this_week.date_range}</span>
+            <span className="text-gray-400 text-sm">{adsData.this_week.date_range}</span>
             <button onClick={fetchData} disabled={loading} className="p-1.5 rounded hover:bg-gray-800">
               <RefreshCw className={`h-4 w-4 text-gray-400 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -422,12 +343,23 @@ export default function AdsPage() {
             <div className="p-6">
               <div className="text-gray-400 text-sm mb-2">NEW VISITORS</div>
               <div className="text-white text-5xl font-bold mb-4">{formatNumber(organicData.this_week.totals.users)}</div>
-              {organicData.trends && (
-                <div className="mt-4">
-                  <MiniLineChart data={organicData.trends.users} color="#3B82F6" height={60} />
-                  <div className="text-gray-500 text-xs mt-2 text-center">Last 6 weeks</div>
-                </div>
-              )}
+              <div className="space-y-2">
+                {[
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
+                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
+                  { label: "vs 2 wks", data: organicData.last_week }
+                ].map((comp, i) => {
+                  const change = comp.data.totals.users > 0 
+                    ? ((organicData.this_week.totals.users - comp.data.totals.users) / comp.data.totals.users * 100) : 0
+                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
+                  return (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-500">{comp.label}</span>
+                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
 
@@ -437,12 +369,23 @@ export default function AdsPage() {
             <div className="p-6">
               <div className="text-gray-400 text-sm mb-2">CONVERSIONS</div>
               <div className="text-white text-5xl font-bold mb-4">{organicData.this_week.totals.purchases}</div>
-              {organicData.trends && (
-                <div className="mt-4">
-                  <MiniLineChart data={organicData.trends.purchases} color="#10B981" height={60} />
-                  <div className="text-gray-500 text-xs mt-2 text-center">Last 6 weeks</div>
-                </div>
-              )}
+              <div className="space-y-2">
+                {[
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
+                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
+                  { label: "vs 2 wks", data: organicData.last_week }
+                ].map((comp, i) => {
+                  const change = comp.data.totals.purchases > 0 
+                    ? ((organicData.this_week.totals.purchases - comp.data.totals.purchases) / comp.data.totals.purchases * 100) : 0
+                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
+                  return (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-500">{comp.label}</span>
+                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
 
@@ -456,12 +399,26 @@ export default function AdsPage() {
                   ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100).toFixed(2) 
                   : "0"}%
               </div>
-              {organicData.trends && (
-                <div className="mt-4">
-                  <MiniLineChart data={organicData.trends.conversionRate} color="#A855F7" height={60} />
-                  <div className="text-gray-500 text-xs mt-2 text-center">Last 6 weeks</div>
-                </div>
-              )}
+              <div className="space-y-2">
+                {[
+                  { label: "vs 4 wks", data: organicData.three_weeks_ago },
+                  { label: "vs 3 wks", data: organicData.two_weeks_ago },
+                  { label: "vs 2 wks", data: organicData.last_week }
+                ].map((comp, i) => {
+                  const currentRate = organicData.this_week.totals.users > 0 
+                    ? (organicData.this_week.totals.purchases / organicData.this_week.totals.users * 100) : 0
+                  const prevRate = comp.data.totals.users > 0 
+                    ? (comp.data.totals.purchases / comp.data.totals.users * 100) : 0
+                  const change = prevRate > 0 ? ((currentRate - prevRate) / prevRate * 100) : 0
+                  const color = change > 0 ? "text-green-500" : change < 0 ? "text-red-500" : "text-gray-400"
+                  return (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-500">{comp.label}</span>
+                      <span className={color}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -514,133 +471,46 @@ export default function AdsPage() {
           </div>
         </div>
 
-        {/* Campaign Performance - Google Ads & Bing */}
-        {(campaignData.campaigns.length > 0 || bingCampaignData.campaigns.length > 0) && (
-          <div className="mb-6">
-            {/* Google Ads Campaigns */}
-            {campaignData.campaigns.length > 0 && (() => {
-              const campaignOrder = [
-                'Certification-Desktop', 'Training-Desktop', 'Classes-Desktop', 'Courses-Desktop',
-                'Certification-Mobile', 'Training-Mobile', 'Classes-Mobile', 'Courses-Mobile'
-              ]
-              const sortedCampaigns = [...campaignData.campaigns].sort((a, b) => {
-                const aIdx = campaignOrder.findIndex(name => a.name.includes(name.split('-')[0]) && a.name.includes(name.split('-')[1]))
-                const bIdx = campaignOrder.findIndex(name => b.name.includes(name.split('-')[0]) && b.name.includes(name.split('-')[1]))
-                if (aIdx === -1) return 1
-                if (bIdx === -1) return -1
-                return aIdx - bIdx
-              })
-              
-              const colors = ['bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-cyan-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500', 'bg-yellow-500']
-              
-              return (
-                <>
-                  <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Google Ads Campaigns (Prior Week)</h2>
-                  <div className="grid grid-cols-4 gap-3 mb-4">
-                    {sortedCampaigns.slice(0, 8).map((campaign, idx) => {
-                      const current = campaign.data[0]
-                      return (
-                        <CampaignCard
-                          key={campaign.name}
-                          name={campaign.name}
-                          data={current}
-                          accentColor={colors[idx % colors.length]}
-                        />
-                      )
-                    })}
-                  </div>
-                </>
-              )
-            })()}
-            
-            {/* Bing Ads Campaigns */}
-            {bingCampaignData.campaigns.length > 0 && (() => {
-              const bingOrder = ['Certification-Desktop', 'Training-Desktop', 'Classes-Desktop', 'Courses-Desktop']
-              const sortedBingCampaigns = [...bingCampaignData.campaigns].sort((a, b) => {
-                const aIdx = bingOrder.findIndex(name => a.name.includes(name.split('-')[0]))
-                const bIdx = bingOrder.findIndex(name => b.name.includes(name.split('-')[0]))
-                if (aIdx === -1) return 1
-                if (bIdx === -1) return -1
-                return aIdx - bIdx
-              })
-              
-              const bingColors = ['bg-teal-500', 'bg-blue-400', 'bg-indigo-500', 'bg-cyan-400']
-              
-              return (
-                <>
-                  <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Bing Ads Campaigns (Prior Week)</h2>
-                  <div className="grid grid-cols-4 gap-3">
-                    {sortedBingCampaigns.slice(0, 4).map((campaign, idx) => {
-                      const current = campaign.data[0]
-                      return (
-                        <CampaignCard
-                          key={campaign.name}
-                          name={campaign.name}
-                          data={current}
-                          accentColor={bingColors[idx % bingColors.length]}
-                        />
-                      )
-                    })}
-                  </div>
-                </>
-              )
-            })()}
-          </div>
-        )}
-
         {/* Section Divider */}
         <div className="border-t-2 border-gray-700 mb-6" />
 
-        {/* Google Ads Performance - Desktop & Mobile */}
+        {/* Google Ads Performance - 2 rows of 4 */}
         <div className="mb-4">
           <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Google Ads Performance</h2>
-          
-          {/* Desktop Row */}
-          <h3 className="text-gray-500 text-xs font-medium mb-1.5 ml-1">Desktop</h3>
-          <div className="grid grid-cols-7 gap-3 mb-3">
-            <AdsCard title="SPEND" value={formatCurrency(adsData.desktop.this_week.spend)} accentColor="bg-green-500" comparisons={buildAdsComparisons(adsData.desktop, 'spend')} />
-            <AdsCard title="IMPRESSIONS" value={formatNumber(adsData.desktop.this_week.impressions)} accentColor="bg-blue-500" comparisons={buildAdsComparisons(adsData.desktop, 'impressions')} />
-            <AdsCard title="CLICKS" value={formatNumber(adsData.desktop.this_week.clicks)} accentColor="bg-purple-500" comparisons={buildAdsComparisons(adsData.desktop, 'clicks')} />
-            <AdsCard title="CTR" value={formatPercent(adsData.desktop.this_week.ctr, 0)} accentColor="bg-cyan-500" comparisons={buildAdsComparisons(adsData.desktop, 'ctr')} />
-            <AdsCard title="CONVERSIONS" value={adsData.desktop.this_week.conversions} accentColor="bg-orange-500" comparisons={buildAdsComparisons(adsData.desktop, 'conversions')} />
-            <AdsCard title="CONV RATE" value={formatPercent(adsData.desktop.this_week.conversion_rate)} accentColor="bg-emerald-500" comparisons={buildAdsComparisons(adsData.desktop, 'conversion_rate')} />
-            <AdsCard title="CPA" value={formatCurrency(adsData.desktop.this_week.cpa)} accentColor="bg-red-500" comparisons={buildAdsComparisons(adsData.desktop, 'cpa')} inverse={true} />
-          </div>
-          
-          {/* Mobile Row */}
-          <h3 className="text-gray-500 text-xs font-medium mb-1.5 ml-1">Mobile</h3>
-          <div className="grid grid-cols-7 gap-3">
-            <AdsCard title="SPEND" value={formatCurrency(adsData.mobile.this_week.spend)} accentColor="bg-green-500" comparisons={buildAdsComparisons(adsData.mobile, 'spend')} />
-            <AdsCard title="IMPRESSIONS" value={formatNumber(adsData.mobile.this_week.impressions)} accentColor="bg-blue-500" comparisons={buildAdsComparisons(adsData.mobile, 'impressions')} />
-            <AdsCard title="CLICKS" value={formatNumber(adsData.mobile.this_week.clicks)} accentColor="bg-purple-500" comparisons={buildAdsComparisons(adsData.mobile, 'clicks')} />
-            <AdsCard title="CTR" value={formatPercent(adsData.mobile.this_week.ctr, 0)} accentColor="bg-cyan-500" comparisons={buildAdsComparisons(adsData.mobile, 'ctr')} />
-            <AdsCard title="CONVERSIONS" value={adsData.mobile.this_week.conversions} accentColor="bg-orange-500" comparisons={buildAdsComparisons(adsData.mobile, 'conversions')} />
-            <AdsCard title="CONV RATE" value={formatPercent(adsData.mobile.this_week.conversion_rate)} accentColor="bg-emerald-500" comparisons={buildAdsComparisons(adsData.mobile, 'conversion_rate')} />
-            <AdsCard title="CPA" value={formatCurrency(adsData.mobile.this_week.cpa)} accentColor="bg-red-500" comparisons={buildAdsComparisons(adsData.mobile, 'cpa')} inverse={true} />
+          <div className="grid grid-cols-8 gap-3">
+            <AdsCard title="SPEND" value={formatCurrency(adsData.this_week.spend)} accentColor="bg-green-500" comparisons={buildAdsComparisons('spend')} />
+            <AdsCard title="IMPRESSIONS" value={formatNumber(adsData.this_week.impressions)} accentColor="bg-blue-500" comparisons={buildAdsComparisons('impressions')} />
+            <AdsCard title="CLICKS" value={formatNumber(adsData.this_week.clicks)} accentColor="bg-purple-500" comparisons={buildAdsComparisons('clicks')} />
+            <AdsCard title="CTR" value={formatPercent(adsData.this_week.ctr)} accentColor="bg-cyan-500" comparisons={buildAdsComparisons('ctr')} />
+            <AdsCard title="CONVERSIONS" value={adsData.this_week.conversions} accentColor="bg-orange-500" comparisons={buildAdsComparisons('conversions')} />
+            <AdsCard title="CONV RATE" value={formatPercent(adsData.this_week.conversion_rate)} accentColor="bg-emerald-500" comparisons={buildAdsComparisons('conversion_rate')} />
+            <AdsCard title="CPA" value={formatCurrency(adsData.this_week.cpa)} accentColor="bg-red-500" comparisons={buildAdsComparisons('cpa')} inverse={true} />
+            <AdsCard title="ROAS" value={`${adsData.this_week.roas.toFixed(2)}x`} accentColor="bg-pink-500" comparisons={buildAdsComparisons('roas')} />
           </div>
         </div>
 
-        {/* Google Ads Trend Charts - Removed (data structure changed to desktop/mobile split) */}
-
-        {/* Section Divider */}
-        <div className="border-t-2 border-gray-700 mb-6" />
-
-        {/* Bing Ads Performance */}
-        <div className="mb-4">
-          <h2 className="text-gray-400 text-xs font-medium mb-2 uppercase tracking-wide">Bing Ads Performance</h2>
-          <div className="grid grid-cols-7 gap-3">
-            <AdsCard title="SPEND" value={formatCurrency(bingAdsData.this_week.spend)} accentColor="bg-green-500" comparisons={buildBingComparisons('spend')} />
-            <AdsCard title="IMPRESSIONS" value={formatNumber(bingAdsData.this_week.impressions)} accentColor="bg-blue-500" comparisons={buildBingComparisons('impressions')} />
-            <AdsCard title="CLICKS" value={formatNumber(bingAdsData.this_week.clicks)} accentColor="bg-purple-500" comparisons={buildBingComparisons('clicks')} />
-            <AdsCard title="CTR" value={formatPercent(bingAdsData.this_week.ctr, 0)} accentColor="bg-cyan-500" comparisons={buildBingComparisons('ctr')} />
-            <AdsCard title="CONVERSIONS" value={bingAdsData.this_week.conversions} accentColor="bg-orange-500" comparisons={buildBingComparisons('conversions')} />
-            <AdsCard title="CONV RATE" value={formatPercent(bingAdsData.this_week.conversion_rate)} accentColor="bg-emerald-500" comparisons={buildBingComparisons('conversion_rate')} />
-            <AdsCard title="CPA" value={formatCurrency(bingAdsData.this_week.cpa)} accentColor="bg-red-500" comparisons={buildBingComparisons('cpa')} inverse={true} />
-          </div>
+        {/* Google Ads Trend Charts */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <PerformanceChart
+            title="Google Ads: Spend & Conversions"
+            data={adsData}
+            metrics={[
+              { key: 'spend', label: 'Spend', color: '#10B981' },
+              { key: 'conversions', label: 'Conversions', color: '#F97316', yAxisID: 'y1' }
+            ]}
+          />
+          <PerformanceChart
+            title="Google Ads: CPA & ROAS"
+            data={adsData}
+            metrics={[
+              { key: 'cpa', label: 'CPA', color: '#EF4444' },
+              { key: 'roas', label: 'ROAS', color: '#EC4899', yAxisID: 'y1' }
+            ]}
+          />
         </div>
 
-        {/* OLD SECTIONS REMOVED - Campaign details now shown above under Traffic Sources */}
-        {false && campaignData.campaigns.length > 0 && (() => {
+        {/* Campaign Performance */}
+        {campaignData.campaigns.length > 0 && (() => {
           // Custom sort order: Desktop row then Mobile row
           const campaignOrder = [
             'Certification-Desktop', 'Training-Desktop', 'Classes-Desktop', 'Courses-Desktop',
