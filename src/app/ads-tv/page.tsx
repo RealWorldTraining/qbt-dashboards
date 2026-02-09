@@ -170,24 +170,37 @@ export default function AdsTVPage() {
       {/* Row 2: Traffic Channels Breakdown */}
       <div className="bg-[#0a0a0a] rounded-2xl xl:rounded-3xl p-4 md:p-6 border border-gray-800 mb-4 xl:mb-6">
         <div className="text-xl md:text-2xl xl:text-3xl text-gray-300 font-medium mb-4 xl:mb-6">TRAFFIC CHANNELS</div>
-        <table className="w-full">
+        <table className="w-full table-fixed">
+          <colgroup>
+            <col className="w-[14%]" />
+            {channelsData.week_headers.map((_, idx) => (
+              <col key={`nv-${idx}`} className="w-[7%]" />
+            ))}
+            {channelsData.week_headers.map((_, idx) => (
+              <col key={`s-${idx}`} className="w-[5%]" />
+            ))}
+            {channelsData.week_headers.map((_, idx) => (
+              <col key={`cv-${idx}`} className="w-[5.2%]" />
+            ))}
+          </colgroup>
           <thead>
             <tr className="border-b border-gray-800">
               <th className="text-left py-2 xl:py-3 px-2 text-gray-500 font-medium text-xs md:text-sm xl:text-lg">Channel</th>
               {channelsData.week_headers.map((header, idx) => (
-                <th key={idx} className="text-center py-2 xl:py-3 px-2" colSpan={2}>
+                <th key={idx} className="text-center py-2 xl:py-3 px-1" colSpan={3}>
                   <div className="text-gray-400 font-medium text-xs md:text-sm xl:text-lg">{header.label}</div>
-                  <div className="text-gray-600 text-xs md:text-xs xl:text-sm">{header.date_range}</div>
+                  <div className="text-gray-600 text-xs xl:text-sm">{header.date_range}</div>
                 </th>
               ))}
             </tr>
             <tr className="border-b border-gray-800/50">
               <th></th>
               {channelsData.week_headers.map((_, idx) => (
-                <th key={`u-${idx}`} colSpan={2} className="text-center py-1 px-2">
-                  <div className="flex justify-center gap-4 md:gap-8">
-                    <span className="text-gray-500 text-xs xl:text-sm">Users</span>
-                    <span className="text-gray-500 text-xs xl:text-sm">Sales</span>
+                <th key={`h-${idx}`} colSpan={3} className="py-1 px-1">
+                  <div className="grid grid-cols-3">
+                    <span className="text-gray-500 text-xs xl:text-sm text-right pr-2">New Visitors</span>
+                    <span className="text-gray-500 text-xs xl:text-sm text-right pr-2">Sales</span>
+                    <span className="text-gray-500 text-xs xl:text-sm text-right pr-2">Conv%</span>
                   </div>
                 </th>
               ))}
@@ -199,14 +212,18 @@ export default function AdsTVPage() {
                 <td className={`py-3 xl:py-4 px-2 font-medium text-sm md:text-base xl:text-xl ${CHANNEL_COLORS[channel.channel] || 'text-gray-400'}`}>
                   {channel.channel}
                 </td>
-                {channel.weeks.map((week, colIdx) => (
-                  <td key={colIdx} className="text-center py-3 xl:py-4 px-2" colSpan={2}>
-                    <div className="flex justify-center gap-4 md:gap-8">
-                      <span className="text-white font-bold text-sm md:text-lg xl:text-2xl">{formatNumber(week.users)}</span>
-                      <span className="text-green-400 font-semibold text-sm md:text-lg xl:text-2xl">{week.purchases}</span>
-                    </div>
-                  </td>
-                ))}
+                {channel.weeks.map((week, colIdx) => {
+                  const convRate = week.users > 0 ? (week.purchases / week.users) * 100 : 0
+                  return (
+                    <td key={colIdx} className="py-3 xl:py-4 px-1" colSpan={3}>
+                      <div className="grid grid-cols-3">
+                        <span className="text-white font-bold text-sm md:text-lg xl:text-2xl text-right pr-2">{formatNumber(week.users)}</span>
+                        <span className="text-green-400 font-semibold text-sm md:text-lg xl:text-2xl text-right pr-2">{week.purchases}</span>
+                        <span className="text-yellow-400 text-sm md:text-base xl:text-xl text-right pr-2">{convRate > 0 ? convRate.toFixed(1) + '%' : '—'}</span>
+                      </div>
+                    </td>
+                  )
+                })}
               </tr>
             ))}
           </tbody>
