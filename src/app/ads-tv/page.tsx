@@ -15,11 +15,25 @@ interface WeeklyMetrics {
   roas: number
 }
 
-interface AdsData {
+interface DeviceAdsData {
   this_week: WeeklyMetrics
   last_week: WeeklyMetrics
   two_weeks_ago: WeeklyMetrics
   three_weeks_ago: WeeklyMetrics
+}
+
+interface GoogleAdsData {
+  desktop: DeviceAdsData
+  mobile: DeviceAdsData
+  last_updated: string
+}
+
+interface BingAdsData {
+  this_week: WeeklyMetrics
+  last_week: WeeklyMetrics
+  two_weeks_ago: WeeklyMetrics
+  three_weeks_ago: WeeklyMetrics
+  last_updated: string
 }
 
 interface ChannelMetrics {
@@ -52,8 +66,8 @@ const formatPercent = (n: number) => n.toFixed(1) + '%'
 const formatDollar = (n: number) => '$' + Math.round(n).toLocaleString()
 
 export default function AdsTVPage() {
-  const [adsData, setAdsData] = useState<AdsData | null>(null)
-  const [bingAdsData, setBingAdsData] = useState<AdsData | null>(null)
+  const [adsData, setAdsData] = useState<GoogleAdsData | null>(null)
+  const [bingAdsData, setBingAdsData] = useState<BingAdsData | null>(null)
   const [organicData, setOrganicData] = useState<OrganicData | null>(null)
   const [time, setTime] = useState(new Date())
 
@@ -91,11 +105,37 @@ export default function AdsTVPage() {
     )
   }
 
-  const gadsSpend = adsData.this_week.spend
+  // Combine desktop + mobile Google Ads data
+  const combineDeviceData = (desktop: WeeklyMetrics, mobile: WeeklyMetrics): WeeklyMetrics => {
+    const totalSpend = desktop.spend + mobile.spend
+    const totalImpressions = desktop.impressions + mobile.impressions
+    const totalClicks = desktop.clicks + mobile.clicks
+    const totalConversions = desktop.conversions + mobile.conversions
+    
+    return {
+      week_label: desktop.week_label,
+      date_range: desktop.date_range,
+      spend: totalSpend,
+      impressions: totalImpressions,
+      clicks: totalClicks,
+      ctr: totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0,
+      conversions: totalConversions,
+      conversion_rate: totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0,
+      cpa: totalConversions > 0 ? totalSpend / totalConversions : 0,
+      roas: totalSpend > 0 ? (totalConversions * 500) / totalSpend : 0
+    }
+  }
+
+  const gadsThisWeek = combineDeviceData(adsData.desktop.this_week, adsData.mobile.this_week)
+  const gadsLastWeek = combineDeviceData(adsData.desktop.last_week, adsData.mobile.last_week)
+  const gadsTwoWeeksAgo = combineDeviceData(adsData.desktop.two_weeks_ago, adsData.mobile.two_weeks_ago)
+  const gadsThreeWeeksAgo = combineDeviceData(adsData.desktop.three_weeks_ago, adsData.mobile.three_weeks_ago)
+
+  const gadsSpend = gadsThisWeek.spend
   const bingSpend = bingAdsData.this_week.spend
   const totalSpend = gadsSpend + bingSpend
   
-  const gadsConv = adsData.this_week.conversions
+  const gadsConv = gadsThisWeek.conversions
   const bingConv = bingAdsData.this_week.conversions
   const totalConv = gadsConv + bingConv
   
@@ -108,16 +148,16 @@ export default function AdsTVPage() {
 
   // Calculate 4-week trends for sparklines
   const gadsSpendTrend = [
-    adsData.three_weeks_ago.spend,
-    adsData.two_weeks_ago.spend,
-    adsData.last_week.spend,
-    adsData.this_week.spend
+    gadsThreeWeeksAgo.spend,
+    gadsTwoWeeksAgo.spend,
+    gadsLastWeek.spend,
+    gadsThisWeek.spend
   ]
 
   const conversionsTrend = [
-    adsData.three_weeks_ago.conversions + bingAdsData.three_weeks_ago.conversions,
-    adsData.two_weeks_ago.conversions + bingAdsData.two_weeks_ago.conversions,
-    adsData.last_week.conversions + bingAdsData.last_week.conversions,
+    gadsThreeWeeksAgo.conversions + bingAdsData.three_weeks_ago.conversions,
+    gadsTwoWeeksAgo.conversions + bingAdsData.two_weeks_ago.conversions,
+    gadsLastWeek.conversions + bingAdsData.last_week.conversions,
     totalConv
   ]
 
@@ -145,7 +185,7 @@ export default function AdsTVPage() {
         <h1 className="text-7xl font-bold">Marketing Dashboard</h1>
         <div className="text-right">
           <div className="text-6xl font-mono">{time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
-          <div className="text-3xl text-gray-500 mt-2">{adsData.this_week.date_range}</div>
+          <div className="text-3xl text-gray-500 mt-2">{gadsThisWeek.date_range}</div>
         </div>
       </div>
 
@@ -192,9 +232,9 @@ export default function AdsTVPage() {
                 <div className="space-y-4">
                   <MetricRow label="Spend" value={formatDollar(gadsSpend)} />
                   <MetricRow label="Conversions" value={String(gadsConv)} />
-                  <MetricRow label="CPA" value={formatDollar(adsData.this_week.cpa)} />
-                  <MetricRow label="ROAS" value={adsData.this_week.roas.toFixed(2) + 'x'} />
-                  <MetricRow label="CTR" value={formatPercent(adsData.this_week.ctr)} />
+                  <MetricRow label="CPA" value={formatDollar(gadsThisWeek.cpa)} />
+                  <MetricRow label="ROAS" value={gadsThisWeek.roas.toFixed(2) + 'x'} />
+                  <MetricRow label="CTR" value={formatPercent(gadsThisWeek.ctr)} />
                 </div>
               </div>
 
