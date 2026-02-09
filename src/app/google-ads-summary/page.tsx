@@ -722,50 +722,6 @@ export default function GoogleAdsSummaryPage() {
               </table>
             </div>
             
-            {/* Detailed Campaign Metrics - Last Week */}
-            <h3 className="text-white text-md font-semibold mt-8 mb-4">Detailed Metrics - {campaignData.weeks[0]?.date_range || 'Last Week'}</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="text-left py-3 px-4 text-gray-400 font-medium">Campaign</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Spend</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Impr</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Clicks</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">CTR</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Avg CPC</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Conv</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Conv %</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Impr Share</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Top %</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Abs Top %</th>
-                    <th className="text-right py-3 px-3 text-gray-400 font-medium">Click Share</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedCampaigns.map((campaign, idx) => {
-                    const lastWeek = campaign.data[0]
-                    if (!lastWeek) return null
-                    return (
-                      <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
-                        <td className="py-3 px-4 text-white font-medium">{campaign.name}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatCurrency(lastWeek.cost)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.impressions)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.clicks)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.ctr)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatCurrencyPrecise(lastWeek.avg_cpc)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatNumber(lastWeek.conversions)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatConvRate(lastWeek.conv_rate)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_impression_share)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_top_impression_share)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.search_abs_top_impression_share)}</td>
-                        <td className="text-right py-3 px-3 text-gray-300">{formatPercent(lastWeek.click_share)}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
           </div>
         )})()}
 
