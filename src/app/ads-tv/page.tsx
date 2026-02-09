@@ -344,6 +344,7 @@ export default function AdsTVPage() {
                         <td key={weekIdx} className="text-center py-4 px-3">
                           <div className="text-white font-semibold text-3xl">{formatNumber(week.users)}</div>
                           <div className="text-cyan-300 text-2xl">{week.purchases} conv</div>
+                          <div className="text-green-400 text-2xl font-semibold">{formatPercent(week.conversion_rate)}</div>
                         </td>
                       ))}
                     </tr>
