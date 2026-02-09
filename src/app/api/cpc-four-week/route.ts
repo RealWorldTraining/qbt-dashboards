@@ -52,8 +52,8 @@ export async function GET() {
       date: row[0] || '',
       keyword: row[1] || '',
       campaign: row[2] || '',
-      clicks: parseNumber(row[6]),
-      impressions: parseNumber(row[7]),
+      impressions: parseNumber(row[6]),
+      clicks: parseNumber(row[7]),
       cost: parseNumber(row[10]),
       conversions: parseNumber(row[11])
     }))
