@@ -226,50 +226,41 @@ export default function AdsTVPage() {
           <div className="bg-[#1a1a1a] rounded-3xl p-10 border border-gray-800">
             <h2 className="text-5xl font-bold mb-8">Paid Advertising Performance</h2>
             
-            {/* Google Ads - Desktop & Mobile */}
-            <div className="mb-8">
-              <div className="text-4xl text-blue-400 font-medium mb-6">Google Ads</div>
-              <div className="grid grid-cols-2 gap-8">
-                {/* Desktop */}
-                <div className="border-l-8 border-green-500 pl-6">
-                  <div className="text-2xl text-green-400 font-medium mb-4">Desktop</div>
-                  <div className="space-y-3">
-                    <MetricRow label="Spend" value={formatDollar(adsData.desktop.this_week.spend)} />
-                    <MetricRow label="Clicks" value={formatNumber(adsData.desktop.this_week.clicks)} />
-                    <MetricRow label="Conv" value={String(adsData.desktop.this_week.conversions)} />
-                    <MetricRow label="CPA" value={formatDollar(adsData.desktop.this_week.cpa)} />
-                    <MetricRow label="CTR" value={formatPercent(adsData.desktop.this_week.ctr)} />
-                  </div>
-                </div>
-
-                {/* Mobile */}
-                <div className="border-l-8 border-purple-500 pl-6">
-                  <div className="text-2xl text-purple-400 font-medium mb-4">Mobile</div>
-                  <div className="space-y-3">
-                    <MetricRow label="Spend" value={formatDollar(adsData.mobile.this_week.spend)} />
-                    <MetricRow label="Clicks" value={formatNumber(adsData.mobile.this_week.clicks)} />
-                    <MetricRow label="Conv" value={String(adsData.mobile.this_week.conversions)} />
-                    <MetricRow label="CPA" value={formatDollar(adsData.mobile.this_week.cpa)} />
-                    <MetricRow label="CTR" value={formatPercent(adsData.mobile.this_week.ctr)} />
-                  </div>
+            {/* Desktop | Mobile | Bing Ads - 3 columns */}
+            <div className="grid grid-cols-3 gap-8">
+              {/* Google Ads Desktop */}
+              <div className="border-l-8 border-green-500 pl-6">
+                <div className="text-3xl text-green-400 font-medium mb-6">Desktop</div>
+                <div className="space-y-3">
+                  <MetricRow label="Spend" value={formatDollar(adsData.desktop.this_week.spend)} />
+                  <MetricRow label="Clicks" value={formatNumber(adsData.desktop.this_week.clicks)} />
+                  <MetricRow label="Conv" value={String(adsData.desktop.this_week.conversions)} />
+                  <MetricRow label="CPA" value={formatDollar(adsData.desktop.this_week.cpa)} />
+                  <MetricRow label="CTR" value={formatPercent(adsData.desktop.this_week.ctr)} />
                 </div>
               </div>
-            </div>
 
-            {/* Bing Ads */}
-            <div className="border-t border-gray-700 pt-8">
+              {/* Google Ads Mobile */}
+              <div className="border-l-8 border-purple-500 pl-6">
+                <div className="text-3xl text-purple-400 font-medium mb-6">Mobile</div>
+                <div className="space-y-3">
+                  <MetricRow label="Spend" value={formatDollar(adsData.mobile.this_week.spend)} />
+                  <MetricRow label="Clicks" value={formatNumber(adsData.mobile.this_week.clicks)} />
+                  <MetricRow label="Conv" value={String(adsData.mobile.this_week.conversions)} />
+                  <MetricRow label="CPA" value={formatDollar(adsData.mobile.this_week.cpa)} />
+                  <MetricRow label="CTR" value={formatPercent(adsData.mobile.this_week.ctr)} />
+                </div>
+              </div>
+
+              {/* Bing Ads */}
               <div className="border-l-8 border-cyan-500 pl-6">
                 <div className="text-3xl text-cyan-400 font-medium mb-6">Bing Ads</div>
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <MetricRow label="Spend" value={formatDollar(bingSpend)} />
-                    <MetricRow label="Clicks" value={formatNumber(bingAdsData.this_week.clicks)} />
-                    <MetricRow label="Conv" value={String(bingConv)} />
-                  </div>
-                  <div className="space-y-3">
-                    <MetricRow label="CPA" value={formatDollar(bingAdsData.this_week.cpa)} />
-                    <MetricRow label="CTR" value={formatPercent(bingAdsData.this_week.ctr)} />
-                  </div>
+                <div className="space-y-3">
+                  <MetricRow label="Spend" value={formatDollar(bingSpend)} />
+                  <MetricRow label="Clicks" value={formatNumber(bingAdsData.this_week.clicks)} />
+                  <MetricRow label="Conv" value={String(bingConv)} />
+                  <MetricRow label="CPA" value={formatDollar(bingAdsData.this_week.cpa)} />
+                  <MetricRow label="CTR" value={formatPercent(bingAdsData.this_week.ctr)} />
                 </div>
               </div>
             </div>
