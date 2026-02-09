@@ -256,12 +256,6 @@ export default function Home() {
             >
               Live Help (Real-time)
             </Link>
-            <Link 
-              href="/live-help-archive" 
-              className="px-4 py-2 text-sm text-gray-400 hover:text-white bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg transition-colors"
-            >
-              Live Help Archive
-            </Link>
             <a 
               href="https://qbtraining.com" 
               target="_blank"
