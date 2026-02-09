@@ -24,8 +24,6 @@ interface BingCPCRecommendation {
   imprTopClass: string
   imprAbsTopPct: number
   imprAbsTopClass: string
-  searchLostIsRank: number
-  searchLostClass: string
   headroomPct: number
   headroomClass: string
   avgCPC: number
@@ -87,13 +85,11 @@ export async function GET() {
       imprTopClass: row[16] || '',
       imprAbsTopPct: parseNumber(row[17]),
       imprAbsTopClass: row[18] || '',
-      searchLostIsRank: parseNumber(row[19]),
-      searchLostClass: row[20] || '',
-      headroomPct: parseNumber(row[21]),
-      headroomClass: row[22] || '',
-      avgCPC: parseNumber(row[23]),
-      trendSummary: row[24] || '',
-      primarySignal: row[25] || ''
+      headroomPct: parseNumber(row[19]),
+      headroomClass: row[20] || '',
+      avgCPC: parseNumber(row[21]),
+      trendSummary: row[22] || '',
+      primarySignal: row[23] || ''
     }))
 
     // Calculate summary stats

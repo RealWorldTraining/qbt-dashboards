@@ -46,8 +46,6 @@ interface BingCPCRecommendation {
   imprTopClass: string
   imprAbsTopPct: number
   imprAbsTopClass: string
-  searchLostIsRank: number
-  searchLostClass: string
   headroomPct: number
   headroomClass: string
   avgCPC: number
@@ -404,7 +402,6 @@ export default function BingCPCPage() {
                   <th className="text-center p-3">IMPR SHARE</th>
                   <th className="text-center p-3">TOP%</th>
                   <th className="text-center p-3">ABS TOP%</th>
-                  <th className="text-center p-3">LOST IS</th>
                 </tr>
               </thead>
               <tbody>
@@ -453,12 +450,6 @@ export default function BingCPCPage() {
                       <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
                            style={{ backgroundColor: classColors[rec.imprAbsTopClass], color: 'white' }}>
                         {rec.imprAbsTopPct.toFixed(0)}%
-                      </div>
-                    </td>
-                    <td className="p-3 text-center">
-                      <div className={`w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium`}
-                           style={{ backgroundColor: classColors[rec.searchLostClass], color: 'white' }}>
-                        {rec.searchLostIsRank.toFixed(1)}%
                       </div>
                     </td>
                   </tr>
