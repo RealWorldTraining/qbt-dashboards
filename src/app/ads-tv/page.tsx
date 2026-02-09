@@ -61,6 +61,33 @@ interface OrganicData {
   three_weeks_ago: OrganicWeek
 }
 
+interface YoYWeekData {
+  week_key: string
+  label: string
+  date_range: string
+  users: number
+  purchases: number
+  conversion_rate: number
+  yoy: {
+    week_key: string
+    date_range: string
+    users: number
+    purchases: number
+    conversion_rate: number
+    users_change: number
+    users_change_pct: number
+    purchases_change: number
+    purchases_change_pct: number
+    conv_rate_change: number
+    conv_rate_change_pct: number
+  }
+}
+
+interface YoYData {
+  weeks: YoYWeekData[]
+  last_updated: string
+}
+
 const formatNumber = (n: number) => Math.round(n).toLocaleString()
 const formatPercent = (n: number) => n.toFixed(1) + '%'
 const formatDollar = (n: number) => '$' + Math.round(n).toLocaleString()
@@ -69,19 +96,22 @@ export default function AdsTVPage() {
   const [adsData, setAdsData] = useState<GoogleAdsData | null>(null)
   const [bingAdsData, setBingAdsData] = useState<BingAdsData | null>(null)
   const [organicData, setOrganicData] = useState<OrganicData | null>(null)
+  const [yoyData, setYoyData] = useState<YoYData | null>(null)
   const [time, setTime] = useState(new Date())
 
   const fetchData = async () => {
     try {
-      const [adsRes, bingRes, organicRes] = await Promise.all([
+      const [adsRes, bingRes, organicRes, yoyRes] = await Promise.all([
         fetch('/api/ads-split'),
         fetch('/api/bing-ads'),
-        fetch('/api/organic')
+        fetch('/api/organic'),
+        fetch('/api/organic-yoy')
       ])
       
       if (adsRes.ok) setAdsData(await adsRes.json())
       if (bingRes.ok) setBingAdsData(await bingRes.json())
       if (organicRes.ok) setOrganicData(await organicRes.json())
+      if (yoyRes.ok) setYoyData(await yoyRes.json())
     } catch (err) {
       console.error('Error fetching data:', err)
     }
@@ -97,7 +127,7 @@ export default function AdsTVPage() {
     }
   }, [])
 
-  if (!adsData || !bingAdsData || !organicData) {
+  if (!adsData || !bingAdsData || !organicData || !yoyData) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-6xl">Loading Marketing Dashboard...</div>
@@ -190,33 +220,87 @@ export default function AdsTVPage() {
       </div>
 
       <div className="flex gap-8 h-[calc(100%-140px)]">
-        {/* Left Panel: Giant KPIs (40%) */}
-        <div className="w-[40%] flex flex-col gap-6">
-          {/* Visitors */}
-          <div className="bg-gradient-to-br from-blue-900/40 to-blue-600/20 rounded-3xl p-10 border border-blue-500/30">
-            <div className="text-4xl text-blue-400 font-medium mb-4">NEW VISITORS</div>
-            <div className="text-9xl font-bold mb-6">{formatNumber(visitors)}</div>
-            <Sparkline data={visitorsTrend} color="#3B82F6" />
+        {/* Left Panel: 5-Week YoY Comparison (40%) */}
+        <div className="w-[40%] flex flex-col gap-4">
+          {/* New Visitors Row */}
+          <div className="bg-gradient-to-br from-blue-900/40 to-blue-600/20 rounded-3xl p-6 border border-blue-500/30">
+            <div className="text-3xl text-blue-400 font-medium mb-4">NEW VISITORS</div>
+            <div className="grid grid-cols-5 gap-4">
+              {yoyData.weeks.map((week, idx) => (
+                <div key={idx} className="text-center">
+                  <div className="text-xl text-gray-400 mb-1">{week.label}</div>
+                  <div className="text-sm text-gray-500 mb-2">{week.date_range}</div>
+                  <div className="text-5xl font-bold mb-2">{formatNumber(week.users)}</div>
+                  <div className="text-xs text-gray-400 mb-1">YoY: {week.yoy.date_range}</div>
+                  <div className="text-sm">
+                    <span className={week.yoy.users_change >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      {week.yoy.users_change >= 0 ? '+' : ''}{formatNumber(week.yoy.users_change)}
+                    </span>
+                  </div>
+                  <div className="text-xs">
+                    <span className={week.yoy.users_change_pct >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      ({week.yoy.users_change_pct >= 0 ? '+' : ''}{week.yoy.users_change_pct.toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Conversions */}
-          <div className="bg-gradient-to-br from-green-900/40 to-green-600/20 rounded-3xl p-10 border border-green-500/30">
-            <div className="text-4xl text-green-400 font-medium mb-4">CONVERSIONS</div>
-            <div className="text-9xl font-bold mb-6">{purchases}</div>
-            <Sparkline data={conversionsTrend} color="#10B981" />
+          {/* Conversions Row */}
+          <div className="bg-gradient-to-br from-green-900/40 to-green-600/20 rounded-3xl p-6 border border-green-500/30">
+            <div className="text-3xl text-green-400 font-medium mb-4">CONVERSIONS</div>
+            <div className="grid grid-cols-5 gap-4">
+              {yoyData.weeks.map((week, idx) => (
+                <div key={idx} className="text-center">
+                  <div className="text-xl text-gray-400 mb-1">{week.label}</div>
+                  <div className="text-sm text-gray-500 mb-2">{week.date_range}</div>
+                  <div className="text-5xl font-bold mb-2">{week.purchases}</div>
+                  <div className="text-xs text-gray-400 mb-1">YoY: {week.yoy.date_range}</div>
+                  <div className="text-sm">
+                    <span className={week.yoy.purchases_change >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      {week.yoy.purchases_change >= 0 ? '+' : ''}{week.yoy.purchases_change}
+                    </span>
+                  </div>
+                  <div className="text-xs">
+                    <span className={week.yoy.purchases_change_pct >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      ({week.yoy.purchases_change_pct >= 0 ? '+' : ''}{week.yoy.purchases_change_pct.toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Conversion Rate */}
-          <div className="bg-gradient-to-br from-purple-900/40 to-purple-600/20 rounded-3xl p-10 border border-purple-500/30">
-            <div className="text-4xl text-purple-400 font-medium mb-4">CONVERSION RATE</div>
-            <div className="text-9xl font-bold mb-6">{formatPercent(overallConvRate)}</div>
+          {/* Conversion Rate Row */}
+          <div className="bg-gradient-to-br from-purple-900/40 to-purple-600/20 rounded-3xl p-6 border border-purple-500/30">
+            <div className="text-3xl text-purple-400 font-medium mb-4">CONVERSION RATE</div>
+            <div className="grid grid-cols-5 gap-4">
+              {yoyData.weeks.map((week, idx) => (
+                <div key={idx} className="text-center">
+                  <div className="text-xl text-gray-400 mb-1">{week.label}</div>
+                  <div className="text-sm text-gray-500 mb-2">{week.date_range}</div>
+                  <div className="text-5xl font-bold mb-2">{formatPercent(week.conversion_rate)}</div>
+                  <div className="text-xs text-gray-400 mb-1">YoY: {week.yoy.date_range}</div>
+                  <div className="text-sm">
+                    <span className={week.yoy.conv_rate_change >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      {week.yoy.conv_rate_change >= 0 ? '+' : ''}{week.yoy.conv_rate_change.toFixed(2)}pp
+                    </span>
+                  </div>
+                  <div className="text-xs">
+                    <span className={week.yoy.conv_rate_change_pct >= 0 ? 'text-green-400' : 'text-red-400'}>
+                      ({week.yoy.conv_rate_change_pct >= 0 ? '+' : ''}{week.yoy.conv_rate_change_pct.toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Ad Spend */}
-          <div className="bg-gradient-to-br from-orange-900/40 to-orange-600/20 rounded-3xl p-10 border border-orange-500/30">
-            <div className="text-4xl text-orange-400 font-medium mb-4">TOTAL AD SPEND</div>
-            <div className="text-9xl font-bold mb-6">{formatDollar(totalSpend)}</div>
-            <Sparkline data={gadsSpendTrend} color="#F97316" />
+          {/* Ad Spend Row (no YoY for now) */}
+          <div className="bg-gradient-to-br from-orange-900/40 to-orange-600/20 rounded-3xl p-6 border border-orange-500/30">
+            <div className="text-3xl text-orange-400 font-medium mb-4">TOTAL AD SPEND</div>
+            <div className="text-6xl font-bold">{formatDollar(totalSpend)}</div>
           </div>
         </div>
 
