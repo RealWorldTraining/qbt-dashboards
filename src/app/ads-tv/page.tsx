@@ -170,64 +170,57 @@ export default function AdsTVPage() {
       {/* Row 2: Traffic Channels Breakdown */}
       <div className="bg-[#0a0a0a] rounded-2xl xl:rounded-3xl p-4 md:p-6 border border-gray-800 mb-4 xl:mb-6">
         <div className="text-xl md:text-2xl xl:text-3xl text-gray-300 font-medium mb-4 xl:mb-6">TRAFFIC CHANNELS</div>
-        <table className="w-full table-fixed">
-          <colgroup>
-            <col className="w-[14%]" />
-            {channelsData.week_headers.map((_, idx) => (
-              <col key={`nv-${idx}`} className="w-[7%]" />
-            ))}
-            {channelsData.week_headers.map((_, idx) => (
-              <col key={`s-${idx}`} className="w-[5%]" />
-            ))}
-            {channelsData.week_headers.map((_, idx) => (
-              <col key={`cv-${idx}`} className="w-[5.2%]" />
-            ))}
-          </colgroup>
-          <thead>
-            <tr className="border-b border-gray-800">
-              <th className="text-left py-2 xl:py-3 px-2 text-gray-500 font-medium text-xs md:text-sm xl:text-lg">Channel</th>
-              {channelsData.week_headers.map((header, idx) => (
-                <th key={idx} className="text-center py-2 xl:py-3 px-1" colSpan={3}>
-                  <div className="text-gray-400 font-medium text-xs md:text-sm xl:text-lg">{header.label}</div>
-                  <div className="text-gray-600 text-xs xl:text-sm">{header.date_range}</div>
-                </th>
-              ))}
-            </tr>
-            <tr className="border-b border-gray-800/50">
-              <th></th>
-              {channelsData.week_headers.map((_, idx) => (
-                <th key={`h-${idx}`} colSpan={3} className="py-1 px-1">
-                  <div className="grid grid-cols-3">
-                    <span className="text-gray-500 text-xs xl:text-sm text-right pr-2">New Visitors</span>
-                    <span className="text-gray-500 text-xs xl:text-sm text-right pr-2">Sales</span>
-                    <span className="text-gray-500 text-xs xl:text-sm text-right pr-2">Conv%</span>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
+        <div className="flex gap-3 xl:gap-4">
+          {/* Channel names column */}
+          <div className="shrink-0 w-[130px] md:w-[160px] xl:w-[200px]">
+            <div className="h-[52px] xl:h-[64px] flex items-end pb-2">
+              <span className="text-gray-500 font-medium text-xs md:text-sm xl:text-lg">Channel</span>
+            </div>
+            <div className="h-[24px] xl:h-[28px]"></div>
             {channelsData.channels.map((channel, rowIdx) => (
-              <tr key={rowIdx} className="border-b border-gray-800/50 hover:bg-white/5 transition-colors">
-                <td className={`py-3 xl:py-4 px-2 font-medium text-sm md:text-base xl:text-xl ${CHANNEL_COLORS[channel.channel] || 'text-gray-400'}`}>
+              <div key={rowIdx} className="h-[48px] xl:h-[56px] flex items-center">
+                <span className={`font-medium text-sm md:text-base xl:text-xl ${CHANNEL_COLORS[channel.channel] || 'text-gray-400'}`}>
                   {channel.channel}
-                </td>
-                {channel.weeks.map((week, colIdx) => {
-                  const convRate = week.users > 0 ? (week.purchases / week.users) * 100 : 0
-                  return (
-                    <td key={colIdx} className="py-3 xl:py-4 px-1" colSpan={3}>
-                      <div className="grid grid-cols-3">
-                        <span className="text-white font-bold text-sm md:text-lg xl:text-2xl text-right pr-2">{formatNumber(week.users)}</span>
-                        <span className="text-green-400 font-semibold text-sm md:text-lg xl:text-2xl text-right pr-2">{week.purchases}</span>
-                        <span className="text-yellow-400 text-sm md:text-base xl:text-xl text-right pr-2">{convRate > 0 ? convRate.toFixed(1) + '%' : '—'}</span>
-                      </div>
-                    </td>
-                  )
-                })}
-              </tr>
+                </span>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+
+          {/* Week columns */}
+          {channelsData.week_headers.map((header, weekIdx) => (
+            <div
+              key={weekIdx}
+              className="flex-1 min-w-0 rounded-xl border border-gray-800 bg-white/[0.02] overflow-hidden"
+            >
+              {/* Week header */}
+              <div className="h-[52px] xl:h-[64px] flex flex-col items-center justify-center bg-white/[0.03] border-b border-gray-800">
+                <div className="text-gray-400 font-medium text-xs md:text-sm xl:text-lg">{header.label}</div>
+                <div className="text-gray-600 text-xs xl:text-sm">{header.date_range}</div>
+              </div>
+              {/* Sub-headers */}
+              <div className="h-[24px] xl:h-[28px] grid grid-cols-3 border-b border-gray-800/50 items-center">
+                <span className="text-gray-500 text-[10px] xl:text-xs text-center">Visitors</span>
+                <span className="text-gray-500 text-[10px] xl:text-xs text-center">Sales</span>
+                <span className="text-gray-500 text-[10px] xl:text-xs text-center">Conv%</span>
+              </div>
+              {/* Data rows */}
+              {channelsData.channels.map((channel, rowIdx) => {
+                const week = channel.weeks[weekIdx]
+                const convRate = week.users > 0 ? (week.purchases / week.users) * 100 : 0
+                return (
+                  <div
+                    key={rowIdx}
+                    className="h-[48px] xl:h-[56px] grid grid-cols-3 items-center border-b border-gray-800/30 hover:bg-white/[0.03] transition-colors"
+                  >
+                    <span className="text-white font-bold text-sm md:text-lg xl:text-2xl text-center">{formatNumber(week.users)}</span>
+                    <span className="text-green-400 font-semibold text-sm md:text-lg xl:text-2xl text-center">{week.purchases}</span>
+                    <span className="text-yellow-400 text-xs md:text-sm xl:text-lg text-center">{convRate > 0 ? convRate.toFixed(1) + '%' : '—'}</span>
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Row 3: Conversion Rate - full width */}
