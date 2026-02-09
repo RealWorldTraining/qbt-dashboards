@@ -251,8 +251,37 @@ export default function GoogleAdsSummaryPage() {
   const currentTotal = getTotalMetrics(0)
   const previousTotal = getTotalMetrics(1)
 
-  // Reverse data for charts (oldest first)
-  const chartData = [...data].reverse()
+  // Derive weekly totals from campaign data for charts and table
+  const derivedWeeklyData = campaignData ? campaignData.weeks.map((week, weekIndex) => {
+    let spend = 0, impressions = 0, clicks = 0, conversions = 0
+
+    campaignData.campaigns.forEach(campaign => {
+      const d = campaign.data[weekIndex]
+      if (d) {
+        spend += d.cost
+        impressions += d.impressions
+        clicks += d.clicks
+        conversions += d.conversions
+      }
+    })
+
+    return {
+      week: week.date_range,
+      week_start: week.week,
+      spend: Math.round(spend),
+      impressions,
+      clicks,
+      conversions: Math.round(conversions),
+      ctr: impressions > 0 ? (clicks / impressions) * 100 : 0,
+      avg_cpc: clicks > 0 ? spend / clicks : 0,
+      conv_rate: clicks > 0 ? (conversions / clicks) * 100 : 0,
+      cpa: conversions > 0 ? spend / conversions : 0,
+      roas: spend > 0 ? (conversions * 500) / spend : 0,
+    }
+  }) : []
+
+  // Charts use oldest-first order; table uses most-recent-first
+  const chartData = [...derivedWeeklyData].reverse()
 
   return (
     <div className="min-h-screen bg-black p-6">
@@ -264,7 +293,7 @@ export default function GoogleAdsSummaryPage() {
             <div>
               <h1 className="text-white text-2xl font-bold">Google Ads Summary</h1>
               <p className="text-gray-400 text-sm mt-1">
-                {data.length > 0 ? `Week of ${data[0].week}` : 'Loading...'}
+                {derivedWeeklyData.length > 0 ? `Week of ${derivedWeeklyData[0].week}` : 'Loading...'}
               </p>
             </div>
           </div>
@@ -598,7 +627,7 @@ export default function GoogleAdsSummaryPage() {
                 </tr>
               </thead>
               <tbody>
-                {[...data].reverse().map((row, idx) => (
+                {[...derivedWeeklyData].reverse().map((row, idx) => (
                   <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
                     <td className="py-3 px-4 text-white font-medium">{row.week}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.spend)}</td>
