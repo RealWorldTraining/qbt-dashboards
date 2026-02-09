@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 // Adveronix: Paid Search sheet
 const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
 const SESSION_SOURCE_RANGE = 'GA4: Traffic Weekly Session Source!A:E'
-const CHANNEL_GROUP_RANGE = 'GA4: Traffic Weekly Channel!A:E'
+const CHANNEL_GROUP_RANGE = 'GA4: Traffic Weekly Account!A:E'
 
 function parseNumber(val: string): number {
   if (!val) return 0
