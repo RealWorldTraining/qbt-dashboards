@@ -69,7 +69,7 @@ export async function GET() {
     }
 
     // Aggregate by week
-    // Structure: Date | Account | New users | Total users | Ecommerce purchases
+    // Structure: Date | New users | Total users | Ecommerce purchases
     const weeklyData = new Map<string, { users: number; purchases: number }>()
     
     rows.slice(1).forEach(row => {
@@ -79,8 +79,8 @@ export async function GET() {
       const date = parseDate(dateStr)
       const weekKey = getWeekStart(date)
       
-      const users = parseNumber(row[2]) // New users column
-      const purchases = parseNumber(row[4]) // Ecommerce purchases column
+      const users = parseNumber(row[1]) // New users column (column B)
+      const purchases = parseNumber(row[3]) // Ecommerce purchases column (column D)
       
       const existing = weeklyData.get(weekKey) || { users: 0, purchases: 0 }
       existing.users += users

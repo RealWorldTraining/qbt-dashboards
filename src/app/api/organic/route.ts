@@ -120,59 +120,54 @@ export async function GET() {
     })
 
     // Group channel data by week for totals (daily data → weekly aggregation)
+    // GA4: Traffic Weekly Account has columns: Date | New users | Total users | Ecommerce purchases
     const weeklyChannelData = new Map<string, { total_users: number; total_purchases: number; paid_users: number; paid_purchases: number; organic_search_users: number; organic_search_purchases: number }>()
     
     if (channelGroupRows && channelGroupRows.length > 1) {
-      // First, aggregate by week (sum all channels)
-      const weekTotals = new Map<string, Map<string, { users: number; purchases: number }>>()
-      
+      // Aggregate account totals by week
       channelGroupRows.slice(1).forEach(row => {
         const dateStr = row[0]
-        const channelGroup = row[1]?.toLowerCase() || ''
         if (!dateStr) return
         
         const date = parseDate(dateStr)
         const weekKey = getWeekStart(date)
         
-        if (!weekTotals.has(weekKey)) {
-          weekTotals.set(weekKey, new Map())
+        const users = parseNumber(row[1]) // New users column (column B)
+        const purchases = parseNumber(row[3]) // Ecommerce purchases column (column D)
+        
+        const existing = weeklyChannelData.get(weekKey) || { 
+          total_users: 0, 
+          total_purchases: 0, 
+          paid_users: 0, 
+          paid_purchases: 0, 
+          organic_search_users: 0, 
+          organic_search_purchases: 0 
         }
         
-        const weekData = weekTotals.get(weekKey)!
-        const users = parseNumber(row[2]) // New users column
-        const purchases = parseNumber(row[4])
+        existing.total_users += users
+        existing.total_purchases += purchases
         
-        const existing = weekData.get(channelGroup) || { users: 0, purchases: 0 }
-        existing.users += users
-        existing.purchases += purchases
-        weekData.set(channelGroup, existing)
+        weeklyChannelData.set(weekKey, existing)
       })
       
-      // Calculate totals, paid totals, and organic search per week
-      weekTotals.forEach((channelMap, weekKey) => {
-        let total_users = 0
-        let total_purchases = 0
-        let paid_users = 0
-        let paid_purchases = 0
-        let organic_search_users = 0
-        let organic_search_purchases = 0
+      // Now calculate paid and organic from the session source data
+      weeklySourceData.forEach((sourceMap, weekKey) => {
+        const weekData = weeklyChannelData.get(weekKey)
+        if (!weekData) return
         
-        channelMap.forEach((data, channel) => {
-          total_users += data.users
-          total_purchases += data.purchases
-          
-          if (channel.includes('paid')) {
-            paid_users += data.users
-            paid_purchases += data.purchases
-          }
-          
-          if (channel === 'organic search') {
-            organic_search_users += data.users
-            organic_search_purchases += data.purchases
-          }
-        })
+        // Sum up google organic and bing organic for total organic search
+        const googleOrganicData = sourceMap.get('google_organic') || { users: 0, purchases: 0 }
+        const bingOrganicData = sourceMap.get('bing_organic') || { users: 0, purchases: 0 }
+        const bingCpcData = sourceMap.get('bing_cpc') || { users: 0, purchases: 0 }
         
-        weeklyChannelData.set(weekKey, { total_users, total_purchases, paid_users, paid_purchases, organic_search_users, organic_search_purchases })
+        weekData.organic_search_users = googleOrganicData.users + bingOrganicData.users
+        weekData.organic_search_purchases = googleOrganicData.purchases + bingOrganicData.purchases
+        
+        // Paid is calculated from session source "Paid Search" and "Paid Social"
+        // For now, we'll calculate it as total minus known channels
+        // This will be refined when we have better channel mapping
+        weekData.paid_users = bingCpcData.users // Bing CPC is explicitly paid
+        weekData.paid_purchases = bingCpcData.purchases
       })
     }
 
