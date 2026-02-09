@@ -131,8 +131,8 @@ export async function GET() {
       return weekEnd < today
     })
     
-    // Get last 4 complete weeks
-    const recentWeeks = completeWeeks.slice(0, 4)
+    // Get last 8 complete weeks
+    const recentWeeks = completeWeeks.slice(0, 8)
     
     // Group by campaign, then by week
     const campaignData: Record<string, Record<string, CampaignRow>> = {}
