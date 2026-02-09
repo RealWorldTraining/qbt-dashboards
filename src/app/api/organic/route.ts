@@ -263,7 +263,7 @@ export async function GET() {
       }
     }
 
-    const weekLabels = ['This Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago']
+    const weekLabels = ['Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
     const formattedWeeks = last5Weeks.map((weekKey, idx) => formatWeek(weekKey, weekLabels[idx]))
 
     // Build response in expected format for /ads page

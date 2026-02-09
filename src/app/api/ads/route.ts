@@ -163,10 +163,10 @@ export async function GET() {
     }
 
     const data = {
-      this_week: formatWeek(allWeeks[0], 'This Week'),
-      last_week: formatWeek(allWeeks[1], 'Last Week'),
-      two_weeks_ago: formatWeek(allWeeks[2], '2 Weeks Ago'),
-      three_weeks_ago: formatWeek(allWeeks[3], '3 Weeks Ago'),
+      this_week: formatWeek(allWeeks[0], 'Last Week'),
+      last_week: formatWeek(allWeeks[1], '2 Weeks Ago'),
+      two_weeks_ago: formatWeek(allWeeks[2], '3 Weeks Ago'),
+      three_weeks_ago: formatWeek(allWeeks[3], '4 Weeks Ago'),
       last_updated: new Date().toISOString(),
     }
 
