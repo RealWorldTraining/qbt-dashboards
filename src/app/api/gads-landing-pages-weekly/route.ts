@@ -2,7 +2,7 @@ import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
 const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
-const LANDING_PAGES_RANGE = 'GADS: Landing Page: Monthly (With Campaigns)!A:M'
+const LANDING_PAGES_RANGE = 'GADS: Landing Page: Weekly (With Campaigns)!A:M'
 
 function parseNumber(val: string): number {
   if (!val) return 0
@@ -20,24 +20,34 @@ function parseDate(dateStr: string): Date {
   }
 }
 
-function getMonthKey(date: Date): string {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  return `${year}-${month}`
+function getWeekStart(date: Date): string {
+  const dayOfWeek = date.getDay()
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const monday = new Date(date)
+  monday.setDate(date.getDate() + daysToMonday)
+  const year = monday.getFullYear()
+  const month = String(monday.getMonth() + 1).padStart(2, '0')
+  const day = String(monday.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
-function formatMonthLabel(monthKey: string): string {
-  const [year, month] = monthKey.split('-').map(Number)
-  const date = new Date(year, month - 1, 1)
-  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+function formatDateRange(weekStart: string): string {
+  const start = parseDate(weekStart)
+  const end = new Date(start)
+  end.setDate(start.getDate() + 6)
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+  return `${start.toLocaleDateString('en-US', opts)} - ${end.toLocaleDateString('en-US', opts)}`
 }
 
 function simplifyUrl(url: string): string {
   try {
     const urlObj = new URL(url)
-    return urlObj.pathname
+    // Normalize: strip trailing slash (keep "/" for root)
+    const path = urlObj.pathname
+    return path.length > 1 ? path.replace(/\/+$/, '') : path
   } catch {
-    return url
+    // If not a full URL, still normalize trailing slash
+    return url.length > 1 ? url.replace(/\/+$/, '') : url
   }
 }
 
@@ -58,7 +68,7 @@ export async function GET() {
     })
 
     const sheets = google.sheets({ version: 'v4', auth })
-    
+
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
       range: LANDING_PAGES_RANGE,
@@ -69,48 +79,47 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    // Structure: Month | Campaign | Landing page | Ad Group | ... | Clicks | Impressions | CTR | Avg. CPC | Cost | Conversions
-    // Columns: A=Month, B=Campaign, C=Landing page, D=Ad Group, H=Clicks, I=Impressions, J=CTR, K=Avg.CPC, L=Cost, M=Conversions
-    // Aggregate by month and landing page (ignoring campaign/ad group)
-    const monthlyData = new Map<string, Map<string, { clicks: number; conversions: number }>>()
-    
+    // Structure: Week | Campaign | Landing page | Ad Group | ... | Clicks | Impressions | CTR | Avg.CPC | Cost | Conversions
+    // Columns: A=Week, B=Campaign, C=Landing page, D=Ad Group, H=Clicks, I=Impressions, J=CTR, K=Avg.CPC, L=Cost, M=Conversions
+    // Aggregate by week and landing page (ignoring campaign/ad group)
+    const weeklyData = new Map<string, Map<string, { clicks: number; conversions: number }>>()
+
     rows.slice(1).forEach(row => {
-      const monthStr = row[0]
+      const weekStr = row[0]
       const landingPage = row[2]
-      if (!monthStr || !landingPage) return
-      
-      const monthKey = getMonthKey(parseDate(monthStr))
+      if (!weekStr || !landingPage) return
+
+      const weekKey = getWeekStart(parseDate(weekStr))
       const clicks = parseNumber(row[7]) // Clicks column (H)
       const conversions = parseNumber(row[12]) // Conversions column (M)
-      
-      // Simplify URL to just the path
+
       const simplifiedPage = simplifyUrl(landingPage)
-      
-      if (!monthlyData.has(monthKey)) {
-        monthlyData.set(monthKey, new Map())
+
+      if (!weeklyData.has(weekKey)) {
+        weeklyData.set(weekKey, new Map())
       }
-      
-      const monthMap = monthlyData.get(monthKey)!
-      const existing = monthMap.get(simplifiedPage) || { clicks: 0, conversions: 0 }
+
+      const weekMap = weeklyData.get(weekKey)!
+      const existing = weekMap.get(simplifiedPage) || { clicks: 0, conversions: 0 }
       existing.clicks += clicks
       existing.conversions += conversions
-      monthMap.set(simplifiedPage, existing)
+      weekMap.set(simplifiedPage, existing)
     })
 
-    // Get last 5 complete months (excluding current incomplete month)
+    // Get last 5 complete weeks (excluding current incomplete week)
     const now = new Date()
-    const currentMonthKey = getMonthKey(now)
-    
-    const sortedMonths = Array.from(monthlyData.keys()).sort().reverse()
-    const completeMonths = sortedMonths.filter(m => m < currentMonthKey)
-    const last5Months = completeMonths.slice(0, 5)
+    const currentWeekStart = getWeekStart(now)
 
-    // Get top landing pages by total clicks across all 5 months
+    const sortedWeeks = Array.from(weeklyData.keys()).sort().reverse()
+    const completeWeeks = sortedWeeks.filter(w => w < currentWeekStart)
+    const last5Weeks = completeWeeks.slice(0, 5)
+
+    // Get top landing pages by total clicks across all 5 weeks
     const landingPageTotals = new Map<string, { clicks: number; conversions: number }>()
-    
-    last5Months.forEach(month => {
-      const monthMap = monthlyData.get(month)!
-      monthMap.forEach((data, page) => {
+
+    last5Weeks.forEach(week => {
+      const weekMap = weeklyData.get(week)!
+      weekMap.forEach((data, page) => {
         const existing = landingPageTotals.get(page) || { clicks: 0, conversions: 0 }
         existing.clicks += data.clicks
         existing.conversions += data.conversions
@@ -125,26 +134,26 @@ export async function GET() {
       .map(([page]) => page)
 
     // Build response data for each landing page
-    const labels = ['This Month', 'Last Month', '2 Months Ago', '3 Months Ago', '4 Months Ago']
-    
+    const labels = ['This Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago']
+
     const landingPagesData = topLandingPages.map(page => {
-      const months = last5Months.map((monthKey, idx) => {
-        const monthMap = monthlyData.get(monthKey)!
-        const data = monthMap.get(page) || { clicks: 0, conversions: 0 }
+      const weeks = last5Weeks.map((weekKey, idx) => {
+        const weekMap = weeklyData.get(weekKey)!
+        const data = weekMap.get(page) || { clicks: 0, conversions: 0 }
         const conversionRate = data.clicks > 0 ? (data.conversions / data.clicks) * 100 : 0
-        
+
         return {
           label: labels[idx],
-          month: formatMonthLabel(monthKey),
+          date_range: formatDateRange(weekKey),
           clicks: data.clicks,
           conversions: data.conversions,
           conversion_rate: conversionRate
         }
       })
-      
+
       return {
         landing_page: page,
-        months
+        weeks
       }
     })
 
