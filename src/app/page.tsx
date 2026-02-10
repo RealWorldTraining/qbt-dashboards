@@ -424,7 +424,10 @@ const ADS_METRIC_COLORS: Record<AdsMetric, string> = {
 
 function formatAdsValue(value: number | null | undefined, metric: AdsMetric): string {
   if (value === null || value === undefined) return '-'
-  if (metric === 'avg_cpc' || metric === 'cost_per_conv' || metric === 'spend') {
+  if (metric === 'cost_per_conv') {
+    return '$' + Math.round(value).toLocaleString()
+  }
+  if (metric === 'avg_cpc' || metric === 'spend') {
     return '$' + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
   return value.toLocaleString(undefined, { maximumFractionDigits: 0 })
@@ -432,7 +435,10 @@ function formatAdsValue(value: number | null | undefined, metric: AdsMetric): st
 
 function formatAdsDiff(diff: number, metric: AdsMetric): string {
   const prefix = diff >= 0 ? '+' : ''
-  if (metric === 'avg_cpc' || metric === 'cost_per_conv' || metric === 'spend') {
+  if (metric === 'cost_per_conv') {
+    return prefix + '$' + Math.abs(Math.round(diff)).toLocaleString()
+  }
+  if (metric === 'avg_cpc' || metric === 'spend') {
     return prefix + '$' + Math.abs(diff).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
   return prefix + diff.toLocaleString(undefined, { maximumFractionDigits: 0 })
