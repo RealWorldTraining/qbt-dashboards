@@ -22,6 +22,7 @@ import {
   Target,
   MapPin,
   ShoppingCart,
+  Command,
 } from "lucide-react"
 
 // Dashboard categories
@@ -200,9 +201,9 @@ const dashboardSections = [
     color: "from-gray-500 to-slate-600",
     dashboards: [
       {
-        name: "Dashboard",
+        name: "Command Center",
         href: "/dashboard",
-        icon: LayoutGrid,
+        icon: Command,
         description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
         color: "from-purple-500 to-indigo-600",
         stats: "All-in-one",
