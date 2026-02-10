@@ -85,6 +85,15 @@ const dashboardSections = [
         stats: "Trends • YoY • Analysis",
         preview: "/previews/trend-analysis.png",
       },
+      {
+        name: "Landing Pages",
+        href: "/landing-pages",
+        icon: MapPin,
+        description: "GA4 & Google Ads landing page performance by week",
+        color: "from-teal-500 to-cyan-600",
+        stats: "Pages • Conversions • Weekly",
+        preview: "/previews/landing-pages.png",
+      },
     ]
   },
   {
@@ -146,15 +155,6 @@ const dashboardSections = [
         color: "from-indigo-500 to-purple-600",
         stats: "Age Groups • Trends • 2024-Present",
         preview: "/previews/age-analysis.png",
-      },
-      {
-        name: "Landing Pages",
-        href: "/landing-pages",
-        icon: MapPin,
-        description: "GA4 & Google Ads landing page performance by week",
-        color: "from-teal-500 to-cyan-600",
-        stats: "Pages • Conversions • Weekly",
-        preview: "/previews/landing-pages.png",
       },
       {
         name: "Vision Analytics",
