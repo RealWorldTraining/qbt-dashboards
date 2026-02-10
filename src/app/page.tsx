@@ -125,12 +125,12 @@ const dashboardSections = [
         preview: "/previews/ads.png",
       },
       {
-        name: "Google Ads Summary",
+        name: "Google Ads",
         href: "/google-ads-summary",
         icon: TrendingUp,
-        description: "Monthly Google Ads performance: spend, conversions, ROAS",
+        description: "Weekly performance, CPC optimizer & age analysis",
         color: "from-red-500 to-rose-600",
-        stats: "Spend • Conversions • ROAS",
+        stats: "Summary • CPC • Age Groups",
         preview: "/previews/google-ads-summary.png",
       },
       {
@@ -143,15 +143,6 @@ const dashboardSections = [
         preview: "/previews/bing-ads-summary.png",
       },
       {
-        name: "Google Ads CPC Optimizer",
-        href: "/cpc",
-        icon: Target,
-        description: "Google Ads Max CPC bid recommendations with confidence scores & performance metrics",
-        color: "from-cyan-500 to-teal-600",
-        stats: "Keywords • Bids • Signals",
-        preview: "/previews/cpc.png",
-      },
-      {
         name: "Bing Ads CPC Optimizer",
         href: "/cpc-bing",
         icon: Target,
@@ -159,15 +150,6 @@ const dashboardSections = [
         color: "from-blue-500 to-purple-600",
         stats: "Keywords • Bids • Urgency",
         preview: "/previews/cpc-bing.png",
-      },
-      {
-        name: "Age Analysis",
-        href: "/age-analysis",
-        icon: Users,
-        description: "Google Ads performance trends by age group: clicks, impressions, CTR, CPC, spend, conversions",
-        color: "from-indigo-500 to-purple-600",
-        stats: "Age Groups • Trends • 2024-Present",
-        preview: "/previews/age-analysis.png",
       },
       {
         name: "Vision Analytics",
