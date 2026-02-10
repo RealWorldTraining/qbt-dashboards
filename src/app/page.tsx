@@ -4815,7 +4815,7 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.yesterday.value ?? 0, gadsMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.yesterday.value ?? 0, gadsMetric)}</div>
                         {kpiData && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.yesterday.py, gadsMetric)}</div>
@@ -4827,7 +4827,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.this_week.value ?? 0, gadsMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.this_week.value ?? 0, gadsMetric)}</div>
                         {kpiData && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.this_week.py, gadsMetric)}</div>
@@ -4839,7 +4839,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.mtd.value ?? 0, gadsMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.mtd.value ?? 0, gadsMetric)}</div>
                         {kpiData && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.mtd.py, gadsMetric)}</div>
@@ -4851,7 +4851,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">YTD</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.ytd?.value ?? 0, gadsMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.ytd?.value ?? 0, gadsMetric)}</div>
                         {kpiData?.ytd && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.ytd.py, gadsMetric)}</div>
@@ -5116,7 +5116,7 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.yesterday.value ?? 0, bingMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.yesterday.value ?? 0, bingMetric)}</div>
                         {kpiData && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.yesterday.py, bingMetric)}</div>
@@ -5128,7 +5128,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.this_week.value ?? 0, bingMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.this_week.value ?? 0, bingMetric)}</div>
                         {kpiData && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.this_week.py, bingMetric)}</div>
@@ -5140,7 +5140,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.mtd.value ?? 0, bingMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.mtd.value ?? 0, bingMetric)}</div>
                         {kpiData && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.mtd.py, bingMetric)}</div>
@@ -5152,7 +5152,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">YTD</div>
-                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.ytd?.value ?? 0, bingMetric)}</div>
+                        <div className="text-7xl font-bold text-white">{formatAdsValue(kpiData?.ytd?.value ?? 0, bingMetric)}</div>
                         {kpiData?.ytd && (
                           <div className="mt-2 text-center">
                             <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.ytd.py, bingMetric)}</div>
