@@ -298,6 +298,12 @@ export default function CPCPage() {
                           <div className="text-white text-lg font-bold">{week.clicks.toLocaleString()}</div>
                         </div>
                         <div>
+                          <div className="text-gray-500 text-xs mb-1">CTR</div>
+                          <div className="text-white text-lg font-bold">
+                            {week.impressions > 0 ? ((week.clicks / week.impressions) * 100).toFixed(1) : '0.0'}%
+                          </div>
+                        </div>
+                        <div>
                           <div className="text-gray-500 text-xs mb-1">COST</div>
                           <div className="text-white text-lg font-bold">${Math.round(week.cost).toLocaleString()}</div>
                         </div>
@@ -400,6 +406,7 @@ export default function CPCPage() {
                   <th className="text-left p-3">CAMPAIGN</th>
                   <th className="text-right p-3">IMPR</th>
                   <th className="text-right p-3">CLICKS</th>
+                  <th className="text-right p-3">CTR</th>
                   <th className="text-right p-3">COST</th>
                   <th className="text-right p-3">CONV</th>
                   <th className="text-right p-3">CPA</th>
@@ -425,6 +432,9 @@ export default function CPCPage() {
                     <td className="p-3 text-gray-500 text-xs">{rec.campaign}</td>
                     <td className="p-3 text-right text-gray-400">{rec.impressions.toLocaleString()}</td>
                     <td className="p-3 text-right text-gray-400">{rec.clicks.toLocaleString()}</td>
+                    <td className="p-3 text-right text-gray-400">
+                      {rec.impressions > 0 ? ((rec.clicks / rec.impressions) * 100).toFixed(1) : '0.0'}%
+                    </td>
                     <td className="p-3 text-right text-gray-400">${Math.round(rec.cost)}</td>
                     <td className="p-3 text-right text-gray-400">{Math.round(rec.conversions)}</td>
                     <td className="p-3 text-right text-gray-400">${Math.round(rec.costPerConv)}</td>
