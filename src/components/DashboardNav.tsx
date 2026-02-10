@@ -20,7 +20,6 @@ import {
 
 const dashboards = [
   { name: "Command Center", href: "/", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
-  { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
   { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
   { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
@@ -31,6 +30,7 @@ const dashboards = [
   { name: "Landing Pages", href: "/landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
   { name: "The Prophet", href: "/data", icon: Tv, description: "Profit predictions & forecasts" },
   { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
+  { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
 ]
 
 interface DashboardNavProps {
