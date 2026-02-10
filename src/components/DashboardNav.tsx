@@ -24,8 +24,6 @@ const dashboards = [
   { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
   { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },
   { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
-  { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
-  { name: "Live Help Archive", href: "/live-help-archive", icon: BarChart3, description: "Historical trainer data" },
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
   { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
   { name: "Sales", href: "/sales", icon: DollarSign, description: "Sales analytics" },
@@ -34,6 +32,7 @@ const dashboards = [
   { name: "Bing Ads", href: "/bing-ads-summary", icon: Search, description: "Bing Ads weekly metrics" },
   { name: "Landing Pages", href: "/landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
   { name: "The Prophet", href: "/data", icon: Tv, description: "Profit predictions & forecasts" },
+  { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
 ]
 
 interface DashboardNavProps {
