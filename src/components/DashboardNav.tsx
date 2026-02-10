@@ -16,7 +16,6 @@ import {
   TrendingUp,
   Search,
   Smartphone,
-  Target,
   MapPin,
 } from "lucide-react"
 
@@ -24,8 +23,6 @@ const dashboards = [
   { name: "Command Center", href: "/", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
   { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
   { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },
-  { name: "Google Ads CPC", href: "/cpc", icon: Target, description: "Google Ads Max CPC bid recommendations" },
-  { name: "Bing Ads CPC", href: "/cpc-bing", icon: Target, description: "Bing Ads Max CPC bid recommendations" },
   { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
   { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
   { name: "Live Help Archive", href: "/live-help-archive", icon: BarChart3, description: "Historical trainer data" },
@@ -36,7 +33,6 @@ const dashboards = [
   { name: "Google Ads", href: "/google-ads-summary", icon: BarChart3, description: "Google Ads weekly metrics" },
   { name: "Bing Ads", href: "/bing-ads-summary", icon: Search, description: "Bing Ads weekly metrics" },
   { name: "Landing Pages", href: "/landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
-  { name: "Vision Analytics", href: "/vision", icon: TrendingUp, description: "Keyword-level bid optimization" },
   { name: "The Prophet", href: "/data", icon: Tv, description: "Profit predictions & forecasts" },
 ]
 

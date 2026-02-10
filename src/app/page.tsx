@@ -4811,6 +4811,398 @@ export default function DashboardPage() {
           </>
         )}
 
+        {/* Conversion % Tab */}
+        {activeTab === "conversion-pct" && (
+          <>
+            {/* Conversion % Source Toggle */}
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+              {([
+                { key: 'total' as ConversionSource, label: 'Total', color: '#5856D6' },
+                { key: 'organic' as ConversionSource, label: 'Organic', color: '#0066CC' },
+                { key: 'direct' as ConversionSource, label: 'Direct', color: '#FF9500' },
+                { key: 'referral' as ConversionSource, label: 'Referral', color: '#AF52DE' },
+                { key: 'paid' as ConversionSource, label: 'Paid', color: '#FF3B30' },
+              ]).map(({ key, label, color }) => (
+                <button
+                  key={key}
+                  onClick={() => setConvPctSource(key)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    convPctSource === key
+                      ? 'text-white shadow-md'
+                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  }`}
+                  style={convPctSource === key ? { backgroundColor: color } : {}}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {(trafficLoading || conversionsLoading) && (!trafficTrends || !conversionTrends) ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-[#5856D6]" />
+              </div>
+            ) : trafficTrends && conversionTrends ? (
+              <>
+                {/* Conversion % KPI Cards */}
+                {(() => {
+                  const convKpi = conversionTrends?.kpi?.[convPctSource]
+                  const trafKpi = trafficTrends?.kpi?.[convPctSource]
+                  const calcPct = (conv: number, traf: number) => traf > 0 ? Math.round((conv / traf) * 100) : 0
+                  return (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      {/* Yesterday */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.yesterday.value ?? 0, trafKpi?.yesterday.value ?? 0)}%</div>
+                        {convKpi && trafKpi && (() => {
+                          const curr = calcPct(convKpi.yesterday.value, trafKpi.yesterday.value)
+                          const py = calcPct(convKpi.yesterday.py, trafKpi.yesterday.py)
+                          const diff = curr - py
+                          return (
+                            <div className="mt-2 text-center">
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                {diff >= 0 ? "+" : ""}{diff}pp
+                              </div>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                      {/* This Week */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.this_week.value ?? 0, trafKpi?.this_week.value ?? 0)}%</div>
+                        {convKpi && trafKpi && (() => {
+                          const curr = calcPct(convKpi.this_week.value, trafKpi.this_week.value)
+                          const py = calcPct(convKpi.this_week.py, trafKpi.this_week.py)
+                          const diff = curr - py
+                          return (
+                            <div className="mt-2 text-center">
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                {diff >= 0 ? "+" : ""}{diff}pp
+                              </div>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                      {/* MTD */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.mtd.value ?? 0, trafKpi?.mtd.value ?? 0)}%</div>
+                        {convKpi && trafKpi && (() => {
+                          const curr = calcPct(convKpi.mtd.value, trafKpi.mtd.value)
+                          const py = calcPct(convKpi.mtd.py, trafKpi.mtd.py)
+                          const diff = curr - py
+                          return (
+                            <div className="mt-2 text-center">
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                {diff >= 0 ? "+" : ""}{diff}pp
+                              </div>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                      {/* YTD */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">YTD</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.ytd?.value ?? 0, trafKpi?.ytd?.value ?? 0)}%</div>
+                        {convKpi?.ytd && trafKpi?.ytd && (() => {
+                          const curr = calcPct(convKpi.ytd.value, trafKpi.ytd.value)
+                          const py = calcPct(convKpi.ytd.py, trafKpi.ytd.py)
+                          const diff = curr - py
+                          return (
+                            <div className="mt-2 text-center">
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                                {diff >= 0 ? "+" : ""}{diff}pp
+                              </div>
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Weekly Trends Heatmap - Conversion % */}
+                {conversionTrends.weekly_trends.data[convPctSource] && trafficTrends.weekly_trends.data[convPctSource] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5 text-[#5856D6]" />
+                          Weekly Conversion % ({convPctSource === 'total' ? 'Total' : convPctSource.charAt(0).toUpperCase() + convPctSource.slice(1)})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
+                                {conversionTrends.weekly_trends.days.map((day) => (
+                                  <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white bg-[#5856D6] whitespace-nowrap">Avg</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const days = conversionTrends.weekly_trends.days
+                                const convWeeks = conversionTrends.weekly_trends.data[convPctSource]
+                                const trafWeeks = trafficTrends.weekly_trends.data[convPctSource]
+                                const trafMap = new Map(trafWeeks.map(w => [w.week_label, w]))
+
+                                const getHeatmapClass = (pct: number | null) => {
+                                  if (pct === null) return 'bg-[#1D1D1F]'
+                                  if (pct >= 8) return 'bg-purple-600'
+                                  if (pct >= 6) return 'bg-purple-500'
+                                  if (pct >= 4) return 'bg-purple-600/60'
+                                  if (pct >= 2) return 'bg-purple-600/40'
+                                  return 'bg-purple-600/20'
+                                }
+
+                                return convWeeks.map((week, idx) => {
+                                  const trafWeek = trafMap.get(week.week_label)
+                                  const isCurrentWeek = week.week_label === "Current Week"
+                                  const cellBg = isCurrentWeek ? "bg-[#1A1A3A]" : "bg-[#1D1D1F]"
+                                  const weekConvTotal = week.week_total ?? 0
+                                  const weekTrafTotal = trafWeek?.week_total ?? 0
+                                  const weekPct = weekTrafTotal > 0 ? Math.round((weekConvTotal / weekTrafTotal) * 100) : null
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{week.week_label}</div>
+                                        <div className="text-xs text-white/40">{week.week_start}</div>
+                                      </td>
+                                      {days.map(day => {
+                                        const convVal = week.daily_cumulative[day]
+                                        const trafVal = trafWeek?.daily_cumulative[day]
+                                        const pct = (convVal !== null && convVal !== undefined && trafVal && trafVal > 0) ? Math.round((convVal / trafVal) * 100) : null
+                                        return (
+                                          <td
+                                            key={day}
+                                            className={`text-center py-3 px-1 ${getHeatmapClass(pct)} ${pct === null ? "text-white/20" : "text-white font-semibold"}`}
+                                          >
+                                            {pct !== null ? `${pct}%` : '-'}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${weekPct === null ? "text-white/20" : "text-white"}`}>
+                                        {weekPct !== null ? `${weekPct}%` : '-'}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Monthly Trends Heatmap - Conversion % */}
+                {conversionTrends.monthly_trends.months.length > 0 && trafficTrends.monthly_trends.months.length > 0 && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5 text-[#5856D6]" />
+                          Monthly Conversion % ({convPctSource === 'total' ? 'Total' : convPctSource.charAt(0).toUpperCase() + convPctSource.slice(1)})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Month</th>
+                                {conversionTrends.monthly_trends.weeks.map((wk) => (
+                                  <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white bg-[#5856D6] whitespace-nowrap">Avg</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const weeks = conversionTrends.monthly_trends.weeks
+                                const convMonths = conversionTrends.monthly_trends.months
+                                const trafMonths = trafficTrends.monthly_trends.months
+                                const trafMap = new Map(trafMonths.map(m => [m.month_key, m]))
+
+                                const getHeatmapClass = (pct: number | null) => {
+                                  if (pct === null) return 'bg-[#1D1D1F]'
+                                  if (pct >= 8) return 'bg-purple-600'
+                                  if (pct >= 6) return 'bg-purple-500'
+                                  if (pct >= 4) return 'bg-purple-600/60'
+                                  if (pct >= 2) return 'bg-purple-600/40'
+                                  return 'bg-purple-600/20'
+                                }
+
+                                return convMonths.map((row, idx) => {
+                                  const trafRow = trafMap.get(row.month_key)
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const cellBg = isCurrentMonth ? "bg-[#1A1A3A]" : "bg-[#1D1D1F]"
+                                  const convTotal = convPctSource === 'total' ? row.grand_total : (row[`${convPctSource}_total` as keyof TrafficTrendMonthRow] as number)
+                                  const trafTotal = trafRow ? (convPctSource === 'total' ? trafRow.grand_total : (trafRow[`${convPctSource}_total` as keyof TrafficTrendMonthRow] as number)) : 0
+                                  const monthPct = trafTotal > 0 ? Math.round((convTotal / trafTotal) * 100) : null
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{row.row_label}</div>
+                                        <div className="text-xs text-white/40">{row.month_label}</div>
+                                      </td>
+                                      {weeks.map(wk => {
+                                        const convVal = row[convPctSource][wk]
+                                        const trafVal = trafRow?.[convPctSource]?.[wk]
+                                        const pct = (convVal !== null && convVal !== undefined && trafVal && trafVal > 0) ? Math.round((convVal / trafVal) * 100) : null
+                                        return (
+                                          <td
+                                            key={wk}
+                                            className={`text-center py-3 px-3 ${getHeatmapClass(pct)} ${pct === null ? "text-white/20" : "text-white font-semibold"}`}
+                                          >
+                                            {pct !== null ? `${pct}%` : '-'}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${monthPct === null ? "text-white/20" : "text-white"}`}>
+                                        {monthPct !== null ? `${monthPct}%` : '-'}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* YoY Conversion % by Week */}
+                {conversionTrends.weekly_yoy[convPctSource] && trafficTrends.weekly_yoy[convPctSource] && (() => {
+                  const convData = conversionTrends.weekly_yoy[convPctSource]
+                  const trafData = trafficTrends.weekly_yoy[convPctSource]
+                  const trafMap = new Map(trafData.map(d => [d.week_num ?? d.week_label, d]))
+                  const pctData = convData.map(d => {
+                    const t = trafMap.get(d.week_num ?? d.week_label)
+                    return {
+                      week_label: d.week_label,
+                      y2024: (d.y2024 !== null && t?.y2024 && t.y2024 > 0) ? Math.round((d.y2024 / t.y2024) * 100) : null,
+                      y2025: (d.y2025 !== null && t?.y2025 && t.y2025 > 0) ? Math.round((d.y2025 / t.y2025) * 100) : null,
+                      y2026: (d.y2026 !== null && t?.y2026 && t.y2026 > 0) ? Math.round((d.y2026 / t.y2026) * 100) : null,
+                    }
+                  })
+                  return (
+                    <div className="mt-8">
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-[#5856D6]" />
+                            {convPctSource === 'total' ? 'Total' : convPctSource.charAt(0).toUpperCase() + convPctSource.slice(1)} Conversion % by Week
+                          </CardTitle>
+                          <CardDescription className="text-sm text-[#6E6E73]">
+                            Year-over-year comparison of weekly conversion rate
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="h-[500px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ComposedChart data={pctData} margin={{ top: 25, right: 30, left: 10, bottom: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                                <XAxis dataKey="week_label" tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} interval={3} />
+                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => `${v}%`} />
+                                <Tooltip
+                                  contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                  labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                  formatter={(value, name) => {
+                                    if (value === null || value === undefined) return ['-', String(name)]
+                                    const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                    return [`${value}%`, yearLabel]
+                                  }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                                <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }} connectNulls name="y2024" />
+                                <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }} connectNulls name="y2025" />
+                                <Line type="monotone" dataKey="y2026" stroke="#5856D6" strokeWidth={3} dot={{ fill: '#5856D6', strokeWidth: 2, r: 5 }} connectNulls name="y2026" />
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                })()}
+
+                {/* YoY Conversion % by Month */}
+                {conversionTrends.monthly_yoy[convPctSource] && trafficTrends.monthly_yoy[convPctSource] && (() => {
+                  const convData = conversionTrends.monthly_yoy[convPctSource]
+                  const trafData = trafficTrends.monthly_yoy[convPctSource]
+                  const trafMap = new Map(trafData.map(d => [d.month_num ?? d.month_label, d]))
+                  const pctData = convData.map(d => {
+                    const t = trafMap.get(d.month_num ?? d.month_label)
+                    return {
+                      month_label: d.month_label,
+                      y2024: (d.y2024 !== null && t?.y2024 && t.y2024 > 0) ? Math.round((d.y2024 / t.y2024) * 100) : null,
+                      y2025: (d.y2025 !== null && t?.y2025 && t.y2025 > 0) ? Math.round((d.y2025 / t.y2025) * 100) : null,
+                      y2026: (d.y2026 !== null && t?.y2026 && t.y2026 > 0) ? Math.round((d.y2026 / t.y2026) * 100) : null,
+                    }
+                  })
+                  return (
+                    <div className="mt-8">
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-[#5856D6]" />
+                            {convPctSource === 'total' ? 'Total' : convPctSource.charAt(0).toUpperCase() + convPctSource.slice(1)} Conversion % by Month
+                          </CardTitle>
+                          <CardDescription className="text-sm text-[#6E6E73]">
+                            Year-over-year comparison of monthly conversion rate
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="h-[500px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ComposedChart data={pctData} margin={{ top: 25, right: 30, left: 20, bottom: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                                <XAxis dataKey="month_label" tick={{ fontSize: 13, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} />
+                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => `${v}%`} />
+                                <Tooltip
+                                  contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                  labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                  formatter={(value, name) => {
+                                    if (value === null || value === undefined) return ['-', String(name)]
+                                    const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                    return [`${value}%`, yearLabel]
+                                  }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                                <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }} connectNulls name="y2024" />
+                                <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }} connectNulls name="y2025" />
+                                <Line type="monotone" dataKey="y2026" stroke="#5856D6" strokeWidth={3} dot={{ fill: '#5856D6', strokeWidth: 2, r: 6 }} connectNulls name="y2026" />
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                })()}
+              </>
+            ) : (
+              <div className="text-center text-[#6E6E73] py-12">
+                No data available — both traffic and conversion data are required
+              </div>
+            )}
+          </>
+        )}
+
         {/* Google Ads Tab */}
         {activeTab === "google-ads" && (
           <>
