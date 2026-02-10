@@ -19,7 +19,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LabelList,
 } from "recharts"
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
 import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone } from "lucide-react"
@@ -135,6 +134,26 @@ interface MonthlyQtyYoYDataPoint {
 interface MonthlyQtyYoYResponse {
   data: MonthlyQtyYoYDataPoint[]
   current_month: number
+}
+
+interface MonthlyTrendRow {
+  month_key: string
+  month_label: string
+  row_label: string
+  direct_qty: Record<string, number | null>
+  direct_revenue: Record<string, number | null>
+  renewal_qty: Record<string, number | null>
+  renewal_revenue: Record<string, number | null>
+  total_gross_revenue: Record<string, number | null>
+  total_direct_qty: number
+  cert_total: number
+  team_total: number
+  learner_total: number
+}
+
+interface MonthlyTrendsResponse {
+  months: MonthlyTrendRow[]
+  weeks: string[]
 }
 
 interface EODForecastResponse {
@@ -1810,6 +1829,7 @@ export default function DashboardPage() {
   const [weeklyTrends, setWeeklyTrends] = useState<WeeklyTrendsResponse | null>(null)
   const [extendedWeeklyTrends, setExtendedWeeklyTrends] = useState<ExtendedWeeklyTrendsResponse | null>(null)
   const [productMix, setProductMix] = useState<ProductMixResponse | null>(null)
+  const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrendsResponse | null>(null)
   const [weeklyQtyYoY, setWeeklyQtyYoY] = useState<WeeklyQtyYoYResponse | null>(null)
   const [monthlyQtyYoY, setMonthlyQtyYoY] = useState<MonthlyQtyYoYResponse | null>(null)
   const [eodForecast, setEodForecast] = useState<EODForecastResponse | null>(null)
@@ -1874,6 +1894,7 @@ export default function DashboardPage() {
         fetchWithCache(`${PROPHET_API_URL}/weekly-trends`, 'weekly', CACHE_TTL.sales, setWeeklyTrends),
         fetchWithCache(`${PROPHET_API_URL}/weekly-trends-extended`, 'weeklyExtended', CACHE_TTL.sales, setExtendedWeeklyTrends),
         fetchWithCache(`${PROPHET_API_URL}/product-mix`, 'productMix', CACHE_TTL.sales, setProductMix),
+        fetchWithCache('/api/monthly-trends', 'monthlyTrends', CACHE_TTL.sales, setMonthlyTrends),
         fetchWithCache(`${PROPHET_API_URL}/weekly-qty-yoy`, 'weeklyQtyYoY', CACHE_TTL.sales, setWeeklyQtyYoY),
         fetchWithCache(`${PROPHET_API_URL}/monthly-qty-yoy`, 'monthlyQtyYoY', CACHE_TTL.sales, setMonthlyQtyYoY),
         fetchWithCache(`${PROPHET_API_URL}/eod-forecast`, 'eod', CACHE_TTL.sales, setEodForecast),
@@ -1997,6 +2018,7 @@ export default function DashboardPage() {
     const cachedWeekly = getFromCache<WeeklyTrendsResponse>('weekly')
     const cachedExtendedWeekly = getFromCache<ExtendedWeeklyTrendsResponse>('weeklyExtended')
     const cachedProductMix = getFromCache<ProductMixResponse>('productMix')
+    const cachedMonthlyTrends = getFromCache<MonthlyTrendsResponse>('monthlyTrends')
     const cachedWeeklyQtyYoY = getFromCache<WeeklyQtyYoYResponse>('weeklyQtyYoY')
     const cachedMonthlyQtyYoY = getFromCache<MonthlyQtyYoYResponse>('monthlyQtyYoY')
     const cachedEod = getFromCache<EODForecastResponse>('eod')
@@ -2008,6 +2030,7 @@ export default function DashboardPage() {
     if (cachedWeekly) setWeeklyTrends(cachedWeekly)
     if (cachedExtendedWeekly) setExtendedWeeklyTrends(cachedExtendedWeekly)
     if (cachedProductMix) setProductMix(cachedProductMix)
+    if (cachedMonthlyTrends) setMonthlyTrends(cachedMonthlyTrends)
     if (cachedWeeklyQtyYoY) setWeeklyQtyYoY(cachedWeeklyQtyYoY)
     if (cachedMonthlyQtyYoY) setMonthlyQtyYoY(cachedMonthlyQtyYoY)
     if (cachedEod) setEodForecast(cachedEod)
@@ -2715,6 +2738,255 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Monthly Trends Section */}
+            {monthlyTrends && monthlyTrends.months.length > 0 && (
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-[#0066CC]" />
+                  Monthly Trends
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Direct QTY */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Direct QTY</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-[#D2D2D7]">
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              {monthlyTrends.weeks.map(wk => (
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {monthlyTrends.months.map((row) => {
+                              const isCurrentMonth = row.row_label === "Current Month"
+                              return (
+                                <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className="py-2 px-2">
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                  </td>
+                                  {monthlyTrends.weeks.map(wk => (
+                                    <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
+                                      {row.direct_qty[wk] !== null && row.direct_qty[wk] !== undefined ? row.direct_qty[wk]!.toLocaleString() : "—"}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Direct Revenue */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Direct Revenue</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-[#D2D2D7]">
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              {monthlyTrends.weeks.map(wk => (
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {monthlyTrends.months.map((row) => {
+                              const isCurrentMonth = row.row_label === "Current Month"
+                              return (
+                                <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className="py-2 px-2">
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                  </td>
+                                  {monthlyTrends.weeks.map(wk => (
+                                    <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
+                                      {row.direct_revenue[wk] !== null && row.direct_revenue[wk] !== undefined ? `$${row.direct_revenue[wk]!.toLocaleString()}` : "—"}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Renewal QTY */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Renewal QTY</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-[#D2D2D7]">
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              {monthlyTrends.weeks.map(wk => (
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {monthlyTrends.months.map((row) => {
+                              const isCurrentMonth = row.row_label === "Current Month"
+                              return (
+                                <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className="py-2 px-2">
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                  </td>
+                                  {monthlyTrends.weeks.map(wk => (
+                                    <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
+                                      {row.renewal_qty[wk] !== null && row.renewal_qty[wk] !== undefined ? row.renewal_qty[wk]!.toLocaleString() : "—"}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Renewal Revenue */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Renewal Revenue</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-[#D2D2D7]">
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              {monthlyTrends.weeks.map(wk => (
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {monthlyTrends.months.map((row) => {
+                              const isCurrentMonth = row.row_label === "Current Month"
+                              return (
+                                <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className="py-2 px-2">
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                  </td>
+                                  {monthlyTrends.weeks.map(wk => (
+                                    <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
+                                      {row.renewal_revenue[wk] !== null && row.renewal_revenue[wk] !== undefined ? `$${row.renewal_revenue[wk]!.toLocaleString()}` : "—"}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Total Gross Revenue */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Total Gross Revenue</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-[#D2D2D7]">
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              {monthlyTrends.weeks.map(wk => (
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {monthlyTrends.months.map((row) => {
+                              const isCurrentMonth = row.row_label === "Current Month"
+                              return (
+                                <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className="py-2 px-2">
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                  </td>
+                                  {monthlyTrends.weeks.map(wk => (
+                                    <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
+                                      {row.total_gross_revenue[wk] !== null && row.total_gross_revenue[wk] !== undefined ? `$${row.total_gross_revenue[wk]!.toLocaleString()}` : "—"}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Product Mix By Month */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Product Mix By Month</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b-2 border-[#D2D2D7]">
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Total</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Cert %</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Team %</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Learner %</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {monthlyTrends.months.map((row) => {
+                              const isCurrentMonth = row.row_label === "Current Month"
+                              const total = row.total_direct_qty
+                              const certPct = total > 0 ? Math.round((row.cert_total / total) * 100) : 0
+                              const teamPct = total > 0 ? Math.round((row.team_total / total) * 100) : 0
+                              const learnerPct = total > 0 ? Math.round((row.learner_total / total) * 100) : 0
+                              return (
+                                <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                  <td className="py-2 px-2">
+                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                  </td>
+                                  <td className="text-center py-2 px-2 text-[#1D1D1F] font-medium">{total}</td>
+                                  <td className="text-center py-2 px-2 text-[#1D1D1F]">{certPct}%</td>
+                                  <td className="text-center py-2 px-2 text-[#1D1D1F]">{teamPct}%</td>
+                                  <td className="text-center py-2 px-2 text-[#1D1D1F]">{learnerPct}%</td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
             {/* Year-over-Year Weekly Sales Chart */}
             <div className="mt-8">
               <Card className="bg-white border-[#D2D2D7] shadow-sm">
@@ -2729,29 +3001,29 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="pt-2">
                   {loading ? (
-                    <div className="h-80 flex items-center justify-center">
+                    <div className="h-[500px] flex items-center justify-center">
                       <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
                     </div>
                   ) : error ? (
-                    <div className="h-80 flex items-center justify-center text-[#FF3B30] text-sm">
+                    <div className="h-[500px] flex items-center justify-center text-[#FF3B30] text-sm">
                       {error}
                     </div>
                   ) : weeklyQtyYoY ? (
-                    <div className="h-80">
+                    <div className="h-[500px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart
                           data={weeklyQtyYoY.data}
-                          margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
+                          margin={{ top: 25, right: 30, left: 10, bottom: 10 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
                           <XAxis
                             dataKey="week_label"
-                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tick={{ fontSize: 12, fill: '#6E6E73' }}
                             tickLine={{ stroke: '#D2D2D7' }}
                             interval={3}
                           />
                           <YAxis
-                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tick={{ fontSize: 12, fill: '#6E6E73' }}
                             tickLine={{ stroke: '#D2D2D7' }}
                             axisLine={{ stroke: '#D2D2D7' }}
                           />
@@ -2761,8 +3033,9 @@ export default function DashboardPage() {
                               border: '1px solid #D2D2D7',
                               borderRadius: '8px',
                               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                              fontSize: 14,
                             }}
-                            labelStyle={{ color: '#1D1D1F', fontWeight: 600 }}
+                            labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
                             formatter={(value, name) => {
                               if (value === null || value === undefined) return ['-', String(name)]
                               const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
@@ -2770,7 +3043,7 @@ export default function DashboardPage() {
                             }}
                           />
                           <Legend
-                            wrapperStyle={{ paddingTop: '10px' }}
+                            wrapperStyle={{ paddingTop: '10px', fontSize: 13 }}
                             formatter={(value: string) => {
                               if (value === 'y2024') return '2024'
                               if (value === 'y2025') return '2025'
@@ -2783,30 +3056,27 @@ export default function DashboardPage() {
                             dataKey="y2024"
                             stroke="#8E8E93"
                             strokeWidth={2}
-                            dot={{ fill: '#8E8E93', strokeWidth: 2, r: 3 }}
+                            dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }}
                             connectNulls
                             name="y2024"
-                            label={{ position: 'top', fontSize: 9, fill: '#8E8E93' }}
                           />
                           <Line
                             type="monotone"
                             dataKey="y2025"
                             stroke="#0066CC"
                             strokeWidth={2}
-                            dot={{ fill: '#0066CC', strokeWidth: 2, r: 3 }}
+                            dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }}
                             connectNulls
                             name="y2025"
-                            label={{ position: 'top', fontSize: 9, fill: '#0066CC' }}
                           />
                           <Line
                             type="monotone"
                             dataKey="y2026"
                             stroke="#34C759"
-                            strokeWidth={2}
-                            dot={{ fill: '#34C759', strokeWidth: 2, r: 4 }}
+                            strokeWidth={3}
+                            dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }}
                             connectNulls
                             name="y2026"
-                            label={{ position: 'top', fontSize: 10, fill: '#34C759', fontWeight: 600 }}
                           />
                         </ComposedChart>
                       </ResponsiveContainer>
@@ -2830,28 +3100,28 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="pt-2">
                   {loading ? (
-                    <div className="h-80 flex items-center justify-center">
+                    <div className="h-[500px] flex items-center justify-center">
                       <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
                     </div>
                   ) : error ? (
-                    <div className="h-80 flex items-center justify-center text-[#FF3B30] text-sm">
+                    <div className="h-[500px] flex items-center justify-center text-[#FF3B30] text-sm">
                       {error}
                     </div>
                   ) : monthlyQtyYoY ? (
-                    <div className="h-80">
+                    <div className="h-[500px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart
                           data={monthlyQtyYoY.data}
-                          margin={{ top: 20, right: 30, left: 0, bottom: 10 }}
+                          margin={{ top: 25, right: 30, left: 10, bottom: 10 }}
                         >
                           <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
                           <XAxis
                             dataKey="month_label"
-                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tick={{ fontSize: 13, fill: '#6E6E73' }}
                             tickLine={{ stroke: '#D2D2D7' }}
                           />
                           <YAxis
-                            tick={{ fontSize: 11, fill: '#6E6E73' }}
+                            tick={{ fontSize: 12, fill: '#6E6E73' }}
                             tickLine={{ stroke: '#D2D2D7' }}
                             axisLine={{ stroke: '#D2D2D7' }}
                           />
@@ -2861,8 +3131,9 @@ export default function DashboardPage() {
                               border: '1px solid #D2D2D7',
                               borderRadius: '8px',
                               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                              fontSize: 14,
                             }}
-                            labelStyle={{ color: '#1D1D1F', fontWeight: 600 }}
+                            labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
                             formatter={(value, name) => {
                               if (value === null || value === undefined) return ['-', String(name)]
                               const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
@@ -2870,7 +3141,7 @@ export default function DashboardPage() {
                             }}
                           />
                           <Legend
-                            wrapperStyle={{ paddingTop: '10px' }}
+                            wrapperStyle={{ paddingTop: '10px', fontSize: 13 }}
                             formatter={(value: string) => {
                               if (value === 'y2024') return '2024'
                               if (value === 'y2025') return '2025'
@@ -2883,35 +3154,259 @@ export default function DashboardPage() {
                             dataKey="y2024"
                             stroke="#8E8E93"
                             strokeWidth={2}
-                            dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }}
+                            dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }}
                             connectNulls
                             name="y2024"
-                            label={{ position: 'top', fontSize: 10, fill: '#8E8E93' }}
                           />
                           <Line
                             type="monotone"
                             dataKey="y2025"
                             stroke="#0066CC"
                             strokeWidth={2}
-                            dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }}
+                            dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }}
                             connectNulls
                             name="y2025"
-                            label={{ position: 'top', fontSize: 10, fill: '#0066CC' }}
                           />
                           <Line
                             type="monotone"
                             dataKey="y2026"
                             stroke="#34C759"
-                            strokeWidth={2}
-                            dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }}
+                            strokeWidth={3}
+                            dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }}
                             connectNulls
                             name="y2026"
-                            label={{ position: 'top', fontSize: 11, fill: '#34C759', fontWeight: 600 }}
                           />
                         </ComposedChart>
                       </ResponsiveContainer>
                     </div>
                   ) : null}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Cumulative Direct Qty by Week */}
+            <div className="mt-8">
+              <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-[#34C759]" />
+                    Cumulative Direct Qty Total by Week
+                  </CardTitle>
+                  <CardDescription className="text-sm text-[#6E6E73]">
+                    Year-over-year running total of weekly direct sales
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  {loading ? (
+                    <div className="h-[500px] flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                    </div>
+                  ) : error ? (
+                    <div className="h-[500px] flex items-center justify-center text-[#FF3B30] text-sm">
+                      {error}
+                    </div>
+                  ) : weeklyQtyYoY ? (() => {
+                    let cum2024 = 0, cum2025 = 0, cum2026 = 0
+                    const cumData = weeklyQtyYoY.data.map(d => {
+                      if (d.y2024 !== null) cum2024 += d.y2024
+                      if (d.y2025 !== null) cum2025 += d.y2025
+                      if (d.y2026 !== null) cum2026 += d.y2026
+                      return {
+                        week_label: d.week_label,
+                        y2024: d.y2024 !== null ? cum2024 : null,
+                        y2025: d.y2025 !== null ? cum2025 : null,
+                        y2026: d.y2026 !== null ? cum2026 : null,
+                      }
+                    })
+                    return (
+                      <div className="h-[500px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart
+                            data={cumData}
+                            margin={{ top: 25, right: 30, left: 20, bottom: 10 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                            <XAxis
+                              dataKey="week_label"
+                              tick={{ fontSize: 12, fill: '#6E6E73' }}
+                              tickLine={{ stroke: '#D2D2D7' }}
+                              interval={3}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12, fill: '#6E6E73' }}
+                              tickLine={{ stroke: '#D2D2D7' }}
+                              axisLine={{ stroke: '#D2D2D7' }}
+                              tickFormatter={(v) => v.toLocaleString()}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: '#FFFFFF',
+                                border: '1px solid #D2D2D7',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                fontSize: 14,
+                              }}
+                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                              formatter={(value, name) => {
+                                if (value === null || value === undefined) return ['-', String(name)]
+                                const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                return [Number(value).toLocaleString(), yearLabel]
+                              }}
+                            />
+                            <Legend
+                              wrapperStyle={{ paddingTop: '10px', fontSize: 13 }}
+                              formatter={(value: string) => {
+                                if (value === 'y2024') return '2024'
+                                if (value === 'y2025') return '2025'
+                                if (value === 'y2026') return '2026'
+                                return value
+                              }}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="y2024"
+                              stroke="#8E8E93"
+                              strokeWidth={2}
+                              dot={{ fill: '#8E8E93', strokeWidth: 2, r: 3 }}
+                              connectNulls
+                              name="y2024"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="y2025"
+                              stroke="#0066CC"
+                              strokeWidth={2}
+                              dot={{ fill: '#0066CC', strokeWidth: 2, r: 3 }}
+                              connectNulls
+                              name="y2025"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="y2026"
+                              stroke="#34C759"
+                              strokeWidth={3}
+                              dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }}
+                              connectNulls
+                              name="y2026"
+                            />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )
+                  })() : null}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Cumulative Direct Qty by Month */}
+            <div className="mt-8">
+              <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-[#34C759]" />
+                    Cumulative Direct Qty Total by Month
+                  </CardTitle>
+                  <CardDescription className="text-sm text-[#6E6E73]">
+                    Year-over-year running total of monthly direct sales (YTD)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  {loading ? (
+                    <div className="h-[500px] flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                    </div>
+                  ) : error ? (
+                    <div className="h-[500px] flex items-center justify-center text-[#FF3B30] text-sm">
+                      {error}
+                    </div>
+                  ) : monthlyQtyYoY ? (() => {
+                    let cum2024 = 0, cum2025 = 0, cum2026 = 0
+                    const cumData = monthlyQtyYoY.data.map(d => {
+                      if (d.y2024 !== null) cum2024 += d.y2024
+                      if (d.y2025 !== null) cum2025 += d.y2025
+                      if (d.y2026 !== null) cum2026 += d.y2026
+                      return {
+                        month_label: d.month_label,
+                        y2024: d.y2024 !== null ? cum2024 : null,
+                        y2025: d.y2025 !== null ? cum2025 : null,
+                        y2026: d.y2026 !== null ? cum2026 : null,
+                      }
+                    })
+                    return (
+                      <div className="h-[500px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart
+                            data={cumData}
+                            margin={{ top: 25, right: 30, left: 20, bottom: 10 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                            <XAxis
+                              dataKey="month_label"
+                              tick={{ fontSize: 13, fill: '#6E6E73' }}
+                              tickLine={{ stroke: '#D2D2D7' }}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12, fill: '#6E6E73' }}
+                              tickLine={{ stroke: '#D2D2D7' }}
+                              axisLine={{ stroke: '#D2D2D7' }}
+                              tickFormatter={(v) => v.toLocaleString()}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: '#FFFFFF',
+                                border: '1px solid #D2D2D7',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                fontSize: 14,
+                              }}
+                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                              formatter={(value, name) => {
+                                if (value === null || value === undefined) return ['-', String(name)]
+                                const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                return [Number(value).toLocaleString(), yearLabel]
+                              }}
+                            />
+                            <Legend
+                              wrapperStyle={{ paddingTop: '10px', fontSize: 13 }}
+                              formatter={(value: string) => {
+                                if (value === 'y2024') return '2024'
+                                if (value === 'y2025') return '2025'
+                                if (value === 'y2026') return '2026'
+                                return value
+                              }}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="y2024"
+                              stroke="#8E8E93"
+                              strokeWidth={2}
+                              dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }}
+                              connectNulls
+                              name="y2024"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="y2025"
+                              stroke="#0066CC"
+                              strokeWidth={2}
+                              dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }}
+                              connectNulls
+                              name="y2025"
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="y2026"
+                              stroke="#34C759"
+                              strokeWidth={3}
+                              dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }}
+                              connectNulls
+                              name="y2026"
+                            />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )
+                  })() : null}
                 </CardContent>
               </Card>
             </div>
