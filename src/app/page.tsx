@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
-import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone } from "lucide-react"
+import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin } from "lucide-react"
 
 // Always use Railway API (no local Python backend needed)
 const PROPHET_API_URL = "https://qbtraining-site-production.up.railway.app"
@@ -797,7 +797,7 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type TabType = "sales" | "traffic" | "conversions" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions"
+type TabType = "sales" | "traffic" | "conversions" | "conversion-pct" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions" | "landing-pages"
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -1963,6 +1963,9 @@ export default function DashboardPage() {
   const [conversionTrends, setConversionTrends] = useState<TrafficTrendsResponse | null>(null)
   const [conversionSource, setConversionSource] = useState<ConversionSource>('total')
 
+  // Conversion % state
+  const [convPctSource, setConvPctSource] = useState<ConversionSource>('total')
+
   // Google Ads Trends state
   const [gadsTrends, setGadsTrends] = useState<AdsTrendsResponse | null>(null)
   const [gadsMetric, setGadsMetric] = useState<AdsMetric>('conversions')
@@ -1995,6 +1998,10 @@ export default function DashboardPage() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionsResponse | null>(null)
   const [subscriberMetrics, setSubscriberMetrics] = useState<SubscriberMetricsResponse | null>(null)
 
+  // Landing Pages state
+  const [landingPagesData, setLandingPagesData] = useState<{ landing_pages: Array<{ landing_page: string; weeks: Array<{ label: string; date_range: string; users: number; purchases: number; conversion_rate: number }> }>; last_updated: string } | null>(null)
+  const [gadsLandingPagesData, setGadsLandingPagesData] = useState<{ landing_pages: Array<{ landing_page: string; weeks: Array<{ label: string; date_range: string; clicks: number; conversions: number; conversion_rate: number }> }>; last_updated: string } | null>(null)
+
   // Loading states per tab
   const [salesLoading, setSalesLoading] = useState(true)
   const [trafficLoading, setTrafficLoading] = useState(true)
@@ -2003,6 +2010,7 @@ export default function DashboardPage() {
   const [bingAdsLoading, setBingAdsLoading] = useState(true)
   const [jediLoading, setJediLoading] = useState(true)
   const [subscriptionsLoading, setSubscriptionsLoading] = useState(true)
+  const [landingPagesLoading, setLandingPagesLoading] = useState(true)
 
   // Track which tabs have been loaded
   const [loadedTabs, setLoadedTabs] = useState<Set<TabType>>(new Set())
@@ -2136,6 +2144,24 @@ export default function DashboardPage() {
     }
   }
 
+  const fetchLandingPagesData = async () => {
+    if (loadedTabs.has('landing-pages')) return
+    setLandingPagesLoading(true)
+    try {
+      const [lpRes, gadsLpRes] = await Promise.all([
+        fetch('/api/landing-pages-weekly'),
+        fetch('/api/gads-landing-pages-weekly')
+      ])
+      if (lpRes.ok) setLandingPagesData(await lpRes.json())
+      if (gadsLpRes.ok) setGadsLandingPagesData(await gadsLpRes.json())
+    } catch (err) {
+      console.error("Failed to load Landing Pages data:", err)
+    } finally {
+      setLandingPagesLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'landing-pages']))
+    }
+  }
+
   // Initial load: Sales tab first (priority)
   useEffect(() => {
     // Clear old traffic cache to force fetch of new weekly data
@@ -2196,10 +2222,12 @@ export default function DashboardPage() {
   useEffect(() => {
     if (activeTab === 'traffic') fetchTrafficData()
     else if (activeTab === 'conversions') fetchConversionData()
+    else if (activeTab === 'conversion-pct') { fetchTrafficData(); fetchConversionData() }
     else if (activeTab === 'google-ads') fetchGoogleAdsData()
     else if (activeTab === 'bing-ads') fetchBingAdsData()
     else if (activeTab === 'jedi-council') fetchJediData()
     else if (activeTab === 'subscriptions') fetchSubscriptionsData()
+    else if (activeTab === 'landing-pages') fetchLandingPagesData()
   }, [activeTab])
 
   // Auto-refresh sales data every 5 minutes when on sales tab
@@ -2218,8 +2246,10 @@ export default function DashboardPage() {
     { id: "sales" as TabType, label: "Sales", icon: DollarSign },
     { id: "traffic" as TabType, label: "Traffic", icon: Users },
     { id: "conversions" as TabType, label: "Conversions", icon: CheckCircle2 },
+    { id: "conversion-pct" as TabType, label: "Conversion %", icon: Percent },
     { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
     { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
+    { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
     { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
     { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
   ]
@@ -5387,6 +5417,135 @@ export default function DashboardPage() {
         {/* Jedi Council Tab */}
         {activeTab === "jedi-council" && (
           <JediCouncilSection jediCouncil={jediCouncil} />
+        )}
+
+        {/* Landing Pages Tab */}
+        {activeTab === "landing-pages" && (
+          <div className="space-y-6">
+            {landingPagesLoading && !landingPagesData ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : landingPagesData && gadsLandingPagesData ? (
+              <>
+                {/* GA4 Landing Pages */}
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl font-semibold text-[#1D1D1F]">GA4 Landing Pages</CardTitle>
+                    <CardDescription>Weekly users, conversions & conversion rate by page</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-[#D2D2D7]">
+                            <th className="text-left py-3 px-3 font-semibold text-[#1D1D1F]">Landing Page</th>
+                            {landingPagesData.landing_pages[0]?.weeks.map((week, idx) => (
+                              <th key={idx} className="text-center py-3 px-3">
+                                <div className="font-semibold text-[#1D1D1F]">{week.label}</div>
+                                <div className="text-xs text-[#6E6E73] mt-0.5">{week.date_range}</div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {landingPagesData.landing_pages.map((lp, lpIdx) => (
+                            <tr key={lpIdx} className="border-b border-[#E5E5EA] hover:bg-[#F5F5F7] transition-colors">
+                              <td className="py-3 px-3 font-medium text-[#1D1D1F] truncate max-w-[240px]" title={lp.landing_page}>
+                                {lp.landing_page}
+                              </td>
+                              {lp.weeks.map((week, weekIdx) => (
+                                <td key={weekIdx} className="text-center py-3 px-3">
+                                  <div className="font-bold text-[#1D1D1F]">{Math.round(week.users).toLocaleString()}</div>
+                                  <div className="text-[#6E6E73] text-xs">{week.purchases} conv</div>
+                                  <div className={`text-xs font-semibold ${week.conversion_rate >= 1.5 ? 'text-[#34C759]' : week.conversion_rate >= 0.5 ? 'text-[#FF9500]' : 'text-[#FF3B30]'}`}>
+                                    {week.conversion_rate.toFixed(2)}%
+                                  </div>
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Google Ads Landing Pages */}
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl font-semibold text-[#1D1D1F]">Google Ads Landing Pages</CardTitle>
+                    <CardDescription>Weekly clicks, conversions & conversion rate by page</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-[#D2D2D7]">
+                            <th className="text-left py-3 px-3 font-semibold text-[#1D1D1F]">Landing Page</th>
+                            {(() => {
+                              const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/'
+                              const ga4Order = landingPagesData.landing_pages.map(lp => normalizePath(lp.landing_page))
+                              const sorted = [...gadsLandingPagesData.landing_pages].sort((a, b) => {
+                                const aIdx = ga4Order.indexOf(normalizePath(a.landing_page))
+                                const bIdx = ga4Order.indexOf(normalizePath(b.landing_page))
+                                if (aIdx === -1 && bIdx === -1) return 0
+                                if (aIdx === -1) return 1
+                                if (bIdx === -1) return -1
+                                return aIdx - bIdx
+                              })
+                              return sorted[0]?.weeks.map((week, idx) => (
+                                <th key={idx} className="text-center py-3 px-3">
+                                  <div className="font-semibold text-[#1D1D1F]">{week.label}</div>
+                                  <div className="text-xs text-[#6E6E73] mt-0.5">{week.date_range}</div>
+                                </th>
+                              ))
+                            })()}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/'
+                            const ga4Order = landingPagesData.landing_pages.map(lp => normalizePath(lp.landing_page))
+                            const sorted = [...gadsLandingPagesData.landing_pages].sort((a, b) => {
+                              const aIdx = ga4Order.indexOf(normalizePath(a.landing_page))
+                              const bIdx = ga4Order.indexOf(normalizePath(b.landing_page))
+                              if (aIdx === -1 && bIdx === -1) return 0
+                              if (aIdx === -1) return 1
+                              if (bIdx === -1) return -1
+                              return aIdx - bIdx
+                            })
+                            return sorted.map((lp, lpIdx) => (
+                              <tr key={lpIdx} className="border-b border-[#E5E5EA] hover:bg-[#F5F5F7] transition-colors">
+                                <td className="py-3 px-3 font-medium text-[#1D1D1F] truncate max-w-[240px]" title={lp.landing_page}>
+                                  {lp.landing_page}
+                                </td>
+                                {lp.weeks.map((week, weekIdx) => (
+                                  <td key={weekIdx} className="text-center py-3 px-3">
+                                    <div className="font-bold text-[#1D1D1F]">{Math.round(week.clicks).toLocaleString()}</div>
+                                    <div className="text-[#6E6E73] text-xs">{Math.round(week.conversions)} conv</div>
+                                    <div className={`text-xs font-semibold ${week.conversion_rate >= 5 ? 'text-[#34C759]' : week.conversion_rate >= 2 ? 'text-[#FF9500]' : 'text-[#FF3B30]'}`}>
+                                      {week.conversion_rate.toFixed(2)}%
+                                    </div>
+                                  </td>
+                                ))}
+                              </tr>
+                            ))
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <Card className="border-0 shadow-sm">
+                <CardContent className="py-12 text-center">
+                  <p className="text-[#6E6E73]">Failed to load landing pages data</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {/* Subscriptions Tab */}
