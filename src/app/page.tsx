@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback } from "react"
 import Link from "next/link"
-import { 
-  LayoutGrid, 
-  TrendingUp, 
-  DollarSign, 
-  Users, 
-  FileText, 
+import Image from "next/image"
+import {
+  LayoutGrid,
+  TrendingUp,
+  DollarSign,
+  Users,
+  FileText,
   Tv,
   Megaphone,
   ArrowRight,
@@ -31,29 +32,32 @@ const dashboardSections = [
     icon: ShoppingCart,
     color: "from-green-500 to-emerald-600",
     dashboards: [
-      { 
-        name: "Sales", 
-        href: "/sales", 
-        icon: DollarSign, 
+      {
+        name: "Sales",
+        href: "/sales",
+        icon: DollarSign,
         description: "Detailed sales analytics and trends",
         color: "from-green-500 to-emerald-600",
-        stats: "Revenue • Orders"
+        stats: "Revenue • Orders",
+        preview: null,
       },
-      { 
-        name: "Intuit Sales", 
-        href: "/intuit-sales", 
-        icon: DollarSign, 
+      {
+        name: "Intuit Sales",
+        href: "/intuit-sales",
+        icon: DollarSign,
         description: "Intuit revenue breakdown by category (IES, Priority Circle, Classes, Videos, Webinars)",
         color: "from-blue-500 to-cyan-600",
-        stats: "Feb 2024 → Present"
+        stats: "Feb 2024 → Present",
+        preview: "/previews/intuit-sales.png",
       },
-      { 
-        name: "P&L Recap", 
-        href: "/recap", 
-        icon: FileText, 
+      {
+        name: "P&L Recap",
+        href: "/recap",
+        icon: FileText,
         description: "Monthly profit & loss reports and analysis",
         color: "from-emerald-500 to-teal-600",
-        stats: "Monthly reports"
+        stats: "Monthly reports",
+        preview: null,
       },
     ]
   },
@@ -63,21 +67,23 @@ const dashboardSections = [
     icon: Users,
     color: "from-purple-500 to-indigo-600",
     dashboards: [
-      { 
-        name: "GA4 Summary", 
-        href: "/playground", 
-        icon: BarChart3, 
+      {
+        name: "GA4 Summary",
+        href: "/playground",
+        icon: BarChart3,
         description: "Monthly traffic by channel from Google Analytics",
         color: "from-yellow-500 to-amber-600",
-        stats: "Traffic • Channels"
+        stats: "Traffic • Channels",
+        preview: "/previews/playground.png",
       },
-      { 
-        name: "Trend Analysis", 
-        href: "/trend-analysis", 
-        icon: TrendingUp, 
+      {
+        name: "Trend Analysis",
+        href: "/trend-analysis",
+        icon: TrendingUp,
         description: "YoY comparisons, 4-week trends & Vision's insights",
         color: "from-violet-500 to-purple-600",
-        stats: "Trends • YoY • Analysis"
+        stats: "Trends • YoY • Analysis",
+        preview: "/previews/trend-analysis.png",
       },
     ]
   },
@@ -87,61 +93,77 @@ const dashboardSections = [
     icon: Megaphone,
     color: "from-orange-500 to-red-600",
     dashboards: [
-      { 
-        name: "Marketing Dashboard", 
-        href: "/ads", 
-        icon: Megaphone, 
+      {
+        name: "Marketing Dashboard",
+        href: "/ads",
+        icon: Megaphone,
         description: "Traffic by channel, Google Ads & Bing Ads performance",
         color: "from-orange-500 to-red-600",
-        stats: "Traffic • Ads • ROI"
+        stats: "Traffic • Ads • ROI",
+        preview: "/previews/ads.png",
       },
-      { 
-        name: "Google Ads Summary", 
-        href: "/google-ads-summary", 
-        icon: TrendingUp, 
+      {
+        name: "Google Ads Summary",
+        href: "/google-ads-summary",
+        icon: TrendingUp,
         description: "Monthly Google Ads performance: spend, conversions, ROAS",
         color: "from-red-500 to-rose-600",
-        stats: "Spend • Conversions • ROAS"
+        stats: "Spend • Conversions • ROAS",
+        preview: "/previews/google-ads-summary.png",
       },
-      { 
-        name: "Bing Ads Summary", 
-        href: "/bing-ads-summary", 
-        icon: Search, 
+      {
+        name: "Bing Ads Summary",
+        href: "/bing-ads-summary",
+        icon: Search,
         description: "Monthly Microsoft Advertising performance metrics",
         color: "from-sky-500 to-blue-600",
-        stats: "Spend • Conversions • ROAS"
+        stats: "Spend • Conversions • ROAS",
+        preview: "/previews/bing-ads-summary.png",
       },
-      { 
-        name: "Google Ads CPC Optimizer", 
-        href: "/cpc", 
-        icon: Target, 
+      {
+        name: "Google Ads CPC Optimizer",
+        href: "/cpc",
+        icon: Target,
         description: "Google Ads Max CPC bid recommendations with confidence scores & performance metrics",
         color: "from-cyan-500 to-teal-600",
-        stats: "Keywords • Bids • Signals"
+        stats: "Keywords • Bids • Signals",
+        preview: "/previews/cpc.png",
       },
-      { 
-        name: "Bing Ads CPC Optimizer", 
-        href: "/cpc-bing", 
-        icon: Target, 
+      {
+        name: "Bing Ads CPC Optimizer",
+        href: "/cpc-bing",
+        icon: Target,
         description: "Bing Ads Max CPC bid recommendations with urgency levels & performance metrics",
         color: "from-blue-500 to-purple-600",
-        stats: "Keywords • Bids • Urgency"
+        stats: "Keywords • Bids • Urgency",
+        preview: "/previews/cpc-bing.png",
       },
-      { 
-        name: "Age Analysis", 
-        href: "/age-analysis", 
-        icon: Users, 
+      {
+        name: "Age Analysis",
+        href: "/age-analysis",
+        icon: Users,
         description: "Google Ads performance trends by age group: clicks, impressions, CTR, CPC, spend, conversions",
         color: "from-indigo-500 to-purple-600",
-        stats: "Age Groups • Trends • 2024-Present"
+        stats: "Age Groups • Trends • 2024-Present",
+        preview: "/previews/age-analysis.png",
       },
-      { 
-        name: "Vision Analytics", 
-        href: "/vision", 
-        icon: Zap, 
+      {
+        name: "Landing Pages",
+        href: "/landing-pages",
+        icon: MapPin,
+        description: "GA4 & Google Ads landing page performance by week",
+        color: "from-teal-500 to-cyan-600",
+        stats: "Pages • Conversions • Weekly",
+        preview: "/previews/landing-pages.png",
+      },
+      {
+        name: "Vision Analytics",
+        href: "/vision",
+        icon: Zap,
         description: "Keyword-level bid optimization & CPA trend analysis",
         color: "from-fuchsia-500 to-pink-600",
-        stats: "Bids • Keywords • CPA"
+        stats: "Bids • Keywords • CPA",
+        preview: "/previews/vision.png",
       },
     ]
   },
@@ -151,21 +173,23 @@ const dashboardSections = [
     icon: Tv,
     color: "from-cyan-500 to-blue-600",
     dashboards: [
-      { 
-        name: "Marketing Dashboard (TV)", 
-        href: "/ads-tv", 
-        icon: Tv, 
+      {
+        name: "Marketing Dashboard (TV)",
+        href: "/ads-tv",
+        icon: Tv,
         description: "TV-optimized marketing performance with large fonts and high contrast",
         color: "from-orange-500 to-red-600",
-        stats: "Traffic • Conversions • Landing Pages"
+        stats: "Traffic • Conversions • Landing Pages",
+        preview: null,
       },
-      { 
-        name: "Sales Snapshot", 
-        href: "/data", 
-        icon: Tv, 
+      {
+        name: "Sales Snapshot",
+        href: "/data",
+        icon: Tv,
         description: "Real-time sales forecasts for the office TV",
         color: "from-cyan-500 to-blue-600",
-        stats: "Today • Week • Month"
+        stats: "Today • Week • Month",
+        preview: null,
       },
     ]
   },
@@ -175,25 +199,115 @@ const dashboardSections = [
     icon: LayoutGrid,
     color: "from-gray-500 to-slate-600",
     dashboards: [
-      { 
-        name: "Dashboard", 
-        href: "/dashboard", 
-        icon: LayoutGrid, 
+      {
+        name: "Dashboard",
+        href: "/dashboard",
+        icon: LayoutGrid,
         description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
         color: "from-purple-500 to-indigo-600",
-        stats: "All-in-one"
+        stats: "All-in-one",
+        preview: "/previews/dashboard.png",
       },
-      { 
-        name: "Phone", 
-        href: "/phone", 
-        icon: Smartphone, 
+      {
+        name: "Phone",
+        href: "/phone",
+        icon: Smartphone,
         description: "Mobile-optimized sales dashboard for iPhone",
         color: "from-slate-500 to-gray-600",
-        stats: "Today • Yesterday • Week • MTD"
+        stats: "Today • Yesterday • Week • MTD",
+        preview: "/previews/phone.png",
       },
     ]
   },
 ]
+
+type Dashboard = typeof dashboardSections[number]['dashboards'][number]
+
+function DashboardCard({ dashboard }: { dashboard: Dashboard }) {
+  const Icon = dashboard.icon
+  const [showPreview, setShowPreview] = useState(false)
+  const [previewPos, setPreviewPos] = useState<'above' | 'below'>('above')
+  const cardRef = useRef<HTMLAnchorElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseEnter = useCallback(() => {
+    if (!dashboard.preview) return
+    timeoutRef.current = setTimeout(() => {
+      if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect()
+        // Show below if card is near top of viewport
+        setPreviewPos(rect.top < 320 ? 'below' : 'above')
+      }
+      setShowPreview(true)
+    }, 300)
+  }, [dashboard.preview])
+
+  const handleMouseLeave = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setShowPreview(false)
+  }, [])
+
+  return (
+    <Link
+      ref={cardRef}
+      href={dashboard.href}
+      className="group relative bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-700 hover:bg-gray-900/80 transition-all duration-200"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Gradient accent */}
+      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${dashboard.color} rounded-t-xl opacity-60 group-hover:opacity-100 transition-opacity`} />
+
+      {/* Preview tooltip */}
+      {showPreview && dashboard.preview && (
+        <div
+          className={`absolute left-1/2 z-50 pointer-events-none animate-preview-in ${
+            previewPos === 'above' ? 'bottom-full mb-3' : 'top-full mt-3'
+          }`}
+        >
+          <div className="relative w-[400px] rounded-xl overflow-hidden border border-gray-700 shadow-2xl shadow-black/60 bg-gray-900">
+            <Image
+              src={dashboard.preview}
+              alt={`${dashboard.name} preview`}
+              width={1440}
+              height={900}
+              className="w-full h-auto"
+              priority={false}
+            />
+            <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-gray-900/90 to-transparent" />
+            <div className="absolute bottom-2 left-3 text-[11px] font-medium text-gray-300">
+              {dashboard.name}
+            </div>
+          </div>
+          {/* Arrow */}
+          <div className={`absolute left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-gray-900 border-gray-700 ${
+            previewPos === 'above'
+              ? 'bottom-0 -mb-1.5 border-r border-b'
+              : 'top-0 -mt-1.5 border-l border-t'
+          }`} />
+        </div>
+      )}
+
+      <div className="flex items-start justify-between mb-4">
+        <div className={`p-3 bg-gradient-to-br ${dashboard.color} rounded-lg shadow-lg`}>
+          <Icon className="h-6 w-6 text-white" />
+        </div>
+        <ArrowRight className="h-5 w-5 text-gray-600 group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
+      </div>
+
+      <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">
+        {dashboard.name}
+      </h3>
+      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+        {dashboard.description}
+      </p>
+
+      <div className="text-xs text-gray-500 font-medium">
+        {dashboard.stats}
+      </div>
+    </Link>
+  )
+}
 
 export default function Home() {
   const [recapStatus, setRecapStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -283,37 +397,9 @@ export default function Home() {
 
               {/* Dashboard Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {section.dashboards.map((dashboard) => {
-                  const Icon = dashboard.icon
-                  return (
-                    <Link
-                      key={dashboard.href}
-                      href={dashboard.href}
-                      className="group relative bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-gray-700 hover:bg-gray-900/80 transition-all duration-200"
-                    >
-                      {/* Gradient accent */}
-                      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${dashboard.color} rounded-t-xl opacity-60 group-hover:opacity-100 transition-opacity`} />
-                      
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`p-3 bg-gradient-to-br ${dashboard.color} rounded-lg shadow-lg`}>
-                          <Icon className="h-6 w-6 text-white" />
-                        </div>
-                        <ArrowRight className="h-5 w-5 text-gray-600 group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
-                      </div>
-
-                      <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-400 transition-colors">
-                        {dashboard.name}
-                      </h3>
-                      <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                        {dashboard.description}
-                      </p>
-                      
-                      <div className="text-xs text-gray-500 font-medium">
-                        {dashboard.stats}
-                      </div>
-                    </Link>
-                  )
-                })}
+                {section.dashboards.map((dashboard) => (
+                  <DashboardCard key={dashboard.href} dashboard={dashboard} />
+                ))}
               </div>
             </div>
           )
@@ -325,14 +411,14 @@ export default function Home() {
             Quick Links
           </h2>
           <div className="flex flex-wrap gap-3">
-            <Link 
-              href="/live-help" 
+            <Link
+              href="/live-help"
               className="px-4 py-2 text-sm text-gray-400 hover:text-white bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg transition-colors"
             >
               Live Help (Real-time)
             </Link>
-            <a 
-              href="https://qbtraining.com" 
+            <a
+              href="https://qbtraining.com"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 text-sm text-gray-400 hover:text-white bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg transition-colors"
