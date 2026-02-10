@@ -1,0 +1,118 @@
+# QBT-Dashboards — Project Context
+
+> **Read this file first before making any changes.** It contains all project paths, architecture, and deployment details.
+
+## Repository
+
+- **GitHub:** `RealWorldTraining/qbt-dashboards`
+- **Local path:** `/Users/professorx/clawd/qbt-dashboards`
+- **Live URL:** [qbtraining.ai](https://qbtraining.ai)
+- **Deployment:** Vercel (auto-deploys from `main` branch)
+
+## Reports & Data Sources (15 Total)
+
+### Reports Using ADVERONIX Sheet (6 reports)
+
+**Marketing Dashboard** — `/ads`
+- `GADS: Account: Weekly (Devices)`
+- `GADS: Campaign: Weekly (Devices)`
+- `BING: Account Summary Weekly`
+- `Bing: Campaign Weekly`
+- `GA4: Traffic Weekly Session Source`
+- `GA4: Traffic Weekly Channel`
+
+**Google Ads Summary** — `/google-ads-summary`
+- `GADS: Account: Weekly (Devices)`
+- `GADS: Campaign: Weekly (Devices)`
+
+**Bing Ads Summary** — `/bing-ads-summary`
+- `BING: Account Summary Weekly`
+- `Bing: Campaign Weekly`
+
+**Trend Analysis** — `/trend-analysis`
+- `GADS: Account: Weekly (Devices)`
+- `BING: Account Summary Weekly`
+- `GSC: Account Daily`
+- `GSC: Query Daily`
+
+**Vision Analytics** — `/vision`
+- `GADS: Search Keyword: Weekly with analytics`
+
+**Marketing Dashboard (TV)** — `/ads-tv`
+- Same tabs as Marketing Dashboard (`/ads`)
+
+### Reports Using Monthly Channels Sheet (1 report)
+
+**GA4 Summary** — `/playground`
+- `Monthly Channel Summary`
+
+### Reports Using Live Help Schedule Sheet (1 report)
+
+**Live Help (Real-time)** — `/live-help`
+- Various status/stats tabs
+
+### Reports Using Live Help Archive Sheet (1 report)
+
+**Live Help Archive** — `/live-help-archive`
+- `Log`
+- `FY2025 Log`
+- `FY2024 Log`
+
+### Reports Using Railway Prophet API — No Google Sheets (5 reports)
+
+| Report | Route |
+|---|---|
+| Command Center | `/dashboard` |
+| Sales Dashboard | `/sales` |
+| Sales Snapshot (TV) | `/data` |
+| Phone Dashboard | `/phone` |
+| Team Dashboard | `/team` |
+
+### Reports Using Local JSON (1 report)
+
+**P&L Recap** — `/recap`
+- Local file: `/tmp/recap-data.json` or `.recap-data/recap-data.json`
+
+## Google Sheets — Active
+
+| Sheet | ID | Purpose |
+|---|---|---|
+| ADVERONIX: Paid Search (PRIMARY) | `1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0` | Main data source for Google Ads, Bing Ads, GA4, GSC. Updates daily 4AM CST. |
+| Monthly Channels | `1SvvnNc32S7jSW1GP1bonJAoW0bTuNgHh9ERQo6RgcEY` | GA4 monthly channel summary |
+| Live Help Schedule | `1BOFucsKkTjviWQO5724znJOKlN8wuLOLkZiOtsXT7UI` | Live help current status |
+| Live Help Archive | `1Rf9sf4xEIBhOJZGfA2wvLEmDUNd0onuHBZfCBFXx7y4` | Historical live help logs |
+| Jedi Council Output | `1ckBSMiwhFIHKzR2vyr8MlFtOq2DK7NL7pEjYUT9Fbrg` | Analysis output from Jedi Council workflow |
+
+## Google Sheets — Deprecated (DO NOT USE)
+
+| Sheet | ID | Notes |
+|---|---|---|
+| Old Google Ads Sheet | `1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM` | Only used by google-ads-monthly (old) — migrate away |
+| Bing Ads (Old) | `1INXxnW3WVkENN7Brvo3sgPcs96C06r3O6mEkgEABxk8` | Used by old bing-ads routes — migrate away |
+
+## Related n8n Workflows
+
+| Workflow | ID | Description |
+|---|---|---|
+| Jedi Council (Full) | `kQhVEuBRJw1NIusd` | Multi-LLM Google Ads optimization |
+| GADS Weekly | `n6O7OGLWSWmtzsDe` | Weekly Google Ads analysis |
+| Receipt Processor | `SkAt1aohXt08slQ3` | PDF receipt → Box automation |
+
+## Jedi Council Data Sheet
+
+The ADVERONIX sheet (listed above) also serves as the Jedi Council input data source.
+
+## Telegram Bot
+
+- **Bot:** `@ClaudeProfessorXBot`
+- **API Token:** `8503720745:AAGo-S9KYBHiIDs9qe2jsgJcgKiZ2x6iUkI`
+
+## n8n API
+
+- **Credentials file:** `/Users/professorx/clawd/.secrets/n8n-professor-api.txt`
+
+## Tech Notes
+
+- All code changes should be committed to `main` for auto-deploy via Vercel
+- Dashboard pulls from ADVERONIX sheet — do not modify sheet structure without coordinating
+- When renaming UI elements, search the full codebase for all references (components, routes, nav labels)
