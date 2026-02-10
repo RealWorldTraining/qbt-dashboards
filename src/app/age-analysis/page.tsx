@@ -78,10 +78,16 @@ export default function AgeAnalysisPage() {
 
   const { chartData } = data
 
-  // Transform data for Recharts
+  // Transform data for Recharts with abbreviated labels
   const transformDataForChart = (metricData: AgeSeriesData[]) => {
     return chartData.months.map((month, idx) => {
-      const point: any = { month }
+      // Convert "Jan 2024" to "Jan\n'24"
+      const parts = month.split(' ')
+      const monthAbbr = parts[0] // Already abbreviated (Jan, Feb, etc.)
+      const yearAbbr = parts[1] ? `'${parts[1].slice(2)}` : '' // 2024 -> '24
+      const label = `${monthAbbr}\n${yearAbbr}`
+      
+      const point: any = { month: label }
       metricData.forEach(series => {
         point[series.age] = series.data[idx]
       })
@@ -184,12 +190,14 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  style={{ fontSize: '12px' }}
+                  
+                  
+                  height={50}
+                  style={{ fontSize: '11px' }}
+                  interval={0}
                 />
-                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '11px' }}
+                  interval={0} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
@@ -219,12 +227,14 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  style={{ fontSize: '12px' }}
+                  
+                  
+                  height={50}
+                  style={{ fontSize: '11px' }}
+                  interval={0}
                 />
-                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '11px' }}
+                  interval={0} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
@@ -254,12 +264,14 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  style={{ fontSize: '12px' }}
+                  
+                  
+                  height={50}
+                  style={{ fontSize: '11px' }}
+                  interval={0}
                 />
-                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '11px' }}
+                  interval={0} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
@@ -290,12 +302,14 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  style={{ fontSize: '12px' }}
+                  
+                  
+                  height={50}
+                  style={{ fontSize: '11px' }}
+                  interval={0}
                 />
-                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '11px' }}
+                  interval={0} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
@@ -326,12 +340,14 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  style={{ fontSize: '12px' }}
+                  
+                  
+                  height={50}
+                  style={{ fontSize: '11px' }}
+                  interval={0}
                 />
-                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '11px' }}
+                  interval={0} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
@@ -362,12 +378,14 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  style={{ fontSize: '12px' }}
+                  
+                  
+                  height={50}
+                  style={{ fontSize: '11px' }}
+                  interval={0}
                 />
-                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '11px' }}
+                  interval={0} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
