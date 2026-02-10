@@ -290,6 +290,7 @@ function SummaryTab() {
   const [campaignData, setCampaignData] = useState<CampaignResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
 
   const fetchData = async () => {
     setLoading(true)
@@ -343,10 +344,10 @@ function SummaryTab() {
     return { spend, impressions, clicks, conversions, ctr, conv_rate, cpa }
   }
 
-  const currentDesktop = getDeviceMetrics('Desktop', 0)
-  const previousDesktop = getDeviceMetrics('Desktop', 1)
-  const currentMobile = getDeviceMetrics('Mobile', 0)
-  const previousMobile = getDeviceMetrics('Mobile', 1)
+  const currentDesktop = getDeviceMetrics('Desktop', selectedWeekIndex)
+  const previousDesktop = getDeviceMetrics('Desktop', selectedWeekIndex + 1)
+  const currentMobile = getDeviceMetrics('Mobile', selectedWeekIndex)
+  const previousMobile = getDeviceMetrics('Mobile', selectedWeekIndex + 1)
 
   const getTotalMetrics = (weekIndex: number) => {
     if (!campaignData) return null
@@ -366,8 +367,8 @@ function SummaryTab() {
     return { spend, impressions, clicks, conversions, ctr, conv_rate, cpa }
   }
 
-  const currentTotal = getTotalMetrics(0)
-  const previousTotal = getTotalMetrics(1)
+  const currentTotal = getTotalMetrics(selectedWeekIndex)
+  const previousTotal = getTotalMetrics(selectedWeekIndex + 1)
 
   const derivedWeeklyData = campaignData ? campaignData.weeks.map((week, weekIndex) => {
     let spend = 0, impressions = 0, clicks = 0, conversions = 0
@@ -458,18 +459,49 @@ function SummaryTab() {
 
   return (
     <>
-      {/* Total Account Summary */}
-      <div className="flex items-baseline gap-3 mb-3">
-        <h2 className="text-white text-lg font-semibold">Total Account Summary</h2>
-        {derivedWeeklyData.length > 0 && (
-          <span className="text-gray-500 text-sm">{derivedWeeklyData[0].week}</span>
-        )}
+      {/* Total Account Summary — contained section */}
+      <div className="bg-[#111] border border-gray-800 rounded-xl p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-baseline gap-3">
+            <h2 className="text-white text-lg font-semibold">Total Account Summary</h2>
+            {derivedWeeklyData.length > 0 && derivedWeeklyData[selectedWeekIndex] && (
+              <span className="text-gray-500 text-sm">{derivedWeeklyData[selectedWeekIndex].week}</span>
+            )}
+          </div>
+          {/* Week selector pills */}
+          {derivedWeeklyData.length > 0 && (
+            <div className="flex gap-1.5">
+              {derivedWeeklyData.map((w, i) => {
+                // Show short date label like "Jan 27" from the week_start
+                const weekStart = new Date(w.week_start + 'T00:00:00')
+                const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                const isActive = i === selectedWeekIndex
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedWeekIndex(i)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      isActive
+                        ? 'bg-red-600 text-white'
+                        : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222] hover:text-gray-300'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+        {renderMetricCards('', currentTotal, previousTotal, 'total', 'lg')}
       </div>
-      {renderMetricCards('', currentTotal, previousTotal, 'total', 'lg')}
-      {renderMetricCards('Desktop', currentDesktop, previousDesktop, 'desktop', 'sm')}
-      {renderMetricCards('Mobile', currentMobile, previousMobile, 'mobile', 'sm')}
 
-      <div className="mb-6" /> {/* spacer after mobile cards */}
+      {/* Device Breakdown */}
+      <div className="mb-6">
+        <div className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">Device Breakdown</div>
+        {renderMetricCards('Desktop', currentDesktop, previousDesktop, 'desktop', 'sm')}
+        {renderMetricCards('Mobile', currentMobile, previousMobile, 'mobile', 'sm')}
+      </div>
 
       {/* Main Chart - Spend & Conversions */}
       <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
