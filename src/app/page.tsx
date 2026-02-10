@@ -23,15 +23,16 @@ import {
   MapPin,
   ShoppingCart,
   Command,
+  Rocket,
 } from "lucide-react"
 
 // Standalone featured dashboard (rendered above sections)
 const commandCenter = {
   name: "Command Center",
   href: "/dashboard",
-  icon: Command,
+  icon: Rocket,
   description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
-  color: "from-purple-500 to-indigo-600",
+  color: "from-green-500 to-emerald-600",
   stats: "All-in-one",
   preview: "/previews/dashboard.png",
 }
