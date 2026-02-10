@@ -450,6 +450,11 @@ export async function GET() {
     const pyMtdStart = new Date(today.getFullYear() - 1, today.getMonth(), 1)
     const pyMtdEnd = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate())
 
+    // YTD: Jan 1 to today vs Jan 1 to same date PY
+    const ytdStart = new Date(today.getFullYear(), 0, 1)
+    const pyYtdStart = new Date(today.getFullYear() - 1, 0, 1)
+    const pyYtdEnd = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate())
+
     const buildKpi = (metric: MetricKey) => {
       const todayMatch = findDay(today)
       const todayVal = todayMatch ? computeRatio(metric, todayMatch) : 0
@@ -477,11 +482,18 @@ export async function GET() {
       const pyMtdVal = computeRatio(metric, pyMtdSums)
       const mtdPct = pyMtdVal > 0 ? Math.round(((mtdVal - pyMtdVal) / pyMtdVal) * 1000) / 10 : 0
 
+      const ytdSums = sumRange(ytdStart, today)
+      const ytdVal = computeRatio(metric, ytdSums)
+      const pyYtdSums = sumRange(pyYtdStart, pyYtdEnd)
+      const pyYtdVal = computeRatio(metric, pyYtdSums)
+      const ytdPct = pyYtdVal > 0 ? Math.round(((ytdVal - pyYtdVal) / pyYtdVal) * 1000) / 10 : 0
+
       return {
         today: todayVal,
         yesterday: { value: yesterdayCalc, py: yesterdayPYCalc, change_pct: yesterdayPct, diff: yesterdayCalc - yesterdayPYCalc },
         this_week: { value: thisWeekVal, py: pyThisWeekVal, change_pct: thisWeekPct, diff: thisWeekVal - pyThisWeekVal },
         mtd: { value: mtdVal, py: pyMtdVal, change_pct: mtdPct, diff: mtdVal - pyMtdVal },
+        ytd: { value: ytdVal, py: pyYtdVal, change_pct: ytdPct, diff: ytdVal - pyYtdVal },
       }
     }
 
