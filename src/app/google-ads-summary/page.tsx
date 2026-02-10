@@ -460,7 +460,7 @@ function SummaryTab() {
   return (
     <>
       {/* Total Account Summary — contained section */}
-      <div className="bg-[#111] border border-gray-800 rounded-xl p-5 mb-6">
+      <div className="bg-[#1a1a1a] border border-gray-700 rounded-xl p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-baseline gap-3">
             <h2 className="text-white text-lg font-semibold">Total Account Summary</h2>
