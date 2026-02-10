@@ -408,7 +408,7 @@ function SummaryTab() {
     if (!current) return null
     return (
       <div className={sizeClass === 'sm' ? 'mb-2' : 'mb-6'}>
-        {label && <div className="text-gray-500 text-xs font-medium mb-2 uppercase tracking-wide">{label}</div>}
+        {label && <div className="text-white text-sm font-semibold mb-2 uppercase tracking-wide">{label}</div>}
         <div className="grid grid-cols-7 gap-3">
           {metrics.map((metric) => {
             const cur = current[metric] as number
@@ -498,7 +498,7 @@ function SummaryTab() {
 
       {/* Device Breakdown */}
       <div className="mb-6">
-        <div className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">Device Breakdown</div>
+        <div className="text-white text-base font-semibold mb-3 uppercase tracking-wide">Device Breakdown</div>
         {renderMetricCards('Desktop', currentDesktop, previousDesktop, 'desktop', 'sm')}
         {renderMetricCards('Mobile', currentMobile, previousMobile, 'mobile', 'sm')}
       </div>
