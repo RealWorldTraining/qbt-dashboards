@@ -31,7 +31,6 @@ const commandCenter = {
   name: "Command Center",
   href: "/dashboard",
   icon: Rocket,
-  iconImage: "/icons/command-center.png",
   description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
   color: "from-green-500 to-emerald-600",
   stats: "All-in-one",
