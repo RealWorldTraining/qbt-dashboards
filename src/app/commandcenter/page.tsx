@@ -3507,7 +3507,7 @@ export default function DashboardPage() {
         {activeTab === "traffic" && (
           <>
             {/* Traffic Source Toggle */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
               {([
                 { key: 'total' as TrafficSource, label: 'Total Traffic', color: '#0066CC' },
                 { key: 'organic' as TrafficSource, label: 'Organic', color: '#34C759' },
@@ -4185,7 +4185,7 @@ export default function DashboardPage() {
         {activeTab === "conversions" && (
           <>
             {/* Conversion Source Toggle */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
               {([
                 { key: 'total' as ConversionSource, label: 'Total Conversions', color: '#34C759' },
                 { key: 'organic' as ConversionSource, label: 'Organic', color: '#0066CC' },
