@@ -23,7 +23,6 @@ import {
 const dashboards = [
   { name: "Home", href: "/", icon: Home, description: "Dashboard directory" },
   { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
-  { name: "Sales Snapshot", href: "/data", icon: Tv, description: "TV display - forecasts" },
   { name: "Command Center", href: "/commandcenter", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
   { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },
   { name: "Google Ads CPC", href: "/cpc", icon: Target, description: "Google Ads Max CPC bid recommendations" },
@@ -39,6 +38,7 @@ const dashboards = [
   { name: "Bing Ads", href: "/bing-ads-summary", icon: Search, description: "Bing Ads weekly metrics" },
   { name: "Landing Pages", href: "/landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
   { name: "Vision Analytics", href: "/vision", icon: TrendingUp, description: "Keyword-level bid optimization" },
+  { name: "The Prophet", href: "/data", icon: Tv, description: "Profit predictions & forecasts" },
 ]
 
 interface DashboardNavProps {

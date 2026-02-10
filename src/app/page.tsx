@@ -178,10 +178,10 @@ const dashboardSections = [
         preview: "/previews/ads-tv.png",
       },
       {
-        name: "Sales Snapshot",
+        name: "The Prophet",
         href: "/data",
         icon: Tv,
-        description: "Real-time sales forecasts for the office TV",
+        description: "Profit predictions & forecasts",
         color: "from-cyan-500 to-blue-600",
         stats: "Today • Week • Month",
         preview: "/previews/data.png",
