@@ -265,7 +265,7 @@ function DashboardCard({ dashboard }: { dashboard: Dashboard }) {
             previewPos === 'above' ? 'bottom-full mb-3' : 'top-full mt-3'
           }`}
         >
-          <div className="relative w-[400px] rounded-xl overflow-hidden border border-gray-700 shadow-2xl shadow-black/60 bg-gray-900">
+          <div className="relative w-[800px] rounded-xl overflow-hidden border border-gray-700 shadow-2xl shadow-black/60 bg-gray-900">
             <Image
               src={dashboard.preview}
               alt={`${dashboard.name} preview`}
