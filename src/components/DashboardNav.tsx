@@ -34,7 +34,6 @@ const dashboards = [
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
   { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
   { name: "Sales", href: "/sales", icon: DollarSign, description: "Sales analytics" },
-  { name: "Team", href: "/team", icon: Users, description: "Team performance" },
   { name: "GA4 Summary", href: "/playground", icon: BarChart3, description: "Monthly traffic by channel" },
   { name: "Google Ads", href: "/google-ads-summary", icon: BarChart3, description: "Google Ads weekly metrics" },
   { name: "Bing Ads", href: "/bing-ads-summary", icon: Search, description: "Bing Ads weekly metrics" },
