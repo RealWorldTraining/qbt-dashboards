@@ -1,0 +1,50 @@
+# Agent Instructions for qbt-dashboards
+
+## CRITICAL: Always Sync with GitHub
+
+Before making ANY changes to this repository:
+
+```bash
+cd /Users/professorx/clawd/qbt-dashboards
+git pull origin main
+```
+
+After making changes:
+
+```bash
+git add .
+git commit -m "Your descriptive commit message"
+git push origin main
+```
+
+## Required Reading
+
+1. **Read `PROJECT_CONTEXT.md`** — Contains all project paths, sheets, routes, and deployment info
+2. **Read `PROFESSOR_SYSTEM_PROMPT.md`** — System prompt reference for agent configuration
+
+## Key Rules
+
+- **Never work offline** — Always pull before starting, push after finishing
+- **Deployment:** Vercel auto-deploys from `main` branch
+- **Data source:** ADVERONIX sheet (`1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0`)
+- **When renaming UI:** Search the entire codebase for all references
+- **Don't modify ADVERONIX sheet structure** without coordinating
+
+## Project Structure
+
+- **Live URL:** https://qbtraining.ai
+- **Local path:** /Users/professorx/clawd/qbt-dashboards
+- **GitHub:** RealWorldTraining/qbt-dashboards
+- **15 reports total** (see PROJECT_CONTEXT.md for full list)
+
+## For New Agents
+
+If you're a new agent (Claude Code, Windsurf, Cursor, etc.):
+1. Start by reading this file
+2. Read `PROJECT_CONTEXT.md`
+3. Run `git pull origin main`
+4. Now you're ready to work!
+
+---
+
+**Bottom line:** Pull first, push last. Every time.

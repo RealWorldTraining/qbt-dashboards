@@ -111,6 +111,21 @@ The ADVERONIX sheet (listed above) also serves as the Jedi Council input data so
 
 - **Credentials file:** `/Users/professorx/clawd/.secrets/n8n-professor-api.txt`
 
+## Agent Workflow
+
+**All agents (Professor, Claude Code, Windsurf, Cursor, etc.) must follow this workflow:**
+
+1. **Always start with:** `git pull origin main`
+2. **Read PROJECT_CONTEXT.md** for current repo structure and data sources
+3. **Work on changes** (code, docs, etc.)
+4. **Before finishing:** 
+   - `git add .`
+   - `git commit -m "Descriptive message"`
+   - `git push origin main`
+5. **Never work offline** — always sync with GitHub first and last
+
+This ensures all agents stay in sync and Vercel auto-deploys the latest code.
+
 ## Tech Notes
 
 - All code changes should be committed to `main` for auto-deploy via Vercel
