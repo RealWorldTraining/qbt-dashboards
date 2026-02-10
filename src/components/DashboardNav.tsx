@@ -9,7 +9,6 @@ import {
   Users, 
   FileText, 
   Tv,
-  Megaphone,
   ChevronDown,
   Home,
   BarChart3,
@@ -22,7 +21,6 @@ import {
 const dashboards = [
   { name: "Command Center", href: "/", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
   { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
-  { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },
   { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
   { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
