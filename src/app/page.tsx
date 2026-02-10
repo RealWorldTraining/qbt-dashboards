@@ -25,6 +25,17 @@ import {
   Command,
 } from "lucide-react"
 
+// Standalone featured dashboard (rendered above sections)
+const commandCenter = {
+  name: "Command Center",
+  href: "/dashboard",
+  icon: Command,
+  description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
+  color: "from-purple-500 to-indigo-600",
+  stats: "All-in-one",
+  preview: "/previews/dashboard.png",
+}
+
 // Dashboard categories
 const dashboardSections = [
   {
@@ -201,15 +212,6 @@ const dashboardSections = [
     color: "from-gray-500 to-slate-600",
     dashboards: [
       {
-        name: "Command Center",
-        href: "/dashboard",
-        icon: Command,
-        description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
-        color: "from-purple-500 to-indigo-600",
-        stats: "All-in-one",
-        preview: "/previews/dashboard.png",
-      },
-      {
         name: "Phone",
         href: "/phone",
         icon: Smartphone,
@@ -381,6 +383,13 @@ export default function Home() {
 
       {/* Dashboard Sections */}
       <div className="max-w-7xl mx-auto px-6 py-10">
+        {/* Command Center — standalone tile above all sections */}
+        <div className="mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <DashboardCard dashboard={commandCenter} />
+          </div>
+        </div>
+
         {dashboardSections.map((section, sectionIdx) => {
           const SectionIcon = section.icon
           return (
