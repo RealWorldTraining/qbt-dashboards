@@ -22,8 +22,20 @@ interface ChartData {
   conversions: AgeSeriesData[]
 }
 
+interface YTDAgeSummary {
+  age: string
+  clicks: number
+  impressions: number
+  ctr: number
+  avg_cpc: number
+  cost: number
+  conversions: number
+}
+
 interface ApiResponse {
   chartData: ChartData
+  ytd2026Summary: YTDAgeSummary[]
+  deviceFilter: string
   last_updated: string
 }
 
@@ -36,14 +48,17 @@ const AGE_COLORS: Record<string, string> = {
   '>64': '#ec4899',   // pink
 }
 
+const DEVICE_OPTIONS = ['All', 'Computers', 'Mobile', 'Tablets']
+
 export default function AgeAnalysisPage() {
   const [data, setData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedDevice, setSelectedDevice] = useState('All')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/age-analysis')
+        const res = await fetch(`/api/age-analysis?device=${selectedDevice}`)
         if (res.ok) {
           const json = await res.json()
           setData(json)
@@ -58,7 +73,7 @@ export default function AgeAnalysisPage() {
     fetchData()
     const interval = setInterval(fetchData, 5 * 60 * 1000) // Refresh every 5 min
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedDevice])
 
   if (loading) {
     return (
@@ -76,15 +91,15 @@ export default function AgeAnalysisPage() {
     )
   }
 
-  const { chartData } = data
+  const { chartData, ytd2026Summary } = data
 
   // Transform data for Recharts with abbreviated labels
   const transformDataForChart = (metricData: AgeSeriesData[]) => {
     return chartData.months.map((month, idx) => {
       // Convert "Jan 2024" to "Jan\n'24"
       const parts = month.split(' ')
-      const monthAbbr = parts[0] // Already abbreviated (Jan, Feb, etc.)
-      const yearAbbr = parts[1] ? `'${parts[1].slice(2)}` : '' // 2024 -> '24
+      const monthAbbr = parts[0]
+      const yearAbbr = parts[1] ? `'${parts[1].slice(2)}` : ''
       const label = `${monthAbbr}\n${yearAbbr}`
       
       const point: any = { month: label }
@@ -102,81 +117,85 @@ export default function AgeAnalysisPage() {
   const costData = transformDataForChart(chartData.cost)
   const conversionsData = transformDataForChart(chartData.conversions)
 
-  // Calculate summary stats (last month totals)
-  const lastMonthIdx = chartData.months.length - 1
-  const totalClicks = chartData.clicks.reduce((sum, series) => sum + series.data[lastMonthIdx], 0)
-  const totalImpressions = chartData.impressions.reduce((sum, series) => sum + series.data[lastMonthIdx], 0)
-  const totalCost = chartData.cost.reduce((sum, series) => sum + series.data[lastMonthIdx], 0)
-  const totalConversions = chartData.conversions.reduce((sum, series) => sum + series.data[lastMonthIdx], 0)
-  const avgCTR = chartData.ctr.reduce((sum, series) => sum + series.data[lastMonthIdx], 0) / chartData.ageGroups.length
-  const avgCPC = totalClicks > 0 ? totalCost / totalClicks : 0
-
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <DashboardNav />
       
       <div className="w-full px-8 py-8">
-        {/* Header */}
+        {/* Header with Device Toggle */}
         <div className="mb-8">
-          <h1 className="text-5xl font-bold mb-2">Google Ads Age Analysis</h1>
-          <p className="text-gray-400 text-lg">Monthly performance trends by age group • 2024 to present</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-5xl font-bold mb-2">Google Ads Age Analysis</h1>
+              <p className="text-gray-400 text-lg">2026 YTD performance by age group • Device: {selectedDevice}</p>
+            </div>
+            
+            {/* Device Toggle */}
+            <div className="flex gap-2">
+              {DEVICE_OPTIONS.map(device => (
+                <button
+                  key={device}
+                  onClick={() => setSelectedDevice(device)}
+                  className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                    selectedDevice === device
+                      ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-500/50'
+                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  }`}
+                >
+                  {device}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-6 gap-4 mb-8">
-          <div className="bg-gradient-to-br from-blue-900/50 to-blue-700/30 border border-blue-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <MousePointer className="h-6 w-6 text-blue-400" />
-              <span className="text-gray-400 text-sm">Total Clicks</span>
-            </div>
-            <div className="text-3xl font-bold text-white">{totalClicks.toLocaleString()}</div>
-            <div className="text-xs text-gray-500 mt-1">Last month</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-900/50 to-green-700/30 border border-green-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="h-6 w-6 text-green-400" />
-              <span className="text-gray-400 text-sm">Impressions</span>
-            </div>
-            <div className="text-3xl font-bold text-white">{totalImpressions.toLocaleString()}</div>
-            <div className="text-xs text-gray-500 mt-1">Last month</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-amber-900/50 to-amber-700/30 border border-amber-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Target className="h-6 w-6 text-amber-400" />
-              <span className="text-gray-400 text-sm">Avg CTR</span>
-            </div>
-            <div className="text-3xl font-bold text-white">{avgCTR.toFixed(2)}%</div>
-            <div className="text-xs text-gray-500 mt-1">Last month</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-red-900/50 to-red-700/30 border border-red-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="h-6 w-6 text-red-400" />
-              <span className="text-gray-400 text-sm">Avg CPC</span>
-            </div>
-            <div className="text-3xl font-bold text-white">${avgCPC.toFixed(2)}</div>
-            <div className="text-xs text-gray-500 mt-1">Last month</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-900/50 to-purple-700/30 border border-purple-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="h-6 w-6 text-purple-400" />
-              <span className="text-gray-400 text-sm">Total Spend</span>
-            </div>
-            <div className="text-3xl font-bold text-white">${totalCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
-            <div className="text-xs text-gray-500 mt-1">Last month</div>
-          </div>
-
-          <div className="bg-gradient-to-br from-pink-900/50 to-pink-700/30 border border-pink-500/30 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <ShoppingCart className="h-6 w-6 text-pink-400" />
-              <span className="text-gray-400 text-sm">Conversions</span>
-            </div>
-            <div className="text-3xl font-bold text-white">{totalConversions.toFixed(0)}</div>
-            <div className="text-xs text-gray-500 mt-1">Last month</div>
-          </div>
+        {/* Age Group Summary Cards - 2026 YTD */}
+        <div className="grid grid-cols-5 gap-4 mb-8">
+          {ytd2026Summary.map((ageSummary, idx) => {
+            const ageColor = AGE_COLORS[ageSummary.age]
+            return (
+              <div key={ageSummary.age} className="bg-gray-900 border-2 rounded-xl p-4" style={{ borderColor: ageColor }}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5" style={{ color: ageColor }} />
+                    <span className="text-xl font-bold" style={{ color: ageColor }}>
+                      {ageSummary.age}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500">2026 YTD</span>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Clicks</div>
+                    <div className="text-white text-lg font-bold">{ageSummary.clicks.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Impressions</div>
+                    <div className="text-white text-lg font-bold">{ageSummary.impressions.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">CTR</div>
+                    <div className="text-white text-lg font-bold">{ageSummary.ctr.toFixed(2)}%</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Avg CPC</div>
+                    <div className="text-white text-lg font-bold">${ageSummary.avg_cpc.toFixed(2)}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Spend</div>
+                    <div className="text-white text-lg font-bold">
+                      ${ageSummary.cost.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 text-xs mb-1">Conversions</div>
+                    <div className="text-white text-lg font-bold">{ageSummary.conversions.toFixed(0)}</div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         {/* Charts - 2 Column Grid */}
@@ -190,8 +209,6 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  
-                  
                   height={50}
                   style={{ fontSize: '11px' }}
                 />
@@ -200,7 +217,7 @@ export default function AgeAnalysisPage() {
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 {chartData.ageGroups.map(age => (
                   <Line
                     key={age}
@@ -225,8 +242,6 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  
-                  
                   height={50}
                   style={{ fontSize: '11px' }}
                 />
@@ -235,7 +250,7 @@ export default function AgeAnalysisPage() {
                   contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                   labelStyle={{ color: '#fff' }}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 {chartData.ageGroups.map(age => (
                   <Line
                     key={age}
@@ -260,8 +275,6 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  
-                  
                   height={50}
                   style={{ fontSize: '11px' }}
                 />
@@ -271,7 +284,7 @@ export default function AgeAnalysisPage() {
                   labelStyle={{ color: '#fff' }}
                   formatter={(value: any) => typeof value === 'number' ? `${value.toFixed(2)}%` : value}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 {chartData.ageGroups.map(age => (
                   <Line
                     key={age}
@@ -296,8 +309,6 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  
-                  
                   height={50}
                   style={{ fontSize: '11px' }}
                 />
@@ -307,7 +318,7 @@ export default function AgeAnalysisPage() {
                   labelStyle={{ color: '#fff' }}
                   formatter={(value: any) => typeof value === 'number' ? `$${value.toFixed(2)}` : value}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 {chartData.ageGroups.map(age => (
                   <Line
                     key={age}
@@ -332,8 +343,6 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  
-                  
                   height={50}
                   style={{ fontSize: '11px' }}
                 />
@@ -343,7 +352,7 @@ export default function AgeAnalysisPage() {
                   labelStyle={{ color: '#fff' }}
                   formatter={(value: any) => typeof value === 'number' ? `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : value}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 {chartData.ageGroups.map(age => (
                   <Line
                     key={age}
@@ -368,8 +377,6 @@ export default function AgeAnalysisPage() {
                 <XAxis 
                   dataKey="month" 
                   stroke="#9ca3af"
-                  
-                  
                   height={50}
                   style={{ fontSize: '11px' }}
                 />
@@ -379,7 +386,7 @@ export default function AgeAnalysisPage() {
                   labelStyle={{ color: '#fff' }}
                   formatter={(value: any) => typeof value === 'number' ? value.toFixed(2) : value}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 {chartData.ageGroups.map(age => (
                   <Line
                     key={age}
@@ -398,7 +405,7 @@ export default function AgeAnalysisPage() {
 
         {/* Footer */}
         <div className="text-center text-gray-500 text-sm mt-8 pb-8">
-          <p>Data source: Google Ads (Adveronix Sheet: Age Analysis_Device)</p>
+          <p>Data source: Google Ads (Adveronix Sheet: Age Analysis_Device) • Device Filter: {selectedDevice}</p>
           <p className="mt-2">Last updated: {new Date(data.last_updated).toLocaleString()}</p>
         </div>
       </div>
