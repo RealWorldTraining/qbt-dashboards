@@ -324,11 +324,11 @@ export default function BingAdsSummaryPage() {
                     fill={METRIC_COLORS.spend}
                     radius={[4, 4, 0, 0]}
                   >
-                    <LabelList 
-                      dataKey="spend" 
-                      position="top" 
+                    <LabelList
+                      dataKey="spend"
+                      position="top"
                       fill={METRIC_COLORS.spend}
-                      fontSize={11}
+                      fontSize={33}
                       formatter={(value) => typeof value === 'number' ? `$${(value / 1000).toFixed(1)}k` : ''}
                     />
                   </Bar>
@@ -341,11 +341,11 @@ export default function BingAdsSummaryPage() {
                     strokeWidth={3}
                     dot={{ fill: METRIC_COLORS.conversions, r: 5 }}
                   >
-                    <LabelList 
-                      dataKey="conversions" 
-                      position="top" 
-                      fill={METRIC_COLORS.conversions} 
-                      fontSize={11}
+                    <LabelList
+                      dataKey="conversions"
+                      position="top"
+                      fill={METRIC_COLORS.conversions}
+                      fontSize={33}
                       offset={10}
                     />
                   </Line>
@@ -392,11 +392,11 @@ export default function BingAdsSummaryPage() {
                     fill={METRIC_COLORS.ctr}
                     radius={[4, 4, 0, 0]}
                   >
-                    <LabelList 
-                      dataKey="ctr" 
-                      position="top" 
+                    <LabelList
+                      dataKey="ctr"
+                      position="top"
                       fill={METRIC_COLORS.ctr}
-                      fontSize={10}
+                      fontSize={30}
                       formatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : ''}
                     />
                   </Bar>
@@ -409,11 +409,11 @@ export default function BingAdsSummaryPage() {
                     strokeWidth={3}
                     dot={{ fill: METRIC_COLORS.cpa, r: 5 }}
                   >
-                    <LabelList 
-                      dataKey="cpa" 
-                      position="top" 
+                    <LabelList
+                      dataKey="cpa"
+                      position="top"
                       fill={METRIC_COLORS.cpa}
-                      fontSize={11}
+                      fontSize={33}
                       formatter={(value) => typeof value === 'number' ? `$${value.toFixed(0)}` : ''}
                     />
                   </Line>
