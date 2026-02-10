@@ -357,64 +357,67 @@ export default function BingAdsSummaryPage() {
 
         {/* CPC & CPA Chart */}
         <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
-          <h2 className="text-white text-lg font-semibold mb-4">Avg CPC & Cost Per Conversion</h2>
+          <h2 className="text-white text-lg font-semibold mb-4">CTR & Cost Per Conversion</h2>
           <div style={{ width: '100%', height: 400 }}>
             {chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={chartData} margin={{ top: 30, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                  <XAxis 
-                    dataKey="week" 
-                    stroke="#666" 
+                  <XAxis
+                    dataKey="week"
+                    stroke="#666"
                     tick={{ fill: '#999', fontSize: 11 }}
                   />
-                  <YAxis 
+                  <YAxis
                     yAxisId="left"
-                    stroke="#666" 
-                    tick={{ fill: '#999', fontSize: 12 }}
-                    tickFormatter={(value) => `$${value.toFixed(2)}`}
-                    domain={[0, 6]}
-                  />
-                  <YAxis 
-                    yAxisId="right"
-                    orientation="right"
-                    stroke="#666" 
+                    stroke="#666"
                     tick={{ fill: '#999', fontSize: 12 }}
                     tickFormatter={(value) => `$${value}`}
-                    domain={[0, 250]}
+                    label={{ value: 'CPA', angle: -90, position: 'insideLeft', fill: '#999', fontSize: 12 }}
+                    domain={[0, 300]}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="#666"
+                    tick={{ fill: '#999', fontSize: 12 }}
+                    tickFormatter={(value) => `${value}%`}
+                    label={{ value: 'CTR', angle: 90, position: 'insideRight', fill: '#999', fontSize: 12 }}
+                    domain={[0, 40]}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Bar
                     yAxisId="left"
-                    dataKey="ctr"
-                    name="ctr"
-                    fill={METRIC_COLORS.ctr}
-                    radius={[4, 4, 0, 0]}
-                  >
-                    <LabelList
-                      dataKey="ctr"
-                      position="top"
-                      fill={METRIC_COLORS.ctr}
-                      fontSize={30}
-                      formatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : ''}
-                    />
-                  </Bar>
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
                     dataKey="cpa"
                     name="cpa"
-                    stroke={METRIC_COLORS.cpa}
-                    strokeWidth={3}
-                    dot={{ fill: METRIC_COLORS.cpa, r: 5 }}
+                    fill={METRIC_COLORS.cpa}
+                    radius={[4, 4, 0, 0]}
                   >
                     <LabelList
                       dataKey="cpa"
                       position="top"
                       fill={METRIC_COLORS.cpa}
                       fontSize={33}
-                      formatter={(value) => typeof value === 'number' ? `$${value.toFixed(0)}` : ''}
+                      formatter={(value) => typeof value === 'number' ? `$${Math.round(value)}` : ''}
+                    />
+                  </Bar>
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="ctr"
+                    name="ctr"
+                    stroke={METRIC_COLORS.ctr}
+                    strokeWidth={3}
+                    dot={{ fill: METRIC_COLORS.ctr, r: 5 }}
+                  >
+                    <LabelList
+                      dataKey="ctr"
+                      position="top"
+                      fill={METRIC_COLORS.ctr}
+                      fontSize={30}
+                      offset={12}
+                      formatter={(value) => typeof value === 'number' ? `${value.toFixed(1)}%` : ''}
                     />
                   </Line>
                 </ComposedChart>
