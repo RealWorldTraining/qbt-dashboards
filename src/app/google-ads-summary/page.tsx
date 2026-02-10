@@ -523,7 +523,7 @@ function SummaryTab() {
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
                 <Bar yAxisId="left" dataKey="spend" name="spend" fill={METRIC_COLORS.spend} radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="spend" position="top" fill={METRIC_COLORS.spend} fontSize={33} formatter={(value: any) => typeof value === 'number' ? `$${(value / 1000).toFixed(0)}k` : ''} />
+                  <LabelList dataKey="spend" position="insideTop" fill="#ffffff" fontSize={33} formatter={(value: any) => typeof value === 'number' ? `$${(value / 1000).toFixed(0)}k` : ''} />
                 </Bar>
                 <Line yAxisId="right" type="monotone" dataKey="conversions" name="conversions" stroke={METRIC_COLORS.conversions} strokeWidth={3} dot={{ fill: METRIC_COLORS.conversions, r: 5 }}>
                   <LabelList dataKey="conversions" position="top" fill="#22c55e" fontSize={33} offset={10} />
@@ -563,7 +563,7 @@ function SummaryTab() {
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ paddingTop: '20px' }} />
                 <Bar yAxisId="left" dataKey="cpa" name="cpa" fill={METRIC_COLORS.cpa} radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="cpa" position="top" fill={METRIC_COLORS.cpa} fontSize={33} formatter={(value: any) => typeof value === 'number' ? `$${Math.round(value)}` : ''} />
+                  <LabelList dataKey="cpa" position="insideTop" fill="#ffffff" fontSize={33} formatter={(value: any) => typeof value === 'number' ? `$${Math.round(value)}` : ''} />
                 </Bar>
                 <Line yAxisId="right" type="monotone" dataKey="avg_cpc" name="avg_cpc" stroke={METRIC_COLORS.avg_cpc} strokeWidth={3} dot={{ fill: METRIC_COLORS.avg_cpc, r: 5 }}>
                   <LabelList dataKey="avg_cpc" position="top" fill={METRIC_COLORS.avg_cpc} fontSize={33} offset={12} formatter={(value: any) => typeof value === 'number' ? `$${value.toFixed(2)}` : ''} />

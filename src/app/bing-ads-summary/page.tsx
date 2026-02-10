@@ -326,8 +326,8 @@ export default function BingAdsSummaryPage() {
                   >
                     <LabelList
                       dataKey="spend"
-                      position="top"
-                      fill={METRIC_COLORS.spend}
+                      position="insideTop"
+                      fill="#ffffff"
                       fontSize={33}
                       formatter={(value) => typeof value === 'number' ? `$${(value / 1000).toFixed(1)}k` : ''}
                     />
@@ -396,8 +396,8 @@ export default function BingAdsSummaryPage() {
                   >
                     <LabelList
                       dataKey="cpa"
-                      position="top"
-                      fill={METRIC_COLORS.cpa}
+                      position="insideTop"
+                      fill="#ffffff"
                       fontSize={33}
                       formatter={(value) => typeof value === 'number' ? `$${Math.round(value)}` : ''}
                     />
