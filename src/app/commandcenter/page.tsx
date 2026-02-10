@@ -390,6 +390,7 @@ interface TrafficTrendsResponse {
 }
 
 type TrafficSource = 'total' | 'organic' | 'direct' | 'referral' | 'paid'
+type ConversionSource = 'total' | 'organic' | 'direct' | 'referral' | 'paid'
 
 // Auction Insights interfaces
 interface AuctionInsightRow {
@@ -744,7 +745,7 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type TabType = "sales" | "traffic" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions"
+type TabType = "sales" | "traffic" | "conversions" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions"
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -1770,6 +1771,7 @@ const CACHE_VERSION_KEY = 'dashboard_cache_version'
 const CACHE_TTL = {
   sales: 5 * 60 * 1000,         // 5 minutes for realtime data
   traffic: 24 * 60 * 60 * 1000, // 24 hours for traffic (updates daily)
+  conversions: 24 * 60 * 60 * 1000, // 24 hours for conversions (updates daily)
   googleAds: 24 * 60 * 60 * 1000, // 24 hours for Google Ads (updates daily)
   bingAds: 24 * 60 * 60 * 1000,   // 24 hours for Bing Ads (updates daily)
   subscriptions: 60 * 60 * 1000,  // 1 hour for subscriptions
@@ -1905,6 +1907,10 @@ export default function DashboardPage() {
   const [trafficTrends, setTrafficTrends] = useState<TrafficTrendsResponse | null>(null)
   const [trafficSource, setTrafficSource] = useState<TrafficSource>('total')
 
+  // Conversions state
+  const [conversionTrends, setConversionTrends] = useState<TrafficTrendsResponse | null>(null)
+  const [conversionSource, setConversionSource] = useState<ConversionSource>('total')
+
   // Auction Insights state
   const [auctionInsights, setAuctionInsights] = useState<AuctionInsightsResponse | null>(null)
 
@@ -1932,6 +1938,7 @@ export default function DashboardPage() {
   // Loading states per tab
   const [salesLoading, setSalesLoading] = useState(true)
   const [trafficLoading, setTrafficLoading] = useState(true)
+  const [conversionsLoading, setConversionsLoading] = useState(true)
   const [googleAdsLoading, setGoogleAdsLoading] = useState(true)
   const [bingAdsLoading, setBingAdsLoading] = useState(true)
   const [jediLoading, setJediLoading] = useState(true)
@@ -1993,6 +2000,21 @@ export default function DashboardPage() {
     } finally {
       setTrafficLoading(false)
       setLoadedTabs(prev => new Set([...prev, 'traffic']))
+    }
+  }
+
+  // Fetch Conversions tab data (lazy load)
+  const fetchConversionData = async () => {
+    const convTrendsStale = isCacheStale('conversionTrends')
+    if (loadedTabs.has('conversions') && !convTrendsStale && conversionTrends) return
+    setConversionsLoading(true)
+    try {
+      await fetchWithCache('/api/conversion-trends', 'conversionTrends', CACHE_TTL.conversions, setConversionTrends)
+    } catch (err) {
+      console.error("Failed to load conversion data:", err)
+    } finally {
+      setConversionsLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'conversions']))
     }
   }
 
@@ -2124,6 +2146,7 @@ export default function DashboardPage() {
   // Lazy load tab data when tab changes
   useEffect(() => {
     if (activeTab === 'traffic') fetchTrafficData()
+    else if (activeTab === 'conversions') fetchConversionData()
     else if (activeTab === 'google-ads') fetchGoogleAdsData()
     else if (activeTab === 'bing-ads') fetchBingAdsData()
     else if (activeTab === 'jedi-council') fetchJediData()
@@ -2145,6 +2168,7 @@ export default function DashboardPage() {
   const tabs = [
     { id: "sales" as TabType, label: "Sales", icon: DollarSign },
     { id: "traffic" as TabType, label: "Traffic", icon: Users },
+    { id: "conversions" as TabType, label: "Conversions", icon: CheckCircle2 },
     { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
     { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
     { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
@@ -4152,6 +4176,549 @@ export default function DashboardPage() {
             ) : (
               <div className="text-center text-[#6E6E73] py-12">
                 No traffic data available
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Conversions Tab */}
+        {activeTab === "conversions" && (
+          <>
+            {/* Conversion Source Toggle */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {([
+                { key: 'total' as ConversionSource, label: 'Total Conversions', color: '#34C759' },
+                { key: 'organic' as ConversionSource, label: 'Organic', color: '#0066CC' },
+                { key: 'direct' as ConversionSource, label: 'Direct', color: '#FF9500' },
+                { key: 'referral' as ConversionSource, label: 'Referral', color: '#AF52DE' },
+                { key: 'paid' as ConversionSource, label: 'Paid', color: '#FF3B30' },
+              ]).map(({ key, label, color }) => (
+                <button
+                  key={key}
+                  onClick={() => setConversionSource(key)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    conversionSource === key
+                      ? 'text-white shadow-md'
+                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  }`}
+                  style={conversionSource === key ? { backgroundColor: color } : {}}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {conversionsLoading && !conversionTrends ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-[#34C759]" />
+              </div>
+            ) : conversionTrends ? (
+              <>
+                {/* Conversion KPI Cards */}
+                {(() => {
+                  const kpiData = conversionTrends?.kpi?.[conversionSource]
+                  const now = new Date()
+                  const hour = now.getHours()
+                  const minutes = now.getMinutes()
+                  const timeStr = `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${minutes.toString().padStart(2, '0')}${hour >= 12 ? 'pm' : 'am'}`
+                  return (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      {/* Today */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-5 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-sm font-medium text-white/70 mb-1">Today @ {timeStr}</div>
+                        <div className="text-7xl font-bold text-white mb-2">{formatNumber(kpiData?.today ?? 0)}</div>
+                      </div>
+                      {/* Yesterday */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
+                        <div className="text-7xl font-bold text-white">{formatNumber(kpiData?.yesterday.value ?? 0)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(kpiData.yesterday.py)}</div>
+                            <div className={`text-lg font-semibold ${kpiData.yesterday.change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.yesterday.change_pct >= 0 ? "+" : ""}{kpiData.yesterday.change_pct}% ({kpiData.yesterday.diff >= 0 ? "+" : ""}{formatNumber(kpiData.yesterday.diff)})
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {/* This Week */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
+                        <div className="text-7xl font-bold text-white">{formatNumber(kpiData?.this_week.value ?? 0)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(kpiData.this_week.py)}</div>
+                            <div className={`text-lg font-semibold ${kpiData.this_week.change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.this_week.change_pct >= 0 ? "+" : ""}{kpiData.this_week.change_pct}% ({kpiData.this_week.diff >= 0 ? "+" : ""}{formatNumber(kpiData.this_week.diff)})
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {/* MTD */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
+                        <div className="text-7xl font-bold text-white">{formatNumber(kpiData?.mtd.value ?? 0)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(kpiData.mtd.py)}</div>
+                            <div className={`text-lg font-semibold ${kpiData.mtd.change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.mtd.change_pct >= 0 ? "+" : ""}{kpiData.mtd.change_pct}% ({kpiData.mtd.diff >= 0 ? "+" : ""}{formatNumber(kpiData.mtd.diff)})
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Weekly Trends Heatmap - Conversions */}
+                {conversionTrends.weekly_trends.data[conversionSource] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5 text-[#34C759]" />
+                          Weekly Trends ({conversionSource === 'total' ? 'Total Conversions' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1) + ' Conversions'})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
+                                {conversionTrends.weekly_trends.days.map((day) => (
+                                  <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white bg-[#34C759] whitespace-nowrap">Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const days = conversionTrends.weekly_trends.days
+                                const weekRows = conversionTrends.weekly_trends.data[conversionSource]
+                                const allValues = weekRows.flatMap(week =>
+                                  days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                                )
+                                const maxValue = Math.max(...allValues, 1)
+
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-green-600'
+                                  if (intensity > 60) return 'bg-green-500'
+                                  if (intensity > 40) return 'bg-green-600/60'
+                                  if (intensity > 20) return 'bg-green-600/40'
+                                  return 'bg-green-600/20'
+                                }
+
+                                return weekRows.map((week, idx) => {
+                                  const isCurrentWeek = week.week_label === "Current Week"
+                                  const cellBg = isCurrentWeek ? "bg-[#1A3A2A]" : "bg-[#1D1D1F]"
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{week.week_label}</div>
+                                        <div className="text-xs text-white/40">{week.week_start}</div>
+                                      </td>
+                                      {days.map(day => {
+                                        const value = week.daily_cumulative[day]
+                                        return (
+                                          <td
+                                            key={day}
+                                            className={`text-center py-3 px-1 ${getHeatmapClass(value)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                          >
+                                            {value !== null && value !== undefined ? value.toLocaleString() : '-'}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${week.week_total === null ? "text-white/20" : "text-white"}`}>
+                                        {week.week_total !== null ? week.week_total.toLocaleString() : '-'}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Monthly Trends Heatmap - Conversions */}
+                {conversionTrends.monthly_trends.months.length > 0 && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5 text-[#34C759]" />
+                          Monthly Trends ({conversionSource === 'total' ? 'Total Conversions' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1) + ' Conversions'})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Month</th>
+                                {conversionTrends.monthly_trends.weeks.map((wk) => (
+                                  <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white bg-[#34C759] whitespace-nowrap">Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const weeks = conversionTrends.monthly_trends.weeks
+                                const monthRows = conversionTrends.monthly_trends.months
+                                const allValues = monthRows.flatMap(row =>
+                                  weeks.map(wk => row[conversionSource][wk]).filter((v): v is number => typeof v === 'number')
+                                )
+                                const maxValue = Math.max(...allValues, 1)
+
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-green-600'
+                                  if (intensity > 60) return 'bg-green-500'
+                                  if (intensity > 40) return 'bg-green-600/60'
+                                  if (intensity > 20) return 'bg-green-600/40'
+                                  return 'bg-green-600/20'
+                                }
+
+                                const getSourceTotal = (row: TrafficTrendMonthRow): number => {
+                                  if (conversionSource === 'total') return row.grand_total
+                                  return row[`${conversionSource}_total` as keyof TrafficTrendMonthRow] as number
+                                }
+
+                                return monthRows.map((row, idx) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const cellBg = isCurrentMonth ? "bg-[#1A3A2A]" : "bg-[#1D1D1F]"
+                                  const sourceTotal = getSourceTotal(row)
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{row.row_label}</div>
+                                        <div className="text-xs text-white/40">{row.month_label}</div>
+                                      </td>
+                                      {weeks.map(wk => {
+                                        const value = row[conversionSource][wk]
+                                        return (
+                                          <td
+                                            key={wk}
+                                            className={`text-center py-3 px-3 ${getHeatmapClass(value)} ${value === null || value === undefined ? "text-white/20" : "text-white font-semibold"}`}
+                                          >
+                                            {value !== null && value !== undefined ? value.toLocaleString() : '-'}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${sourceTotal === 0 ? "text-white/20" : "text-white"}`}>
+                                        {sourceTotal > 0 ? sourceTotal.toLocaleString() : '-'}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Monthly Conversion Trends */}
+                {conversionTrends.monthly_trends.months.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-[#34C759]" />
+                      Monthly Conversion Trends — {conversionSource === 'total' ? 'Total' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1)}
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Conversions by Month */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-semibold text-[#1D1D1F]">
+                            {conversionSource === 'total' ? 'Total' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1)} Conversions
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b-2 border-[#D2D2D7]">
+                                  <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                                  {conversionTrends.monthly_trends.weeks.map(wk => (
+                                    <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {conversionTrends.monthly_trends.months.map((row) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const data = row[conversionSource]
+                                  return (
+                                    <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8FFF0]" : ""}`}>
+                                      <td className="py-2 px-2">
+                                        <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                        <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                      </td>
+                                      {conversionTrends.monthly_trends.weeks.map(wk => (
+                                        <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
+                                          {data[wk] !== null && data[wk] !== undefined ? data[wk]!.toLocaleString() : "—"}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Source Mix by Month */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Conversion Source Mix By Month</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b-2 border-[#D2D2D7]">
+                                  <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Total</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Organic %</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Direct %</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Referral %</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Paid %</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {conversionTrends.monthly_trends.months.map((row) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const gt = row.grand_total
+                                  const orgPct = gt > 0 ? Math.round((row.organic_total / gt) * 100) : 0
+                                  const dirPct = gt > 0 ? Math.round((row.direct_total / gt) * 100) : 0
+                                  const refPct = gt > 0 ? Math.round((row.referral_total / gt) * 100) : 0
+                                  const paidPct = gt > 0 ? Math.round((row.paid_total / gt) * 100) : 0
+                                  return (
+                                    <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8FFF0]" : ""}`}>
+                                      <td className="py-2 px-2">
+                                        <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                        <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                      </td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F] font-medium">{gt.toLocaleString()}</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{orgPct}%</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{dirPct}%</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{refPct}%</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{paidPct}%</td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                {/* YoY Conversions by Week */}
+                {conversionTrends.weekly_yoy[conversionSource] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-[#34C759]" />
+                          {conversionSource === 'total' ? 'Total' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1)} Conversions by Week
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">
+                          Year-over-year comparison of weekly conversions
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={conversionTrends.weekly_yoy[conversionSource]}
+                              margin={{ top: 25, right: 30, left: 10, bottom: 10 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="week_label" tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} interval={3} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                              <Tooltip
+                                contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                formatter={(value, name) => {
+                                  if (value === null || value === undefined) return ['-', String(name)]
+                                  const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                  return [Number(value).toLocaleString(), yearLabel]
+                                }}
+                              />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* YoY Conversions by Month */}
+                {conversionTrends.monthly_yoy[conversionSource] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-[#34C759]" />
+                          {conversionSource === 'total' ? 'Total' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1)} Conversions by Month
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">
+                          Year-over-year comparison of monthly conversions (YTD)
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={conversionTrends.monthly_yoy[conversionSource]}
+                              margin={{ top: 25, right: 30, left: 20, bottom: 10 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="month_label" tick={{ fontSize: 13, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                              <Tooltip
+                                contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                formatter={(value, name) => {
+                                  if (value === null || value === undefined) return ['-', String(name)]
+                                  const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                  return [Number(value).toLocaleString(), yearLabel]
+                                }}
+                              />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Cumulative Conversions by Week */}
+                {conversionTrends.weekly_yoy[conversionSource] && (() => {
+                  let cum2024 = 0, cum2025 = 0, cum2026 = 0
+                  const cumData = conversionTrends.weekly_yoy[conversionSource].map(d => {
+                    if (d.y2024 !== null) cum2024 += d.y2024
+                    if (d.y2025 !== null) cum2025 += d.y2025
+                    if (d.y2026 !== null) cum2026 += d.y2026
+                    return { week_label: d.week_label, y2024: d.y2024 !== null ? cum2024 : null, y2025: d.y2025 !== null ? cum2025 : null, y2026: d.y2026 !== null ? cum2026 : null }
+                  })
+                  return (
+                    <div className="mt-8">
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-[#34C759]" />
+                            Cumulative {conversionSource === 'total' ? 'Total' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1)} Conversions by Week
+                          </CardTitle>
+                          <CardDescription className="text-sm text-[#6E6E73]">
+                            Year-over-year running total of weekly conversions
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="h-[500px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ComposedChart data={cumData} margin={{ top: 25, right: 30, left: 20, bottom: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                                <XAxis dataKey="week_label" tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} interval={3} />
+                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                                <Tooltip
+                                  contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                  labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                  formatter={(value, name) => {
+                                    if (value === null || value === undefined) return ['-', String(name)]
+                                    const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                    return [Number(value).toLocaleString(), yearLabel]
+                                  }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                                <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 3 }} connectNulls name="y2024" />
+                                <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 3 }} connectNulls name="y2025" />
+                                <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }} connectNulls name="y2026" />
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                })()}
+
+                {/* Cumulative Conversions by Month */}
+                {conversionTrends.monthly_yoy[conversionSource] && (() => {
+                  let cum2024 = 0, cum2025 = 0, cum2026 = 0
+                  const cumData = conversionTrends.monthly_yoy[conversionSource].map(d => {
+                    if (d.y2024 !== null) cum2024 += d.y2024
+                    if (d.y2025 !== null) cum2025 += d.y2025
+                    if (d.y2026 !== null) cum2026 += d.y2026
+                    return { month_label: d.month_label, y2024: d.y2024 !== null ? cum2024 : null, y2025: d.y2025 !== null ? cum2025 : null, y2026: d.y2026 !== null ? cum2026 : null }
+                  })
+                  return (
+                    <div className="mt-8">
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-[#34C759]" />
+                            Cumulative {conversionSource === 'total' ? 'Total' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1)} Conversions by Month
+                          </CardTitle>
+                          <CardDescription className="text-sm text-[#6E6E73]">
+                            Year-over-year running total of monthly conversions (YTD)
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="h-[500px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ComposedChart data={cumData} margin={{ top: 25, right: 30, left: 20, bottom: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                                <XAxis dataKey="month_label" tick={{ fontSize: 13, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} />
+                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                                <Tooltip
+                                  contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                  labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                  formatter={(value, name) => {
+                                    if (value === null || value === undefined) return ['-', String(name)]
+                                    const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                    return [Number(value).toLocaleString(), yearLabel]
+                                  }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                                <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }} connectNulls name="y2024" />
+                                <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }} connectNulls name="y2025" />
+                                <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }} connectNulls name="y2026" />
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                })()}
+              </>
+            ) : (
+              <div className="text-center text-[#6E6E73] py-12">
+                No conversion data available
               </div>
             )}
           </>
