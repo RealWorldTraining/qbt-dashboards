@@ -391,6 +391,57 @@ interface TrafficTrendsResponse {
 
 type TrafficSource = 'total' | 'organic' | 'direct' | 'referral' | 'paid'
 type ConversionSource = 'total' | 'organic' | 'direct' | 'referral' | 'paid'
+type AdsMetric = 'conversions' | 'impressions' | 'clicks' | 'avg_cpc' | 'spend' | 'cost_per_conv'
+
+interface AdsTrendsResponse {
+  monthly_trends: { months: Record<string, unknown>[]; weeks: string[] }
+  weekly_trends: { data: Record<string, { week_label: string; week_start: string; daily_cumulative: Record<string, number | null>; week_total: number | null }[]>; days: string[] }
+  weekly_yoy: Record<string, { week_num?: number; week_label?: string; month_num?: number; month_label?: string; y2024: number | null; y2025: number | null; y2026: number | null }[]>
+  monthly_yoy: Record<string, { month_num?: number; month_label?: string; y2024: number | null; y2025: number | null; y2026: number | null }[]>
+  kpi: Record<string, { today: number; yesterday: { value: number; py: number; change_pct: number; diff: number }; this_week: { value: number; py: number; change_pct: number; diff: number }; mtd: { value: number; py: number; change_pct: number; diff: number } }>
+  current_week: number
+  current_month: number
+}
+
+const ADS_METRIC_LABELS: Record<AdsMetric, string> = {
+  conversions: 'Total Conversions',
+  impressions: 'Impressions',
+  clicks: 'Clicks',
+  avg_cpc: 'Avg CPC',
+  spend: 'Spend',
+  cost_per_conv: 'Cost / Conversion',
+}
+
+const ADS_METRIC_COLORS: Record<AdsMetric, string> = {
+  conversions: '#34C759',
+  impressions: '#0066CC',
+  clicks: '#FF9500',
+  avg_cpc: '#AF52DE',
+  spend: '#FF3B30',
+  cost_per_conv: '#FF6B6B',
+}
+
+function formatAdsValue(value: number | null | undefined, metric: AdsMetric): string {
+  if (value === null || value === undefined) return '-'
+  if (metric === 'avg_cpc' || metric === 'cost_per_conv' || metric === 'spend') {
+    return '$' + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }
+  return value.toLocaleString(undefined, { maximumFractionDigits: 0 })
+}
+
+function formatAdsDiff(diff: number, metric: AdsMetric): string {
+  const prefix = diff >= 0 ? '+' : ''
+  if (metric === 'avg_cpc' || metric === 'cost_per_conv' || metric === 'spend') {
+    return prefix + '$' + Math.abs(diff).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }
+  return prefix + diff.toLocaleString(undefined, { maximumFractionDigits: 0 })
+}
+
+// For avg_cpc and cost_per_conv, lower is better
+function isAdsChangePositive(metric: AdsMetric, changePct: number): boolean {
+  if (metric === 'avg_cpc' || metric === 'cost_per_conv') return changePct <= 0
+  return changePct >= 0
+}
 
 // Auction Insights interfaces
 interface AuctionInsightRow {
@@ -1911,6 +1962,14 @@ export default function DashboardPage() {
   const [conversionTrends, setConversionTrends] = useState<TrafficTrendsResponse | null>(null)
   const [conversionSource, setConversionSource] = useState<ConversionSource>('total')
 
+  // Google Ads Trends state
+  const [gadsTrends, setGadsTrends] = useState<AdsTrendsResponse | null>(null)
+  const [gadsMetric, setGadsMetric] = useState<AdsMetric>('conversions')
+
+  // Bing Ads Trends state
+  const [bingTrends, setBingTrends] = useState<AdsTrendsResponse | null>(null)
+  const [bingMetric, setBingMetric] = useState<AdsMetric>('conversions')
+
   // Auction Insights state
   const [auctionInsights, setAuctionInsights] = useState<AuctionInsightsResponse | null>(null)
 
@@ -2020,17 +2079,10 @@ export default function DashboardPage() {
 
   // Fetch Google Ads tab data (lazy load)
   const fetchGoogleAdsData = async () => {
-    if (loadedTabs.has('google-ads') && !isCacheStale('googleAds')) return
+    if (loadedTabs.has('google-ads') && !isCacheStale('googleAds') && gadsTrends) return
     setGoogleAdsLoading(true)
     try {
-      await Promise.all([
-        fetchWithCache(`${PROPHET_API_URL}/auction-insights`, 'auction', CACHE_TTL.googleAds, setAuctionInsights),
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/account`, 'adsAccount', CACHE_TTL.googleAds, setAccountPerformance),
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/campaigns`, 'adsCampaigns', CACHE_TTL.googleAds, setCampaignsData),
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/keywords`, 'adsKeywords', CACHE_TTL.googleAds, setKeywordsData),
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/campaigns/weekly`, 'googleCampaignsWeekly', CACHE_TTL.googleAds, setGoogleCampaignsWeekly),
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/keywords/n8n-weekly`, 'n8nKeywordsWeekly', CACHE_TTL.googleAds, setN8nKeywordsWeekly),
-      ])
+      await fetchWithCache('/api/gads-trends', 'gadsTrends', CACHE_TTL.googleAds, setGadsTrends)
     } catch (err) {
       console.error("Failed to load Google Ads data:", err)
     } finally {
@@ -2041,14 +2093,10 @@ export default function DashboardPage() {
 
   // Fetch Bing Ads tab data (lazy load)
   const fetchBingAdsData = async () => {
-    if (loadedTabs.has('bing-ads') && !isCacheStale('bingAds')) return
+    if (loadedTabs.has('bing-ads') && !isCacheStale('bingAds') && bingTrends) return
     setBingAdsLoading(true)
     try {
-      await Promise.all([
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/bing/campaigns`, 'bingCampaigns', CACHE_TTL.bingAds, setBingCampaignsData),
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/bing/keywords`, 'bingKeywords', CACHE_TTL.bingAds, setBingKeywordsData),
-        fetchWithCache(`${PROPHET_API_URL}/paid-ads/bing/campaigns/weekly`, 'bingCampaignsWeekly', CACHE_TTL.bingAds, setBingCampaignsWeekly),
-      ])
+      await fetchWithCache('/api/bing-trends', 'bingTrends', CACHE_TTL.bingAds, setBingTrends)
     } catch (err) {
       console.error("Failed to load Bing Ads data:", err)
     } finally {
@@ -4727,715 +4775,297 @@ export default function DashboardPage() {
         {/* Google Ads Tab */}
         {activeTab === "google-ads" && (
           <>
-            {loading ? (
+            {/* Google Ads Metric Toggle */}
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+              {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => setGadsMetric(key)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    gadsMetric === key
+                      ? 'text-white shadow-md'
+                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  }`}
+                  style={gadsMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
+                >
+                  {ADS_METRIC_LABELS[key]}
+                </button>
+              ))}
+            </div>
+
+            {googleAdsLoading && !gadsTrends ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
               </div>
-            ) : (
+            ) : gadsTrends ? (
               <>
-                {/* Account Performance Overview */}
-                {accountPerformance && (
-                  <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
-                      <DollarSign className="h-5 w-5 text-[#0066CC]" />
-                      Account Performance
-                      <span className="text-sm font-normal text-[#6E6E73]">Week of {new Date(accountPerformance.current_week.week).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-                      {/* Spend */}
-                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                        <CardContent className="pt-4 pb-4">
-                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Weekly Spend</div>
-                          <div className="text-3xl font-bold text-[#1D1D1F]">{formatCurrency(Math.round(accountPerformance.current_week.spend))}</div>
-                          <div className="text-xs text-[#8E8E93] mt-1">LW: {formatCurrency(Math.round(accountPerformance.previous_week.spend))}</div>
-                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.spend <= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
-                            {accountPerformance.wow_change.spend >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.spend)}% ({accountPerformance.current_week.spend - accountPerformance.previous_week.spend >= 0 ? "+" : ""}{formatCurrency(Math.round(accountPerformance.current_week.spend - accountPerformance.previous_week.spend))})
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Conversions */}
-                      <Card className="bg-gradient-to-br from-[#0066CC] to-[#0055AA] text-white border-0 shadow-lg">
-                        <CardContent className="pt-4 pb-4">
-                          <div className="text-sm font-semibold uppercase tracking-wide text-white/70 mb-1">Conversions</div>
-                          <div className="text-3xl font-bold text-white">{Math.round(accountPerformance.current_week.conversions)}</div>
-                          <div className="text-xs text-white/60 mt-1">LW: {Math.round(accountPerformance.previous_week.conversions)}</div>
-                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.conversions >= 0 ? "text-green-300" : "text-red-300"}`}>
-                            {accountPerformance.wow_change.conversions >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.conversions)}% ({accountPerformance.current_week.conversions - accountPerformance.previous_week.conversions >= 0 ? "+" : ""}{Math.round(accountPerformance.current_week.conversions - accountPerformance.previous_week.conversions)})
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* CPA */}
-                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                        <CardContent className="pt-4 pb-4">
-                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Cost per Acq.</div>
-                          <div className="text-3xl font-bold text-[#1D1D1F]">{formatCurrency(Math.round(accountPerformance.current_week.cpa))}</div>
-                          <div className="text-xs text-[#8E8E93] mt-1">LW: {formatCurrency(Math.round(accountPerformance.previous_week.cpa))}</div>
-                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.cpa <= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
-                            {accountPerformance.wow_change.cpa >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.cpa)}% ({accountPerformance.current_week.cpa - accountPerformance.previous_week.cpa >= 0 ? "+" : ""}{formatCurrency(Math.round(accountPerformance.current_week.cpa - accountPerformance.previous_week.cpa))})
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Average CPC */}
-                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                        <CardContent className="pt-4 pb-4">
-                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Avg. CPC</div>
-                          <div className="text-3xl font-bold text-[#1D1D1F]">
-                            {formatCurrency(accountPerformance.current_week.clicks > 0 ? accountPerformance.current_week.spend / accountPerformance.current_week.clicks : 0)}
-                          </div>
-                          <div className="text-xs text-[#8E8E93] mt-1">
-                            LW: {formatCurrency(accountPerformance.previous_week.clicks > 0 ? accountPerformance.previous_week.spend / accountPerformance.previous_week.clicks : 0)}
-                          </div>
-                          {(() => {
-                            const currentCpc = accountPerformance.current_week.clicks > 0 ? accountPerformance.current_week.spend / accountPerformance.current_week.clicks : 0
-                            const prevCpc = accountPerformance.previous_week.clicks > 0 ? accountPerformance.previous_week.spend / accountPerformance.previous_week.clicks : 0
-                            const cpcChange = prevCpc > 0 ? ((currentCpc - prevCpc) / prevCpc) * 100 : 0
-                            const cpcDiff = currentCpc - prevCpc
-                            return (
-                              <div className={`text-sm font-semibold ${cpcChange <= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
-                                {cpcChange >= 0 ? "+" : ""}{Math.round(cpcChange)}% ({cpcDiff >= 0 ? "+" : ""}{formatCurrency(cpcDiff)})
-                              </div>
-                            )
-                          })()}
-                        </CardContent>
-                      </Card>
-
-                      {/* Clicks */}
-                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                        <CardContent className="pt-4 pb-4">
-                          <div className="text-sm font-semibold uppercase tracking-wide text-[#6E6E73] mb-1">Clicks</div>
-                          <div className="text-3xl font-bold text-[#1D1D1F]">{formatNumber(accountPerformance.current_week.clicks)}</div>
-                          <div className="text-xs text-[#8E8E93] mt-1">LW: {formatNumber(accountPerformance.previous_week.clicks)}</div>
-                          <div className={`text-sm font-semibold ${accountPerformance.wow_change.clicks >= 0 ? "text-[#34C759]" : "text-[#FF3B30]"}`}>
-                            {accountPerformance.wow_change.clicks >= 0 ? "+" : ""}{Math.round(accountPerformance.wow_change.clicks)}% ({accountPerformance.current_week.clicks - accountPerformance.previous_week.clicks >= 0 ? "+" : ""}{formatNumber(accountPerformance.current_week.clicks - accountPerformance.previous_week.clicks)})
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Forecast */}
-                      <Card className="bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] text-white border-0 shadow-lg">
-                        <CardContent className="pt-4 pb-4">
-                          <div className="text-sm font-semibold uppercase tracking-wide text-[#A78BFA] mb-1">Next Week Forecast</div>
-                          <div className="text-2xl font-bold text-[#A78BFA]">{formatCurrency(Math.round(accountPerformance.forecast.spend))}</div>
-                          <div className="text-base font-medium text-white/70 mt-1">{Math.round(accountPerformance.forecast.conversions)} conv. predicted</div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                )}
-
-                {/* 6-Week Campaign Performance Tables - Side by Side */}
-                {googleCampaignsWeekly && googleCampaignsWeekly.campaigns.length > 0 && (() => {
-                  // Define campaign pair order
-                  const campaignPairs = [
-                    { prefix: 'Certification', label: 'Certification' },
-                    { prefix: 'Training', label: 'Training' },
-                    { prefix: 'Courses', label: 'Courses' },
-                    { prefix: 'Classes', label: 'Classes' },
-                  ]
-
-                  // Helper to find campaign by name pattern
-                  const findCampaign = (prefix: string, device: string) => {
-                    return googleCampaignsWeekly.campaigns.find(c =>
-                      c.campaign_name.toLowerCase().includes(prefix.toLowerCase()) &&
-                      c.campaign_name.toLowerCase().includes(device.toLowerCase())
-                    )
-                  }
-
+                {/* GADS KPI Cards */}
+                {(() => {
+                  const kpiData = gadsTrends.kpi?.[gadsMetric]
+                  const now = new Date()
+                  const hour = now.getHours()
+                  const minutes = now.getMinutes()
+                  const timeStr = `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${minutes.toString().padStart(2, '0')}${hour >= 12 ? 'pm' : 'am'}`
+                  const accentColor = ADS_METRIC_COLORS[gadsMetric]
                   return (
-                    <div className="mb-8">
-                      <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-[#0066CC]" />
-                        Google Campaign 6-Week Trend
-                      </h2>
-                      <div className="space-y-6">
-                        {campaignPairs.map(({ prefix, label }) => {
-                          const desktopCampaign = findCampaign(prefix, 'Desktop')
-                          const mobileCampaign = findCampaign(prefix, 'Mobile')
-
-                          if (!desktopCampaign && !mobileCampaign) return null
-
-                          return (
-                            <div key={prefix} className="space-y-2">
-                              <h3 className="text-sm font-semibold text-[#6E6E73] uppercase tracking-wider">{label}</h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Desktop Campaign */}
-                                {desktopCampaign && (
-                                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                                    <CardHeader className="pb-2 pt-3 px-4">
-                                      <CardTitle className="text-sm font-semibold text-[#1D1D1F] flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                        Desktop
-                                      </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="pt-0 px-4 pb-3">
-                                      <div className="overflow-x-auto">
-                                        <table className="w-full text-xs">
-                                          <thead>
-                                            <tr className="border-b border-[#D2D2D7]">
-                                              <th className="text-left py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Week</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Spend</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Conv.</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CPA</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Clicks</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CTR</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {desktopCampaign.weeks.map((week, idx) => (
-                                              <tr
-                                                key={week.week_label}
-                                                className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-blue-50" : ""}`}
-                                              >
-                                                <td className="py-1.5 px-1">
-                                                  <div className="font-semibold text-[#1D1D1F] text-[11px]">{week.week_label}</div>
-                                                  <div className="text-[9px] text-[#6E6E73]">{week.week_start}</div>
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
-                                                  {formatCurrency(week.spend)}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
-                                                  {week.conversions.toFixed(1)}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
-                                                  {week.conversions > 0 ? formatCurrency(week.cpa) : "-"}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
-                                                  {week.clicks.toLocaleString()}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
-                                                  {week.ctr.toFixed(2)}%
-                                                </td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                )}
-                                {/* Mobile Campaign */}
-                                {mobileCampaign && (
-                                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                                    <CardHeader className="pb-2 pt-3 px-4">
-                                      <CardTitle className="text-sm font-semibold text-[#1D1D1F] flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                        Mobile
-                                      </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="pt-0 px-4 pb-3">
-                                      <div className="overflow-x-auto">
-                                        <table className="w-full text-xs">
-                                          <thead>
-                                            <tr className="border-b border-[#D2D2D7]">
-                                              <th className="text-left py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Week</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Spend</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Conv.</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CPA</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">Clicks</th>
-                                              <th className="text-right py-1.5 px-1 font-medium text-[#6E6E73] uppercase text-[9px] tracking-wider">CTR</th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            {mobileCampaign.weeks.map((week, idx) => (
-                                              <tr
-                                                key={week.week_label}
-                                                className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-green-50" : ""}`}
-                                              >
-                                                <td className="py-1.5 px-1">
-                                                  <div className="font-semibold text-[#1D1D1F] text-[11px]">{week.week_label}</div>
-                                                  <div className="text-[9px] text-[#6E6E73]">{week.week_start}</div>
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
-                                                  {formatCurrency(week.spend)}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 font-medium text-[#1D1D1F]">
-                                                  {week.conversions.toFixed(1)}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
-                                                  {week.conversions > 0 ? formatCurrency(week.cpa) : "-"}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
-                                                  {week.clicks.toLocaleString()}
-                                                </td>
-                                                <td className="text-right py-1.5 px-1 text-[#6E6E73]">
-                                                  {week.ctr.toFixed(2)}%
-                                                </td>
-                                              </tr>
-                                            ))}
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                )}
-                              </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-5 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-sm font-medium text-white/70 mb-1">Today @ {timeStr}</div>
+                        <div className="text-5xl font-bold text-white mb-2">{formatAdsValue(kpiData?.today ?? 0, gadsMetric)}</div>
+                      </div>
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
+                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.yesterday.value ?? 0, gadsMetric)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.yesterday.py, gadsMetric)}</div>
+                            <div className={`text-lg font-semibold ${isAdsChangePositive(gadsMetric, kpiData.yesterday.change_pct) ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.yesterday.change_pct >= 0 ? "+" : ""}{kpiData.yesterday.change_pct}% ({formatAdsDiff(kpiData.yesterday.diff, gadsMetric)})
                             </div>
-                          )
-                        })}
+                          </div>
+                        )}
+                      </div>
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
+                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.this_week.value ?? 0, gadsMetric)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.this_week.py, gadsMetric)}</div>
+                            <div className={`text-lg font-semibold ${isAdsChangePositive(gadsMetric, kpiData.this_week.change_pct) ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.this_week.change_pct >= 0 ? "+" : ""}{kpiData.this_week.change_pct}% ({formatAdsDiff(kpiData.this_week.diff, gadsMetric)})
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
+                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.mtd.value ?? 0, gadsMetric)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.mtd.py, gadsMetric)}</div>
+                            <div className={`text-lg font-semibold ${isAdsChangePositive(gadsMetric, kpiData.mtd.change_pct) ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.mtd.change_pct >= 0 ? "+" : ""}{kpiData.mtd.change_pct}% ({formatAdsDiff(kpiData.mtd.diff, gadsMetric)})
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )
                 })()}
 
-                {/* Keywords Performance - Week over Week Comparison (from n8n ADVERONIX sheet) */}
-                {n8nKeywordsWeekly && n8nKeywordsWeekly.keywords && n8nKeywordsWeekly.keywords.length > 0 && (
-                  <div className="mb-8">
+                {/* GADS Weekly Trends Heatmap */}
+                {gadsTrends.weekly_trends.data[gadsMetric] && (
+                  <div className="mt-8">
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-[#0066CC]" />
-                          Keyword Performance (Week over Week)
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5" style={{ color: ADS_METRIC_COLORS[gadsMetric] }} />
+                          Weekly Trends ({ADS_METRIC_LABELS[gadsMetric]})
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="pt-2">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
                             <thead>
-                              <tr className="border-b border-[#D2D2D7]">
-                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F] sticky left-0 bg-white">Keyword</th>
-                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F]">Campaign</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Avg CPC</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Conv.</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost/Conv.</th>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
+                                {gadsTrends.weekly_trends.days.map((day) => (
+                                  <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: ADS_METRIC_COLORS[gadsMetric] }}>Total</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {n8nKeywordsWeekly.keywords.slice(0, 20).map((kw, idx) => {
-                                // Calculate variances
-                                const avgCpcVar = kw.two_weeks_ago_avg_cpc !== undefined ? kw.last_week_avg_cpc - kw.two_weeks_ago_avg_cpc : null;
-                                const convVar = kw.two_weeks_ago_conversions !== undefined ? kw.last_week_conversions - kw.two_weeks_ago_conversions : null;
-                                const costVar = kw.two_weeks_ago_cost !== undefined ? kw.last_week_cost - kw.two_weeks_ago_cost : null;
-                                const cpaVar = kw.last_week_cpa > 0 && kw.two_weeks_ago_cpa && kw.two_weeks_ago_cpa > 0 ? kw.last_week_cpa - kw.two_weeks_ago_cpa : null;
-
-                                return (
-                                <tr key={idx} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
-                                  <td className="py-2 px-2 text-[#1D1D1F] sticky left-0 bg-white">
-                                    <div className="font-medium truncate max-w-[180px]">{kw.keyword}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{kw.match_type}</div>
-                                  </td>
-                                  <td className="py-2 px-2 text-[#6E6E73]">
-                                    <div className="truncate max-w-[140px]">{kw.campaign || '-'}</div>
-                                  </td>
-                                  {/* Avg CPC - lower is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{formatCurrencyDecimal(kw.last_week_avg_cpc)}</div>
-                                    {avgCpcVar !== null && Math.abs(avgCpcVar) >= 0.01 && (
-                                      <div className={`text-[10px] ${avgCpcVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {avgCpcVar > 0 ? '+' : ''}{formatCurrencyDecimal(avgCpcVar)}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Conversions - higher is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{Math.round(kw.last_week_conversions)}</div>
-                                    {convVar !== null && convVar !== 0 && (
-                                      <div className={`text-[10px] ${convVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {convVar > 0 ? '+' : ''}{Math.round(convVar)}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Cost - neutral (orange for increase) */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{formatCurrency(Math.round(kw.last_week_cost))}</div>
-                                    {costVar !== null && Math.abs(costVar) >= 1 && (
-                                      <div className={`text-[10px] ${costVar < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
-                                        {costVar > 0 ? '+' : ''}{formatCurrency(Math.round(costVar))}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Cost/Conv (CPA) - lower is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className={`font-semibold ${kw.last_week_cpa > 0 ? 'text-[#1D1D1F]' : 'text-[#6E6E73]'}`}>
-                                      {kw.last_week_cpa > 0 ? formatCurrency(Math.round(kw.last_week_cpa)) : '-'}
-                                    </div>
-                                    {cpaVar !== null && Math.abs(cpaVar) >= 1 && (
-                                      <div className={`text-[10px] ${cpaVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {cpaVar > 0 ? '+' : ''}{formatCurrency(Math.round(cpaVar))}
-                                      </div>
-                                    )}
-                                  </td>
-                                </tr>
-                              )})}
-                            </tbody>
-                          </table>
-                        </div>
-                        {/* Week labels */}
-                        <div className="mt-3 pt-3 border-t border-[#E5E5E5] flex gap-4 text-xs text-[#6E6E73]">
-                          <span><strong>Last Week:</strong> {n8nKeywordsWeekly.last_week}</span>
-                          <span><strong>2 Weeks Ago:</strong> {n8nKeywordsWeekly.two_weeks_ago}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-                {/* High Spend / Low Conversion Keywords */}
-                {keywordsData && keywordsData.prior_bottom_performing && keywordsData.prior_bottom_performing.length > 0 && (
-                  <div className="mb-8">
-                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-[#FF9500]" />
-                          High Spend / Low Conversion
-                          <span className="text-xs font-normal text-[#6E6E73]">
-                            Last Week ({keywordsData.prior_week ? new Date(keywordsData.prior_week).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : '-'})
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-2">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
-                            <thead>
-                              <tr className="border-b border-[#D2D2D7]">
-                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F]">Keyword</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Spend</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Conv.</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">CTR</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {keywordsData.prior_bottom_performing.slice(0, 8).map((kw, idx) => (
-                                <tr key={idx} className="border-b border-[#E5E5E5]">
-                                  <td className="py-2 px-2 text-[#1D1D1F]">
-                                    <div className="font-medium truncate max-w-[200px]">{kw.keyword}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{kw.match_type}</div>
-                                  </td>
-                                  <td className="text-right py-2 px-2 text-[#FF3B30] font-semibold">{formatCurrency(Math.round(kw.spend))}</td>
-                                  <td className="text-right py-2 px-2 text-[#1D1D1F]">{Math.round(kw.conversions)}</td>
-                                  <td className="text-right py-2 px-2 text-[#1D1D1F]">{Math.round(kw.ctr)}%</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-                {/* Competitive Intelligence - Auction Insights */}
-                {auctionInsights?.competitor_cards && auctionInsights.competitor_cards.length > 0 && (
-                  <>
-                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-[#0066CC]" />
-                      Competitive Intelligence
-                    </h2>
-
-                    {/* Competitive Intelligence Summary */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  {/* Aggressive Competitors */}
-                  <Card className={`border-2 ${(auctionInsights.trends_summary?.aggressive?.length || 0) > 0 ? "border-red-200 bg-red-50" : "border-[#D2D2D7] bg-white"}`}>
-                    <CardContent className="pt-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle className={`h-5 w-5 ${(auctionInsights.trends_summary?.aggressive?.length || 0) > 0 ? "text-red-500" : "text-[#D2D2D7]"}`} />
-                        <span className="font-semibold text-[#1D1D1F]">Getting Aggressive</span>
-                      </div>
-                      {(auctionInsights.trends_summary?.aggressive?.length || 0) > 0 ? (
-                        <div className="space-y-1">
-                          {auctionInsights.trends_summary.aggressive.map((name, idx) => (
-                            <div key={`aggressive-${idx}`} className="flex items-center gap-2 text-sm">
-                              <ArrowUp className="h-4 w-4 text-red-500" />
-                              <span className="text-red-700 font-medium">{name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-[#6E6E73]">No competitors getting aggressive</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Falling Back */}
-                  <Card className={`border-2 ${(auctionInsights.trends_summary?.falling_back?.length || 0) > 0 ? "border-green-200 bg-green-50" : "border-[#D2D2D7] bg-white"}`}>
-                    <CardContent className="pt-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <TrendingDown className={`h-5 w-5 ${(auctionInsights.trends_summary?.falling_back?.length || 0) > 0 ? "text-green-500" : "text-[#D2D2D7]"}`} />
-                        <span className="font-semibold text-[#1D1D1F]">Falling Back</span>
-                      </div>
-                      {(auctionInsights.trends_summary?.falling_back?.length || 0) > 0 ? (
-                        <div className="space-y-1">
-                          {auctionInsights.trends_summary.falling_back.map((name, idx) => (
-                            <div key={`falling-${idx}`} className="flex items-center gap-2 text-sm">
-                              <ArrowDown className="h-4 w-4 text-green-500" />
-                              <span className="text-green-700 font-medium">{name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-[#6E6E73]">No competitors falling back</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Stable */}
-                  <Card className="border-[#D2D2D7] bg-white">
-                    <CardContent className="pt-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Minus className="h-5 w-5 text-[#6E6E73]" />
-                        <span className="font-semibold text-[#1D1D1F]">Holding Steady</span>
-                      </div>
-                      {(auctionInsights.trends_summary?.stable?.length || 0) > 0 ? (
-                        <div className="space-y-1">
-                          {auctionInsights.trends_summary.stable.map((name, idx) => (
-                            <div key={`stable-${idx}`} className="flex items-center gap-2 text-sm">
-                              <Minus className="h-4 w-4 text-[#6E6E73]" />
-                              <span className="text-[#6E6E73] font-medium">{name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-[#6E6E73]">All competitors showing movement</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Competitor Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  {auctionInsights.competitor_cards.map((card) => {
-                    const isYou = card.is_you
-                    const trendIcon = card.trend === "up" ? ArrowUp : card.trend === "down" ? ArrowDown : Minus
-                    const TrendIcon = trendIcon
-                    const trendColor = isYou
-                      ? (card.trend === "up" ? "text-green-500" : card.trend === "down" ? "text-red-500" : "text-[#6E6E73]")
-                      : (card.trend === "up" ? "text-red-500" : card.trend === "down" ? "text-green-500" : "text-[#6E6E73]")
-
-                    // Mini sparkline from weekly data
-                    const sparklineData = (card.weekly_data || []).map(w => w.impression_share)
-                    const maxVal = sparklineData.length > 0 ? Math.max(...sparklineData, 1) : 100
-                    const minVal = sparklineData.length > 0 ? Math.min(...sparklineData, 0) : 0
-                    const range = maxVal - minVal || 1
-
-                    return (
-                      <Card
-                        key={card.domain}
-                        className={`${isYou ? "bg-gradient-to-br from-[#0066CC] to-[#0055AA] text-white border-0 shadow-lg" : "bg-white border-[#D2D2D7]"} shadow-sm`}
-                      >
-                        <CardContent className="pt-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              {isYou ? (
-                                <Shield className="h-5 w-5 text-white/80" />
-                              ) : (
-                                <Target className="h-5 w-5 text-[#6E6E73]" />
-                              )}
-                              <span className={`font-semibold text-sm ${isYou ? "text-white" : "text-[#1D1D1F]"}`}>
-                                {card.display_name}
-                              </span>
-                            </div>
-                            <div className={`flex items-center gap-1 ${trendColor}`}>
-                              <TrendIcon className="h-4 w-4" />
-                              <span className="text-xs font-medium">
-                                {card.change_pct > 0 ? "+" : ""}{Math.round(card.change_pct)}%
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Impression Share */}
-                          <div className="mb-3">
-                            <div className={`text-3xl font-bold ${isYou ? "text-white" : "text-[#1D1D1F]"}`}>
-                              {Math.round(card.current_metrics.impression_share)}%
-                            </div>
-                            <div className={`text-xs ${isYou ? "text-white/70" : "text-[#6E6E73]"}`}>
-                              Impression Share
-                            </div>
-                          </div>
-
-                          {/* Mini Sparkline */}
-                          <div className="h-8 flex items-end gap-0.5 mb-3">
-                            {sparklineData.map((val, i) => {
-                              const height = ((val - minVal) / range) * 100
-                              const isLast = i === sparklineData.length - 1
-                              return (
-                                <div
-                                  key={i}
-                                  className={`flex-1 rounded-t ${isYou ? (isLast ? "bg-white" : "bg-white/40") : (isLast ? "bg-[#0066CC]" : "bg-[#0066CC]/30")}`}
-                                  style={{ height: `${Math.max(height, 10)}%` }}
-                                />
-                              )
-                            })}
-                          </div>
-
-                          {/* Other Metrics */}
-                          {!isYou && (
-                            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E5E5E5]">
-                              <div>
-                                <div className="text-xs text-[#6E6E73]">Position Above</div>
-                                <div className={`text-sm font-semibold ${card.current_metrics.position_above_rate >= 30 ? "text-red-500" : "text-[#1D1D1F]"}`}>
-                                  {Math.round(card.current_metrics.position_above_rate)}%
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-xs text-[#6E6E73]">Outranking</div>
-                                <div className={`text-sm font-semibold ${card.current_metrics.outranking_share >= 80 ? "text-green-500" : "text-[#1D1D1F]"}`}>
-                                  {Math.round(card.current_metrics.outranking_share)}%
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Prophet Forecast */}
-                          <div className={`mt-2 pt-2 border-t ${isYou ? "border-white/20" : "border-[#E5E5E5]"}`}>
-                            <div className={`text-xs ${isYou ? "text-white/70" : "text-[#6E6E73]"}`}>
-                              Prophet Forecast →
-                              <span className={`ml-1 font-semibold ${isYou ? "text-white" : "text-[#1D1D1F]"}`}>
-                                {Math.round(card.forecast_next_week)}%
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-
-                  {/* Biggest Threat Card */}
-                  {(() => {
-                    // Calculate threat score for each competitor (excluding "You")
-                    const competitors = auctionInsights.competitor_cards.filter(c => !c.is_you)
-                    if (competitors.length === 0) return null
-
-                    // Threat score = position_above_rate + (impression_share * 0.5) - (100 - outranking_share)
-                    // Higher position above = more threatening
-                    // Higher impression share = more visible = more threatening
-                    // Lower outranking (we beat them less) = more threatening
-                    const threatsWithScore = competitors.map(c => ({
-                      ...c,
-                      threat_score: c.current_metrics.position_above_rate +
-                                   (c.current_metrics.impression_share * 0.3) -
-                                   (c.current_metrics.outranking_share * 0.2)
-                    })).sort((a, b) => b.threat_score - a.threat_score)
-
-                    const biggestThreat = threatsWithScore[0]
-                    if (!biggestThreat) return null
-
-                    const posAbove = biggestThreat.current_metrics.position_above_rate
-                    const impShare = biggestThreat.current_metrics.impression_share
-                    const outrank = biggestThreat.current_metrics.outranking_share
-
-                    // Generate action steps based on threat characteristics
-                    const actionSteps = []
-                    if (posAbove >= 30) {
-                      actionSteps.push("Increase bids on top keywords to improve ad position")
-                    }
-                    if (impShare >= 50) {
-                      actionSteps.push("Expand keyword coverage to compete on more queries")
-                    }
-                    if (outrank < 60) {
-                      actionSteps.push("Review ad copy and landing page quality scores")
-                    }
-                    if (biggestThreat.trend === "up") {
-                      actionSteps.push("Monitor weekly - competitor is gaining momentum")
-                    }
-                    if (actionSteps.length === 0) {
-                      actionSteps.push("Maintain current strategy - threat level manageable")
-                    }
-
-                    return (
-                      <Card className="bg-gradient-to-br from-red-600 to-red-800 text-white border-0 shadow-lg">
-                        <CardContent className="pt-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <AlertTriangle className="h-5 w-5 text-yellow-300" />
-                            <span className="font-bold text-sm uppercase tracking-wide text-yellow-300">Biggest Threat</span>
-                          </div>
-
-                          <div className="text-2xl font-bold mb-1">{biggestThreat.display_name}</div>
-
-                          <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-                            <div>
-                              <div className="text-2xl font-bold">{Math.round(impShare)}%</div>
-                              <div className="text-xs text-white/70">Imp. Share</div>
-                            </div>
-                            <div>
-                              <div className="text-2xl font-bold text-yellow-300">{Math.round(posAbove)}%</div>
-                              <div className="text-xs text-white/70">Pos. Above</div>
-                            </div>
-                            <div>
-                              <div className="text-2xl font-bold">{Math.round(outrank)}%</div>
-                              <div className="text-xs text-white/70">We Outrank</div>
-                            </div>
-                          </div>
-
-                          <div className="border-t border-white/20 pt-3">
-                            <div className="text-xs font-semibold text-yellow-300 uppercase tracking-wide mb-2">Action Steps</div>
-                            <ul className="space-y-1">
-                              {actionSteps.slice(0, 3).map((step, idx) => (
-                                <li key={idx} className="text-xs text-white/90 flex items-start gap-2">
-                                  <span className="text-yellow-300 mt-0.5">→</span>
-                                  {step}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )
-                  })()}
-                </div>
-
-                {/* Weekly Comparison Table */}
-                <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base font-semibold text-[#1D1D1F]">
-                      Weekly Impression Share Trend
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-2">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-[#D2D2D7]">
-                            <th className="text-left py-2 px-3 font-semibold text-[#1D1D1F]">Competitor</th>
-                            {(auctionInsights.weeks || []).slice(0, 6).map((week, weekIndex) => {
-                              const weekDate = new Date(week)
-                              return (
-                                <th key={`header-${week}-${weekIndex}`} className="text-center py-2 px-2 font-medium text-[#6E6E73] text-xs">
-                                  {weekDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                                </th>
-                              )
-                            })}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {auctionInsights.competitor_cards.map((card, cardIndex) => (
-                            <tr key={`${card.domain}-${cardIndex}`} className={`border-b border-[#E5E5E5] ${card.is_you ? "bg-blue-50" : ""}`}>
-                              <td className="py-2 px-3">
-                                <span className={`font-medium ${card.is_you ? "text-[#0066CC]" : "text-[#1D1D1F]"}`}>
-                                  {card.display_name}
-                                </span>
-                              </td>
-                              {(auctionInsights.weeks || []).slice(0, 6).map((week, weekIndex) => {
-                                const weekData = (card.weekly_data || []).find(w => w.week === week)
-                                return (
-                                  <td key={`${week}-${weekIndex}`} className="text-center py-2 px-2 text-[#1D1D1F]">
-                                    {weekData ? `${Math.round(weekData.impression_share)}%` : "-"}
-                                  </td>
+                              {(() => {
+                                const days = gadsTrends.weekly_trends.days
+                                const weekRows = gadsTrends.weekly_trends.data[gadsMetric]
+                                const allValues = weekRows.flatMap(week =>
+                                  days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
                                 )
-                              })}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
+                                const maxValue = Math.max(...allValues, 1)
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-blue-600'
+                                  if (intensity > 60) return 'bg-blue-500'
+                                  if (intensity > 40) return 'bg-blue-600/60'
+                                  if (intensity > 20) return 'bg-blue-600/40'
+                                  return 'bg-blue-600/20'
+                                }
+                                return weekRows.map((week, idx) => {
+                                  const isCurrentWeek = week.week_label === "Current Week"
+                                  const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{week.week_label}</div>
+                                        <div className="text-xs text-white/40">{week.week_start}</div>
+                                      </td>
+                                      {days.map(day => {
+                                        const value = week.daily_cumulative[day]
+                                        return (
+                                          <td key={day} className={`text-center py-3 px-1 ${getHeatmapClass(value)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}>
+                                            {formatAdsValue(value, gadsMetric)}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${week.week_total === null ? "text-white/20" : "text-white"}`}>
+                                        {formatAdsValue(week.week_total, gadsMetric)}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
                     </Card>
-                  </>
+                  </div>
                 )}
 
-                {/* Show message if no data at all */}
-                {!accountPerformance && !campaignsData && !keywordsData && !auctionInsights && (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                      <TrendingUp className="h-12 w-12 text-[#D2D2D7] mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-[#1D1D1F]">No Google Ads Data Available</h3>
-                      <p className="text-[#6E6E73]">Unable to load Google Ads performance data</p>
-                    </div>
+                {/* GADS Monthly Trends Heatmap */}
+                {gadsTrends.monthly_trends.months.length > 0 && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5" style={{ color: ADS_METRIC_COLORS[gadsMetric] }} />
+                          Monthly Trends ({ADS_METRIC_LABELS[gadsMetric]})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Month</th>
+                                {gadsTrends.monthly_trends.weeks.map((wk) => (
+                                  <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: ADS_METRIC_COLORS[gadsMetric] }}>Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const weeks = gadsTrends.monthly_trends.weeks
+                                const monthRows = gadsTrends.monthly_trends.months
+                                const metricData = monthRows.map(row => row[gadsMetric] as Record<string, number | null>)
+                                const allValues = metricData.flatMap(d => d ? Object.values(d).filter((v): v is number => typeof v === 'number') : [])
+                                const maxValue = Math.max(...allValues, 1)
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-blue-600'
+                                  if (intensity > 60) return 'bg-blue-500'
+                                  if (intensity > 40) return 'bg-blue-600/60'
+                                  if (intensity > 20) return 'bg-blue-600/40'
+                                  return 'bg-blue-600/20'
+                                }
+                                return monthRows.map((row, idx) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const cellBg = isCurrentMonth ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                                  const data = row[gadsMetric] as Record<string, number | null> | undefined
+                                  const total = row[`${gadsMetric}_total`] as number ?? 0
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{row.row_label as string}</div>
+                                        <div className="text-xs text-white/40">{row.month_label as string}</div>
+                                      </td>
+                                      {weeks.map(wk => {
+                                        const value = data ? data[wk] : null
+                                        return (
+                                          <td key={wk} className={`text-center py-3 px-3 ${getHeatmapClass(value)} ${value === null || value === undefined ? "text-white/20" : "text-white font-semibold"}`}>
+                                            {formatAdsValue(value, gadsMetric)}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${total === 0 ? "text-white/20" : "text-white"}`}>
+                                        {formatAdsValue(total > 0 ? total : null, gadsMetric)}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* GADS YoY by Week */}
+                {gadsTrends.weekly_yoy[gadsMetric] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4" style={{ color: ADS_METRIC_COLORS[gadsMetric] }} />
+                          Google Ads {ADS_METRIC_LABELS[gadsMetric]} by Week
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">Year-over-year comparison</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={gadsTrends.weekly_yoy[gadsMetric]} margin={{ top: 25, right: 30, left: 10, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="week_label" tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} interval={3} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => (gadsMetric === 'avg_cpc' || gadsMetric === 'cost_per_conv' || gadsMetric === 'spend') ? `$${v.toLocaleString()}` : v.toLocaleString()} />
+                              <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }} labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }} formatter={(value, name) => { if (value === null || value === undefined) return ['-', String(name)]; const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [formatAdsValue(Number(value), gadsMetric), yearLabel] }} />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* GADS YoY by Month */}
+                {gadsTrends.monthly_yoy[gadsMetric] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-4 w-4" style={{ color: ADS_METRIC_COLORS[gadsMetric] }} />
+                          Google Ads {ADS_METRIC_LABELS[gadsMetric]} by Month
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">Year-over-year comparison (YTD)</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={gadsTrends.monthly_yoy[gadsMetric]} margin={{ top: 25, right: 30, left: 20, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="month_label" tick={{ fontSize: 13, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => (gadsMetric === 'avg_cpc' || gadsMetric === 'cost_per_conv' || gadsMetric === 'spend') ? `$${v.toLocaleString()}` : v.toLocaleString()} />
+                              <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }} labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }} formatter={(value, name) => { if (value === null || value === undefined) return ['-', String(name)]; const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [formatAdsValue(Number(value), gadsMetric), yearLabel] }} />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
               </>
+            ) : (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <Target className="h-12 w-12 text-[#D2D2D7] mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-[#1D1D1F]">No Google Ads Data</h3>
+                  <p className="text-[#6E6E73]">Google Ads trend data is not available</p>
+                </div>
+              </div>
             )}
           </>
         )}
@@ -5443,365 +5073,301 @@ export default function DashboardPage() {
         {/* Bing Ads Tab */}
         {activeTab === "bing-ads" && (
           <>
-            {bingAdsLoading && !bingCampaignsData && !bingKeywordsData ? (
+            {/* Bing Ads Metric Toggle */}
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+              {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => setBingMetric(key)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    bingMetric === key
+                      ? 'text-white shadow-md'
+                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  }`}
+                  style={bingMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
+                >
+                  {ADS_METRIC_LABELS[key]}
+                </button>
+              ))}
+            </div>
+
+            {bingAdsLoading && !bingTrends ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
               </div>
-            ) : (
+            ) : bingTrends ? (
               <>
-                {/* Campaign Performance */}
-                {bingCampaignsData && (() => {
-                  // Sort campaigns: alphabetical by base name
-                  const sortedCampaigns = [...bingCampaignsData.all_campaigns].sort((a, b) =>
-                    a.campaign_name.localeCompare(b.campaign_name)
-                  )
-
-                  // Calculate totals
-                  const totalSpend = sortedCampaigns.reduce((sum, c) => sum + c.spend, 0)
-                  const totalConversions = sortedCampaigns.reduce((sum, c) => sum + c.conversions, 0)
-                  const totalClicks = sortedCampaigns.reduce((sum, c) => sum + c.clicks, 0)
-                  const totalImpressions = sortedCampaigns.reduce((sum, c) => sum + c.impressions, 0)
-                  const totalCPA = totalConversions > 0 ? totalSpend / totalConversions : 0
-                  const totalCTR = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0
-                  // Prior week totals
-                  const totalPriorSpend = sortedCampaigns.reduce((sum, c) => sum + (c.prior_spend || 0), 0)
-                  const totalPriorConversions = sortedCampaigns.reduce((sum, c) => sum + (c.prior_conversions || 0), 0)
-                  const totalPriorClicks = sortedCampaigns.reduce((sum, c) => sum + (c.prior_clicks || 0), 0)
-                  const totalPriorCPA = totalPriorConversions > 0 ? totalPriorSpend / totalPriorConversions : 0
-
+                {/* Bing KPI Cards */}
+                {(() => {
+                  const kpiData = bingTrends.kpi?.[bingMetric]
+                  const now = new Date()
+                  const hour = now.getHours()
+                  const minutes = now.getMinutes()
+                  const timeStr = `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${minutes.toString().padStart(2, '0')}${hour >= 12 ? 'pm' : 'am'}`
+                  const accentColor = ADS_METRIC_COLORS[bingMetric]
                   return (
-                  <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
-                      <Target className="h-5 w-5 text-[#0066CC]" />
-                      Bing Campaign Performance
-                      <span className="text-sm font-normal text-[#6E6E73]">Week of {new Date(bingCampaignsData.week).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                    </h2>
-                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                      <CardContent className="pt-4">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="border-b border-[#D2D2D7]">
-                                <th className="text-left py-2 px-3 font-semibold text-[#1D1D1F]">Campaign</th>
-                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">Spend</th>
-                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">Conv.</th>
-                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">CPA</th>
-                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">Clicks</th>
-                                <th className="text-right py-2 px-3 font-medium text-[#6E6E73]">CTR</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortedCampaigns.map((campaign, idx) => {
-                                // Calculate variances
-                                const spendVar = campaign.prior_spend ? campaign.spend - campaign.prior_spend : null;
-                                const convVar = campaign.prior_conversions !== undefined ? campaign.conversions - (campaign.prior_conversions || 0) : null;
-                                const cpaVar = campaign.cpa > 0 && campaign.prior_cpa && campaign.prior_cpa > 0 ? campaign.cpa - campaign.prior_cpa : null;
-                                const clicksVar = campaign.prior_clicks ? campaign.clicks - campaign.prior_clicks : null;
-                                const ctrVar = campaign.prior_ctr !== undefined ? campaign.ctr - (campaign.prior_ctr || 0) : null;
-
-                                return (
-                                <tr key={idx} className="border-b border-[#E5E5E5]">
-                                  <td className="py-2 px-3 text-[#1D1D1F] font-medium">{campaign.campaign_name}</td>
-                                  {/* Spend - lower is better (neutral orange for increase) */}
-                                  <td className="text-right py-2 px-3">
-                                    <div className="text-[#1D1D1F] font-medium">{formatCurrency(Math.round(campaign.spend))}</div>
-                                    {spendVar !== null && Math.abs(spendVar) >= 1 && (
-                                      <div className={`text-[10px] ${spendVar < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
-                                        {spendVar > 0 ? '+' : ''}{formatCurrency(Math.round(spendVar))}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Conversions - higher is better */}
-                                  <td className="text-right py-2 px-3">
-                                    <div className="text-[#1D1D1F] font-medium">{Math.round(campaign.conversions)}</div>
-                                    {convVar !== null && convVar !== 0 && (
-                                      <div className={`text-[10px] ${convVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {convVar > 0 ? '+' : ''}{Math.round(convVar)}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* CPA - lower is better */}
-                                  <td className="text-right py-2 px-3">
-                                    <div className="text-[#1D1D1F] font-medium">{formatCurrency(Math.round(campaign.cpa))}</div>
-                                    {cpaVar !== null && Math.abs(cpaVar) >= 1 && (
-                                      <div className={`text-[10px] ${cpaVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {cpaVar > 0 ? '+' : ''}{formatCurrency(Math.round(cpaVar))}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Clicks - higher is better */}
-                                  <td className="text-right py-2 px-3">
-                                    <div className="text-[#1D1D1F] font-medium">{formatNumber(campaign.clicks)}</div>
-                                    {clicksVar !== null && clicksVar !== 0 && (
-                                      <div className={`text-[10px] ${clicksVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {clicksVar > 0 ? '+' : ''}{formatNumber(clicksVar)}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* CTR - higher is better */}
-                                  <td className="text-right py-2 px-3">
-                                    <div className="text-[#1D1D1F] font-medium">{Math.round(campaign.ctr)}%</div>
-                                    {ctrVar !== null && Math.abs(ctrVar) >= 1 && (
-                                      <div className={`text-[10px] ${ctrVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {ctrVar > 0 ? '+' : ''}{Math.round(ctrVar)}%
-                                      </div>
-                                    )}
-                                  </td>
-                                </tr>
-                              )})}
-                              {/* Total Row */}
-                              <tr className="border-t-2 border-[#D2D2D7] bg-[#F5F5F7] font-semibold">
-                                <td className="py-2 px-3 text-[#1D1D1F]">Total</td>
-                                <td className="text-right py-2 px-3">
-                                  <div className="text-[#1D1D1F]">{formatCurrency(Math.round(totalSpend))}</div>
-                                  {totalPriorSpend > 0 && Math.abs(totalSpend - totalPriorSpend) >= 1 && (
-                                    <div className={`text-[10px] font-normal ${totalSpend - totalPriorSpend < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
-                                      {totalSpend - totalPriorSpend > 0 ? '+' : ''}{formatCurrency(Math.round(totalSpend - totalPriorSpend))}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="text-right py-2 px-3">
-                                  <div className="text-[#1D1D1F]">{Math.round(totalConversions)}</div>
-                                  {totalPriorConversions > 0 && (
-                                    <div className={`text-[10px] font-normal ${totalConversions - totalPriorConversions > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                      {totalConversions - totalPriorConversions > 0 ? '+' : ''}{Math.round(totalConversions - totalPriorConversions)}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="text-right py-2 px-3">
-                                  <div className="text-[#1D1D1F]">{formatCurrency(Math.round(totalCPA))}</div>
-                                  {totalPriorCPA > 0 && Math.abs(totalCPA - totalPriorCPA) >= 1 && (
-                                    <div className={`text-[10px] font-normal ${totalCPA - totalPriorCPA < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                      {totalCPA - totalPriorCPA > 0 ? '+' : ''}{formatCurrency(Math.round(totalCPA - totalPriorCPA))}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="text-right py-2 px-3">
-                                  <div className="text-[#1D1D1F]">{formatNumber(totalClicks)}</div>
-                                  {totalPriorClicks > 0 && (
-                                    <div className={`text-[10px] font-normal ${totalClicks - totalPriorClicks > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                      {totalClicks - totalPriorClicks > 0 ? '+' : ''}{formatNumber(totalClicks - totalPriorClicks)}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="text-right py-2 px-3">
-                                  <div className="text-[#1D1D1F]">{Math.round(totalCTR)}%</div>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-5 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-sm font-medium text-white/70 mb-1">Today @ {timeStr}</div>
+                        <div className="text-5xl font-bold text-white mb-2">{formatAdsValue(kpiData?.today ?? 0, bingMetric)}</div>
+                      </div>
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
+                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.yesterday.value ?? 0, bingMetric)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.yesterday.py, bingMetric)}</div>
+                            <div className={`text-lg font-semibold ${isAdsChangePositive(bingMetric, kpiData.yesterday.change_pct) ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.yesterday.change_pct >= 0 ? "+" : ""}{kpiData.yesterday.change_pct}% ({formatAdsDiff(kpiData.yesterday.diff, bingMetric)})
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
+                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.this_week.value ?? 0, bingMetric)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.this_week.py, bingMetric)}</div>
+                            <div className={`text-lg font-semibold ${isAdsChangePositive(bingMetric, kpiData.this_week.change_pct) ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.this_week.change_pct >= 0 ? "+" : ""}{kpiData.this_week.change_pct}% ({formatAdsDiff(kpiData.this_week.diff, bingMetric)})
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
+                        <div className="text-5xl font-bold text-white">{formatAdsValue(kpiData?.mtd.value ?? 0, bingMetric)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatAdsValue(kpiData.mtd.py, bingMetric)}</div>
+                            <div className={`text-lg font-semibold ${isAdsChangePositive(bingMetric, kpiData.mtd.change_pct) ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.mtd.change_pct >= 0 ? "+" : ""}{kpiData.mtd.change_pct}% ({formatAdsDiff(kpiData.mtd.diff, bingMetric)})
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )
                 })()}
 
-                {/* 6-Week Campaign Performance Tables */}
-                {bingCampaignsWeekly && bingCampaignsWeekly.campaigns.length > 0 && (
-                  <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-[#0066CC]" />
-                      Bing Campaign 6-Week Trend
-                    </h2>
-                    <div className="grid grid-cols-1 gap-4">
-                      {bingCampaignsWeekly.campaigns.map((campaign) => (
-                        <Card key={campaign.campaign_name} className="bg-white border-[#D2D2D7] shadow-sm">
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-semibold text-[#1D1D1F]">
-                              {campaign.campaign_name}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="pt-2">
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-xs">
-                                <thead>
-                                  <tr className="border-b border-[#D2D2D7]">
-                                    <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Week</th>
-                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Spend</th>
-                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Conv.</th>
-                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">CPA</th>
-                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">Clicks</th>
-                                    <th className="text-right py-2 px-2 font-medium text-[#6E6E73] uppercase text-[10px] tracking-wider">CTR</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {campaign.weeks.map((week, idx) => (
-                                    <tr
-                                      key={week.week_label}
-                                      className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-[#E8F0FE]" : ""}`}
-                                    >
-                                      <td className="py-2 px-2">
-                                        <div className="font-semibold text-[#1D1D1F]">{week.week_label}</div>
-                                        <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
-                                      </td>
-                                      <td className="text-right py-2 px-2 font-medium text-[#1D1D1F]">
-                                        {formatCurrency(week.spend)}
-                                      </td>
-                                      <td className="text-right py-2 px-2 font-medium text-[#1D1D1F]">
-                                        {week.conversions.toFixed(1)}
-                                      </td>
-                                      <td className="text-right py-2 px-2 text-[#6E6E73]">
-                                        {week.conversions > 0 ? formatCurrency(week.cpa) : "-"}
-                                      </td>
-                                      <td className="text-right py-2 px-2 text-[#6E6E73]">
-                                        {week.clicks.toLocaleString()}
-                                      </td>
-                                      <td className="text-right py-2 px-2 text-[#6E6E73]">
-                                        {week.ctr.toFixed(2)}%
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Keyword Performance */}
-                {bingKeywordsData && bingKeywordsData.all_keywords_comparison && bingKeywordsData.all_keywords_comparison.length > 0 && (
-                  <div className="mb-8">
+                {/* Bing Weekly Trends Heatmap */}
+                {bingTrends.weekly_trends.data[bingMetric] && (
+                  <div className="mt-8">
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-[#0066CC]" />
-                          Bing Keyword Performance (Week over Week)
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5" style={{ color: ADS_METRIC_COLORS[bingMetric] }} />
+                          Weekly Trends ({ADS_METRIC_LABELS[bingMetric]})
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="pt-2">
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
                             <thead>
-                              <tr className="border-b border-[#D2D2D7]">
-                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F] sticky left-0 bg-white">Keyword</th>
-                                <th className="text-left py-2 px-2 font-semibold text-[#1D1D1F]">Campaign</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Max CPC</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Avg CPC</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Conv.</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Cost/Conv.</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Search IS</th>
-                                <th className="text-right py-2 px-2 font-medium text-[#6E6E73]">Click Share</th>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
+                                {bingTrends.weekly_trends.days.map((day) => (
+                                  <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: ADS_METRIC_COLORS[bingMetric] }}>Total</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {bingKeywordsData.all_keywords_comparison.slice(0, 15).map((kw, idx) => {
-                                // Calculate variances
-                                const maxCpcVar = kw.last_week_max_cpc && kw.two_weeks_ago_max_cpc ? kw.last_week_max_cpc - kw.two_weeks_ago_max_cpc : null;
-                                const avgCpcVar = kw.last_week_avg_cpc && kw.two_weeks_ago_avg_cpc ? kw.last_week_avg_cpc - kw.two_weeks_ago_avg_cpc : null;
-                                const convVar = kw.two_weeks_ago_conversions !== undefined ? kw.last_week_conversions - kw.two_weeks_ago_conversions : null;
-                                const costVar = kw.two_weeks_ago_spend !== undefined ? kw.last_week_spend - kw.two_weeks_ago_spend : null;
-                                const cpaVar = kw.last_week_cpa > 0 && kw.two_weeks_ago_cpa && kw.two_weeks_ago_cpa > 0 ? kw.last_week_cpa - kw.two_weeks_ago_cpa : null;
-                                const searchIsVar = kw.last_week_search_impr_share && kw.two_weeks_ago_search_impr_share ? kw.last_week_search_impr_share - kw.two_weeks_ago_search_impr_share : null;
-                                const clickShareVar = kw.last_week_click_share && kw.two_weeks_ago_click_share ? kw.last_week_click_share - kw.two_weeks_ago_click_share : null;
-
-                                return (
-                                <tr key={idx} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
-                                  <td className="py-2 px-2 text-[#1D1D1F] sticky left-0 bg-white">
-                                    <div className="font-medium truncate max-w-[150px]">{kw.keyword}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{kw.match_type}</div>
-                                  </td>
-                                  <td className="py-2 px-2 text-[#6E6E73]">
-                                    <div className="truncate max-w-[120px]">{kw.campaign || '-'}</div>
-                                  </td>
-                                  {/* Max CPC - lower is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_max_cpc ? formatCurrencyDecimal(kw.last_week_max_cpc) : '-'}</div>
-                                    {maxCpcVar !== null && Math.abs(maxCpcVar) >= 0.01 && (
-                                      <div className={`text-[10px] ${maxCpcVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {maxCpcVar > 0 ? '+' : ''}{formatCurrencyDecimal(maxCpcVar)}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Avg CPC - lower is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_avg_cpc ? formatCurrencyDecimal(kw.last_week_avg_cpc) : '-'}</div>
-                                    {avgCpcVar !== null && Math.abs(avgCpcVar) >= 0.01 && (
-                                      <div className={`text-[10px] ${avgCpcVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {avgCpcVar > 0 ? '+' : ''}{formatCurrencyDecimal(avgCpcVar)}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Conversions - higher is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{Math.round(kw.last_week_conversions)}</div>
-                                    {convVar !== null && convVar !== 0 && (
-                                      <div className={`text-[10px] ${convVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {convVar > 0 ? '+' : ''}{Math.round(convVar)}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Cost - lower is better (or neutral) */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{formatCurrency(Math.round(kw.last_week_spend))}</div>
-                                    {costVar !== null && Math.abs(costVar) >= 1 && (
-                                      <div className={`text-[10px] ${costVar < 0 ? 'text-[#34C759]' : 'text-[#FF9500]'}`}>
-                                        {costVar > 0 ? '+' : ''}{formatCurrency(Math.round(costVar))}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Cost/Conv (CPA) - lower is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className={`font-semibold ${kw.last_week_cpa > 0 ? 'text-[#1D1D1F]' : 'text-[#6E6E73]'}`}>
-                                      {kw.last_week_cpa > 0 ? formatCurrency(Math.round(kw.last_week_cpa)) : '-'}
-                                    </div>
-                                    {cpaVar !== null && Math.abs(cpaVar) >= 1 && (
-                                      <div className={`text-[10px] ${cpaVar < 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {cpaVar > 0 ? '+' : ''}{formatCurrency(Math.round(cpaVar))}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Search IS - higher is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_search_impr_share ? `${Math.round(kw.last_week_search_impr_share)}%` : '-'}</div>
-                                    {searchIsVar !== null && Math.abs(searchIsVar) >= 1 && (
-                                      <div className={`text-[10px] ${searchIsVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {searchIsVar > 0 ? '+' : ''}{Math.round(searchIsVar)}%
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* Click Share - higher is better */}
-                                  <td className="text-right py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F]">{kw.last_week_click_share ? `${Math.round(kw.last_week_click_share)}%` : '-'}</div>
-                                    {clickShareVar !== null && Math.abs(clickShareVar) >= 1 && (
-                                      <div className={`text-[10px] ${clickShareVar > 0 ? 'text-[#34C759]' : 'text-[#FF3B30]'}`}>
-                                        {clickShareVar > 0 ? '+' : ''}{Math.round(clickShareVar)}%
-                                      </div>
-                                    )}
-                                  </td>
-                                </tr>
-                              )})}
+                              {(() => {
+                                const days = bingTrends.weekly_trends.days
+                                const weekRows = bingTrends.weekly_trends.data[bingMetric]
+                                const allValues = weekRows.flatMap(week =>
+                                  days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                                )
+                                const maxValue = Math.max(...allValues, 1)
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-blue-600'
+                                  if (intensity > 60) return 'bg-blue-500'
+                                  if (intensity > 40) return 'bg-blue-600/60'
+                                  if (intensity > 20) return 'bg-blue-600/40'
+                                  return 'bg-blue-600/20'
+                                }
+                                return weekRows.map((week, idx) => {
+                                  const isCurrentWeek = week.week_label === "Current Week"
+                                  const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{week.week_label}</div>
+                                        <div className="text-xs text-white/40">{week.week_start}</div>
+                                      </td>
+                                      {days.map(day => {
+                                        const value = week.daily_cumulative[day]
+                                        return (
+                                          <td key={day} className={`text-center py-3 px-1 ${getHeatmapClass(value)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}>
+                                            {formatAdsValue(value, bingMetric)}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${week.week_total === null ? "text-white/20" : "text-white"}`}>
+                                        {formatAdsValue(week.week_total, bingMetric)}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
                             </tbody>
                           </table>
-                        </div>
-                        {/* Week labels */}
-                        <div className="mt-3 pt-3 border-t border-[#E5E5E5] flex gap-4 text-xs text-[#6E6E73]">
-                          <span><strong>Last Week:</strong> {bingKeywordsData.prior_week ? new Date(bingKeywordsData.prior_week).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : '-'}</span>
-                          <span><strong>2 Weeks Ago:</strong> {bingKeywordsData.two_weeks_ago ? new Date(bingKeywordsData.two_weeks_ago).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : '-'}</span>
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                 )}
 
-                {/* No Data State */}
-                {!bingCampaignsData && !bingKeywordsData && (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                      <Target className="h-12 w-12 text-[#D2D2D7] mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-[#1D1D1F]">No Bing Ads Data</h3>
-                      <p className="text-[#6E6E73]">Bing Ads performance data is not available</p>
-                    </div>
+                {/* Bing Monthly Trends Heatmap */}
+                {bingTrends.monthly_trends.months.length > 0 && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5" style={{ color: ADS_METRIC_COLORS[bingMetric] }} />
+                          Monthly Trends ({ADS_METRIC_LABELS[bingMetric]})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Month</th>
+                                {bingTrends.monthly_trends.weeks.map((wk) => (
+                                  <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: ADS_METRIC_COLORS[bingMetric] }}>Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const weeks = bingTrends.monthly_trends.weeks
+                                const monthRows = bingTrends.monthly_trends.months
+                                const metricData = monthRows.map(row => row[bingMetric] as Record<string, number | null>)
+                                const allValues = metricData.flatMap(d => d ? Object.values(d).filter((v): v is number => typeof v === 'number') : [])
+                                const maxValue = Math.max(...allValues, 1)
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-blue-600'
+                                  if (intensity > 60) return 'bg-blue-500'
+                                  if (intensity > 40) return 'bg-blue-600/60'
+                                  if (intensity > 20) return 'bg-blue-600/40'
+                                  return 'bg-blue-600/20'
+                                }
+                                return monthRows.map((row, idx) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const cellBg = isCurrentMonth ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                                  const data = row[bingMetric] as Record<string, number | null> | undefined
+                                  const total = row[`${bingMetric}_total`] as number ?? 0
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{row.row_label as string}</div>
+                                        <div className="text-xs text-white/40">{row.month_label as string}</div>
+                                      </td>
+                                      {weeks.map(wk => {
+                                        const value = data ? data[wk] : null
+                                        return (
+                                          <td key={wk} className={`text-center py-3 px-3 ${getHeatmapClass(value)} ${value === null || value === undefined ? "text-white/20" : "text-white font-semibold"}`}>
+                                            {formatAdsValue(value, bingMetric)}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${total === 0 ? "text-white/20" : "text-white"}`}>
+                                        {formatAdsValue(total > 0 ? total : null, bingMetric)}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Bing YoY by Week */}
+                {bingTrends.weekly_yoy[bingMetric] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4" style={{ color: ADS_METRIC_COLORS[bingMetric] }} />
+                          Bing Ads {ADS_METRIC_LABELS[bingMetric]} by Week
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">Year-over-year comparison</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={bingTrends.weekly_yoy[bingMetric]} margin={{ top: 25, right: 30, left: 10, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="week_label" tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} interval={3} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => (bingMetric === 'avg_cpc' || bingMetric === 'cost_per_conv' || bingMetric === 'spend') ? `$${v.toLocaleString()}` : v.toLocaleString()} />
+                              <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }} labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }} formatter={(value, name) => { if (value === null || value === undefined) return ['-', String(name)]; const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [formatAdsValue(Number(value), bingMetric), yearLabel] }} />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Bing YoY by Month */}
+                {bingTrends.monthly_yoy[bingMetric] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-4 w-4" style={{ color: ADS_METRIC_COLORS[bingMetric] }} />
+                          Bing Ads {ADS_METRIC_LABELS[bingMetric]} by Month
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">Year-over-year comparison (YTD)</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={bingTrends.monthly_yoy[bingMetric]} margin={{ top: 25, right: 30, left: 20, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="month_label" tick={{ fontSize: 13, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => (bingMetric === 'avg_cpc' || bingMetric === 'cost_per_conv' || bingMetric === 'spend') ? `$${v.toLocaleString()}` : v.toLocaleString()} />
+                              <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }} labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }} formatter={(value, name) => { if (value === null || value === undefined) return ['-', String(name)]; const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [formatAdsValue(Number(value), bingMetric), yearLabel] }} />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
               </>
+            ) : (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <Target className="h-12 w-12 text-[#D2D2D7] mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-[#1D1D1F]">No Bing Ads Data</h3>
+                  <p className="text-[#6E6E73]">Bing Ads trend data is not available</p>
+                </div>
+              </div>
             )}
           </>
         )}
+
 
         {/* Jedi Council Tab */}
         {activeTab === "jedi-council" && (
