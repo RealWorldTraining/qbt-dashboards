@@ -136,6 +136,7 @@ export default function BingAdsSummaryPage() {
   const [campaignData, setCampaignData] = useState<CampaignResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
 
   const fetchData = async () => {
     setLoading(true)
@@ -169,9 +170,9 @@ export default function BingAdsSummaryPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Calculate changes for summary cards (current vs previous week)
-  const currentWeek = data[0]
-  const previousWeek = data[1]
+  // Calculate changes for summary cards (selected vs previous week)
+  const currentWeek = data[selectedWeekIndex]
+  const previousWeek = data[selectedWeekIndex + 1]
   
   const calculateChange = (current: number, previous: number) => {
     if (!previous) return 0
@@ -208,7 +209,34 @@ export default function BingAdsSummaryPage() {
         {/* Overall Summary Cards */}
         {currentWeek && (
           <>
-            <div className="text-gray-500 text-xs font-medium mb-2 uppercase tracking-wide">Overall (Desktop Only)</div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-baseline gap-3">
+                <div className="text-white text-base font-semibold uppercase tracking-wide">Overall (Desktop Only)</div>
+                <span className="text-gray-500 text-sm">{currentWeek.week}</span>
+              </div>
+              {data.length > 0 && (
+                <div className="flex gap-1.5">
+                  {data.map((w, i) => {
+                    const weekStart = new Date(w.week_start + 'T00:00:00')
+                    const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    const isActive = i === selectedWeekIndex
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedWeekIndex(i)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          isActive
+                            ? 'bg-sky-600 text-white'
+                            : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222] hover:text-gray-300'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-7 gap-3 mb-6">
               {(["spend", "impressions", "clicks", "conversions", "ctr", "conv_rate", "cpa"] as const).map((metric) => {
                 const current = currentWeek[metric]
@@ -246,7 +274,7 @@ export default function BingAdsSummaryPage() {
                       <div className="text-gray-400 text-xs mb-1 uppercase tracking-wide">
                         {METRIC_LABELS[metric]}
                       </div>
-                      <div className="text-white text-xl font-bold mb-1">
+                      <div className="text-white text-3xl font-bold mb-1">
                         {displayValue}
                       </div>
                       <div className={`text-sm ${changeColor}`}>
