@@ -222,7 +222,7 @@ export async function GET() {
     }
 
     // === YoY by ISO Week (like weeklyQtyYoY) ===
-    const weeklyByYear = new Map<string, Map<number, number[]>>()
+    const weeklyByYear = new Map<string, Map<number, number>>()
     const sources = ['organic', 'direct', 'referral', 'paid', 'total'] as const
     for (const src of sources) {
       weeklyByYear.set(src, new Map())
@@ -235,7 +235,8 @@ export async function GET() {
         const srcMap = weeklyByYear.get(src)!
         const wk = d.iso_week
         const key = yr * 100 + wk // e.g. 202406
-        srcMap.set(key, (srcMap.get(key) || 0) + d[src])
+        const srcVal: number = d[src]
+        srcMap.set(key, (srcMap.get(key) ?? 0) + srcVal)
       }
     }
 
@@ -274,7 +275,8 @@ export async function GET() {
       for (const src of sources) {
         const srcMap = monthlyByYear.get(src)!
         const key = `${yr}-${mon}`
-        srcMap.set(key, (srcMap.get(key) || 0) + d[src])
+        const srcVal: number = d[src]
+        srcMap.set(key, (srcMap.get(key) ?? 0) + srcVal)
       }
     }
 
