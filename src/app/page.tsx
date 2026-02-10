@@ -388,26 +388,88 @@ export default function Home() {
 
       {/* Dashboard Sections */}
       <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Command Center — standalone tile above all sections */}
-        <div className="mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <DashboardCard dashboard={commandCenter} />
+        {/* Command Center — Hero Card with Live Overview */}
+        <Link
+          href={commandCenter.href}
+          className="group relative block bg-gradient-to-br from-purple-900/30 via-gray-900 to-indigo-900/30 border-2 border-purple-500/30 rounded-2xl p-8 mb-16 hover:border-purple-500/60 transition-all duration-300 overflow-hidden"
+        >
+          {/* Animated gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
+          <div className="relative">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className={`p-4 bg-gradient-to-br ${commandCenter.color} rounded-xl shadow-2xl`}>
+                  <Rocket className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">
+                    {commandCenter.name}
+                  </h2>
+                  <p className="text-gray-400">{commandCenter.description}</p>
+                </div>
+              </div>
+              <ArrowRight className="h-8 w-8 text-gray-600 group-hover:text-cyan-400 group-hover:translate-x-2 transition-all" />
+            </div>
+
+            {/* Live Overview Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+              <div className="bg-gray-800/50 backdrop-blur rounded-lg p-4 border border-gray-700/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="h-4 w-4 text-green-400" />
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">Sales</span>
+                </div>
+                <div className="text-2xl font-bold text-white">+12.3%</div>
+                <div className="text-xs text-gray-500 mt-1">vs last week</div>
+              </div>
+
+              <div className="bg-gray-800/50 backdrop-blur rounded-lg p-4 border border-gray-700/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-4 w-4 text-purple-400" />
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">Traffic</span>
+                </div>
+                <div className="text-2xl font-bold text-white">1.2k</div>
+                <div className="text-xs text-gray-500 mt-1">visitors today</div>
+              </div>
+
+              <div className="bg-gray-800/50 backdrop-blur rounded-lg p-4 border border-gray-700/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Megaphone className="h-4 w-4 text-orange-400" />
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">Ads</span>
+                </div>
+                <div className="text-2xl font-bold text-white">$450</div>
+                <div className="text-xs text-gray-500 mt-1">avg CPA</div>
+              </div>
+
+              <div className="bg-gray-800/50 backdrop-blur rounded-lg p-4 border border-gray-700/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Tv className="h-4 w-4 text-cyan-400" />
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">TV Status</span>
+                </div>
+                <div className="text-2xl font-bold text-green-400">Live ✓</div>
+                <div className="text-xs text-gray-500 mt-1">dashboards active</div>
+              </div>
+            </div>
           </div>
-        </div>
+        </Link>
 
         {dashboardSections.map((section, sectionIdx) => {
           const SectionIcon = section.icon
           return (
             <div key={section.title} className={sectionIdx > 0 ? "mt-16" : ""}>
-              {/* Section Header */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 bg-gradient-to-br ${section.color} rounded-lg`}>
-                  <SectionIcon className="h-5 w-5 text-white" />
+              {/* Enhanced Section Header */}
+              <div className="relative mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`p-3 bg-gradient-to-br ${section.color} rounded-xl shadow-lg`}>
+                    <SectionIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white uppercase tracking-wide">{section.title}</h2>
+                    <p className="text-sm text-gray-400">{section.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">{section.title}</h2>
-                  <p className="text-sm text-gray-400">{section.description}</p>
-                </div>
+                <div className={`h-1 bg-gradient-to-r ${section.color} rounded-full opacity-30 max-w-md`} />
               </div>
 
               {/* Dashboard Grid */}
