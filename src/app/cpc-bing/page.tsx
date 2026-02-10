@@ -391,6 +391,7 @@ export default function BingCPCPage() {
                   <th className="text-left p-3">CAMPAIGN</th>
                   <th className="text-right p-3">IMPR</th>
                   <th className="text-right p-3">CLICKS</th>
+                  <th className="text-right p-3">CTR</th>
                   <th className="text-right p-3">COST</th>
                   <th className="text-right p-3">CONV</th>
                   <th className="text-right p-3">CPA</th>
@@ -414,6 +415,7 @@ export default function BingCPCPage() {
                     <td className="p-3 text-gray-500 text-xs">{rec.campaign}</td>
                     <td className="p-3 text-right text-gray-400">{rec.impressions.toLocaleString()}</td>
                     <td className="p-3 text-right text-gray-400">{rec.clicks.toLocaleString()}</td>
+                    <td className="p-3 text-right text-gray-400">{rec.impressions > 0 ? ((rec.clicks / rec.impressions) * 100).toFixed(1) + '%' : '—'}</td>
                     <td className="p-3 text-right text-gray-400">${Math.round(rec.cost)}</td>
                     <td className="p-3 text-right text-gray-400">{Math.round(rec.conversions)}</td>
                     <td className="p-3 text-right text-gray-400">${Math.round(rec.costPerConv)}</td>
