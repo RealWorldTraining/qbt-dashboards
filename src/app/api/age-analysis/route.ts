@@ -1,5 +1,6 @@
 import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 const SHEET_ID = '1T8PZjlf2vBz7YTlz1GCXe68UczWGL8_ERYuBLd_r6H0'
 const RANGE = 'Age Analysis_Device!A:J'
@@ -24,8 +25,11 @@ function formatMonth(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url)
+    const deviceFilter = searchParams.get('device') || 'All' // All, Computers, Mobile, Tablets
+    
     const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
     if (!credsJson) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 500 })
@@ -53,7 +57,7 @@ export async function GET() {
     }
 
     // Structure: Month | Device | Age | Clicks | Impressions | CTR | Avg. CPC | Cost | Avg. CPM | Conversions
-    // Group by month and age, aggregating across devices
+    // Filter by device and group by month and age
     const monthlyData = new Map<string, Map<string, {
       clicks: number
       impressions: number
@@ -65,15 +69,31 @@ export async function GET() {
       device_counts: number
     }>>()
     
+    // YTD 2026 data by age group
+    const ytd2026ByAge = new Map<string, {
+      clicks: number
+      impressions: number
+      cost: number
+      conversions: number
+      device_counts: number
+    }>()
+    
     rows.slice(1).forEach(row => {
       const monthStr = row[0]
       const device = row[1]
       const age = row[2]
       if (!monthStr || !age) return
       
+      // Apply device filter
+      if (deviceFilter !== 'All') {
+        if (deviceFilter === 'Computers' && device !== 'Computers') return
+        if (deviceFilter === 'Mobile' && device !== 'Mobile devices with full browsers') return
+        if (deviceFilter === 'Tablets' && device !== 'Tablets with full browsers') return
+      }
+      
       const monthDate = parseDate(monthStr)
       const monthKey = monthDate.toISOString().slice(0, 7) // YYYY-MM
-      const monthLabel = formatMonth(monthDate)
+      const year = monthDate.getFullYear()
       
       const clicks = parseNumber(row[3])
       const impressions = parseNumber(row[4])
@@ -83,6 +103,7 @@ export async function GET() {
       const avg_cpm = parseNumber(row[8])
       const conversions = parseNumber(row[9])
       
+      // Accumulate monthly data
       if (!monthlyData.has(monthKey)) {
         monthlyData.set(monthKey, new Map())
       }
@@ -109,6 +130,25 @@ export async function GET() {
       existing.device_counts += 1
       
       monthMap.set(age, existing)
+      
+      // Accumulate YTD 2026 data
+      if (year === 2026) {
+        const ytdExisting = ytd2026ByAge.get(age) || {
+          clicks: 0,
+          impressions: 0,
+          cost: 0,
+          conversions: 0,
+          device_counts: 0
+        }
+        
+        ytdExisting.clicks += clicks
+        ytdExisting.impressions += impressions
+        ytdExisting.cost += cost
+        ytdExisting.conversions += conversions
+        ytdExisting.device_counts += 1
+        
+        ytd2026ByAge.set(age, ytdExisting)
+      }
     })
 
     // Sort months chronologically
@@ -189,9 +229,40 @@ export async function GET() {
         })
       })),
     }
+    
+    // Build YTD 2026 summary by age group
+    const ytd2026Summary = sortedAges.map(age => {
+      const data = ytd2026ByAge.get(age)
+      if (!data) {
+        return {
+          age,
+          clicks: 0,
+          impressions: 0,
+          ctr: 0,
+          avg_cpc: 0,
+          cost: 0,
+          conversions: 0
+        }
+      }
+      
+      const avgCTR = data.impressions > 0 ? (data.clicks / data.impressions) * 100 : 0
+      const avgCPC = data.clicks > 0 ? data.cost / data.clicks : 0
+      
+      return {
+        age,
+        clicks: data.clicks,
+        impressions: data.impressions,
+        ctr: avgCTR,
+        avg_cpc: avgCPC,
+        cost: data.cost,
+        conversions: data.conversions
+      }
+    })
 
     return NextResponse.json({
       chartData,
+      ytd2026Summary,
+      deviceFilter,
       last_updated: new Date().toISOString()
     }, {
       headers: {
