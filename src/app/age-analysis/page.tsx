@@ -191,7 +191,7 @@ export default function AgeAnalysisPage() {
               <Tooltip 
                 contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                 labelStyle={{ color: '#fff' }}
-                formatter={(value: number) => `${value.toFixed(2)}%`}
+                formatter={(value: any) => typeof value === 'number' ? `${value.toFixed(2)}%` : value}
               />
               <Legend />
               {chartData.ageGroups.map(age => (
@@ -226,7 +226,7 @@ export default function AgeAnalysisPage() {
               <Tooltip 
                 contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                 labelStyle={{ color: '#fff' }}
-                formatter={(value: number) => `$${value.toFixed(2)}`}
+                formatter={(value: any) => typeof value === 'number' ? `$${value.toFixed(2)}` : value}
               />
               <Legend />
               {chartData.ageGroups.map(age => (
@@ -261,7 +261,7 @@ export default function AgeAnalysisPage() {
               <Tooltip 
                 contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                 labelStyle={{ color: '#fff' }}
-                formatter={(value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                formatter={(value: any) => typeof value === 'number' ? `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : value}
               />
               <Legend />
               {chartData.ageGroups.map(age => (
@@ -296,7 +296,7 @@ export default function AgeAnalysisPage() {
               <Tooltip 
                 contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
                 labelStyle={{ color: '#fff' }}
-                formatter={(value: number) => value.toFixed(2)}
+                formatter={(value: any) => typeof value === 'number' ? value.toFixed(2) : value}
               />
               <Legend />
               {chartData.ageGroups.map(age => (
