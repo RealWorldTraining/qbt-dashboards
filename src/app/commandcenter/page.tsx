@@ -331,6 +331,66 @@ interface TrafficBySourceWeeklyResponse {
   weeks: TrafficBySourceWeekRow[]
 }
 
+// Traffic trends (from Google Sheets)
+interface TrafficTrendMonthRow {
+  month_key: string
+  month_label: string
+  row_label: string
+  organic: Record<string, number | null>
+  direct: Record<string, number | null>
+  referral: Record<string, number | null>
+  paid: Record<string, number | null>
+  total: Record<string, number | null>
+  organic_total: number
+  direct_total: number
+  referral_total: number
+  paid_total: number
+  grand_total: number
+}
+
+interface TrafficYoYDataPoint {
+  week_num?: number
+  week_label?: string
+  month_num?: number
+  month_label?: string
+  y2024: number | null
+  y2025: number | null
+  y2026: number | null
+}
+
+interface TrafficWeeklyTrendRow {
+  week_label: string
+  week_start: string
+  daily_cumulative: Record<string, number | null>
+  week_total: number | null
+}
+
+interface TrafficKpiPeriod {
+  value: number
+  py: number
+  change_pct: number
+  diff: number
+}
+
+interface TrafficKpiData {
+  today: number
+  yesterday: TrafficKpiPeriod
+  this_week: TrafficKpiPeriod
+  mtd: TrafficKpiPeriod
+}
+
+interface TrafficTrendsResponse {
+  monthly_trends: { months: TrafficTrendMonthRow[]; weeks: string[] }
+  weekly_trends: { data: Record<string, TrafficWeeklyTrendRow[]>; days: string[] }
+  weekly_yoy: Record<string, TrafficYoYDataPoint[]>
+  monthly_yoy: Record<string, TrafficYoYDataPoint[]>
+  kpi: Record<string, TrafficKpiData>
+  current_week: number
+  current_month: number
+}
+
+type TrafficSource = 'total' | 'organic' | 'direct' | 'referral' | 'paid'
+
 // Auction Insights interfaces
 interface AuctionInsightRow {
   snapshot_week: string
@@ -1842,6 +1902,8 @@ export default function DashboardPage() {
   // Traffic state
   const [traffic, setTraffic] = useState<TrafficResponse | null>(null)
   const [trafficBySourceWeekly, setTrafficBySourceWeekly] = useState<TrafficBySourceWeeklyResponse | null>(null)
+  const [trafficTrends, setTrafficTrends] = useState<TrafficTrendsResponse | null>(null)
+  const [trafficSource, setTrafficSource] = useState<TrafficSource>('total')
 
   // Auction Insights state
   const [auctionInsights, setAuctionInsights] = useState<AuctionInsightsResponse | null>(null)
@@ -1916,13 +1978,15 @@ export default function DashboardPage() {
   const fetchTrafficData = async () => {
     const trafficStale = isCacheStale('traffic')
     const trafficWeeklyStale = isCacheStale('trafficBySourceWeekly')
-    // Fetch if either cache is stale or missing
-    if (loadedTabs.has('traffic') && !trafficStale && !trafficWeeklyStale && trafficBySourceWeekly) return
+    const trafficTrendsStale = isCacheStale('trafficTrends')
+    // Fetch if any cache is stale or missing
+    if (loadedTabs.has('traffic') && !trafficStale && !trafficWeeklyStale && !trafficTrendsStale && trafficBySourceWeekly && trafficTrends) return
     setTrafficLoading(true)
     try {
       await Promise.all([
         fetchWithCache(`${PROPHET_API_URL}/traffic`, 'traffic', CACHE_TTL.traffic, setTraffic),
         fetchWithCache(`${PROPHET_API_URL}/traffic/by-source-weekly`, 'trafficBySourceWeekly', CACHE_TTL.traffic, setTrafficBySourceWeekly),
+        fetchWithCache('/api/traffic-trends', 'trafficTrends', CACHE_TTL.traffic, setTrafficTrends),
       ])
     } catch (err) {
       console.error("Failed to load traffic data:", err)
@@ -2024,6 +2088,7 @@ export default function DashboardPage() {
     const cachedEod = getFromCache<EODForecastResponse>('eod')
     const cachedEow = getFromCache<EOWForecastResponse>('eow')
     const cachedTrafficWeekly = getFromCache<TrafficBySourceWeeklyResponse>('trafficBySourceWeekly')
+    const cachedTrafficTrends = getFromCache<TrafficTrendsResponse>('trafficTrends')
 
     if (cachedMetrics) setMetrics(cachedMetrics)
     if (cachedHourly) setHourlyComparison(cachedHourly)
@@ -2036,6 +2101,7 @@ export default function DashboardPage() {
     if (cachedEod) setEodForecast(cachedEod)
     if (cachedEow) setEowForecast(cachedEow)
     if (cachedTrafficWeekly) setTrafficBySourceWeekly(cachedTrafficWeekly)
+    if (cachedTrafficTrends) setTrafficTrends(cachedTrafficTrends)
 
     // If we have cached data, show it immediately and mark as not loading
     if (cachedMetrics && cachedHourly && cachedWeekly && cachedProductMix && cachedEow) {
@@ -3416,82 +3482,268 @@ export default function DashboardPage() {
         {/* Traffic Tab */}
         {activeTab === "traffic" && (
           <>
-            {loading ? (
+            {/* Traffic Source Toggle */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {([
+                { key: 'total' as TrafficSource, label: 'Total Traffic', color: '#0066CC' },
+                { key: 'organic' as TrafficSource, label: 'Organic', color: '#34C759' },
+                { key: 'direct' as TrafficSource, label: 'Direct', color: '#FF9500' },
+                { key: 'referral' as TrafficSource, label: 'Referral', color: '#AF52DE' },
+                { key: 'paid' as TrafficSource, label: 'Paid', color: '#FF3B30' },
+              ]).map(({ key, label, color }) => (
+                <button
+                  key={key}
+                  onClick={() => setTrafficSource(key)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    trafficSource === key
+                      ? 'text-white shadow-md'
+                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  }`}
+                  style={trafficSource === key ? { backgroundColor: color } : {}}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {trafficLoading && !traffic ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
               </div>
             ) : traffic ? (
               <>
-                {/* Traffic KPI Cards */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {[traffic.yesterday, traffic.this_week, traffic.mtd].map((period) => (
-                      <Card
-                        key={period.label}
-                        className="bg-white border-[#D2D2D7] shadow-sm hover:shadow-md transition-shadow duration-200"
-                      >
-                        <CardHeader className="pb-1 gap-0">
-                          <CardTitle className="text-lg font-semibold leading-tight text-[#1D1D1F]">
-                            {period.label}
-                          </CardTitle>
-                          <CardDescription className="text-sm text-[#6E6E73]">
-                            {period.date_range}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <div className="flex justify-between items-baseline">
-                            <span className="text-xs uppercase tracking-wide text-[#6E6E73]">
-                              Total Sessions
-                            </span>
-                            <span className="text-2xl font-semibold text-[#1D1D1F]">
-                              {formatNumber(period.total.sessions)}
-                            </span>
+                {/* Traffic KPI Cards - Dark Style with PY */}
+                {(() => {
+                  const kpiData = trafficTrends?.kpi?.[trafficSource]
+                  const now = new Date()
+                  const hour = now.getHours()
+                  const minutes = now.getMinutes()
+                  const timeStr = `${hour > 12 ? hour - 12 : hour === 0 ? 12 : hour}:${minutes.toString().padStart(2, '0')}${hour >= 12 ? 'pm' : 'am'}`
+                  return (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      {/* Today */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-5 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-sm font-medium text-white/70 mb-1">Today @ {timeStr}</div>
+                        <div className="text-7xl font-bold text-white mb-2">{formatNumber(kpiData?.today ?? 0)}</div>
+                      </div>
+                      {/* Yesterday */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
+                        <div className="text-7xl font-bold text-white">{formatNumber(kpiData?.yesterday.value ?? 0)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(kpiData.yesterday.py)}</div>
+                            <div className={`text-lg font-semibold ${kpiData.yesterday.change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.yesterday.change_pct >= 0 ? "+" : ""}{kpiData.yesterday.change_pct}% ({kpiData.yesterday.diff >= 0 ? "+" : ""}{formatNumber(kpiData.yesterday.diff)})
+                            </div>
                           </div>
-                          <div className="flex justify-between items-baseline">
-                            <span className="text-xs uppercase tracking-wide text-[#6E6E73]">
-                              Conversions
-                            </span>
-                            <span className="text-xl font-semibold text-[#1D1D1F]">
-                              {formatNumber(period.total.conversions)}
-                            </span>
+                        )}
+                      </div>
+                      {/* This Week */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
+                        <div className="text-7xl font-bold text-white">{formatNumber(kpiData?.this_week.value ?? 0)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(kpiData.this_week.py)}</div>
+                            <div className={`text-lg font-semibold ${kpiData.this_week.change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.this_week.change_pct >= 0 ? "+" : ""}{kpiData.this_week.change_pct}% ({kpiData.this_week.diff >= 0 ? "+" : ""}{formatNumber(kpiData.this_week.diff)})
+                            </div>
                           </div>
-                          <div className="flex justify-between items-baseline">
-                            <span className="text-xs uppercase tracking-wide text-[#6E6E73]">
-                              Conv. Rate
-                            </span>
-                            <span className="text-lg font-semibold text-[#34C759]">
-                              {period.total.conversion_rate}%
-                            </span>
+                        )}
+                      </div>
+                      {/* MTD */}
+                      <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
+                        <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
+                        <div className="text-7xl font-bold text-white">{formatNumber(kpiData?.mtd.value ?? 0)}</div>
+                        {kpiData && (
+                          <div className="mt-2 text-center">
+                            <div className="text-base text-white/50 mb-0.5">Prior Year: {formatNumber(kpiData.mtd.py)}</div>
+                            <div className={`text-lg font-semibold ${kpiData.mtd.change_pct >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
+                              {kpiData.mtd.change_pct >= 0 ? "+" : ""}{kpiData.mtd.change_pct}% ({kpiData.mtd.diff >= 0 ? "+" : ""}{formatNumber(kpiData.mtd.diff)})
+                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
 
-                {/* Traffic Breakdown - Weekly Tables (like Product Mix) */}
+                {/* Weekly Trends Heatmap - Traffic */}
+                {trafficTrends && trafficTrends.weekly_trends.data[trafficSource] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5 text-[#0066CC]" />
+                          Weekly Trends ({trafficSource === 'total' ? 'Total Traffic' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1) + ' Traffic'})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
+                                {trafficTrends.weekly_trends.days.map((day) => (
+                                  <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const days = trafficTrends.weekly_trends.days
+                                const weekRows = trafficTrends.weekly_trends.data[trafficSource]
+                                const allValues = weekRows.flatMap(week =>
+                                  days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                                )
+                                const maxValue = Math.max(...allValues, 1)
+
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-blue-600'
+                                  if (intensity > 60) return 'bg-blue-500'
+                                  if (intensity > 40) return 'bg-blue-600/60'
+                                  if (intensity > 20) return 'bg-blue-600/40'
+                                  return 'bg-blue-600/20'
+                                }
+
+                                return weekRows.map((week, idx) => {
+                                  const isCurrentWeek = week.week_label === "Current Week"
+                                  const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{week.week_label}</div>
+                                        <div className="text-xs text-white/40">{week.week_start}</div>
+                                      </td>
+                                      {days.map(day => {
+                                        const value = week.daily_cumulative[day]
+                                        return (
+                                          <td
+                                            key={day}
+                                            className={`text-center py-3 px-1 ${getHeatmapClass(value)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                          >
+                                            {value !== null && value !== undefined ? value.toLocaleString() : '-'}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${week.week_total === null ? "text-white/20" : "text-white"}`}>
+                                        {week.week_total !== null ? week.week_total.toLocaleString() : '-'}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Monthly Trends Heatmap - Traffic */}
+                {trafficTrends && trafficTrends.monthly_trends.months.length > 0 && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-5 w-5 text-[#0066CC]" />
+                          Monthly Trends ({trafficSource === 'total' ? 'Total Traffic' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1) + ' Traffic'})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-lg bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Month</th>
+                                {trafficTrends.monthly_trends.weeks.map((wk) => (
+                                  <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
+                                ))}
+                                <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(() => {
+                                const weeks = trafficTrends.monthly_trends.weeks
+                                const monthRows = trafficTrends.monthly_trends.months
+                                const allValues = monthRows.flatMap(row =>
+                                  weeks.map(wk => row[trafficSource][wk]).filter((v): v is number => typeof v === 'number')
+                                )
+                                const maxValue = Math.max(...allValues, 1)
+
+                                const getHeatmapClass = (value: number | null | undefined) => {
+                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
+                                  const intensity = Math.round((value / maxValue) * 100)
+                                  if (intensity > 80) return 'bg-blue-600'
+                                  if (intensity > 60) return 'bg-blue-500'
+                                  if (intensity > 40) return 'bg-blue-600/60'
+                                  if (intensity > 20) return 'bg-blue-600/40'
+                                  return 'bg-blue-600/20'
+                                }
+
+                                const getSourceTotal = (row: TrafficTrendMonthRow): number => {
+                                  if (trafficSource === 'total') return row.grand_total
+                                  return row[`${trafficSource}_total` as keyof TrafficTrendMonthRow] as number
+                                }
+
+                                return monthRows.map((row, idx) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const cellBg = isCurrentMonth ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                                  const sourceTotal = getSourceTotal(row)
+                                  return (
+                                    <tr key={idx} className="border-b border-white/5">
+                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                        <div className="font-semibold text-white">{row.row_label}</div>
+                                        <div className="text-xs text-white/40">{row.month_label}</div>
+                                      </td>
+                                      {weeks.map(wk => {
+                                        const value = row[trafficSource][wk]
+                                        return (
+                                          <td
+                                            key={wk}
+                                            className={`text-center py-3 px-3 ${getHeatmapClass(value)} ${value === null || value === undefined ? "text-white/20" : "text-white font-semibold"}`}
+                                          >
+                                            {value !== null && value !== undefined ? value.toLocaleString() : '-'}
+                                          </td>
+                                        )
+                                      })}
+                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${sourceTotal === 0 ? "text-white/20" : "text-white"}`}>
+                                        {sourceTotal > 0 ? sourceTotal.toLocaleString() : '-'}
+                                      </td>
+                                    </tr>
+                                  )
+                                })
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Traffic Breakdown - Weekly Tables */}
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {!trafficBySourceWeekly ? (
-                    <>
-                      <Card className="bg-white border-[#D2D2D7] shadow-sm p-8">
-                        <div className="flex items-center justify-center">
-                          <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
-                          <span className="ml-2 text-[#6E6E73]">Loading weekly data...</span>
-                        </div>
-                      </Card>
-                      <Card className="bg-white border-[#D2D2D7] shadow-sm p-8">
-                        <div className="flex items-center justify-center">
-                          <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
-                          <span className="ml-2 text-[#6E6E73]">Loading weekly data...</span>
-                        </div>
-                      </Card>
-                    </>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm p-8 lg:col-span-2">
+                      <div className="flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-[#0066CC]" />
+                        <span className="ml-2 text-[#6E6E73]">Loading weekly data...</span>
+                      </div>
+                    </Card>
                   ) : (
                     <>
-                    {/* New Visitors by Source - Weekly */}
+                    {/* Sessions by Source - Weekly */}
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
                           <Users className="h-4 w-4 text-[#0066CC]" />
-                          New Visitors by Source
+                          Sessions by Source
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-2">
@@ -3609,6 +3861,293 @@ export default function DashboardPage() {
                     </>
                   )}
                 </div>
+
+                {/* Monthly Traffic Trends */}
+                {trafficTrends && trafficTrends.monthly_trends.months.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold text-[#1D1D1F] mb-4 flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-[#0066CC]" />
+                      Monthly Traffic Trends — {trafficSource === 'total' ? 'Total' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1)}
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Traffic by Month */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-semibold text-[#1D1D1F]">
+                            {trafficSource === 'total' ? 'Total' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1)} Sessions
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b-2 border-[#D2D2D7]">
+                                  <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                                  {trafficTrends.monthly_trends.weeks.map(wk => (
+                                    <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {trafficTrends.monthly_trends.months.map((row) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const data = row[trafficSource]
+                                  return (
+                                    <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                      <td className="py-2 px-2">
+                                        <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                        <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                      </td>
+                                      {trafficTrends.monthly_trends.weeks.map(wk => (
+                                        <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
+                                          {data[wk] !== null && data[wk] !== undefined ? data[wk]!.toLocaleString() : "—"}
+                                        </td>
+                                      ))}
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Source Mix by Month */}
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Source Mix By Month</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b-2 border-[#D2D2D7]">
+                                  <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Total</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Organic %</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Direct %</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Referral %</th>
+                                  <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Paid %</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {trafficTrends.monthly_trends.months.map((row) => {
+                                  const isCurrentMonth = row.row_label === "Current Month"
+                                  const gt = row.grand_total
+                                  const orgPct = gt > 0 ? Math.round((row.organic_total / gt) * 100) : 0
+                                  const dirPct = gt > 0 ? Math.round((row.direct_total / gt) * 100) : 0
+                                  const refPct = gt > 0 ? Math.round((row.referral_total / gt) * 100) : 0
+                                  const paidPct = gt > 0 ? Math.round((row.paid_total / gt) * 100) : 0
+                                  return (
+                                    <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
+                                      <td className="py-2 px-2">
+                                        <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
+                                        <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                      </td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F] font-medium">{gt.toLocaleString()}</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{orgPct}%</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{dirPct}%</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{refPct}%</td>
+                                      <td className="text-center py-2 px-2 text-[#1D1D1F]">{paidPct}%</td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                {/* YoY Traffic by Week */}
+                {trafficTrends && trafficTrends.weekly_yoy[trafficSource] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-[#0066CC]" />
+                          {trafficSource === 'total' ? 'Total' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1)} Traffic by Week
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">
+                          Year-over-year comparison of weekly sessions
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={trafficTrends.weekly_yoy[trafficSource]}
+                              margin={{ top: 25, right: 30, left: 10, bottom: 10 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="week_label" tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} interval={3} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                              <Tooltip
+                                contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                formatter={(value, name) => {
+                                  if (value === null || value === undefined) return ['-', String(name)]
+                                  const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                  return [Number(value).toLocaleString(), yearLabel]
+                                }}
+                              />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 4 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 4 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* YoY Traffic by Month */}
+                {trafficTrends && trafficTrends.monthly_yoy[trafficSource] && (
+                  <div className="mt-8">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-[#0066CC]" />
+                          {trafficSource === 'total' ? 'Total' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1)} Traffic by Month
+                        </CardTitle>
+                        <CardDescription className="text-sm text-[#6E6E73]">
+                          Year-over-year comparison of monthly sessions (YTD)
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-[500px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={trafficTrends.monthly_yoy[trafficSource]}
+                              margin={{ top: 25, right: 30, left: 20, bottom: 10 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                              <XAxis dataKey="month_label" tick={{ fontSize: 13, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} />
+                              <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                              <Tooltip
+                                contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                formatter={(value, name) => {
+                                  if (value === null || value === undefined) return ['-', String(name)]
+                                  const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                  return [Number(value).toLocaleString(), yearLabel]
+                                }}
+                              />
+                              <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                              <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }} connectNulls name="y2024" />
+                              <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }} connectNulls name="y2025" />
+                              <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }} connectNulls name="y2026" />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Cumulative Traffic by Week */}
+                {trafficTrends && trafficTrends.weekly_yoy[trafficSource] && (() => {
+                  let cum2024 = 0, cum2025 = 0, cum2026 = 0
+                  const cumData = trafficTrends.weekly_yoy[trafficSource].map(d => {
+                    if (d.y2024 !== null) cum2024 += d.y2024
+                    if (d.y2025 !== null) cum2025 += d.y2025
+                    if (d.y2026 !== null) cum2026 += d.y2026
+                    return { week_label: d.week_label, y2024: d.y2024 !== null ? cum2024 : null, y2025: d.y2025 !== null ? cum2025 : null, y2026: d.y2026 !== null ? cum2026 : null }
+                  })
+                  return (
+                    <div className="mt-8">
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-[#34C759]" />
+                            Cumulative {trafficSource === 'total' ? 'Total' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1)} Traffic by Week
+                          </CardTitle>
+                          <CardDescription className="text-sm text-[#6E6E73]">
+                            Year-over-year running total of weekly sessions
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="h-[500px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ComposedChart data={cumData} margin={{ top: 25, right: 30, left: 20, bottom: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                                <XAxis dataKey="week_label" tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} interval={3} />
+                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                                <Tooltip
+                                  contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                  labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                  formatter={(value, name) => {
+                                    if (value === null || value === undefined) return ['-', String(name)]
+                                    const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                    return [Number(value).toLocaleString(), yearLabel]
+                                  }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                                <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 3 }} connectNulls name="y2024" />
+                                <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 3 }} connectNulls name="y2025" />
+                                <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 5 }} connectNulls name="y2026" />
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                })()}
+
+                {/* Cumulative Traffic by Month */}
+                {trafficTrends && trafficTrends.monthly_yoy[trafficSource] && (() => {
+                  let cum2024 = 0, cum2025 = 0, cum2026 = 0
+                  const cumData = trafficTrends.monthly_yoy[trafficSource].map(d => {
+                    if (d.y2024 !== null) cum2024 += d.y2024
+                    if (d.y2025 !== null) cum2025 += d.y2025
+                    if (d.y2026 !== null) cum2026 += d.y2026
+                    return { month_label: d.month_label, y2024: d.y2024 !== null ? cum2024 : null, y2025: d.y2025 !== null ? cum2025 : null, y2026: d.y2026 !== null ? cum2026 : null }
+                  })
+                  return (
+                    <div className="mt-8">
+                      <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-semibold text-[#1D1D1F] flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-[#34C759]" />
+                            Cumulative {trafficSource === 'total' ? 'Total' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1)} Traffic by Month
+                          </CardTitle>
+                          <CardDescription className="text-sm text-[#6E6E73]">
+                            Year-over-year running total of monthly sessions (YTD)
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-2">
+                          <div className="h-[500px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ComposedChart data={cumData} margin={{ top: 25, right: 30, left: 20, bottom: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                                <XAxis dataKey="month_label" tick={{ fontSize: 13, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} />
+                                <YAxis tick={{ fontSize: 12, fill: '#6E6E73' }} tickLine={{ stroke: '#D2D2D7' }} axisLine={{ stroke: '#D2D2D7' }} tickFormatter={(v) => v.toLocaleString()} />
+                                <Tooltip
+                                  contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 14 }}
+                                  labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 14 }}
+                                  formatter={(value, name) => {
+                                    if (value === null || value === undefined) return ['-', String(name)]
+                                    const yearLabel = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'
+                                    return [Number(value).toLocaleString(), yearLabel]
+                                  }}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '10px', fontSize: 13 }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : v === 'y2026' ? '2026' : v} />
+                                <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', strokeWidth: 2, r: 5 }} connectNulls name="y2024" />
+                                <Line type="monotone" dataKey="y2025" stroke="#0066CC" strokeWidth={2} dot={{ fill: '#0066CC', strokeWidth: 2, r: 5 }} connectNulls name="y2025" />
+                                <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', strokeWidth: 2, r: 6 }} connectNulls name="y2026" />
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )
+                })()}
               </>
             ) : (
               <div className="text-center text-[#6E6E73] py-12">
