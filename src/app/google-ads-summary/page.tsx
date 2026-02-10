@@ -458,7 +458,13 @@ function SummaryTab() {
 
   return (
     <>
-      {/* Summary Cards */}
+      {/* Total Account Summary */}
+      <div className="flex items-baseline gap-3 mb-3">
+        <h2 className="text-white text-lg font-semibold">Total Account Summary</h2>
+        {derivedWeeklyData.length > 0 && (
+          <span className="text-gray-500 text-sm">{derivedWeeklyData[0].week}</span>
+        )}
+      </div>
       {renderMetricCards('', currentTotal, previousTotal, 'total', 'lg')}
       {renderMetricCards('Desktop', currentDesktop, previousDesktop, 'desktop', 'sm')}
       {renderMetricCards('Mobile', currentMobile, previousMobile, 'mobile', 'sm')}
