@@ -39,7 +39,7 @@ const dashboardSections = [
         description: "Detailed sales analytics and trends",
         color: "from-green-500 to-emerald-600",
         stats: "Revenue • Orders",
-        preview: null,
+        preview: "/previews/sales.png",
       },
       {
         name: "Intuit Sales",
@@ -57,7 +57,7 @@ const dashboardSections = [
         description: "Monthly profit & loss reports and analysis",
         color: "from-emerald-500 to-teal-600",
         stats: "Monthly reports",
-        preview: null,
+        preview: "/previews/recap.png",
       },
     ]
   },
@@ -180,7 +180,7 @@ const dashboardSections = [
         description: "TV-optimized marketing performance with large fonts and high contrast",
         color: "from-orange-500 to-red-600",
         stats: "Traffic • Conversions • Landing Pages",
-        preview: null,
+        preview: "/previews/ads-tv.png",
       },
       {
         name: "Sales Snapshot",
@@ -189,7 +189,7 @@ const dashboardSections = [
         description: "Real-time sales forecasts for the office TV",
         color: "from-cyan-500 to-blue-600",
         stats: "Today • Week • Month",
-        preview: null,
+        preview: "/previews/data.png",
       },
     ]
   },
