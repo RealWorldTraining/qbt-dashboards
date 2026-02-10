@@ -128,6 +128,14 @@ const dashboardSections = [
         stats: "Keywords • Bids • Urgency"
       },
       { 
+        name: "Age Analysis", 
+        href: "/age-analysis", 
+        icon: Users, 
+        description: "Google Ads performance trends by age group: clicks, impressions, CTR, CPC, spend, conversions",
+        color: "from-indigo-500 to-purple-600",
+        stats: "Age Groups • Trends • 2024-Present"
+      },
+      { 
         name: "Vision Analytics", 
         href: "/vision", 
         icon: Zap, 
