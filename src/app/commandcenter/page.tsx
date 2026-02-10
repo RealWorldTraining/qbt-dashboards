@@ -2071,7 +2071,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <DashboardNav theme="light" />
               <h1 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight">
-                Dashboard
+                Command Center
               </h1>
             </div>
             {metrics && (

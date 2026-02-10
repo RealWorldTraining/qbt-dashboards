@@ -29,7 +29,7 @@ import {
 // Standalone featured dashboard (rendered above sections)
 const commandCenter = {
   name: "Command Center",
-  href: "/dashboard",
+  href: "/commandcenter",
   icon: Rocket,
   description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
   color: "from-green-500 to-emerald-600",

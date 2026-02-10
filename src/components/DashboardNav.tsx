@@ -24,7 +24,7 @@ const dashboards = [
   { name: "Home", href: "/", icon: Home, description: "Dashboard directory" },
   { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
   { name: "Sales Snapshot", href: "/data", icon: Tv, description: "TV display - forecasts" },
-  { name: "Dashboard", href: "/dashboard", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
+  { name: "Command Center", href: "/commandcenter", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
   { name: "Marketing", href: "/ads", icon: Megaphone, description: "Traffic & ad performance" },
   { name: "Google Ads CPC", href: "/cpc", icon: Target, description: "Google Ads Max CPC bid recommendations" },
   { name: "Bing Ads CPC", href: "/cpc-bing", icon: Target, description: "Bing Ads Max CPC bid recommendations" },
