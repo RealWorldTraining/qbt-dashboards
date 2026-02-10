@@ -5,9 +5,11 @@
 ## Repository
 
 - **GitHub:** `RealWorldTraining/qbt-dashboards`
-- **Local path:** `/Users/professorx/clawd/qbt-dashboards`
+- **Local path (Aaron's Mac):** `/Users/professorx/clawd/qbt-dashboards`
 - **Live URL:** [qbtraining.ai](https://qbtraining.ai)
 - **Deployment:** Vercel (auto-deploys from `main` branch)
+
+> **Note:** Clone the repo to your preferred location. The local path above is specific to Aaron's machine.
 
 ## Reports & Data Sources (15 Total)
 

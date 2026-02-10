@@ -5,9 +5,12 @@
 Before making ANY changes to this repository:
 
 ```bash
-cd /Users/professorx/clawd/qbt-dashboards
+# Navigate to repo root (adjust path for your machine)
+cd [repo-root]
 git pull origin main
 ```
+
+**Local path on Aaron's Mac:** `/Users/professorx/clawd/qbt-dashboards`
 
 After making changes:
 
@@ -33,8 +36,8 @@ git push origin main
 ## Project Structure
 
 - **Live URL:** https://qbtraining.ai
-- **Local path:** /Users/professorx/clawd/qbt-dashboards
 - **GitHub:** RealWorldTraining/qbt-dashboards
+- **Local clone:** Clone from GitHub to your preferred location
 - **15 reports total** (see PROJECT_CONTEXT.md for full list)
 
 ## For New Agents
