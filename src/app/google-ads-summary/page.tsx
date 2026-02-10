@@ -459,48 +459,139 @@ function SummaryTab() {
 
   return (
     <>
-      {/* Total Account Summary */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-baseline gap-3">
-            <h2 className="text-white text-lg font-semibold">Total Account Summary</h2>
-            {derivedWeeklyData.length > 0 && derivedWeeklyData[selectedWeekIndex] && (
-              <span className="text-gray-500 text-sm">{derivedWeeklyData[selectedWeekIndex].week}</span>
-            )}
+      {/* Weekly Data + Account Summary + Device Breakdown Row */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {/* Weekly Data Table */}
+        <div className="bg-[#1a1a1a] rounded-xl p-4">
+          <h2 className="text-white text-sm font-semibold mb-3">Weekly Data</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="text-left py-2 px-2 text-gray-400 font-medium">Week</th>
+                  <th className="text-right py-2 px-2 font-medium" style={{ color: METRIC_COLORS.spend }}>Spend</th>
+                  <th className="text-right py-2 px-2 font-medium" style={{ color: METRIC_COLORS.impressions }}>Impr</th>
+                  <th className="text-right py-2 px-2 font-medium" style={{ color: METRIC_COLORS.clicks }}>Clicks</th>
+                  <th className="text-right py-2 px-2 font-medium" style={{ color: METRIC_COLORS.ctr }}>CTR</th>
+                  <th className="text-right py-2 px-2 font-medium" style={{ color: METRIC_COLORS.conversions }}>Conv</th>
+                  <th className="text-right py-2 px-2 font-medium" style={{ color: METRIC_COLORS.conv_rate }}>Conv %</th>
+                  <th className="text-right py-2 px-2 font-medium" style={{ color: METRIC_COLORS.cpa }}>CPA</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...derivedWeeklyData].reverse().map((row, idx) => (
+                  <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
+                    <td className="py-2 px-2 text-white font-medium whitespace-nowrap">{row.week}</td>
+                    <td className="text-right py-2 px-2 text-gray-300">{formatCurrency(row.spend)}</td>
+                    <td className="text-right py-2 px-2 text-gray-300">{formatNumber(row.impressions)}</td>
+                    <td className="text-right py-2 px-2 text-gray-300">{formatNumber(row.clicks)}</td>
+                    <td className="text-right py-2 px-2 text-gray-300">{formatPercent(row.ctr)}</td>
+                    <td className="text-right py-2 px-2 text-gray-300">{formatNumber(row.conversions)}</td>
+                    <td className="text-right py-2 px-2 text-gray-300">{formatConvRate(row.conv_rate)}</td>
+                    <td className="text-right py-2 px-2 text-gray-300">{formatCurrency(row.cpa)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          {/* Week selector pills */}
-          {derivedWeeklyData.length > 0 && (
-            <div className="flex gap-1.5">
-              {derivedWeeklyData.map((w, i) => {
-                // Show short date label like "Jan 27" from the week_start
-                const weekStart = new Date(w.week_start + 'T00:00:00')
-                const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                const isActive = i === selectedWeekIndex
+        </div>
+
+        {/* Account Summary */}
+        <div className="bg-[#1a1a1a] rounded-xl p-4">
+          <h2 className="text-white text-sm font-semibold mb-3">Account Summary</h2>
+          {currentTotal && (
+            <div className="space-y-3">
+              {metrics.map((metric) => {
+                const cur = currentTotal[metric] as number
+                const prev = (previousTotal?.[metric] as number) || 0
+                const change = cur - prev
+                const color = METRIC_COLORS[metric]
+                let val = formatNumber(cur)
+                if (metric === "spend" || metric === "cpa") val = formatCurrency(cur)
+                else if (metric === "ctr" || metric === "conv_rate") val = formatPercent(cur)
+                let chg = ""
+                if (metric === "spend" || metric === "cpa") chg = (change >= 0 ? '+' : '-') + formatCurrency(Math.abs(change))
+                else if (metric === "ctr" || metric === "conv_rate") chg = (change >= 0 ? '+' : '') + change.toFixed(1) + "%"
+                else chg = (change >= 0 ? '+' : '') + formatNumber(change)
+                const isInverse = metric === "cpa"
+                const chgColor = isInverse ? (change <= 0 ? 'text-green-500' : 'text-red-500') : (change >= 0 ? 'text-green-500' : 'text-red-500')
                 return (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedWeekIndex(i)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      isActive
-                        ? 'bg-red-600 text-white'
-                        : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222] hover:text-gray-300'
-                    }`}
-                  >
-                    {label}
-                  </button>
+                  <div key={metric} className="flex items-center justify-between">
+                    <span className="text-gray-400 text-xs uppercase">{METRIC_LABELS[metric]}</span>
+                    <div className="text-right">
+                      <span className="text-white font-bold text-sm">{val}</span>
+                      <span className={`text-xs ml-2 ${chgColor}`}>{chg}</span>
+                    </div>
+                  </div>
                 )
               })}
             </div>
           )}
         </div>
-        {renderMetricCards('', currentTotal, previousTotal, 'total', 'lg')}
-      </div>
 
-      {/* Device Breakdown */}
-      <div className="mb-6">
-        <div className="text-white text-base font-semibold mb-3 uppercase tracking-wide">Device Breakdown</div>
-        {renderMetricCards('Desktop', currentDesktop, previousDesktop, 'desktop', 'sm')}
-        {renderMetricCards('Mobile', currentMobile, previousMobile, 'mobile', 'sm')}
+        {/* Desktop */}
+        <div className="bg-[#1a1a1a] rounded-xl p-4">
+          <h2 className="text-white text-sm font-semibold mb-3">Desktop</h2>
+          {currentDesktop && (
+            <div className="space-y-3">
+              {metrics.map((metric) => {
+                const cur = currentDesktop[metric] as number
+                const prev = (previousDesktop?.[metric] as number) || 0
+                const change = cur - prev
+                let val = formatNumber(cur)
+                if (metric === "spend" || metric === "cpa") val = formatCurrency(cur)
+                else if (metric === "ctr" || metric === "conv_rate") val = formatPercent(cur)
+                let chg = ""
+                if (metric === "spend" || metric === "cpa") chg = (change >= 0 ? '+' : '-') + formatCurrency(Math.abs(change))
+                else if (metric === "ctr" || metric === "conv_rate") chg = (change >= 0 ? '+' : '') + change.toFixed(1) + "%"
+                else chg = (change >= 0 ? '+' : '') + formatNumber(change)
+                const isInverse = metric === "cpa"
+                const chgColor = isInverse ? (change <= 0 ? 'text-green-500' : 'text-red-500') : (change >= 0 ? 'text-green-500' : 'text-red-500')
+                return (
+                  <div key={metric} className="flex items-center justify-between">
+                    <span className="text-gray-400 text-xs uppercase">{METRIC_LABELS[metric]}</span>
+                    <div className="text-right">
+                      <span className="text-white font-bold text-sm">{val}</span>
+                      <span className={`text-xs ml-2 ${chgColor}`}>{chg}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile */}
+        <div className="bg-[#1a1a1a] rounded-xl p-4">
+          <h2 className="text-white text-sm font-semibold mb-3">Mobile</h2>
+          {currentMobile && (
+            <div className="space-y-3">
+              {metrics.map((metric) => {
+                const cur = currentMobile[metric] as number
+                const prev = (previousMobile?.[metric] as number) || 0
+                const change = cur - prev
+                let val = formatNumber(cur)
+                if (metric === "spend" || metric === "cpa") val = formatCurrency(cur)
+                else if (metric === "ctr" || metric === "conv_rate") val = formatPercent(cur)
+                let chg = ""
+                if (metric === "spend" || metric === "cpa") chg = (change >= 0 ? '+' : '-') + formatCurrency(Math.abs(change))
+                else if (metric === "ctr" || metric === "conv_rate") chg = (change >= 0 ? '+' : '') + change.toFixed(1) + "%"
+                else chg = (change >= 0 ? '+' : '') + formatNumber(change)
+                const isInverse = metric === "cpa"
+                const chgColor = isInverse ? (change <= 0 ? 'text-green-500' : 'text-red-500') : (change >= 0 ? 'text-green-500' : 'text-red-500')
+                return (
+                  <div key={metric} className="flex items-center justify-between">
+                    <span className="text-gray-400 text-xs uppercase">{METRIC_LABELS[metric]}</span>
+                    <div className="text-right">
+                      <span className="text-white font-bold text-sm">{val}</span>
+                      <span className={`text-xs ml-2 ${chgColor}`}>{chg}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Chart - Spend & Conversions */}
@@ -571,41 +662,6 @@ function SummaryTab() {
               </ComposedChart>
             </ResponsiveContainer>
           )}
-        </div>
-      </div>
-
-      {/* Weekly Data Table */}
-      <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
-        <h2 className="text-white text-lg font-semibold mb-4">Weekly Data</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-700">
-                <th className="text-left py-3 px-4 text-gray-400 font-medium">Week</th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.spend }}>Spend</th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.impressions }}>Impr</th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.clicks }}>Clicks</th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.ctr }}>CTR</th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.conversions }}>Conv</th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.conv_rate }}>Conv %</th>
-                <th className="text-right py-3 px-4 font-medium" style={{ color: METRIC_COLORS.cpa }}>CPA</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...derivedWeeklyData].reverse().map((row, idx) => (
-                <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
-                  <td className="py-3 px-4 text-white font-medium">{row.week}</td>
-                  <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.spend)}</td>
-                  <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.impressions)}</td>
-                  <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.clicks)}</td>
-                  <td className="text-right py-3 px-4 text-gray-300">{formatPercent(row.ctr)}</td>
-                  <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.conversions)}</td>
-                  <td className="text-right py-3 px-4 text-gray-300">{formatConvRate(row.conv_rate)}</td>
-                  <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.cpa)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
 
