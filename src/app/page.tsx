@@ -456,30 +456,30 @@ export default function Home() {
 
               {/* Featured Ad Platform Image Tiles */}
               {section.title === "Paid Advertising" && (
-                <div className="grid grid-cols-2 gap-6 mb-6">
+                <div className="flex gap-6 mb-6">
                   <Link
                     href="/google-ads-summary"
-                    className="group relative rounded-xl overflow-hidden border border-gray-800 hover:border-gray-600 transition-all duration-200"
+                    className="group relative w-[200px] h-[200px] flex-shrink-0 rounded-xl overflow-hidden border border-gray-800 hover:border-gray-600 transition-all duration-200"
                   >
                     <Image
                       src="/icons/google-ads.png"
                       alt="Google Ads"
-                      width={1024}
-                      height={1024}
-                      className="w-full h-[200px] object-cover"
+                      width={512}
+                      height={512}
+                      className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200" />
                   </Link>
                   <Link
                     href="/bing-ads-summary"
-                    className="group relative rounded-xl overflow-hidden border border-gray-800 hover:border-gray-600 transition-all duration-200"
+                    className="group relative w-[200px] h-[200px] flex-shrink-0 rounded-xl overflow-hidden border border-gray-800 hover:border-gray-600 transition-all duration-200"
                   >
                     <Image
                       src="/icons/bing-ads.png"
                       alt="Bing Ads"
-                      width={1186}
-                      height={826}
-                      className="w-full h-[200px] object-cover"
+                      width={512}
+                      height={512}
+                      className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200" />
                   </Link>
