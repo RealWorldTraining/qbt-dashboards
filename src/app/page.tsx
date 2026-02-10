@@ -31,6 +31,7 @@ const commandCenter = {
   name: "Command Center",
   href: "/dashboard",
   icon: Rocket,
+  iconImage: "/icons/command-center.png",
   description: "Comprehensive view with Sales, Traffic, Ads, Subscriptions & Jedi Council",
   color: "from-green-500 to-emerald-600",
   stats: "All-in-one",
@@ -225,7 +226,7 @@ const dashboardSections = [
   },
 ]
 
-type Dashboard = typeof dashboardSections[number]['dashboards'][number]
+type Dashboard = typeof dashboardSections[number]['dashboards'][number] & { iconImage?: string }
 
 function DashboardCard({ dashboard }: { dashboard: Dashboard }) {
   const Icon = dashboard.icon
@@ -293,9 +294,13 @@ function DashboardCard({ dashboard }: { dashboard: Dashboard }) {
       )}
 
       <div className="flex items-start justify-between mb-4">
-        <div className={`p-3 bg-gradient-to-br ${dashboard.color} rounded-lg shadow-lg`}>
-          <Icon className="h-6 w-6 text-white" />
-        </div>
+        {dashboard.iconImage ? (
+          <Image src={dashboard.iconImage} alt={dashboard.name} width={48} height={48} className="h-12 w-12 object-contain" />
+        ) : (
+          <div className={`p-3 bg-gradient-to-br ${dashboard.color} rounded-lg shadow-lg`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+        )}
         <ArrowRight className="h-5 w-5 text-gray-600 group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
       </div>
 
