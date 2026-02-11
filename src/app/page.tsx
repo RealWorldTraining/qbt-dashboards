@@ -6518,29 +6518,67 @@ function DashboardPageContent() {
                 {subscriberMetrics?.available && subscriberMetrics.data?.avg_subscription_months && (
                   <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
                     <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">SUBSCRIPTION LIFECYCLE</div>
-                    <div className="text-gray-500 text-sm mb-5">Average subscription duration and cohort survival rates</div>
+                    <div className="text-gray-500 text-sm mb-5">Average subscription duration and cohort survival rates (on-hold excluded)</div>
 
-                    {/* Duration hero stats */}
-                    <div className="grid grid-cols-4 gap-4 mb-6">
-                      <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20">
-                        <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
-                        <div className="text-4xl font-black text-cyan-400">{subscriberMetrics.data.avg_subscription_months}</div>
-                        <div className="text-gray-400 text-sm mt-1">months</div>
+                    {/* Duration hero stats — 3 groups */}
+                    <div className="space-y-4 mb-6">
+                      {/* Row 1: ALL SUBSCRIBERS (excl on-hold) */}
+                      <div>
+                        <div className="text-gray-400 text-xs font-semibold tracking-wider mb-2">ALL SUBSCRIBERS <span className="text-gray-600">(excl. on-hold)</span></div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20">
+                            <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
+                            <div className="text-4xl font-black text-cyan-400">{subscriberMetrics.data.avg_subscription_months}</div>
+                            <div className="text-gray-400 text-sm mt-1">months</div>
+                          </div>
+                          <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20">
+                            <div className="text-gray-400 text-sm mb-2">MEDIAN DURATION</div>
+                            <div className="text-4xl font-black text-cyan-400">{subscriberMetrics.data.median_subscription_months}</div>
+                            <div className="text-gray-400 text-sm mt-1">months</div>
+                          </div>
+                          <div className="bg-gradient-to-br from-red-900/30 to-red-950/30 rounded-lg p-4 text-center border border-red-800/20">
+                            <div className="text-gray-400 text-sm mb-2">LIFETIME CHURN</div>
+                            <div className="text-4xl font-black text-red-400">{subscriberMetrics.data.lifetime_churn_rate}%</div>
+                            <div className="text-gray-400 text-sm mt-1">of all subs</div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="bg-gradient-to-br from-violet-900/30 to-violet-950/30 rounded-lg p-4 text-center border border-violet-800/20">
-                        <div className="text-gray-400 text-sm mb-2">MEDIAN DURATION</div>
-                        <div className="text-4xl font-black text-violet-400">{subscriberMetrics.data.median_subscription_months}</div>
-                        <div className="text-gray-400 text-sm mt-1">months</div>
-                      </div>
-                      <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20">
-                        <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
-                        <div className="text-4xl font-black text-amber-400">{subscriberMetrics.data.avg_subscription_days}</div>
-                        <div className="text-gray-400 text-sm mt-1">days</div>
-                      </div>
-                      <div className="bg-gradient-to-br from-red-900/30 to-red-950/30 rounded-lg p-4 text-center border border-red-800/20">
-                        <div className="text-gray-400 text-sm mb-2">LIFETIME CHURN</div>
-                        <div className="text-4xl font-black text-red-400">{subscriberMetrics.data.lifetime_churn_rate}%</div>
-                        <div className="text-gray-400 text-sm mt-1">of all subs</div>
+
+                      {/* Row 2: ACTIVE vs CANCELLED/EXPIRED */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Active subscribers */}
+                        <div>
+                          <div className="text-emerald-400/80 text-xs font-semibold tracking-wider mb-2">ACTIVE SUBSCRIBERS</div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 rounded-lg p-4 text-center border border-emerald-800/20">
+                              <div className="text-gray-400 text-sm mb-2">AVG TENURE</div>
+                              <div className="text-3xl font-black text-emerald-400">{subscriberMetrics.data.active_avg_subscription_months}</div>
+                              <div className="text-gray-400 text-sm mt-1">months</div>
+                            </div>
+                            <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 rounded-lg p-4 text-center border border-emerald-800/20">
+                              <div className="text-gray-400 text-sm mb-2">MEDIAN TENURE</div>
+                              <div className="text-3xl font-black text-emerald-400">{subscriberMetrics.data.active_median_subscription_months}</div>
+                              <div className="text-gray-400 text-sm mt-1">months</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cancelled / Expired / Pending-Cancel */}
+                        <div>
+                          <div className="text-amber-400/80 text-xs font-semibold tracking-wider mb-2">CANCELLED / EXPIRED</div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20">
+                              <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
+                              <div className="text-3xl font-black text-amber-400">{subscriberMetrics.data.cancelled_avg_subscription_months}</div>
+                              <div className="text-gray-400 text-sm mt-1">months</div>
+                            </div>
+                            <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20">
+                              <div className="text-gray-400 text-sm mb-2">MEDIAN DURATION</div>
+                              <div className="text-3xl font-black text-amber-400">{subscriberMetrics.data.cancelled_median_subscription_months}</div>
+                              <div className="text-gray-400 text-sm mt-1">months</div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
