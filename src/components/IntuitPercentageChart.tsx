@@ -65,7 +65,7 @@ export function IntuitPercentageChart({ months, categories, data }: IntuitPercen
         display: true,
         position: 'top' as const,
         labels: {
-          color: '#D1D5DB',
+          color: '#6E6E73',
           font: {
             size: 12,
             weight: 500
@@ -76,10 +76,10 @@ export function IntuitPercentageChart({ months, categories, data }: IntuitPercen
         }
       },
       tooltip: {
-        backgroundColor: '#1F2937',
-        titleColor: '#F3F4F6',
-        bodyColor: '#D1D5DB',
-        borderColor: '#374151',
+        backgroundColor: '#ffffff',
+        titleColor: '#1D1D1F',
+        bodyColor: '#6E6E73',
+        borderColor: '#E5E5EA',
         borderWidth: 1,
         padding: 12,
         displayColors: true,
@@ -102,7 +102,7 @@ export function IntuitPercentageChart({ months, categories, data }: IntuitPercen
           display: false
         },
         ticks: {
-          color: '#9CA3AF',
+          color: '#8E8E93',
           font: {
             size: 11
           }
@@ -112,10 +112,10 @@ export function IntuitPercentageChart({ months, categories, data }: IntuitPercen
         stacked: true,
         max: 100,
         grid: {
-          color: '#1F2937'
+          color: '#F2F2F7'
         },
         ticks: {
-          color: '#9CA3AF',
+          color: '#8E8E93',
           font: {
             size: 11
           },
@@ -128,8 +128,8 @@ export function IntuitPercentageChart({ months, categories, data }: IntuitPercen
   }
 
   return (
-    <div className="bg-[#1a1a1a] rounded-lg p-6 mb-6">
-      <h3 className="text-gray-300 text-sm font-medium mb-4 uppercase tracking-wide">
+    <div className="bg-white rounded-xl p-5 mb-5 shadow-sm">
+      <h3 className="text-[#1D1D1F] text-sm font-semibold mb-4 uppercase tracking-wide">
         Revenue Mix by Category (% of Total)
       </h3>
       <div className="h-[350px]">

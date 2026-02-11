@@ -1,60 +1,41 @@
-/* Intuit Sales Dashboard Styles */
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&display=swap');
-
-:root {
-  --qb-green: #2CA01C;
-  --qb-green-light: #1a7010;
-  --qb-blue: #0071eb;
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #0d0d0d;
-  --text-primary: #f5f5f5;
-  --text-secondary: #a0a0a0;
-  --border-light: #2a2a2a;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --radius-md: 12px;
-}
+/* Intuit Sales Dashboard — QBTraining.ai Light Theme */
 
 .intuit-sales-page {
-  font-family: 'Nunito Sans', -apple-system, sans-serif;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  background: #F5F5F7;
+  color: #1D1D1F;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
 .intuit-sales-header {
-  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-  color: #fff;
-  padding: 24px 16px;
-  margin-bottom: 16px;
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
-  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
 }
 
 .intuit-sales-header h1 {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
+  color: #1D1D1F;
 }
 
 .intuit-sales-header p {
-  font-size: 14px;
-  opacity: 0.9;
+  font-size: 13px;
+  color: #8E8E93;
   margin: 0;
 }
 
 .intuit-sales-card {
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   overflow: hidden;
 }
 
 .intuit-sales-table-wrapper {
-  overflow-x: hidden;
+  overflow-x: auto;
   max-width: 100%;
 }
 
@@ -67,14 +48,14 @@
 }
 
 .intuit-sales-table thead th {
-  background: linear-gradient(to bottom, #0d0d0d, #080808);
-  color: var(--text-secondary);
+  background: #FAFAFA;
+  color: #8E8E93;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 9px;
   letter-spacing: 0.05em;
   padding: 10px 6px;
-  border-bottom: 2px solid var(--border-light);
+  border-bottom: 1px solid #E5E5EA;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -85,138 +66,125 @@
   position: sticky;
   left: 0;
   z-index: 20;
-  border-right: 2px solid var(--border-light);
-  width: 140px;
-  min-width: 140px;
+  border-right: 1px solid #E5E5EA;
+  width: 120px;
+  min-width: 120px;
+  background: #FAFAFA;
 }
 
 .intuit-sales-table tbody td {
-  padding: 10px 6px;
-  border-bottom: 1px solid var(--border-light);
-  transition: background-color 0.15s ease;
+  padding: 8px 6px;
+  border-bottom: 1px solid #F2F2F7;
   text-align: center;
 }
 
 .intuit-sales-table tbody tr:hover td {
-  background-color: rgba(44, 160, 28, 0.04) !important;
+  background-color: #F5F5F7;
 }
 
 .intuit-sales-table tbody td:first-child {
   position: sticky;
   left: 0;
-  background: var(--bg-primary);
+  background: #ffffff;
   font-weight: 600;
-  color: #ffffff !important;
-  border-right: 2px solid var(--border-light);
+  color: #1D1D1F;
+  border-right: 1px solid #E5E5EA;
   z-index: 5;
   text-align: left;
   padding-left: 12px;
-  width: 140px;
-  min-width: 140px;
+  width: 120px;
+  min-width: 120px;
+  font-size: 12px;
 }
 
 .intuit-sales-table tbody tr:hover td:first-child {
-  background-color: rgba(44, 160, 28, 0.08) !important;
+  background-color: #F5F5F7;
 }
 
 .intuit-sales-month-header {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   align-items: center;
 }
 
 .intuit-sales-month-header span:first-child {
   font-weight: 700;
-  color: #ffffff;
-  font-size: 13.5px;
+  color: #1D1D1F;
+  font-size: 11px;
 }
 
 .intuit-sales-month-header span:last-child {
-  font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 10px;
+  color: #8E8E93;
   font-weight: 500;
 }
 
 .intuit-sales-cell-amount {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #ffffff !important;
-  margin-bottom: 2px;
+  color: #1D1D1F;
+  margin-bottom: 1px;
 }
 
 .intuit-sales-cell-percentage {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 10px;
+  color: #8E8E93;
   font-weight: 500;
 }
 
 .intuit-sales-total-row td {
-  background: linear-gradient(to bottom, #252525, #1f1f1f) !important;
+  background: #FAFAFA !important;
   font-weight: 700;
-  border-top: 3px solid var(--qb-green);
-  padding: 14px 6px;
+  border-top: 2px solid #D2D2D7;
+  padding: 10px 6px;
 }
 
 .intuit-sales-total-row td:first-child {
-  color: var(--qb-green);
-  font-size: 13px;
+  background: #FAFAFA !important;
+  color: #1D1D1F;
+  font-size: 11px;
   letter-spacing: 0.05em;
 }
 
 .intuit-sales-total-row .intuit-sales-cell-amount {
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* Charts Section */
 .intuit-sales-charts {
-  margin-top: 24px;
+  margin-top: 20px;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: 20px;
 }
 
 .intuit-sales-chart-card {
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  padding: 24px;
-  box-shadow: var(--shadow-md);
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
 }
 
 .intuit-sales-chart-card h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #1D1D1F;
   margin-bottom: 16px;
   letter-spacing: -0.01em;
 }
 
 .intuit-sales-footer {
-  margin-top: 24px;
-  padding: 16px 32px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  font-size: 13px;
-  color: var(--text-secondary);
+  margin-top: 20px;
+  padding: 12px 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  font-size: 12px;
+  color: #8E8E93;
 }
 
 .intuit-sales-footer p {
-  margin: 4px 0;
-}
-
-/* Heatmap colors - Dark theme (inverted: bigger % = darker) */
-.heat-0 { background-color: #1a1a1a; }
-.heat-1 { background-color: #41c651; }
-.heat-2 { background-color: #3cb34b; }
-.heat-3 { background-color: #37a045; }
-.heat-4 { background-color: #338c3e; }
-.heat-5 { background-color: #2e7938; }
-.heat-6 { background-color: #2a6631; }
-.heat-7 { background-color: #25532b; }
-.heat-8 { background-color: #214025; }
-.heat-9 { background-color: #1d2d1f; }
-
-.heat-high {
-  background-color: #41c651;
+  margin: 2px 0;
 }

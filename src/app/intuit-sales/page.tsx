@@ -37,7 +37,7 @@ export default function IntuitSalesPage() {
   if (loading) {
     return (
       <div className="intuit-sales-page">
-        <DashboardNav theme="dark" />
+        <DashboardNav theme="light" />
         <div className="max-w-full mx-auto px-4 py-6">
           <div className="text-center py-16">
             <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-gray-300 border-t-green-600"></div>
@@ -51,10 +51,10 @@ export default function IntuitSalesPage() {
   if (error || !data) {
     return (
       <div className="intuit-sales-page">
-        <DashboardNav theme="dark" />
+        <DashboardNav theme="light" />
         <div className="max-w-full mx-auto px-4 py-6">
           <div className="text-center py-16 intuit-sales-card max-w-2xl mx-auto p-12">
-            <div className="text-red-600 text-xl font-bold mb-3">⚠️ Error Loading Data</div>
+            <div className="text-red-600 text-xl font-bold mb-3">Error Loading Data</div>
             <p className="text-gray-600">{error || 'Unknown error'}</p>
           </div>
         </div>
@@ -71,22 +71,9 @@ export default function IntuitSalesPage() {
     }).format(amount);
   };
 
-  const getHeatmapColor = (percentage: number) => {
-    if (percentage === 0) return 'heat-0';
-    if (percentage < 5) return 'heat-1';
-    if (percentage < 10) return 'heat-2';
-    if (percentage < 15) return 'heat-3';
-    if (percentage < 20) return 'heat-4';
-    if (percentage < 25) return 'heat-5';
-    if (percentage < 35) return 'heat-6';
-    if (percentage < 45) return 'heat-7';
-    if (percentage < 60) return 'heat-8';
-    return 'heat-9';
-  };
-
   return (
     <div className="intuit-sales-page">
-      <DashboardNav theme="dark" />
+      <DashboardNav theme="light" />
       <div className="max-w-full mx-auto px-4 py-6">
         <div className="intuit-sales-header">
           <h1>Intuit Revenue</h1>
@@ -122,9 +109,8 @@ export default function IntuitSalesPage() {
                     </td>
                     {data.months.map((month) => {
                       const cellData = data.data[month]?.[category.key] || { amount: 0, percentage: 0 };
-                      const heatmapColor = getHeatmapColor(cellData.percentage);
                       return (
-                        <td key={`${category.key}-${month}`} className={heatmapColor}>
+                        <td key={`${category.key}-${month}`}>
                           <div className="intuit-sales-cell-amount">
                             {formatCurrency(cellData.amount)}
                           </div>
