@@ -5917,22 +5917,22 @@ export default function DashboardPage() {
                           <table className="w-full bg-[#1D1D1F]">
                             <thead>
                               <tr className="border-b border-[#3D3D3F]">
-                                <th rowSpan={2} className="text-left py-3 px-4 font-bold text-white text-base sticky left-0 bg-[#1D1D1F] min-w-[220px] border-b-2 border-[#3D3D3F]">Landing Page</th>
+                                <th rowSpan={2} className="text-left py-3 px-4 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[220px] border-b-2 border-[#3D3D3F]">Landing Page</th>
                                 {activeWeeks.map(idx => {
                                   const week = landingPagesData.landing_pages[0].weeks[idx]
                                   return (
                                     <th key={idx} colSpan={3} className="text-center py-3 px-1 border-l border-[#3D3D3F]">
-                                      <div className="font-semibold text-white text-sm">{week.label}</div>
-                                      <div className="text-xs text-white/40">{week.date_range.split(' - ')[0]}</div>
+                                      <div className="font-semibold text-white text-base">{week.label}</div>
+                                      <div className="text-sm text-white/40">{week.date_range.split(' - ')[0]}</div>
                                     </th>
                                   )
                                 })}
                               </tr>
                               <tr className="border-b-2 border-[#3D3D3F]">
                                 {activeWeeks.flatMap(idx => [
-                                  <th key={`${idx}-u`} className="text-center py-2 px-1 text-xs font-medium text-blue-400/70 border-l border-[#3D3D3F]">Users</th>,
-                                  <th key={`${idx}-c`} className="text-center py-2 px-1 text-xs font-medium text-white/40">Conv</th>,
-                                  <th key={`${idx}-r`} className="text-center py-2 px-1 text-xs font-medium text-white/40">CVR%</th>
+                                  <th key={`${idx}-u`} className="text-center py-2 px-1 text-sm font-medium text-blue-400/70 border-l border-[#3D3D3F]">New Visitors</th>,
+                                  <th key={`${idx}-c`} className="text-center py-2 px-1 text-sm font-medium text-white/40">Conv</th>,
+                                  <th key={`${idx}-r`} className="text-center py-2 px-1 text-sm font-medium text-white/40">CVR%</th>
                                 ])}
                               </tr>
                             </thead>
@@ -5941,16 +5941,12 @@ export default function DashboardPage() {
                                 const rowBg = lpIdx % 2 === 0 ? 'bg-[#1D1D1F]' : 'bg-[#252528]'
                                 return (
                                   <tr key={lpIdx} className={`border-b border-white/5 ${rowBg}`}>
-                                    <td className={`py-3 px-4 font-medium text-white text-sm sticky left-0 ${rowBg} truncate max-w-[260px]`} title={lp.landing_page}>
+                                    <td className={`py-3 px-4 font-medium text-white text-base sticky left-0 ${rowBg} truncate max-w-[260px]`} title={lp.landing_page}>
                                       {lp.landing_page}
                                     </td>
                                     {activeWeeks.flatMap(weekIdx => {
                                       const week = lp.weeks[weekIdx]
                                       const users = Math.round(week.users)
-                                      const nextActiveIdx = activeWeeks[activeWeeks.indexOf(weekIdx) + 1]
-                                      const prevWeek = nextActiveIdx !== undefined ? lp.weeks[nextActiveIdx] : null
-                                      const prevUsers = prevWeek ? Math.round(prevWeek.users) : null
-                                      const wowChange = prevUsers && prevUsers > 0 ? ((users - prevUsers) / prevUsers * 100) : null
                                       if (users === 0 && week.purchases === 0) {
                                         return [
                                           <td key={`${weekIdx}-u`} className="text-center py-3 px-1 text-white/15 border-l border-white/5">—</td>,
@@ -5959,16 +5955,11 @@ export default function DashboardPage() {
                                         ]
                                       }
                                       return [
-                                        <td key={`${weekIdx}-u`} className="text-center py-3 px-1 border-l border-white/5">
-                                          <span className="font-bold text-white text-base">{users.toLocaleString()}</span>
-                                          {wowChange !== null && (
-                                            <span className={`text-[10px] ml-0.5 ${wowChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                              {wowChange >= 0 ? '▲' : '▼'}{Math.abs(wowChange).toFixed(0)}%
-                                            </span>
-                                          )}
+                                        <td key={`${weekIdx}-u`} className="text-center py-3 px-2 border-l border-white/5">
+                                          <span className="font-bold text-white text-lg">{users.toLocaleString()}</span>
                                         </td>,
-                                        <td key={`${weekIdx}-c`} className="text-center py-3 px-1 text-white/60 text-sm">{week.purchases}</td>,
-                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-1 text-sm font-semibold ${week.conversion_rate >= 1.5 ? 'text-emerald-400' : week.conversion_rate >= 0.5 ? 'text-amber-400' : 'text-white/40'}`}>
+                                        <td key={`${weekIdx}-c`} className="text-center py-3 px-2 text-emerald-400 text-base font-semibold">{week.purchases}</td>,
+                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-2 text-base font-semibold ${week.conversion_rate >= 1.5 ? 'text-emerald-400' : week.conversion_rate >= 0.5 ? 'text-amber-400' : 'text-white/40'}`}>
                                           {week.conversion_rate.toFixed(2)}%
                                         </td>
                                       ]
@@ -6013,22 +6004,22 @@ export default function DashboardPage() {
                           <table className="w-full bg-[#1D1D1F]">
                             <thead>
                               <tr className="border-b border-[#3D3D3F]">
-                                <th rowSpan={2} className="text-left py-3 px-4 font-bold text-white text-base sticky left-0 bg-[#1D1D1F] min-w-[220px] border-b-2 border-[#3D3D3F]">Landing Page</th>
+                                <th rowSpan={2} className="text-left py-3 px-4 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[220px] border-b-2 border-[#3D3D3F]">Landing Page</th>
                                 {activeWeeks.map(idx => {
                                   const week = sorted[0].weeks[idx]
                                   return (
                                     <th key={idx} colSpan={3} className="text-center py-3 px-1 border-l border-[#3D3D3F]">
-                                      <div className="font-semibold text-white text-sm">{week.label}</div>
-                                      <div className="text-xs text-white/40">{week.date_range.split(' - ')[0]}</div>
+                                      <div className="font-semibold text-white text-base">{week.label}</div>
+                                      <div className="text-sm text-white/40">{week.date_range.split(' - ')[0]}</div>
                                     </th>
                                   )
                                 })}
                               </tr>
                               <tr className="border-b-2 border-[#3D3D3F]">
                                 {activeWeeks.flatMap(idx => [
-                                  <th key={`${idx}-k`} className="text-center py-2 px-1 text-xs font-medium text-green-400/70 border-l border-[#3D3D3F]">Clicks</th>,
-                                  <th key={`${idx}-c`} className="text-center py-2 px-1 text-xs font-medium text-white/40">Conv</th>,
-                                  <th key={`${idx}-r`} className="text-center py-2 px-1 text-xs font-medium text-white/40">CVR%</th>
+                                  <th key={`${idx}-k`} className="text-center py-2 px-1 text-sm font-medium text-green-400/70 border-l border-[#3D3D3F]">Clicks</th>,
+                                  <th key={`${idx}-c`} className="text-center py-2 px-1 text-sm font-medium text-white/40">Conv</th>,
+                                  <th key={`${idx}-r`} className="text-center py-2 px-1 text-sm font-medium text-white/40">CVR%</th>
                                 ])}
                               </tr>
                             </thead>
@@ -6037,17 +6028,13 @@ export default function DashboardPage() {
                                 const rowBg = lpIdx % 2 === 0 ? 'bg-[#1D1D1F]' : 'bg-[#252528]'
                                 return (
                                   <tr key={lpIdx} className={`border-b border-white/5 ${rowBg}`}>
-                                    <td className={`py-3 px-4 font-medium text-white text-sm sticky left-0 ${rowBg} truncate max-w-[260px]`} title={lp.landing_page}>
+                                    <td className={`py-3 px-4 font-medium text-white text-base sticky left-0 ${rowBg} truncate max-w-[260px]`} title={lp.landing_page}>
                                       {lp.landing_page}
                                     </td>
                                     {activeWeeks.flatMap(weekIdx => {
                                       const week = lp.weeks[weekIdx]
                                       const clicks = Math.round(week.clicks)
                                       const conversions = Math.round(week.conversions)
-                                      const nextActiveIdx = activeWeeks[activeWeeks.indexOf(weekIdx) + 1]
-                                      const prevWeek = nextActiveIdx !== undefined ? lp.weeks[nextActiveIdx] : null
-                                      const prevClicks = prevWeek ? Math.round(prevWeek.clicks) : null
-                                      const wowChange = prevClicks && prevClicks > 0 ? ((clicks - prevClicks) / prevClicks * 100) : null
                                       if (clicks === 0 && conversions === 0) {
                                         return [
                                           <td key={`${weekIdx}-k`} className="text-center py-3 px-1 text-white/15 border-l border-white/5">—</td>,
@@ -6056,16 +6043,11 @@ export default function DashboardPage() {
                                         ]
                                       }
                                       return [
-                                        <td key={`${weekIdx}-k`} className="text-center py-3 px-1 border-l border-white/5">
-                                          <span className="font-bold text-white text-base">{clicks.toLocaleString()}</span>
-                                          {wowChange !== null && (
-                                            <span className={`text-[10px] ml-0.5 ${wowChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                              {wowChange >= 0 ? '▲' : '▼'}{Math.abs(wowChange).toFixed(0)}%
-                                            </span>
-                                          )}
+                                        <td key={`${weekIdx}-k`} className="text-center py-3 px-2 border-l border-white/5">
+                                          <span className="font-bold text-white text-lg">{clicks.toLocaleString()}</span>
                                         </td>,
-                                        <td key={`${weekIdx}-c`} className="text-center py-3 px-1 text-white/60 text-sm">{conversions}</td>,
-                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-1 text-sm font-semibold ${week.conversion_rate >= 5 ? 'text-emerald-400' : week.conversion_rate >= 2 ? 'text-amber-400' : 'text-white/40'}`}>
+                                        <td key={`${weekIdx}-c`} className="text-center py-3 px-2 text-emerald-400 text-base font-semibold">{conversions}</td>,
+                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-2 text-base font-semibold ${week.conversion_rate >= 5 ? 'text-emerald-400' : week.conversion_rate >= 2 ? 'text-amber-400' : 'text-white/40'}`}>
                                           {week.conversion_rate.toFixed(2)}%
                                         </td>
                                       ]
