@@ -6371,7 +6371,7 @@ function DashboardPageContent() {
                         const ringColor = retPct >= 50 ? 'border-emerald-500/30' : retPct >= 35 ? 'border-yellow-500/30' : 'border-red-500/30'
                         return (
                           <div key={quarter} className={`bg-gradient-to-b from-gray-800/60 to-gray-900/60 rounded-lg p-4 text-center border ${ringColor}`}>
-                            <div className="text-cyan-400 text-sm font-semibold mb-3">{quarter}</div>
+                            <div className="text-cyan-400 text-sm font-semibold mb-3">{quarter.replace(/(\d{4})(Q\d)/, '$1 $2')}</div>
                             <div className="text-3xl font-black text-white">{qData.total_adds.toLocaleString()}</div>
                             <div className="text-gray-400 text-sm mb-3">new adds</div>
                             <div className={`text-2xl font-bold ${retColor}`}>
