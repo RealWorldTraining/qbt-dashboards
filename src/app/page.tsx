@@ -432,7 +432,10 @@ function formatAdsValue(value: number | null | undefined, metric: AdsMetric): st
   if (metric === 'cost_per_conv') {
     return '$' + Math.round(value).toLocaleString()
   }
-  if (metric === 'avg_cpc' || metric === 'spend') {
+  if (metric === 'spend') {
+    return '$' + Math.round(value).toLocaleString()
+  }
+  if (metric === 'avg_cpc') {
     return '$' + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
   return value.toLocaleString(undefined, { maximumFractionDigits: 0 })
@@ -440,10 +443,10 @@ function formatAdsValue(value: number | null | undefined, metric: AdsMetric): st
 
 function formatAdsDiff(diff: number, metric: AdsMetric): string {
   const prefix = diff >= 0 ? '+' : ''
-  if (metric === 'cost_per_conv') {
+  if (metric === 'cost_per_conv' || metric === 'spend') {
     return prefix + '$' + Math.abs(Math.round(diff)).toLocaleString()
   }
-  if (metric === 'avg_cpc' || metric === 'spend') {
+  if (metric === 'avg_cpc') {
     return prefix + '$' + Math.abs(diff).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
   return prefix + diff.toLocaleString(undefined, { maximumFractionDigits: 0 })
