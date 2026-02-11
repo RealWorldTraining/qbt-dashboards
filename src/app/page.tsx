@@ -4854,22 +4854,22 @@ export default function DashboardPage() {
                 {(() => {
                   const convKpi = conversionTrends?.kpi?.[convPctSource]
                   const trafKpi = trafficTrends?.kpi?.[convPctSource]
-                  const calcPct = (conv: number, traf: number) => traf > 0 ? Math.round((conv / traf) * 100) : 0
+                  const calcPct = (conv: number, traf: number) => traf > 0 ? Math.round((conv / traf) * 1000) / 10 : 0
                   return (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       {/* Yesterday */}
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">Yesterday</div>
-                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.yesterday.value ?? 0, trafKpi?.yesterday.value ?? 0)}%</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.yesterday.value ?? 0, trafKpi?.yesterday.value ?? 0).toFixed(1)}%</div>
                         {convKpi && trafKpi && (() => {
                           const curr = calcPct(convKpi.yesterday.value, trafKpi.yesterday.value)
                           const py = calcPct(convKpi.yesterday.py, trafKpi.yesterday.py)
                           const diff = curr - py
                           return (
                             <div className="mt-2 text-center">
-                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py.toFixed(1)}%</div>
                               <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                {diff >= 0 ? "+" : ""}{diff}pp
+                                {diff >= 0 ? "+" : ""}{diff.toFixed(1)}pp
                               </div>
                             </div>
                           )
@@ -4878,16 +4878,16 @@ export default function DashboardPage() {
                       {/* This Week */}
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">This Week</div>
-                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.this_week.value ?? 0, trafKpi?.this_week.value ?? 0)}%</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.this_week.value ?? 0, trafKpi?.this_week.value ?? 0).toFixed(1)}%</div>
                         {convKpi && trafKpi && (() => {
                           const curr = calcPct(convKpi.this_week.value, trafKpi.this_week.value)
                           const py = calcPct(convKpi.this_week.py, trafKpi.this_week.py)
                           const diff = curr - py
                           return (
                             <div className="mt-2 text-center">
-                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py.toFixed(1)}%</div>
                               <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                {diff >= 0 ? "+" : ""}{diff}pp
+                                {diff >= 0 ? "+" : ""}{diff.toFixed(1)}pp
                               </div>
                             </div>
                           )
@@ -4896,16 +4896,16 @@ export default function DashboardPage() {
                       {/* MTD */}
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">MTD</div>
-                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.mtd.value ?? 0, trafKpi?.mtd.value ?? 0)}%</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.mtd.value ?? 0, trafKpi?.mtd.value ?? 0).toFixed(1)}%</div>
                         {convKpi && trafKpi && (() => {
                           const curr = calcPct(convKpi.mtd.value, trafKpi.mtd.value)
                           const py = calcPct(convKpi.mtd.py, trafKpi.mtd.py)
                           const diff = curr - py
                           return (
                             <div className="mt-2 text-center">
-                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py.toFixed(1)}%</div>
                               <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                {diff >= 0 ? "+" : ""}{diff}pp
+                                {diff >= 0 ? "+" : ""}{diff.toFixed(1)}pp
                               </div>
                             </div>
                           )
@@ -4914,16 +4914,16 @@ export default function DashboardPage() {
                       {/* YTD */}
                       <div className="rounded-2xl bg-gradient-to-br from-[#1D1D1F] to-[#2D2D2F] p-6 shadow-lg border-0 flex flex-col items-center justify-center min-h-[180px]">
                         <div className="text-lg font-medium text-white/70 mb-1">YTD</div>
-                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.ytd?.value ?? 0, trafKpi?.ytd?.value ?? 0)}%</div>
+                        <div className="text-7xl font-bold text-white">{calcPct(convKpi?.ytd?.value ?? 0, trafKpi?.ytd?.value ?? 0).toFixed(1)}%</div>
                         {convKpi?.ytd && trafKpi?.ytd && (() => {
                           const curr = calcPct(convKpi.ytd.value, trafKpi.ytd.value)
                           const py = calcPct(convKpi.ytd.py, trafKpi.ytd.py)
                           const diff = curr - py
                           return (
                             <div className="mt-2 text-center">
-                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py}%</div>
+                              <div className="text-base text-white/50 mb-0.5">Prior Year: {py.toFixed(1)}%</div>
                               <div className={`text-lg font-semibold ${diff >= 0 ? "text-[#34C759]" : "text-[#FF6B6B]"}`}>
-                                {diff >= 0 ? "+" : ""}{diff}pp
+                                {diff >= 0 ? "+" : ""}{diff.toFixed(1)}pp
                               </div>
                             </div>
                           )
@@ -4977,7 +4977,7 @@ export default function DashboardPage() {
                                   const cellBg = isCurrentWeek ? "bg-[#1A1A3A]" : "bg-[#1D1D1F]"
                                   const weekConvTotal = week.week_total ?? 0
                                   const weekTrafTotal = trafWeek?.week_total ?? 0
-                                  const weekPct = weekTrafTotal > 0 ? Math.round((weekConvTotal / weekTrafTotal) * 100) : null
+                                  const weekPct = weekTrafTotal > 0 ? Math.round((weekConvTotal / weekTrafTotal) * 1000) / 10 : null
                                   return (
                                     <tr key={idx} className="border-b border-white/5">
                                       <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
@@ -4987,18 +4987,18 @@ export default function DashboardPage() {
                                       {days.map(day => {
                                         const convVal = week.daily_cumulative[day]
                                         const trafVal = trafWeek?.daily_cumulative[day]
-                                        const pct = (convVal !== null && convVal !== undefined && trafVal && trafVal > 0) ? Math.round((convVal / trafVal) * 100) : null
+                                        const pct = (convVal !== null && convVal !== undefined && trafVal && trafVal > 0) ? Math.round((convVal / trafVal) * 1000) / 10 : null
                                         return (
                                           <td
                                             key={day}
                                             className={`text-center py-3 px-1 ${getHeatmapClass(pct)} ${pct === null ? "text-white/20" : "text-white font-semibold"}`}
                                           >
-                                            {pct !== null ? `${pct}%` : '-'}
+                                            {pct !== null ? `${pct.toFixed(1)}%` : '-'}
                                           </td>
                                         )
                                       })}
                                       <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${weekPct === null ? "text-white/20" : "text-white"}`}>
-                                        {weekPct !== null ? `${weekPct}%` : '-'}
+                                        {weekPct !== null ? `${weekPct.toFixed(1)}%` : '-'}
                                       </td>
                                     </tr>
                                   )
@@ -5056,7 +5056,7 @@ export default function DashboardPage() {
                                   const cellBg = isCurrentMonth ? "bg-[#1A1A3A]" : "bg-[#1D1D1F]"
                                   const convTotal = convPctSource === 'total' ? row.grand_total : (row[`${convPctSource}_total` as keyof TrafficTrendMonthRow] as number)
                                   const trafTotal = trafRow ? (convPctSource === 'total' ? trafRow.grand_total : (trafRow[`${convPctSource}_total` as keyof TrafficTrendMonthRow] as number)) : 0
-                                  const monthPct = trafTotal > 0 ? Math.round((convTotal / trafTotal) * 100) : null
+                                  const monthPct = trafTotal > 0 ? Math.round((convTotal / trafTotal) * 1000) / 10 : null
                                   return (
                                     <tr key={idx} className="border-b border-white/5">
                                       <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
@@ -5066,18 +5066,18 @@ export default function DashboardPage() {
                                       {weeks.map(wk => {
                                         const convVal = row[convPctSource][wk]
                                         const trafVal = trafRow?.[convPctSource]?.[wk]
-                                        const pct = (convVal !== null && convVal !== undefined && trafVal && trafVal > 0) ? Math.round((convVal / trafVal) * 100) : null
+                                        const pct = (convVal !== null && convVal !== undefined && trafVal && trafVal > 0) ? Math.round((convVal / trafVal) * 1000) / 10 : null
                                         return (
                                           <td
                                             key={wk}
                                             className={`text-center py-3 px-3 ${getHeatmapClass(pct)} ${pct === null ? "text-white/20" : "text-white font-semibold"}`}
                                           >
-                                            {pct !== null ? `${pct}%` : '-'}
+                                            {pct !== null ? `${pct.toFixed(1)}%` : '-'}
                                           </td>
                                         )
                                       })}
                                       <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${monthPct === null ? "text-white/20" : "text-white"}`}>
-                                        {monthPct !== null ? `${monthPct}%` : '-'}
+                                        {monthPct !== null ? `${monthPct.toFixed(1)}%` : '-'}
                                       </td>
                                     </tr>
                                   )
