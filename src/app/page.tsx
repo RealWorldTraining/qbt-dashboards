@@ -22,6 +22,9 @@ import {
 } from "recharts"
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
 import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin } from "lucide-react"
+import { GadsSummaryTab } from "@/components/google-ads/GadsSummaryTab"
+import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
+import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
 
 // Always use Railway API (no local Python backend needed)
 const PROPHET_API_URL = "https://qbtraining-site-production.up.railway.app"
@@ -1975,6 +1978,7 @@ export default function DashboardPage() {
   // Google Ads Trends state
   const [gadsTrends, setGadsTrends] = useState<AdsTrendsResponse | null>(null)
   const [gadsMetric, setGadsMetric] = useState<AdsMetric>('conversions')
+  const [gadsView, setGadsView] = useState<'summary' | 'cpc' | 'age' | null>('summary')
 
   // Bing Ads Trends state
   const [bingTrends, setBingTrends] = useState<AdsTrendsResponse | null>(null)
@@ -5212,24 +5216,54 @@ export default function DashboardPage() {
         {/* Google Ads Tab */}
         {activeTab === "google-ads" && (
           <>
-            {/* Google Ads Metric Toggle */}
+            {/* Google Ads View + Metric Toggle */}
             <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
-              {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
+              {/* View mode pills */}
+              {([
+                { key: 'summary' as const, label: 'Summary', color: '#1D1D1F' },
+                { key: 'cpc' as const, label: 'CPC Optimizer', color: '#10B981' },
+                { key: 'age' as const, label: 'Age Analysis', color: '#8B5CF6' },
+              ]).map(({ key, label, color }) => (
                 <button
                   key={key}
-                  onClick={() => setGadsMetric(key)}
+                  onClick={() => { setGadsView(key); }}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    gadsMetric === key
+                    gadsView === key
                       ? 'text-white shadow-md'
                       : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
                   }`}
-                  style={gadsMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
+                  style={gadsView === key ? { backgroundColor: color } : {}}
+                >
+                  {label}
+                </button>
+              ))}
+              {/* Separator */}
+              <div className="w-px bg-[#D2D2D7] mx-1 self-stretch" />
+              {/* Metric pills */}
+              {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => { setGadsView(null); setGadsMetric(key); }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    gadsView === null && gadsMetric === key
+                      ? 'text-white shadow-md'
+                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  }`}
+                  style={gadsView === null && gadsMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
                 >
                   {ADS_METRIC_LABELS[key]}
                 </button>
               ))}
             </div>
 
+            {/* Summary / CPC / Age views */}
+            {gadsView === 'summary' && <GadsSummaryTab />}
+            {gadsView === 'cpc' && <GadsCPCTab />}
+            {gadsView === 'age' && <GadsAgeTab />}
+
+            {/* Metric view (existing KPI + heatmaps + YoY) */}
+            {gadsView === null && (
+            <>
             {googleAdsLoading && !gadsTrends ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
@@ -5506,6 +5540,8 @@ export default function DashboardPage() {
                   <p className="text-[#6E6E73]">Google Ads trend data is not available</p>
                 </div>
               </div>
+            )}
+            </>
             )}
           </>
         )}
