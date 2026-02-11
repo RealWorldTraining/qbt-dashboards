@@ -6267,7 +6267,7 @@ function DashboardPageContent() {
                 {/* Hero Metrics Row */}
                 <div className="grid grid-cols-6 gap-4">
                   {/* Active Subscriptions */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-cyan-900/30 relative overflow-hidden text-center">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-cyan-900/30 relative overflow-hidden text-center" title="Total number of subscriptions currently in 'active' status. Does not include cancelled, expired, or on-hold subscriptions.">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">ACTIVE SUBS</div>
                     <div className="text-5xl font-black text-white tracking-tight">
@@ -6285,7 +6285,7 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Avg Revenue Per Sub */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-emerald-900/30 relative overflow-hidden text-center">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-emerald-900/30 relative overflow-hidden text-center" title="Active Revenue divided by Active Subs — the average monthly recurring payment per active subscriber.">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">AVG REVENUE/SUB</div>
                     <div className="text-5xl font-black text-white tracking-tight">
@@ -6294,7 +6294,7 @@ function DashboardPageContent() {
                   </div>
 
                   {/* New This Week */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden text-center">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden text-center" title="New subscriptions created since the start of the current week (Monday).">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">NEW THIS WEEK</div>
                     <div className="text-5xl font-black text-green-400 tracking-tight">
@@ -6303,7 +6303,7 @@ function DashboardPageContent() {
                   </div>
 
                   {/* New This Month */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden text-center">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden text-center" title="New subscriptions created since the 1st of the current month.">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">NEW THIS MONTH</div>
                     <div className="text-5xl font-black text-green-400 tracking-tight">
@@ -6312,7 +6312,7 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Cancelled This Month */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-red-900/30 relative overflow-hidden text-center">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-red-900/30 relative overflow-hidden text-center" title="Subscriptions that were cancelled since the 1st of the current month.">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">CANCELLED THIS MONTH</div>
                     <div className="text-5xl font-black text-red-400 tracking-tight">
