@@ -80,19 +80,30 @@ export async function GET() {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
+    // Detect columns by header name (case-insensitive)
+    const headers = rows[0].map((h: string) => h?.toLowerCase().trim() || '')
+    const dateCol = headers.findIndex((h: string) => h.includes('date'))
+    const impCol = headers.findIndex((h: string) => h.includes('impression'))
+    const clickCol = headers.findIndex((h: string) => h.includes('click'))
+
+    // Fallback to positional if headers not found
+    const colDate = dateCol >= 0 ? dateCol : 0
+    const colImp = impCol >= 0 ? impCol : 1
+    const colClick = clickCol >= 0 ? clickCol : 2
+
     // Aggregate daily data into weeks (Sunday-Saturday)
     const weeklyAgg = new Map<string, { impressions: number; clicks: number }>()
-    
+
     rows.slice(1).forEach(row => {
-      const date = row[0]
+      const date = row[colDate]
       if (!date) return
-      
+
       const weekStart = getWeekStart(date)
       const existing = weeklyAgg.get(weekStart) || { impressions: 0, clicks: 0 }
-      
-      existing.impressions += parseNumber(row[1])
-      existing.clicks += parseNumber(row[2])
-      
+
+      existing.impressions += parseNumber(row[colImp])
+      existing.clicks += parseNumber(row[colClick])
+
       weeklyAgg.set(weekStart, existing)
     })
 
@@ -140,16 +151,16 @@ export async function GET() {
       }
     }
 
-    // Aggregate daily data into months
+    // Aggregate daily data into months (reusing dynamic column indices)
     const monthlyAgg = new Map<string, { impressions: number; clicks: number }>()
     rows.slice(1).forEach(row => {
-      const date = row[0]
+      const date = row[colDate]
       if (!date) return
       const [y, m] = date.split('-').map(Number)
       const monthKey = `${y}-${String(m).padStart(2, '0')}`
       const existing = monthlyAgg.get(monthKey) || { impressions: 0, clicks: 0 }
-      existing.impressions += parseNumber(row[1])
-      existing.clicks += parseNumber(row[2])
+      existing.impressions += parseNumber(row[colImp])
+      existing.clicks += parseNumber(row[colClick])
       monthlyAgg.set(monthKey, existing)
     })
 
@@ -177,6 +188,12 @@ export async function GET() {
       data: last14Weeks,
       monthlyData,
       yoyData: yoyWeeks.length === 4 ? yoyWeeks : null,
+      _debug: {
+        headers: rows[0],
+        columnMapping: { date: colDate, impressions: colImp, clicks: colClick },
+        totalRows: rows.length - 1,
+        sampleRow: rows[1],
+      },
       last_updated: new Date().toISOString()
     }, {
       headers: {
