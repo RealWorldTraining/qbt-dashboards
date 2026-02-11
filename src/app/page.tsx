@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useRef, useState, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import {
   Card,
@@ -2023,6 +2023,27 @@ function DashboardPageContent() {
     }
   }, [tabParam])
 
+  // Refs for centering sub-tabs under active section
+  const sectionRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const sectionRowRef = useRef<HTMLDivElement>(null)
+  const [subTabOffset, setSubTabOffset] = useState(0)
+
+  const computeSubTabOffset = useCallback(() => {
+    const activeBtn = sectionRefs.current[activeSection]
+    const row = sectionRowRef.current
+    if (!activeBtn || !row) { setSubTabOffset(0); return }
+    const rowRect = row.getBoundingClientRect()
+    const btnRect = activeBtn.getBoundingClientRect()
+    // Align sub-tabs to the left edge of the active section button
+    setSubTabOffset(btnRect.left - rowRect.left)
+  }, [activeSection])
+
+  useEffect(() => {
+    computeSubTabOffset()
+    window.addEventListener('resize', computeSubTabOffset)
+    return () => window.removeEventListener('resize', computeSubTabOffset)
+  }, [computeSubTabOffset])
+
   // Section click handler
   const handleSectionClick = (section: SectionType) => {
     setActiveSection(section)
@@ -2398,12 +2419,13 @@ function DashboardPageContent() {
             )}
           </div>
           {/* Section Navigation (Row 1) */}
-          <div className="flex items-center -mb-px">
+          <div className="flex items-center -mb-px" ref={sectionRowRef}>
             {sections.map((section) => {
               const Icon = section.icon
               return (
                 <button
                   key={section.id}
+                  ref={(el) => { sectionRefs.current[section.id] = el }}
                   onClick={() => handleSectionClick(section.id)}
                   title={section.description}
                   className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold uppercase tracking-wide border-b-3 transition-colors ${
@@ -2418,26 +2440,28 @@ function DashboardPageContent() {
               )
             })}
           </div>
-          {/* Sub-Tab Navigation (Row 2) */}
+          {/* Sub-Tab Navigation (Row 2) — centered under active section */}
           {sectionTabs[activeSection].length > 0 && (
-            <div className="flex items-center border-t border-[#E5E5E5] -mb-px">
-              {sectionTabs[activeSection].map((tab) => {
-                const Icon = tab.icon
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleSubTabClick(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === tab.id
-                        ? "border-[#0066CC] text-[#0066CC]"
-                        : "border-transparent text-[#86868B] hover:text-[#1D1D1F]"
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {tab.label}
+            <div className="relative border-t border-[#E5E5E5] -mb-px">
+              <div className="flex items-center" style={{ paddingLeft: subTabOffset }}>
+                {sectionTabs[activeSection].map((tab) => {
+                  const Icon = tab.icon
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleSubTabClick(tab.id)}
+                      className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                        activeTab === tab.id
+                          ? "border-[#0066CC] text-[#0066CC]"
+                          : "border-transparent text-[#86868B] hover:text-[#1D1D1F]"
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {tab.label}
                   </button>
                 )
               })}
+              </div>
             </div>
           )}
         </div>
