@@ -525,18 +525,6 @@ interface BingCPCData {
   }
 }
 
-interface WeekPerfData {
-  date: string
-  impressions: number
-  clicks: number
-  cost: number
-  conversions: number
-}
-
-interface FourWeekData {
-  weeks: WeekPerfData[]
-}
-
 const classColors: Record<string, string> = {
   BLUE: '#3B82F6',
   GREEN: '#10B981',
@@ -546,18 +534,13 @@ const classColors: Record<string, string> = {
 
 function CPCTab() {
   const [data, setData] = useState<BingCPCData | null>(null)
-  const [fourWeekData, setFourWeekData] = useState<FourWeekData | null>(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('ALL')
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/cpc-bing-recommendations').then(res => res.json()),
-      fetch('/api/cpc-bing-four-week').then(res => res.json())
-    ])
-      .then(([recommendations, fourWeek]) => {
+    fetch('/api/cpc-bing-recommendations').then(res => res.json())
+      .then(recommendations => {
         setData(recommendations)
-        setFourWeekData(fourWeek)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -692,46 +675,6 @@ function CPCTab() {
         >
           <div className="text-gray-400 text-xs mb-1">HOLD</div>
           <div className="text-gray-400 text-3xl font-bold">{data.summary.actions.HOLD || 0}</div>
-        </div>
-      </div>
-
-      {/* 4-Week Performance */}
-      <div className="mb-6">
-        <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-sm font-medium mb-4">TRAILING 4-WEEK PERFORMANCE</h3>
-          {fourWeekData && fourWeekData.weeks.length > 0 ? (
-            <div className="grid grid-cols-4 gap-4">
-              {fourWeekData.weeks.map((week, idx) => {
-                const labels = ['Current Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago']
-                return (
-                  <div key={week.date} className="border border-gray-800 rounded-lg p-4">
-                    <div className="text-cyan-400 text-xs font-medium mb-2">{labels[idx]}</div>
-                    <div className="text-gray-500 text-xs mb-3">{week.date}</div>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">IMPR</div>
-                        <div className="text-white text-lg font-bold">{week.impressions.toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">CLICKS</div>
-                        <div className="text-white text-lg font-bold">{week.clicks.toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">COST</div>
-                        <div className="text-white text-lg font-bold">${Math.round(week.cost).toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">CONV</div>
-                        <div className="text-white text-lg font-bold">{Math.round(week.conversions)}</div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="text-gray-500 text-center py-16">Loading...</div>
-          )}
         </div>
       </div>
 
