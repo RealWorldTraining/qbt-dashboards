@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
@@ -20,10 +20,10 @@ import {
 
 const dashboards = [
   { name: "Command Center", href: "/", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
-  { name: "GA4 Summary", href: "/playground", icon: BarChart3, description: "Monthly traffic by channel" },
-  { name: "Google Ads", href: "/google-ads-summary", icon: BarChart3, description: "Google Ads weekly metrics" },
-  { name: "Bing Ads", href: "/bing-ads-summary", icon: Search, description: "Bing Ads weekly metrics" },
-  { name: "Landing Pages", href: "/landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
+  { name: "GA4 Summary", href: "/?tab=traffic", icon: BarChart3, description: "Monthly traffic by channel" },
+  { name: "Google Ads", href: "/?tab=google-ads", icon: BarChart3, description: "Google Ads weekly metrics" },
+  { name: "Bing Ads", href: "/?tab=bing-ads", icon: Search, description: "Bing Ads weekly metrics" },
+  { name: "Landing Pages", href: "/?tab=landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
   { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
   { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
   { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
@@ -39,8 +39,14 @@ interface DashboardNavProps {
 export function DashboardNav({ theme = "dark" }: DashboardNavProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const [fullPath, setFullPath] = useState(pathname)
 
-  const currentDashboard = dashboards.find(d => d.href === pathname) || dashboards[0]
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab")
+    setFullPath(tab && pathname === "/" ? `/?tab=${tab}` : pathname)
+  }, [pathname])
+
+  const currentDashboard = dashboards.find(d => d.href === fullPath) || dashboards[0]
   const CurrentIcon = currentDashboard.icon
 
   const isDark = theme === "dark"
@@ -73,7 +79,7 @@ export function DashboardNav({ theme = "dark" }: DashboardNavProps) {
           }`}>
             {dashboards.map((dashboard) => {
               const Icon = dashboard.icon
-              const isActive = pathname === dashboard.href
+              const isActive = fullPath === dashboard.href
               return (
                 <Link
                   key={dashboard.href}

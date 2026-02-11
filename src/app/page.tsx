@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   Card,
   CardContent,
@@ -1965,8 +1966,18 @@ async function fetchWithCache<T>(
 }
 
 
-export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<TabType>("sales")
+const validTabs: TabType[] = ["sales", "traffic", "conversions", "conversion-pct", "google-ads", "bing-ads", "jedi-council", "subscriptions", "landing-pages"]
+
+function DashboardPageContent() {
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get("tab") as TabType | null
+  const [activeTab, setActiveTab] = useState<TabType>(tabParam && validTabs.includes(tabParam) ? tabParam : "sales")
+
+  useEffect(() => {
+    if (tabParam && validTabs.includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
 
   // Sales state
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null)
@@ -6608,5 +6619,10 @@ export default function DashboardPage() {
   )
 }
 
-
-
+export default function DashboardPage() {
+  return (
+    <Suspense>
+      <DashboardPageContent />
+    </Suspense>
+  )
+}
