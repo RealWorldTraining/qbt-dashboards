@@ -835,7 +835,7 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type TabType = "sales" | "traffic" | "conversions" | "conversion-pct" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions" | "landing-pages" | "gsc"
+type TabType = "sales" | "traffic" | "conversions" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions" | "landing-pages" | "gsc"
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -1973,7 +1973,7 @@ async function fetchWithCache<T>(
 }
 
 
-const validTabs: TabType[] = ["sales", "traffic", "conversions", "conversion-pct", "google-ads", "bing-ads", "jedi-council", "subscriptions", "landing-pages", "gsc"]
+const validTabs: TabType[] = ["sales", "traffic", "conversions", "google-ads", "bing-ads", "jedi-council", "subscriptions", "landing-pages", "gsc"]
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -2012,7 +2012,8 @@ function DashboardPageContent() {
   const [conversionTrends, setConversionTrends] = useState<TrafficTrendsResponse | null>(null)
   const [conversionSource, setConversionSource] = useState<ConversionSource>('total')
 
-  // Conversion % state
+  // Conversion view toggle (counts vs rate)
+  const [convView, setConvView] = useState<'counts' | 'rate'>('counts')
   const [convPctSource, setConvPctSource] = useState<ConversionSource>('total')
 
   // Google Ads Trends state
@@ -2294,8 +2295,7 @@ function DashboardPageContent() {
   // Lazy load tab data when tab changes
   useEffect(() => {
     if (activeTab === 'traffic') fetchTrafficData()
-    else if (activeTab === 'conversions') fetchConversionData()
-    else if (activeTab === 'conversion-pct') { fetchTrafficData(); fetchConversionData() }
+    else if (activeTab === 'conversions') { fetchTrafficData(); fetchConversionData() }
     else if (activeTab === 'google-ads') fetchGoogleAdsData()
     else if (activeTab === 'bing-ads') fetchBingAdsData()
     else if (activeTab === 'jedi-council') fetchJediData()
@@ -2316,17 +2316,31 @@ function DashboardPageContent() {
     return () => clearInterval(refreshInterval)
   }, [activeTab])
 
-  const tabs = [
-    { id: "sales" as TabType, label: "Sales", icon: DollarSign },
-    { id: "traffic" as TabType, label: "Traffic", icon: Users },
-    { id: "conversions" as TabType, label: "Conversions", icon: CheckCircle2 },
-    { id: "conversion-pct" as TabType, label: "Conversion %", icon: Percent },
-    { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
-    { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
-    { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
-    { id: "gsc" as TabType, label: "Search Console", icon: Search },
-    { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
-    { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
+  const tabGroups = [
+    {
+      label: "Core Metrics",
+      tabs: [
+        { id: "sales" as TabType, label: "Sales", icon: DollarSign },
+        { id: "traffic" as TabType, label: "Traffic", icon: Users },
+        { id: "conversions" as TabType, label: "Conversions", icon: CheckCircle2 },
+      ],
+    },
+    {
+      label: "Channels",
+      tabs: [
+        { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
+        { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
+        { id: "gsc" as TabType, label: "Search Console", icon: Search },
+      ],
+    },
+    {
+      label: "Operations",
+      tabs: [
+        { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
+        { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
+        { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
+      ],
+    },
   ]
 
   return (
@@ -2348,24 +2362,33 @@ function DashboardPageContent() {
             )}
           </div>
           {/* Tab Navigation */}
-          <div className="flex gap-1 -mb-px">
-            {tabs.map((tab) => {
-              const Icon = tab.icon
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === tab.id
-                      ? "border-[#0066CC] text-[#0066CC]"
-                      : "border-transparent text-[#6E6E73] hover:text-[#1D1D1F] hover:border-[#D2D2D7]"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                </button>
-              )
-            })}
+          <div className="flex items-center -mb-px">
+            {tabGroups.map((group, gi) => (
+              <div key={group.label} className="flex items-center">
+                {gi > 0 && (
+                  <div className="h-6 w-px bg-[#D2D2D7] mx-2" />
+                )}
+                <div className="flex gap-1">
+                  {group.tabs.map((tab) => {
+                    const Icon = tab.icon
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                          activeTab === tab.id
+                            ? "border-[#0066CC] text-[#0066CC]"
+                            : "border-transparent text-[#6E6E73] hover:text-[#1D1D1F] hover:border-[#D2D2D7]"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {tab.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </header>
@@ -4489,29 +4512,60 @@ function DashboardPageContent() {
         {/* Conversions Tab */}
         {activeTab === "conversions" && (
           <>
-            {/* Conversion Source Toggle */}
-            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
-              {([
-                { key: 'total' as ConversionSource, label: 'Total Conversions', color: '#34C759' },
-                { key: 'organic' as ConversionSource, label: 'Organic', color: '#0066CC' },
-                { key: 'direct' as ConversionSource, label: 'Direct', color: '#FF9500' },
-                { key: 'referral' as ConversionSource, label: 'Referral', color: '#AF52DE' },
-                { key: 'paid' as ConversionSource, label: 'Paid', color: '#FF3B30' },
-              ]).map(({ key, label, color }) => (
+            {/* View Toggle + Source Filter */}
+            <div className="flex items-center gap-4 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+              {/* Counts vs Rate toggle */}
+              <div className="flex bg-white rounded-lg border border-[#D2D2D7] p-0.5">
                 <button
-                  key={key}
-                  onClick={() => setConversionSource(key)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    conversionSource === key
-                      ? 'text-white shadow-md'
-                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  onClick={() => setConvView('counts')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    convView === 'counts' ? 'bg-[#0066CC] text-white shadow-sm' : 'text-[#6E6E73] hover:text-[#1D1D1F]'
                   }`}
-                  style={conversionSource === key ? { backgroundColor: color } : {}}
                 >
-                  {label}
+                  Counts
                 </button>
-              ))}
+                <button
+                  onClick={() => setConvView('rate')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+                    convView === 'rate' ? 'bg-[#5856D6] text-white shadow-sm' : 'text-[#6E6E73] hover:text-[#1D1D1F]'
+                  }`}
+                >
+                  Rate %
+                </button>
+              </div>
+              <div className="h-6 w-px bg-[#D2D2D7]" />
+              {/* Source filter pills */}
+              <div className="flex flex-wrap gap-2">
+                {([
+                  { key: 'total' as ConversionSource, label: convView === 'counts' ? 'Total Conversions' : 'Total', color: convView === 'counts' ? '#34C759' : '#5856D6' },
+                  { key: 'organic' as ConversionSource, label: 'Organic', color: '#0066CC' },
+                  { key: 'direct' as ConversionSource, label: 'Direct', color: '#FF9500' },
+                  { key: 'referral' as ConversionSource, label: 'Referral', color: '#AF52DE' },
+                  { key: 'paid' as ConversionSource, label: 'Paid', color: '#FF3B30' },
+                ]).map(({ key, label, color }) => {
+                  const activeSource = convView === 'counts' ? conversionSource : convPctSource
+                  const setSource = convView === 'counts' ? setConversionSource : setConvPctSource
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setSource(key)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        activeSource === key
+                          ? 'text-white shadow-md'
+                          : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                      }`}
+                      style={activeSource === key ? { backgroundColor: color } : {}}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
+
+            {/* Counts View */}
+            {convView === 'counts' && (
+            <>
 
             {conversionsLoading && !conversionTrends ? (
               <div className="flex items-center justify-center h-64">
@@ -5030,36 +5084,12 @@ function DashboardPageContent() {
                 No conversion data available
               </div>
             )}
-          </>
-        )}
+            </>
+            )}
 
-        {/* Conversion % Tab */}
-        {activeTab === "conversion-pct" && (
-          <>
-            {/* Conversion % Source Toggle */}
-            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
-              {([
-                { key: 'total' as ConversionSource, label: 'Total', color: '#5856D6' },
-                { key: 'organic' as ConversionSource, label: 'Organic', color: '#0066CC' },
-                { key: 'direct' as ConversionSource, label: 'Direct', color: '#FF9500' },
-                { key: 'referral' as ConversionSource, label: 'Referral', color: '#AF52DE' },
-                { key: 'paid' as ConversionSource, label: 'Paid', color: '#FF3B30' },
-              ]).map(({ key, label, color }) => (
-                <button
-                  key={key}
-                  onClick={() => setConvPctSource(key)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    convPctSource === key
-                      ? 'text-white shadow-md'
-                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
-                  }`}
-                  style={convPctSource === key ? { backgroundColor: color } : {}}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
+            {/* Rate View */}
+            {convView === 'rate' && (
+            <>
             {(trafficLoading || conversionsLoading) && (!trafficTrends || !conversionTrends) ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-[#5856D6]" />
@@ -5421,6 +5451,8 @@ function DashboardPageContent() {
               <div className="text-center text-[#6E6E73] py-12">
                 No data available — both traffic and conversion data are required
               </div>
+            )}
+            </>
             )}
           </>
         )}
