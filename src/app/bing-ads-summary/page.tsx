@@ -229,7 +229,7 @@ function SummaryTab() {
         <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
           <h2 className="text-white text-lg font-semibold mb-4">Weekly Account Summary</h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-base">
               <thead>
                 <tr className="border-b border-gray-700">
                   <th className="text-left py-3 px-4 text-gray-400 font-medium">Week</th>
