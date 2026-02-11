@@ -6265,54 +6265,57 @@ function DashboardPageContent() {
             ) : subscriptions ? (
               <>
                 {/* Hero Metrics Row */}
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-6 gap-4">
                   {/* Active Subscriptions */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-cyan-900/30 relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-cyan-900/30 relative overflow-hidden text-center">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">ACTIVE SUBS</div>
-                    <div className="text-4xl font-black text-white tracking-tight">
+                    <div className="text-5xl font-black text-white tracking-tight">
                       {formatNumber(subscriptions.metrics.active_subscriptions)}
-                    </div>
-                    <div className="text-cyan-400 text-sm mt-2 font-medium">
-                      {((subscriptions.metrics.active_subscriptions / subscriptions.metrics.total_subscriptions) * 100).toFixed(1)}% of all subs
                     </div>
                   </div>
 
                   {/* Revenue */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-emerald-900/30 relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-emerald-900/30 relative overflow-hidden text-center">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">ACTIVE REVENUE</div>
-                    <div className="text-4xl font-black text-white tracking-tight">
+                    <div className="text-5xl font-black text-white tracking-tight">
                       {formatCurrency(subscriptions.metrics.mrr)}
                     </div>
-                    <div className="text-emerald-400 text-sm mt-2 font-medium">
-                      Avg {formatCurrencyDecimal(subscriptions.metrics.avg_order_value)}/sub
+                  </div>
+
+                  {/* Avg Revenue Per Sub */}
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-emerald-900/30 relative overflow-hidden text-center">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8" />
+                    <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">AVG REVENUE/SUB</div>
+                    <div className="text-5xl font-black text-white tracking-tight">
+                      {formatCurrencyDecimal(subscriptions.metrics.avg_order_value)}
                     </div>
                   </div>
 
                   {/* New This Week */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden text-center">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">NEW THIS WEEK</div>
-                    <div className="text-4xl font-black text-green-400 tracking-tight">
+                    <div className="text-5xl font-black text-green-400 tracking-tight">
                       +{formatNumber(subscriptions.metrics.new_this_week)}
                     </div>
                   </div>
 
                   {/* New This Month */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-green-900/30 relative overflow-hidden text-center">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">NEW THIS MONTH</div>
-                    <div className="text-4xl font-black text-green-400 tracking-tight">
+                    <div className="text-5xl font-black text-green-400 tracking-tight">
                       +{formatNumber(subscriptions.metrics.new_this_month)}
                     </div>
                   </div>
 
                   {/* Cancelled This Month */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-red-900/30 relative overflow-hidden">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-red-900/30 relative overflow-hidden text-center">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">CANCELLED THIS MONTH</div>
-                    <div className="text-4xl font-black text-red-400 tracking-tight">
+                    <div className="text-5xl font-black text-red-400 tracking-tight">
                       -{formatNumber(subscriptions.metrics.cancelled_this_month)}
                     </div>
                   </div>
