@@ -331,7 +331,7 @@ export default function VisionDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-[1800px] mx-auto">
+      <div className="max-w-[1920px] mx-auto">
         <h1 className="text-4xl font-bold mb-2">Vision Analytics Dashboard</h1>
         <p className="text-gray-600 mb-2">Keyword-level insights and bid optimization</p>
         {dateRange && (

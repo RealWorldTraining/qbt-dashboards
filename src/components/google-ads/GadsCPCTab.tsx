@@ -152,17 +152,17 @@ export function GadsCPCTab() {
       label: 'RAISE',
       data: data.recommendations.filter(r => r.action === 'RAISE').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
       backgroundColor: '#10B981',
-      pointRadius: 6
+      pointRadius: 10
     }, {
       label: 'LOWER',
       data: data.recommendations.filter(r => r.action === 'LOWER').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
       backgroundColor: '#EF4444',
-      pointRadius: 6
+      pointRadius: 10
     }, {
       label: 'HOLD',
       data: data.recommendations.filter(r => r.action === 'HOLD').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
       backgroundColor: '#6B7280',
-      pointRadius: 6
+      pointRadius: 10
     }]
   }
 
@@ -203,41 +203,41 @@ export function GadsCPCTab() {
           onClick={() => setFilter('ALL')}
           className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'ALL' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-xs mb-1">TOTAL KEYWORDS</div>
-          <div className="text-white text-3xl font-bold">{data.summary.total}</div>
+          <div className="text-gray-400 text-lg mb-1">TOTAL KEYWORDS</div>
+          <div className="text-white text-5xl font-bold">{data.summary.total}</div>
         </div>
         <div
           onClick={() => setFilter('RAISE')}
           className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'RAISE' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-xs mb-1">RAISE BIDS</div>
-          <div className="text-green-500 text-3xl font-bold">{data.summary.actions.RAISE || 0}</div>
-          <div className="text-gray-500 text-xs">+${data.summary.totalBidIncrease.toFixed(2)}</div>
+          <div className="text-gray-400 text-lg mb-1">RAISE BIDS</div>
+          <div className="text-green-500 text-5xl font-bold">{data.summary.actions.RAISE || 0}</div>
+          <div className="text-gray-500 text-base">+${data.summary.totalBidIncrease.toFixed(2)}</div>
         </div>
         <div
           onClick={() => setFilter('LOWER')}
           className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'LOWER' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-xs mb-1">LOWER BIDS</div>
-          <div className="text-red-500 text-3xl font-bold">{data.summary.actions.LOWER || 0}</div>
-          <div className="text-gray-500 text-xs">-${data.summary.totalBidDecrease.toFixed(2)}</div>
+          <div className="text-gray-400 text-lg mb-1">LOWER BIDS</div>
+          <div className="text-red-500 text-5xl font-bold">{data.summary.actions.LOWER || 0}</div>
+          <div className="text-gray-500 text-base">-${data.summary.totalBidDecrease.toFixed(2)}</div>
         </div>
         <div
           onClick={() => setFilter('HOLD')}
           className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'HOLD' ? 'ring-2 ring-green-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-xs mb-1">HOLD</div>
-          <div className="text-gray-400 text-3xl font-bold">{data.summary.actions.HOLD || 0}</div>
+          <div className="text-gray-400 text-lg mb-1">HOLD</div>
+          <div className="text-gray-400 text-5xl font-bold">{data.summary.actions.HOLD || 0}</div>
         </div>
       </div>
 
       {/* 6-Week Performance Table */}
       <div className="mb-6">
         <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-sm font-medium mb-4">TRAILING 6-WEEK PERFORMANCE</h3>
+          <h3 className="text-gray-300 text-2xl font-medium mb-4">TRAILING 6-WEEK PERFORMANCE</h3>
           {fourWeekData && fourWeekData.weeks.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-2xl">
                 <thead>
                   <tr className="border-b border-gray-800">
                     <th className="text-left text-gray-400 font-medium py-3 pr-4"></th>
@@ -245,8 +245,8 @@ export function GadsCPCTab() {
                       const labels = ['Current Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
                       return (
                         <th key={week.date} className="text-center py-3 px-3">
-                          <div className="text-cyan-400 text-xs font-medium">{labels[idx]}</div>
-                          <div className="text-gray-500 text-xs mt-1">{week.date}</div>
+                          <div className="text-cyan-400 text-xl font-medium">{labels[idx]}</div>
+                          <div className="text-gray-500 text-lg mt-1">{week.date}</div>
                         </th>
                       )
                     })}
@@ -297,29 +297,31 @@ export function GadsCPCTab() {
       {/* Charts */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-sm font-medium mb-4">ACTION DISTRIBUTION</h3>
+          <h3 className="text-gray-300 text-xl font-medium mb-4">ACTION DISTRIBUTION</h3>
           <div className="h-[280px] flex items-center justify-center">
             <Doughnut data={actionData} options={{
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 11 } } }
+                legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 17 } } }
               }
             }} />
           </div>
         </div>
         <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-sm font-medium mb-4">CURRENT VS SUGGESTED CPC</h3>
+          <h3 className="text-gray-300 text-xl font-medium mb-4">CURRENT VS SUGGESTED CPC</h3>
           <div className="h-[280px]">
             <Scatter data={scatterData} options={{
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 11 } } },
+                legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 17 } } },
                 tooltip: {
                   backgroundColor: '#1F2937',
                   titleColor: '#F3F4F6',
                   bodyColor: '#D1D5DB',
+                  titleFont: { size: 15 },
+                  bodyFont: { size: 15 },
                   callbacks: {
                     label: (ctx: any) => `Current: $${ctx.parsed.x.toFixed(2)}, Suggested: $${ctx.parsed.y.toFixed(2)}`
                   }
@@ -327,14 +329,14 @@ export function GadsCPCTab() {
               },
               scales: {
                 x: {
-                  title: { display: true, text: 'Current Max CPC', color: '#9CA3AF' },
+                  title: { display: true, text: 'Current Max CPC', color: '#9CA3AF', font: { size: 15 } },
                   grid: { color: '#1F2937' },
-                  ticks: { color: '#9CA3AF', callback: (v: any) => '$' + v.toFixed(2) }
+                  ticks: { color: '#9CA3AF', font: { size: 14 }, callback: (v: any) => '$' + v.toFixed(2) }
                 },
                 y: {
-                  title: { display: true, text: 'Suggested Max CPC', color: '#9CA3AF' },
+                  title: { display: true, text: 'Suggested Max CPC', color: '#9CA3AF', font: { size: 15 } },
                   grid: { color: '#1F2937' },
-                  ticks: { color: '#9CA3AF', callback: (v: any) => '$' + v.toFixed(2) }
+                  ticks: { color: '#9CA3AF', font: { size: 14 }, callback: (v: any) => '$' + v.toFixed(2) }
                 }
               }
             }} />
@@ -348,7 +350,7 @@ export function GadsCPCTab() {
           <button
             key={action}
             onClick={() => setFilter(action)}
-            className={`px-4 py-2 rounded text-sm font-medium ${
+            className={`px-5 py-3 rounded text-xl font-medium ${
               filter === action
                 ? 'bg-green-600 text-white'
                 : 'bg-[#1a1a1a] text-gray-400 hover:bg-gray-800'

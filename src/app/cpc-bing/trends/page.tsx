@@ -116,7 +116,7 @@ export default function BingCPCTrendsPage() {
   return (
     <div className="min-h-screen bg-black p-4">
       <DashboardNav />
-      <div className="max-w-[1800px] mx-auto">
+      <div className="max-w-[1920px] mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <a

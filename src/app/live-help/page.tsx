@@ -277,7 +277,7 @@ export default function LiveHelpDashboard() {
         }, 100);
       }} />
       <div className="min-h-screen bg-gradient-to-br from-[#0f0f23] to-[#1a1a2e] text-white">
-        <div className="max-w-[1800px] mx-auto p-5">
+        <div className="max-w-[1920px] mx-auto p-5">
           <header className="text-center py-6 border-b border-green-500/30 mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-green-400 to-cyan-400 bg-clip-text text-transparent mb-2 flex items-center justify-center gap-3">
               <img src="/qb-logo.png" alt="QuickBooks" className="h-10" />
