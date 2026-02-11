@@ -61,8 +61,8 @@ export async function GET() {
     // Sort by date descending
     weeklyData.sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime())
 
-    // Get unique dates (weeks) and take the 4 most recent
-    const uniqueWeeks = [...new Set(weeklyData.map(d => d.date))].slice(0, 4)
+    // Get unique dates (weeks) and take the 6 most recent
+    const uniqueWeeks = [...new Set(weeklyData.map(d => d.date))].slice(0, 6)
     
     // Calculate totals for each week
     const weeklyTotals = uniqueWeeks.map(week => {

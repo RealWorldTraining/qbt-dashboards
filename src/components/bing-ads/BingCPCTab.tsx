@@ -228,39 +228,62 @@ export function BingCPCTab() {
         </div>
       </div>
 
-      {/* 4-Week Performance */}
+      {/* 6-Week Performance Table */}
       <div className="mb-6">
         <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-sm font-medium mb-4">TRAILING 4-WEEK PERFORMANCE</h3>
+          <h3 className="text-gray-300 text-sm font-medium mb-4">TRAILING 6-WEEK PERFORMANCE</h3>
           {fourWeekData && fourWeekData.weeks.length > 0 ? (
-            <div className="grid grid-cols-4 gap-4">
-              {fourWeekData.weeks.map((week, idx) => {
-                const labels = ['Current Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago']
-                return (
-                  <div key={week.date} className="border border-gray-800 rounded-lg p-4">
-                    <div className="text-cyan-400 text-xs font-medium mb-2">{labels[idx]}</div>
-                    <div className="text-gray-500 text-xs mb-3">{week.date}</div>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">IMPR</div>
-                        <div className="text-white text-lg font-bold">{week.impressions.toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">CLICKS</div>
-                        <div className="text-white text-lg font-bold">{week.clicks.toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">COST</div>
-                        <div className="text-white text-lg font-bold">${Math.round(week.cost).toLocaleString()}</div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 text-xs mb-1">CONV</div>
-                        <div className="text-white text-lg font-bold">{Math.round(week.conversions)}</div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-800">
+                    <th className="text-left text-gray-400 font-medium py-3 pr-4"></th>
+                    {fourWeekData.weeks.map((week, idx) => {
+                      const labels = ['Current Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
+                      return (
+                        <th key={week.date} className="text-center py-3 px-3">
+                          <div className="text-cyan-400 text-xs font-medium">{labels[idx]}</div>
+                          <div className="text-gray-500 text-xs mt-1">{week.date}</div>
+                        </th>
+                      )
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-gray-800/50">
+                    <td className="text-gray-400 font-medium py-3 pr-4">Impressions</td>
+                    {fourWeekData.weeks.map(week => (
+                      <td key={week.date} className="text-white text-center font-bold py-3 px-3">{week.impressions.toLocaleString()}</td>
+                    ))}
+                  </tr>
+                  <tr className="border-b border-gray-800/50">
+                    <td className="text-gray-400 font-medium py-3 pr-4">Clicks</td>
+                    {fourWeekData.weeks.map(week => (
+                      <td key={week.date} className="text-white text-center font-bold py-3 px-3">{week.clicks.toLocaleString()}</td>
+                    ))}
+                  </tr>
+                  <tr className="border-b border-gray-800/50">
+                    <td className="text-gray-400 font-medium py-3 pr-4">CTR</td>
+                    {fourWeekData.weeks.map(week => (
+                      <td key={week.date} className="text-white text-center font-bold py-3 px-3">
+                        {week.impressions > 0 ? ((week.clicks / week.impressions) * 100).toFixed(1) : '0.0'}%
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="border-b border-gray-800/50">
+                    <td className="text-gray-400 font-medium py-3 pr-4">Cost</td>
+                    {fourWeekData.weeks.map(week => (
+                      <td key={week.date} className="text-white text-center font-bold py-3 px-3">${Math.round(week.cost).toLocaleString()}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="text-gray-400 font-medium py-3 pr-4">Conversions</td>
+                    {fourWeekData.weeks.map(week => (
+                      <td key={week.date} className="text-white text-center font-bold py-3 px-3">{Math.round(week.conversions)}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           ) : (
             <div className="text-gray-500 text-center py-16">Loading...</div>
