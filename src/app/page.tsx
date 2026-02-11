@@ -810,6 +810,7 @@ interface SubscriberMetricsData {
   median_subscription_months: number
   lifetime_churn_rate: number
   cohort_survival: Record<string, number>
+  avg_duration_by_year: Record<string, number>
   renewal_trend: {
     cohort_2023_avg: number
     cohort_2024_avg: number
@@ -6385,6 +6386,32 @@ export default function DashboardPage() {
                                   <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${Math.min(pct, 100)}%` }} />
                                 </div>
                                 <div className="text-gray-400 text-sm mt-1">still active</div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Avg Duration by Signup Year */}
+                    {subscriberMetrics.data.avg_duration_by_year && Object.keys(subscriberMetrics.data.avg_duration_by_year).length > 0 && (
+                      <>
+                        <div className="text-gray-400 text-sm font-medium mb-3 tracking-wide">AVG SUBSCRIPTION DURATION BY SIGNUP YEAR</div>
+                        <div className="text-gray-500 text-sm mb-4">Average months subscribed before cancellation</div>
+                        <div className="grid grid-cols-7 gap-3 mb-6">
+                          {Object.entries(subscriberMetrics.data.avg_duration_by_year).map(([year, months]) => {
+                            const durColor = months >= 12 ? 'text-emerald-400' : months >= 8 ? 'text-cyan-400' : months >= 4 ? 'text-amber-400' : 'text-red-400'
+                            const barColor = months >= 12 ? 'bg-emerald-500' : months >= 8 ? 'bg-cyan-500' : months >= 4 ? 'bg-amber-500' : 'bg-red-500'
+                            const maxMonths = Math.max(...Object.values(subscriberMetrics.data!.avg_duration_by_year))
+                            const barWidth = maxMonths > 0 ? (months / maxMonths) * 100 : 0
+                            return (
+                              <div key={year} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30">
+                                <div className="text-gray-300 text-sm font-semibold mb-2">{year}</div>
+                                <div className={`text-2xl font-black ${durColor}`}>{months}</div>
+                                <div className="text-gray-400 text-sm">months</div>
+                                <div className="mt-2 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                                  <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${barWidth}%` }} />
+                                </div>
                               </div>
                             )
                           })}
