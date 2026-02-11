@@ -16,6 +16,7 @@ import {
   Line,
   LabelList,
   LineChart,
+  Area,
 } from "recharts"
 import { Doughnut, Scatter } from 'react-chartjs-2'
 import {
@@ -536,73 +537,116 @@ function SummaryTab() {
       </div>
 
       {/* Main Chart - Spend & Conversions */}
-      <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
+      <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 mb-6 border border-white/5">
         <h2 className="text-white text-lg font-semibold mb-4">Weekly Spend & Conversions</h2>
-        <div style={{ width: '100%', height: 400 }}>
+        <div style={{ width: '100%', height: 420 }}>
           {chartData.length > 0 && (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="week" stroke="#666" tick={{ fill: '#999', fontSize: 11 }} />
+              <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 0, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="gads-spendGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#4338ca" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient id="gads-convAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                  <filter id="gads-glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
+                <XAxis dataKey="week" stroke="transparent" tick={{ fill: '#94a3b8', fontSize: 12 }} tickLine={false} />
                 <YAxis
                   yAxisId="left"
-                  stroke="#666"
-                  tick={{ fill: '#999', fontSize: 12 }}
+                  stroke="transparent"
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tickLine={false}
                   tickFormatter={(value) => value >= 1000 ? `$${(value / 1000).toFixed(0)}k` : `$${value}`}
                   domain={[0, 30000]}
                 />
-                <YAxis yAxisId="right" orientation="right" stroke="#666" tick={{ fill: '#999', fontSize: 12 }} domain={[0, 150]} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar yAxisId="left" dataKey="spend" name="spend" fill={METRIC_COLORS.spend} radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="spend" position="insideTop" fill="#ffffff" fontSize={33} formatter={(value: any) => typeof value === 'number' ? `$${(value / 1000).toFixed(0)}k` : ''} />
+                <YAxis yAxisId="right" orientation="right" stroke="transparent" tick={{ fill: '#94a3b8', fontSize: 12 }} tickLine={false} domain={[0, 150]} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                <Bar yAxisId="left" dataKey="spend" name="spend" fill="url(#gads-spendGradient)" radius={[6, 6, 0, 0]}>
+                  <LabelList dataKey="spend" position="insideTop" fill="#ffffff" fontSize={20} fontWeight={700} formatter={(value: any) => typeof value === 'number' ? `$${(value / 1000).toFixed(0)}k` : ''} />
                 </Bar>
-                <Line yAxisId="right" type="monotone" dataKey="conversions" name="conversions" stroke={METRIC_COLORS.conversions} strokeWidth={3} dot={{ fill: METRIC_COLORS.conversions, r: 5 }}>
-                  <LabelList dataKey="conversions" position="top" fill="#22c55e" fontSize={33} offset={10} />
+                <Area yAxisId="right" type="monotone" dataKey="conversions" fill="url(#gads-convAreaGradient)" stroke="transparent" />
+                <Line yAxisId="right" type="monotone" dataKey="conversions" name="conversions" stroke="#34d399" strokeWidth={3} dot={{ fill: '#1a1a2e', stroke: '#34d399', strokeWidth: 3, r: 6 }} activeDot={{ r: 8, fill: '#34d399' }} filter="url(#gads-glow)">
+                  <LabelList dataKey="conversions" position="top" fill="#34d399" fontSize={16} fontWeight={700} offset={14} />
                 </Line>
               </ComposedChart>
             </ResponsiveContainer>
           )}
         </div>
+        <div className="flex justify-center gap-6 mt-2">
+          <div className="flex items-center gap-2"><div className="w-4 h-3 rounded-sm bg-gradient-to-b from-[#6366f1] to-[#4338ca]" /><span className="text-sm text-slate-400">Spend</span></div>
+          <div className="flex items-center gap-2"><div className="w-4 h-0.5 bg-[#34d399] rounded-full" /><span className="text-sm text-slate-400">Conversions</span></div>
+        </div>
       </div>
 
       {/* CPC & CPA Chart */}
-      <div className="bg-[#1a1a1a] rounded-xl p-6 mb-6">
+      <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 mb-6 border border-white/5">
         <h2 className="text-white text-lg font-semibold mb-4">Avg CPC & Cost Per Conversion</h2>
-        <div style={{ width: '100%', height: 400 }}>
+        <div style={{ width: '100%', height: 420 }}>
           {chartData.length > 0 && (
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={chartData} margin={{ top: 30, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="week" stroke="#666" tick={{ fill: '#999', fontSize: 11 }} />
+              <ComposedChart data={chartData} margin={{ top: 30, right: 40, left: 0, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="gads-cpaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#06b6d4" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#0891b2" stopOpacity={0.7} />
+                  </linearGradient>
+                  <linearGradient id="gads-cpcAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+                  </linearGradient>
+                  <filter id="gads-glowAmber">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
+                <XAxis dataKey="week" stroke="transparent" tick={{ fill: '#94a3b8', fontSize: 12 }} tickLine={false} />
                 <YAxis
                   yAxisId="left"
-                  stroke="#666"
-                  tick={{ fill: '#999', fontSize: 12 }}
+                  stroke="transparent"
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tickLine={false}
                   tickFormatter={(value) => `$${value}`}
-                  label={{ value: 'CPA', angle: -90, position: 'insideLeft', fill: '#999', fontSize: 12 }}
                   domain={[0, 400]}
                 />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  stroke="#666"
-                  tick={{ fill: '#999', fontSize: 12 }}
+                  stroke="transparent"
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tickLine={false}
                   tickFormatter={(value) => `$${value.toFixed(2)}`}
-                  label={{ value: 'Avg CPC', angle: 90, position: 'insideRight', fill: '#999', fontSize: 12 }}
                   domain={[0, 3]}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar yAxisId="left" dataKey="cpa" name="cpa" fill={METRIC_COLORS.cpa} radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="cpa" position="insideTop" fill="#ffffff" fontSize={33} formatter={(value: any) => typeof value === 'number' ? `$${Math.round(value)}` : ''} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                <Bar yAxisId="left" dataKey="cpa" name="cpa" fill="url(#gads-cpaGradient)" radius={[6, 6, 0, 0]}>
+                  <LabelList dataKey="cpa" position="insideTop" fill="#ffffff" fontSize={20} fontWeight={700} formatter={(value: any) => typeof value === 'number' ? `$${Math.round(value)}` : ''} />
                 </Bar>
-                <Line yAxisId="right" type="monotone" dataKey="avg_cpc" name="avg_cpc" stroke={METRIC_COLORS.avg_cpc} strokeWidth={3} dot={{ fill: METRIC_COLORS.avg_cpc, r: 5 }}>
-                  <LabelList dataKey="avg_cpc" position="top" fill={METRIC_COLORS.avg_cpc} fontSize={33} offset={12} formatter={(value: any) => typeof value === 'number' ? `$${value.toFixed(2)}` : ''} />
+                <Area yAxisId="right" type="monotone" dataKey="avg_cpc" fill="url(#gads-cpcAreaGradient)" stroke="transparent" />
+                <Line yAxisId="right" type="monotone" dataKey="avg_cpc" name="avg_cpc" stroke="#fbbf24" strokeWidth={3} dot={{ fill: '#1a1a2e', stroke: '#fbbf24', strokeWidth: 3, r: 6 }} activeDot={{ r: 8, fill: '#fbbf24' }} filter="url(#gads-glowAmber)">
+                  <LabelList dataKey="avg_cpc" position="top" fill="#fbbf24" fontSize={16} fontWeight={700} offset={14} formatter={(value: any) => typeof value === 'number' ? `$${value.toFixed(2)}` : ''} />
                 </Line>
               </ComposedChart>
             </ResponsiveContainer>
           )}
+        </div>
+        <div className="flex justify-center gap-6 mt-2">
+          <div className="flex items-center gap-2"><div className="w-4 h-3 rounded-sm bg-gradient-to-b from-[#06b6d4] to-[#0891b2]" /><span className="text-sm text-slate-400">Cost Per Conversion</span></div>
+          <div className="flex items-center gap-2"><div className="w-4 h-0.5 bg-[#fbbf24] rounded-full" /><span className="text-sm text-slate-400">Avg CPC</span></div>
         </div>
       </div>
 
