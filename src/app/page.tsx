@@ -2271,7 +2271,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-[#F5F5F7]">
       {/* Header */}
       <header className="border-b border-[#D2D2D7] bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
               <DashboardNav theme="light" />
@@ -2309,7 +2309,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-[1800px] px-4 sm:px-6 lg:px-8 py-8">
         {/* Sales Tab */}
         {activeTab === "sales" && (
           <>

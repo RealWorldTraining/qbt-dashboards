@@ -285,7 +285,7 @@ export default function TeamStatsPage() {
     <div className="min-h-screen bg-[#F5F5F7]">
       {/* Header */}
       <div className="bg-white border-b border-[#D2D2D7] sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
             <DashboardNav theme="light" />
             <div>
@@ -297,7 +297,7 @@ export default function TeamStatsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Error State */}
         {error && (
           <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">

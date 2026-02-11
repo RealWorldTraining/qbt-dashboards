@@ -317,7 +317,7 @@ export default function AdsPage() {
 
   return (
     <div className="min-h-screen bg-black p-4">
-      <div className="max-w-[1920px] mx-auto">
+      <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
