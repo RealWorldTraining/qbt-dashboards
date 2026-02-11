@@ -2301,7 +2301,7 @@ function DashboardPageContent() {
     { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
     { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
     { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
-    { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles, external: "https://jedi-council-zeta.vercel.app" },
+    { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
   ]
 
   return (
