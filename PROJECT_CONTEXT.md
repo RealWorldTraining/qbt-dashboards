@@ -7,9 +7,19 @@
 - **GitHub:** `RealWorldTraining/qbt-dashboards`
 - **Local path (Aaron's Mac):** `/Users/professorx/clawd/qbt-dashboards`
 - **Live URL:** [qbtraining.ai](https://qbtraining.ai)
-- **Deployment:** Vercel (auto-deploys from `main` branch)
+- **Deployment:** Vercel — **Team: `data_dashboards`**, project: `qbt-dashboards` (auto-deploys from `main` branch)
 
 > **Note:** Clone the repo to your preferred location. The local path above is specific to Aaron's machine.
+
+## Deployment Boundaries (READ THIS)
+
+| What | Repo | Deploys To |
+|---|---|---|
+| Dashboard frontend (this repo) | `RealWorldTraining/qbt-dashboards` | Vercel → `data_dashboards` team |
+| Prophet API backend | `RealWorldTraining/prophet-api` | Railway (auto-deploy on push) |
+| QBTraining website | `RealWorldTraining/qbtraining-site` | Vercel → `RWT` team |
+
+**NEVER push to `qbtraining-site` during dashboard work.** That repo auto-deploys the main website on Vercel (RWT team). Pushing docs, prophet-api changes, or anything else there triggers unnecessary website rebuilds. Keep all dashboard work in THIS repo (`qbt-dashboards`) and prophet-api changes in `RealWorldTraining/prophet-api`.
 
 ## Reports & Data Sources (15 Total)
 
