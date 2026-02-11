@@ -284,14 +284,14 @@ export function GadsCPCTab() {
                   <tr key={i} className={`border-t border-gray-800 hover:bg-gray-700 ${bgClass}`}>
                     <td className="p-3 text-gray-300">{rec.keyword}</td>
                     <td className="p-3 text-gray-500 text-base">{rec.campaign}</td>
-                    <td className="p-3 text-right text-gray-400">{rec.impressions.toLocaleString()}</td>
-                    <td className="p-3 text-right text-gray-400">{rec.clicks.toLocaleString()}</td>
-                    <td className="p-3 text-right text-gray-400">
-                      {rec.impressions > 0 ? ((rec.clicks / rec.impressions) * 100).toFixed(1) : '0.0'}%
+                    <td className="p-3 text-right text-gray-400 text-base">{rec.impressions.toLocaleString()}</td>
+                    <td className="p-3 text-right text-gray-400 text-base">{rec.clicks.toLocaleString()}</td>
+                    <td className="p-3 text-right text-gray-400 text-base">
+                      {rec.impressions > 0 ? ((rec.clicks / rec.impressions) * 100).toFixed(0) : '0'}%
                     </td>
-                    <td className="p-3 text-right text-gray-400">${Math.round(rec.cost)}</td>
-                    <td className="p-3 text-right text-gray-400">{Math.round(rec.conversions)}</td>
-                    <td className="p-3 text-right text-gray-400">${Math.round(rec.costPerConv)}</td>
+                    <td className="p-3 text-right text-gray-400 text-base">${Math.round(rec.cost)}</td>
+                    <td className="p-3 text-right text-gray-400 text-base">{Math.round(rec.conversions)}</td>
+                    <td className="p-3 text-right text-gray-400 text-base">${Math.round(rec.costPerConv)}</td>
                     <td className="p-3 text-center">
                       <span className={`px-3 py-1.5 rounded text-base font-medium ${
                         rec.action === 'RAISE' ? 'bg-green-900 text-green-300' :
