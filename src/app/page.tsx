@@ -6065,15 +6065,28 @@ function DashboardPageContent() {
         )}
 
 
-        {/* Jedi Council Tab */}
+        {/* Jedi Council Tab - Opens externally */}
         {activeTab === "jedi-council" && (
-          <div className="w-full">
-            <iframe 
-              src="https://jedi-council-zeta.vercel.app" 
-              className="w-full h-[calc(100vh-200px)] border-0 rounded-lg shadow-sm"
-              title="Jedi Council"
-              allow="clipboard-read; clipboard-write"
-            />
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="text-center max-w-2xl">
+              <div className="text-6xl mb-4">🎓</div>
+              <h2 className="text-3xl font-bold text-[#1D1D1F] mb-4">Jedi Council</h2>
+              <p className="text-lg text-[#6E6E73] mb-8">
+                Multi-agent AI analysis with Claude Opus 4, GPT-4o, and Gemini 2.5 Pro
+              </p>
+              <a
+                href="https://jedi-council-zeta.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
+              >
+                <span>Open Jedi Council</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+              <p className="text-sm text-[#86868B] mt-4">Opens in a new window</p>
+            </div>
           </div>
         )}
 
