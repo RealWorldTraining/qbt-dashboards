@@ -6276,7 +6276,7 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Revenue */}
-                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-emerald-900/30 relative overflow-hidden text-center">
+                  <div className="bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 border border-emerald-900/30 relative overflow-hidden text-center" title="Monthly Recurring Revenue (MRR) — the sum of every currently active subscriber's recurring payment amount. This is not last month's revenue; it's a real-time snapshot of total monthly revenue if every active subscriber renews.">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8" />
                     <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">ACTIVE REVENUE</div>
                     <div className="text-5xl font-black text-white tracking-tight">
