@@ -794,6 +794,8 @@ interface SubscriberMetricsData {
   adjusted_churn_by_month: Record<string, number>
   adjusted_churn_rate_by_month: Record<string, number>
   avg_adjusted_churn_12mo: number
+  active_at_start_by_month: Record<string, number>
+  adjusted_attrition_rate_by_month: Record<string, number>
   // Tier breakdown
   tier_breakdown: {
     tier_29: number
@@ -6688,43 +6690,54 @@ function DashboardPageContent() {
                       {Object.entries(subscriberMetrics.data.adjusted_churn_by_month).map(([month, count]) => {
                         const totalChurn = subscriberMetrics.data?.churn_by_month?.[month] || 0
                         const immediateChurn = subscriberMetrics.data?.immediate_by_churn_month?.[month] || 0
-                        const adjustedRate = subscriberMetrics.data?.adjusted_churn_rate_by_month?.[month] || 0
-                        const rateColor = adjustedRate >= 60 ? 'text-red-400' : adjustedRate >= 45 ? 'text-amber-400' : 'text-emerald-400'
+                        const attritionRate = subscriberMetrics.data?.adjusted_attrition_rate_by_month?.[month] || 0
+                        const activeAtStart = subscriberMetrics.data?.active_at_start_by_month?.[month] || 0
+                        const rateColor = attritionRate >= 5 ? 'text-red-400' : attritionRate >= 3.5 ? 'text-amber-400' : 'text-emerald-400'
                         return (
                           <div key={month} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30">
                             <div className="text-gray-300 text-sm font-medium mb-2">{month}</div>
                             <div className={`text-2xl font-black ${count > 0 ? 'text-orange-400' : 'text-gray-500'}`}>
                               {count}
                             </div>
-                            <div className={`text-sm font-semibold mt-1 ${rateColor}`}>
-                              {adjustedRate}%
+                            <div className={`text-lg font-bold mt-1 ${rateColor}`}>
+                              {attritionRate}%
                             </div>
-                            <div className="text-gray-400 text-sm mt-0.5">
-                              {totalChurn} - {immediateChurn} imm
+                            <div className="text-gray-500 text-xs mt-0.5">
+                              of {activeAtStart.toLocaleString()} active
                             </div>
                           </div>
                         )
                       })}
                     </div>
                     {/* Summary metrics */}
-                    <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-700/50">
-                      <div className="text-center">
-                        <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG TOTAL CHURN/MO</div>
-                        <div className="text-2xl font-bold text-red-400">{subscriberMetrics.data.avg_churn_12mo}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG IMMEDIATE/MO</div>
-                        <div className="text-2xl font-bold text-red-300">{Math.round(subscriberMetrics.data.immediate_cancels_avg_monthly)}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG ADJUSTED/MO</div>
-                        <div className="text-2xl font-bold text-orange-400">{subscriberMetrics.data.avg_adjusted_churn_12mo}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-gray-400 text-sm mb-1 tracking-wide">IMMEDIATE % OF CHURN</div>
-                        <div className="text-2xl font-bold text-white">{subscriberMetrics.data.immediate_cancels_pct}%</div>
-                      </div>
-                    </div>
+                    {(() => {
+                      const attritionRates = Object.values(subscriberMetrics.data?.adjusted_attrition_rate_by_month || {})
+                      const avgAttrition = attritionRates.length > 0 ? (attritionRates.reduce((a, b) => a + b, 0) / attritionRates.length).toFixed(1) : '0'
+                      return (
+                        <div className="grid grid-cols-5 gap-4 pt-4 border-t border-gray-700/50">
+                          <div className="text-center">
+                            <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG TOTAL CHURN/MO</div>
+                            <div className="text-2xl font-bold text-red-400">{subscriberMetrics.data.avg_churn_12mo}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG IMMEDIATE/MO</div>
+                            <div className="text-2xl font-bold text-red-300">{Math.round(subscriberMetrics.data.immediate_cancels_avg_monthly)}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG ADJUSTED/MO</div>
+                            <div className="text-2xl font-bold text-orange-400">{subscriberMetrics.data.avg_adjusted_churn_12mo}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG ATTRITION RATE</div>
+                            <div className="text-2xl font-bold text-cyan-400">{avgAttrition}%</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-400 text-sm mb-1 tracking-wide">IMMEDIATE % OF CHURN</div>
+                            <div className="text-2xl font-bold text-white">{subscriberMetrics.data.immediate_cancels_pct}%</div>
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 )}
 
