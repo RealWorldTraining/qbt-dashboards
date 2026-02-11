@@ -6608,7 +6608,7 @@ function DashboardPageContent() {
                             return (
                               <div key={year} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30">
                                 <div className="text-gray-300 text-sm font-semibold mb-2">{year}</div>
-                                <div className={`text-2xl font-black ${durColor}`}>{months}</div>
+                                <div className={`text-2xl font-black ${durColor}`}>{Number(months).toFixed(1)}</div>
                                 <div className="text-gray-400 text-sm">months</div>
                                 <div className="mt-2 h-1.5 bg-gray-700 rounded-full overflow-hidden">
                                   <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${barWidth}%` }} />
