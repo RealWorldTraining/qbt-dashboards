@@ -6517,17 +6517,17 @@ function DashboardPageContent() {
                       <div>
                         <div className="text-gray-400 text-xs font-semibold tracking-wider mb-2">ALL SUBSCRIBERS <span className="text-gray-600">(excl. on-hold)</span></div>
                         <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20">
+                          <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20" title="Average subscription length across all subscribers (active + cancelled/expired), excluding on-hold. Higher means subscribers stick around longer on average.">
                             <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
                             <div className="text-4xl font-black text-cyan-400">{subscriberMetrics.data.avg_subscription_months}</div>
                             <div className="text-gray-400 text-sm mt-1">months</div>
                           </div>
-                          <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20">
+                          <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20" title="The midpoint subscription length — half of all subscribers lasted longer than this, half lasted shorter. Less affected by outliers than the average.">
                             <div className="text-gray-400 text-sm mb-2">MEDIAN DURATION</div>
                             <div className="text-4xl font-black text-cyan-400">{subscriberMetrics.data.median_subscription_months}</div>
                             <div className="text-gray-400 text-sm mt-1">months</div>
                           </div>
-                          <div className="bg-gradient-to-br from-red-900/30 to-red-950/30 rounded-lg p-4 text-center border border-red-800/20">
+                          <div className="bg-gradient-to-br from-red-900/30 to-red-950/30 rounded-lg p-4 text-center border border-red-800/20" title="Percentage of all subscriptions ever created that have been cancelled or expired. This is the all-time churn rate across the full subscriber base.">
                             <div className="text-gray-400 text-sm mb-2">LIFETIME CHURN</div>
                             <div className="text-4xl font-black text-red-400">{subscriberMetrics.data.lifetime_churn_rate}%</div>
                             <div className="text-gray-400 text-sm mt-1">of all subs</div>
@@ -6541,12 +6541,12 @@ function DashboardPageContent() {
                         <div>
                           <div className="text-emerald-400/80 text-xs font-semibold tracking-wider mb-2">ACTIVE SUBSCRIBERS</div>
                           <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 rounded-lg p-4 text-center border border-emerald-800/20">
+                            <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 rounded-lg p-4 text-center border border-emerald-800/20" title="Average number of months that currently active subscribers have been subscribed. Measures how long your retained customers have been with you.">
                               <div className="text-gray-400 text-sm mb-2">AVG TENURE</div>
                               <div className="text-3xl font-black text-emerald-400">{subscriberMetrics.data.active_avg_subscription_months}</div>
                               <div className="text-gray-400 text-sm mt-1">months</div>
                             </div>
-                            <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 rounded-lg p-4 text-center border border-emerald-800/20">
+                            <div className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 rounded-lg p-4 text-center border border-emerald-800/20" title="The midpoint tenure for active subscribers — half have been subscribed longer than this, half shorter.">
                               <div className="text-gray-400 text-sm mb-2">MEDIAN TENURE</div>
                               <div className="text-3xl font-black text-emerald-400">{subscriberMetrics.data.active_median_subscription_months}</div>
                               <div className="text-gray-400 text-sm mt-1">months</div>
@@ -6558,12 +6558,12 @@ function DashboardPageContent() {
                         <div>
                           <div className="text-amber-400/80 text-xs font-semibold tracking-wider mb-2">CANCELLED / EXPIRED</div>
                           <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20">
+                            <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20" title="Average number of months that cancelled/expired subscribers were subscribed before they left. Shows how long churned customers typically stayed.">
                               <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
                               <div className="text-3xl font-black text-amber-400">{subscriberMetrics.data.cancelled_avg_subscription_months}</div>
                               <div className="text-gray-400 text-sm mt-1">months</div>
                             </div>
-                            <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20">
+                            <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20" title="The midpoint duration for cancelled/expired subscribers — half lasted longer than this before cancelling, half lasted shorter.">
                               <div className="text-gray-400 text-sm mb-2">MEDIAN DURATION</div>
                               <div className="text-3xl font-black text-amber-400">{subscriberMetrics.data.cancelled_median_subscription_months}</div>
                               <div className="text-gray-400 text-sm mt-1">months</div>
