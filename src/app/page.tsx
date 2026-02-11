@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { DashboardNav } from "@/components/DashboardNav"
 import {
   ComposedChart,
   Bar,
@@ -2389,12 +2388,9 @@ function DashboardPageContent() {
       <header className="border-b border-[#D2D2D7] bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-3">
-              <DashboardNav theme="light" />
-              <h1 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight">
-                Command Center
-              </h1>
-            </div>
+            <h1 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight">
+              Command Center
+            </h1>
             {metrics && (
               <span className="text-sm text-[#6E6E73]">
                 {metrics.today.date_range}
