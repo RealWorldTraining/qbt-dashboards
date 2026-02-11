@@ -20,13 +20,13 @@ import {
 
 const dashboards = [
   { name: "Command Center", href: "/", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
-  { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
-  { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
-  { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
   { name: "GA4 Summary", href: "/playground", icon: BarChart3, description: "Monthly traffic by channel" },
   { name: "Google Ads", href: "/google-ads-summary", icon: BarChart3, description: "Google Ads weekly metrics" },
   { name: "Bing Ads", href: "/bing-ads-summary", icon: Search, description: "Bing Ads weekly metrics" },
   { name: "Landing Pages", href: "/landing-pages", icon: MapPin, description: "GA4 & Google Ads page performance" },
+  { name: "Trend Analysis", href: "/trend-analysis", icon: TrendingUp, description: "YoY & 4-week trends" },
+  { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
+  { name: "Intuit Sales", href: "/intuit-sales", icon: DollarSign, description: "Intuit revenue by category" },
   { name: "The Prophet", href: "/data", icon: Tv, description: "Profit predictions & forecasts" },
   { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
   { name: "Phone", href: "/phone", icon: Smartphone, description: "Mobile sales dashboard" },
