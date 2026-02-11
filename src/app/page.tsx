@@ -2457,59 +2457,47 @@ function DashboardPageContent() {
                               </tr>
                             </thead>
                             <tbody>
-                              {(() => {
-                                // Column-based heatmap: calculate max per hour (vertical comparison)
-                                const columnMaxes: Record<string, number> = {}
-                                hourlyComparison.hours.forEach(hour => {
-                                  const colValues = hourlyComparison.periods
-                                    .map(p => p.hourly_sales[hour])
-                                    .filter((v): v is number => v !== null)
-                                  columnMaxes[hour] = Math.max(...colValues, 1)
-                                })
+                              {hourlyComparison.periods.map((period) => {
+                                const isToday = period.period_label === "Today"
+                                const isShaded = period.period_label === "1 Year Ago" || period.period_label === "-1Y" || period.period_label.includes("Avg")
+                                const cellBg = isToday ? "bg-[#1A3A52]" : isShaded ? "bg-[#2D2D2F]" : "bg-[#1D1D1F]"
+                                // Row-based heatmap: max within this row
+                                const rowValues = hourlyComparison.hours.map(h => period.hourly_sales[h]).filter((v): v is number => v !== null)
+                                const rowMax = Math.max(...rowValues, 1)
 
-                                return hourlyComparison.periods.map((period, idx) => {
-                                  const isToday = period.period_label === "Today"
-                                  const isShaded = period.period_label === "1 Year Ago" || period.period_label === "-1Y" || period.period_label.includes("Avg")
-                                  const cellBg = isToday ? "bg-[#1A3A52]" : isShaded ? "bg-[#2D2D2F]" : "bg-[#1D1D1F]"
-
-                                  return (
-                                    <tr
-                                      key={period.period_label}
-                                      className="border-b border-white/5"
-                                    >
-                                      <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
-                                        <div className="font-semibold text-white">{abbreviatePeriodLabel(period.period_label)}</div>
-                                        {period.period_date && (
-                                          <div className="text-xs text-white/40">{period.period_date}</div>
-                                        )}
-                                      </td>
-                                      {hourlyComparison.hours.map((hour) => {
-                                        const value = period.hourly_sales[hour]
-                                        const colMax = columnMaxes[hour] || 1
-                                        const intensity = value ? Math.round((value / colMax) * 100) : 0
-                                        const bgColor = value === null
-                                          ? 'bg-[#1D1D1F]'
-                                          : intensity > 80 ? 'bg-blue-600'
-                                          : intensity > 60 ? 'bg-blue-500'
-                                          : intensity > 40 ? 'bg-blue-600/60'
-                                          : intensity > 20 ? 'bg-blue-600/40'
-                                          : 'bg-blue-600/20'
-                                        return (
-                                          <td
-                                            key={hour}
-                                            className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
-                                          >
-                                            {value === null ? "-" : value}
-                                          </td>
-                                        )
-                                      })}
-                                      <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${period.end_of_day === null ? "text-white/20" : "text-white"}`}>
-                                        {period.end_of_day === null ? "-" : period.end_of_day}
-                                      </td>
-                                    </tr>
-                                  )
-                                })
-                              })()}
+                                return (
+                                  <tr key={period.period_label} className="border-b border-white/5">
+                                    <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                      <div className="font-semibold text-white">{abbreviatePeriodLabel(period.period_label)}</div>
+                                      {period.period_date && (
+                                        <div className="text-xs text-white/40">{period.period_date}</div>
+                                      )}
+                                    </td>
+                                    {hourlyComparison.hours.map((hour) => {
+                                      const value = period.hourly_sales[hour]
+                                      const intensity = value ? Math.round((value / rowMax) * 100) : 0
+                                      const bgColor = value === null
+                                        ? 'bg-[#1D1D1F]'
+                                        : intensity > 80 ? 'bg-blue-600'
+                                        : intensity > 60 ? 'bg-blue-500'
+                                        : intensity > 40 ? 'bg-blue-600/60'
+                                        : intensity > 20 ? 'bg-blue-600/40'
+                                        : 'bg-blue-600/20'
+                                      return (
+                                        <td
+                                          key={hour}
+                                          className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                        >
+                                          {value === null ? "-" : value}
+                                        </td>
+                                      )
+                                    })}
+                                    <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${period.end_of_day === null ? "text-white/20" : "text-white"}`}>
+                                      {period.end_of_day === null ? "-" : period.end_of_day}
+                                    </td>
+                                  </tr>
+                                )
+                              })}
                             </tbody>
                           </table>
                         </div>
@@ -2548,7 +2536,6 @@ function DashboardPageContent() {
                         <tbody>
                           {(() => {
                             const hours = hourlyComparison.hours
-                            // Derive non-cumulative values
                             const getIndividualValue = (period: typeof hourlyComparison.periods[0], hourIdx: number) => {
                               const currentVal = period.hourly_sales[hours[hourIdx]]
                               if (currentVal === null) return null
@@ -2558,19 +2545,13 @@ function DashboardPageContent() {
                               return currentVal - prevVal
                             }
 
-                            // Column-based max for non-cumulative values
-                            const columnMaxes: Record<string, number> = {}
-                            hours.forEach((hour, hIdx) => {
-                              const colValues = hourlyComparison.periods
-                                .map(p => getIndividualValue(p, hIdx))
-                                .filter((v): v is number => v !== null)
-                              columnMaxes[hour] = Math.max(...colValues, 1)
-                            })
-
                             return hourlyComparison.periods.map((period) => {
                               const isToday = period.period_label === "Today"
                               const isShaded = period.period_label === "1 Year Ago" || period.period_label === "-1Y" || period.period_label.includes("Avg")
                               const cellBg = isToday ? "bg-[#1A3A52]" : isShaded ? "bg-[#2D2D2F]" : "bg-[#1D1D1F]"
+                              // Row-based max
+                              const rowValues = hours.map((_, hIdx) => getIndividualValue(period, hIdx)).filter((v): v is number => v !== null)
+                              const rowMax = Math.max(...rowValues, 1)
 
                               return (
                                 <tr key={period.period_label} className="border-b border-white/5">
@@ -2582,8 +2563,7 @@ function DashboardPageContent() {
                                   </td>
                                   {hours.map((hour, hIdx) => {
                                     const value = getIndividualValue(period, hIdx)
-                                    const colMax = columnMaxes[hour] || 1
-                                    const intensity = value ? Math.round((value / colMax) * 100) : 0
+                                    const intensity = value ? Math.round((value / rowMax) * 100) : 0
                                     const bgColor = value === null
                                       ? 'bg-[#1D1D1F]'
                                       : intensity > 80 ? 'bg-emerald-600'
@@ -2642,30 +2622,14 @@ function DashboardPageContent() {
                         </thead>
                         <tbody>
                           {(() => {
-                            // Column-based heatmap: calculate max per day (vertical comparison)
                             const days = extendedWeeklyTrends.days
-                            const columnMaxes: Record<string, number> = {}
-                            days.forEach(day => {
-                              const colValues = extendedWeeklyTrends.direct_qty
-                                .map(week => week.daily_cumulative[day])
-                                .filter((v): v is number => typeof v === 'number')
-                              columnMaxes[day] = Math.max(...colValues, 1)
-                            })
-
-                            const getHeatmapClass = (value: number | null | undefined, day: string) => {
-                              if (value === null || value === undefined) return 'bg-[#1D1D1F]'
-                              const colMax = columnMaxes[day] || 1
-                              const intensity = Math.round((value / colMax) * 100)
-                              if (intensity > 80) return 'bg-blue-600'
-                              if (intensity > 60) return 'bg-blue-500'
-                              if (intensity > 40) return 'bg-blue-600/60'
-                              if (intensity > 20) return 'bg-blue-600/40'
-                              return 'bg-blue-600/20'
-                            }
-
                             return extendedWeeklyTrends.direct_qty.map((week, idx) => {
                               const isCurrentWeek = week.week_label === "Current Week"
                               const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                              // Row-based max
+                              const rowValues = days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                              const rowMax = Math.max(...rowValues, 1)
+
                               return (
                                 <tr key={idx} className="border-b border-white/5">
                                   <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
@@ -2674,10 +2638,18 @@ function DashboardPageContent() {
                                   </td>
                                   {days.map(day => {
                                     const value = week.daily_cumulative[day]
+                                    const intensity = value ? Math.round((value / rowMax) * 100) : 0
+                                    const bgColor = value === null || value === undefined
+                                      ? 'bg-[#1D1D1F]'
+                                      : intensity > 80 ? 'bg-blue-600'
+                                      : intensity > 60 ? 'bg-blue-500'
+                                      : intensity > 40 ? 'bg-blue-600/60'
+                                      : intensity > 20 ? 'bg-blue-600/40'
+                                      : 'bg-blue-600/20'
                                     return (
                                       <td
                                         key={day}
-                                        className={`text-center py-3 px-1 ${getHeatmapClass(value, day)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                        className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
                                       >
                                         {value ?? '-'}
                                       </td>
@@ -2724,7 +2696,6 @@ function DashboardPageContent() {
                         <tbody>
                           {(() => {
                             const days = extendedWeeklyTrends.days
-                            // Derive non-cumulative values
                             const getIndividualValue = (week: typeof extendedWeeklyTrends.direct_qty[0], dayIdx: number) => {
                               const currentVal = week.daily_cumulative[days[dayIdx]]
                               if (currentVal === null || currentVal === undefined) return null
@@ -2734,18 +2705,13 @@ function DashboardPageContent() {
                               return currentVal - prevVal
                             }
 
-                            // Column-based max for non-cumulative values
-                            const columnMaxes: Record<string, number> = {}
-                            days.forEach((day, dIdx) => {
-                              const colValues = extendedWeeklyTrends.direct_qty
-                                .map(week => getIndividualValue(week, dIdx))
-                                .filter((v): v is number => v !== null)
-                              columnMaxes[day] = Math.max(...colValues, 1)
-                            })
-
                             return extendedWeeklyTrends.direct_qty.map((week, idx) => {
                               const isCurrentWeek = week.week_label === "Current Week"
                               const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                              // Row-based max
+                              const rowValues = days.map((_, dIdx) => getIndividualValue(week, dIdx)).filter((v): v is number => v !== null)
+                              const rowMax = Math.max(...rowValues, 1)
+
                               return (
                                 <tr key={idx} className="border-b border-white/5">
                                   <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
@@ -2754,8 +2720,7 @@ function DashboardPageContent() {
                                   </td>
                                   {days.map((day, dIdx) => {
                                     const value = getIndividualValue(week, dIdx)
-                                    const colMax = columnMaxes[day] || 1
-                                    const intensity = value ? Math.round((value / colMax) * 100) : 0
+                                    const intensity = value ? Math.round((value / rowMax) * 100) : 0
                                     const bgColor = value === null
                                       ? 'bg-[#1D1D1F]'
                                       : intensity > 80 ? 'bg-emerald-600'
