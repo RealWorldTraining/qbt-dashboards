@@ -153,21 +153,24 @@ export async function GET() {
       monthlyAgg.set(monthKey, existing)
     })
 
-    // Convert to sorted array (most recent first), exclude current month (incomplete)
+    // Convert to sorted array (most recent first), include current month as MTD
     const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
     const monthlyData = Array.from(monthlyAgg.entries())
-      .filter(([key]) => key !== currentMonth)
       .sort((a, b) => b[0].localeCompare(a[0]))
-      .slice(0, 14)
+      .slice(0, 15)
       .map(([key, data]) => {
         const [y, m] = key.split('-').map(Number)
         const monthDate = new Date(y, m - 1, 1)
+        const isMtd = key === currentMonth
         return {
-          month: monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          month: isMtd
+            ? `${monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} (MTD)`
+            : monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
           month_key: key,
           impressions: data.impressions,
           clicks: data.clicks,
           ctr: data.impressions > 0 ? (data.clicks / data.impressions) * 100 : 0,
+          isMtd,
         }
       })
 

@@ -6399,8 +6399,8 @@ function DashboardPageContent() {
                           </tr>
                         </thead>
                         <tbody>
-                          {gscWeeklyData.data.map((week: any, i: number) => (
-                            <tr key={week.week_start} className={`border-b border-gray-800/30 ${i === 0 ? 'bg-gray-800/20' : ''}`}>
+                          {gscWeeklyData.data.slice().reverse().map((week: any, i: number, arr: any[]) => (
+                            <tr key={week.week_start} className={`border-b border-gray-800/30 ${i === arr.length - 1 ? 'bg-gray-800/20' : ''}`}>
                               <td className="py-2 px-3 text-gray-300">{week.week}</td>
                               <td className="py-2 px-3 text-right text-white">{formatNumber(week.impressions)}</td>
                               <td className="py-2 px-3 text-right text-white">{formatNumber(week.clicks)}</td>
@@ -6426,9 +6426,9 @@ function DashboardPageContent() {
                           </tr>
                         </thead>
                         <tbody>
-                          {gscWeeklyData.monthlyData?.map((m: any, i: number) => (
-                            <tr key={m.month_key} className={`border-b border-gray-800/30 ${i === 0 ? 'bg-gray-800/20' : ''}`}>
-                              <td className="py-2 px-3 text-gray-300">{m.month}</td>
+                          {gscWeeklyData.monthlyData?.slice().reverse().map((m: any, i: number, arr: any[]) => (
+                            <tr key={m.month_key} className={`border-b border-gray-800/30 ${i === arr.length - 1 ? 'bg-gray-800/20' : ''} ${m.isMtd ? 'bg-amber-900/10' : ''}`}>
+                              <td className={`py-2 px-3 ${m.isMtd ? 'text-amber-400 font-semibold' : 'text-gray-300'}`}>{m.month}</td>
                               <td className="py-2 px-3 text-right text-white">{formatNumber(m.impressions)}</td>
                               <td className="py-2 px-3 text-right text-white">{formatNumber(m.clicks)}</td>
                               <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{m.ctr.toFixed(2)}%</td>
