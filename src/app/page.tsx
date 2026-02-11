@@ -2329,7 +2329,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${activeTab === 'sales' ? 'max-w-[1440px]' : 'max-w-[1920px]'}`}>
         {/* Sales Tab */}
         {activeTab === "sales" && (
           <>
