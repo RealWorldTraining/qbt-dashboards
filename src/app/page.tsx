@@ -6334,24 +6334,24 @@ function DashboardPageContent() {
                   ]
                   return (
                     <div className="bg-[#111827] rounded-xl p-5 border border-gray-800/50">
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between mb-5">
                         <div className="text-gray-300 text-lg font-semibold tracking-wide">SUBSCRIPTION TIERS</div>
                         <div className="text-cyan-400 text-lg font-bold">
                           Avg: ${subscriberMetrics.data.current_avg_renewal.toFixed(2)}/mo
                         </div>
                       </div>
                       {/* Stacked progress bar */}
-                      <div className="flex h-3 rounded-full overflow-hidden mb-4 bg-gray-800">
+                      <div className="flex h-3 rounded-full overflow-hidden mb-5 bg-gray-800">
                         {tiers.map(tier => (
                           <div key={tier.label} className={`bg-gradient-to-r ${tier.color}`} style={{ width: `${pct(tier.count)}%` }} />
                         ))}
                       </div>
                       <div className="grid grid-cols-4 gap-4">
                         {tiers.map(tier => (
-                          <div key={tier.label} className="text-center">
-                            <div className={`text-2xl font-bold ${tier.textColor}`}>{tier.count.toLocaleString()}</div>
-                            <div className="text-gray-300 text-sm font-medium">{tier.label}</div>
-                            <div className="text-gray-400 text-sm">{pct(tier.count).toFixed(1)}%</div>
+                          <div key={tier.label} className={`bg-gray-800/40 rounded-lg p-4 text-center border-l-4`} style={{ borderLeftColor: tier.barColor }}>
+                            <div className={`text-3xl font-black ${tier.textColor} mb-1`}>{tier.label}</div>
+                            <div className="text-2xl font-bold text-white mb-2">{tier.count.toLocaleString()}</div>
+                            <div className={`inline-block text-sm font-semibold px-3 py-0.5 rounded-full`} style={{ backgroundColor: `${tier.barColor}20`, color: tier.barColor }}>{pct(tier.count).toFixed(1)}%</div>
                           </div>
                         ))}
                       </div>
