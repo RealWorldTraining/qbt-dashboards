@@ -3871,15 +3871,15 @@ export default function DashboardPage() {
                       </CardHeader>
                       <CardContent className="pt-2">
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
+                          <table className="w-full text-base">
                             <thead>
                               <tr className="border-b border-[#D2D2D7]">
-                                <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Week</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Total</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Organic</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Direct</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Referral</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Paid</th>
+                                <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Week</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Total</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Organic</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Direct</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Referral</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Paid</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -3889,8 +3889,8 @@ export default function DashboardPage() {
                                   className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-[#E8F0FE]" : ""}`}
                                 >
                                   <td className="py-2 px-2">
-                                    <div className="font-semibold text-[#1D1D1F] text-sm">{week.week_label}</div>
-                                    <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
+                                    <div className="font-semibold text-[#1D1D1F] text-base">{week.week_label}</div>
+                                    <div className="text-sm text-[#6E6E73]">{week.week_start}</div>
                                   </td>
                                   <td className="text-center py-2 px-2 font-semibold text-[#1D1D1F]">
                                     {formatNumber(week.total_sessions)}
@@ -3925,17 +3925,17 @@ export default function DashboardPage() {
                       </CardHeader>
                       <CardContent className="pt-2">
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
+                          <table className="w-full text-base">
                             <thead>
                               <tr className="border-b border-[#D2D2D7]">
-                                <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Week</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Total</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Conv %</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">GADS+Bing</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Organic</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Direct</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Referral</th>
-                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-xs tracking-wider">Paid</th>
+                                <th className="text-left py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Week</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Total</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Conv %</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">GADS+Bing</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Organic</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Direct</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Referral</th>
+                                <th className="text-center py-2 px-2 font-medium text-[#6E6E73] uppercase text-sm tracking-wider">Paid</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -3949,8 +3949,8 @@ export default function DashboardPage() {
                                     className={`border-b border-[#E5E5E5] ${idx === 0 ? "bg-[#E8F0FE]" : ""}`}
                                   >
                                     <td className="py-2 px-2">
-                                      <div className="font-semibold text-[#1D1D1F] text-sm">{week.week_label}</div>
-                                      <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
+                                      <div className="font-semibold text-[#1D1D1F] text-base">{week.week_label}</div>
+                                      <div className="text-sm text-[#6E6E73]">{week.week_start}</div>
                                     </td>
                                     <td className="text-center py-2 px-2 font-semibold text-[#1D1D1F]">
                                       {week.total_conversions}
