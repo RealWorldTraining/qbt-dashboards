@@ -193,17 +193,17 @@ export function BingCPCTab() {
                         <td className={`text-center font-bold py-3 px-3 ${actionColor}`}>{r.action}</td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.searchImprClass] }}>
-                            {(r.searchImprShare * 100).toFixed(1)}%
+                            {r.searchImprShare.toFixed(1)}%
                           </span>
                         </td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.imprTopClass] }}>
-                            {(r.imprTopPct * 100).toFixed(1)}%
+                            {r.imprTopPct.toFixed(1)}%
                           </span>
                         </td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.imprAbsTopClass] }}>
-                            {(r.imprAbsTopPct * 100).toFixed(1)}%
+                            {r.imprAbsTopPct.toFixed(1)}%
                           </span>
                         </td>
                       </tr>

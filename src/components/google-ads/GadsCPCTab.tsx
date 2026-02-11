@@ -202,27 +202,27 @@ export function GadsCPCTab() {
                         <td className={`text-center font-bold py-3 px-3 ${actionColor}`}>{actionLabel}</td>
                         <td className="text-center py-3 px-3">
                           <span className={`font-bold ${classColors[r.searchImprClass] ? '' : 'text-white'}`} style={{ color: classColors[r.searchImprClass] }}>
-                            {(r.searchImprShare * 100).toFixed(1)}%
+                            {r.searchImprShare.toFixed(1)}%
                           </span>
                         </td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.imprTopClass] }}>
-                            {(r.imprTopPct * 100).toFixed(1)}%
+                            {r.imprTopPct.toFixed(1)}%
                           </span>
                         </td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.clickShareClass] }}>
-                            {(r.clickShare * 100).toFixed(1)}%
+                            {r.clickShare.toFixed(1)}%
                           </span>
                         </td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.imprAbsTopClass] }}>
-                            {(r.imprAbsTopPct * 100).toFixed(1)}%
+                            {r.imprAbsTopPct.toFixed(1)}%
                           </span>
                         </td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.searchLostClass] }}>
-                            {(r.searchLostIsRank * 100).toFixed(1)}%
+                            {r.searchLostIsRank.toFixed(1)}%
                           </span>
                         </td>
                       </tr>
