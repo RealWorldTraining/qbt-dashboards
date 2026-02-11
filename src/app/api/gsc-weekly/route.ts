@@ -165,7 +165,14 @@ export async function GET() {
       return weekEnd < today
     })
 
-    // Get last 14 weeks for current year and matching weeks from previous year
+    // Find the current (incomplete) week for WTD display
+    const currentWeekData = allWeeks.find(w => {
+      const [year, month, day] = w.week_end.split('-').map(Number)
+      const weekEnd = new Date(year, month - 1, day)
+      return weekEnd >= today
+    })
+
+    // Get last 14 complete weeks + current WTD week
     const last14Weeks = completeWeeks.slice(0, 14)
     const currentYearWeeks = last14Weeks.filter(w => w.year === new Date().getFullYear())
 
@@ -218,6 +225,7 @@ export async function GET() {
 
     return NextResponse.json({
       data: last14Weeks,
+      wtdWeek: currentWeekData || null,
       monthlyData,
       yoyData: yoyWeeks.length === 4 ? yoyWeeks : null,
       _debug: {

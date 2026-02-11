@@ -6408,6 +6408,14 @@ function DashboardPageContent() {
                               <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{week.ctr.toFixed(2)}%</td>
                             </tr>
                           ))}
+                          {gscWeeklyData.wtdWeek && (
+                            <tr className="border-b border-gray-800/30 bg-amber-900/10">
+                              <td className="py-2 px-3 text-amber-400 font-semibold">{gscWeeklyData.wtdWeek.week} (WTD)</td>
+                              <td className="py-2 px-3 text-right text-white">{formatNumber(gscWeeklyData.wtdWeek.impressions)}</td>
+                              <td className="py-2 px-3 text-right text-white">{formatNumber(gscWeeklyData.wtdWeek.clicks)}</td>
+                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{gscWeeklyData.wtdWeek.ctr.toFixed(2)}%</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
