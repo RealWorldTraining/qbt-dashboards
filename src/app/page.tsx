@@ -2567,7 +2567,7 @@ function DashboardPageContent() {
                                     const pct = value ? value / rowMax : 0
                                     const bg = value === null
                                       ? '#1D1D1F'
-                                      : `hsl(160, ${20 + pct * 70}%, ${18 + pct * 17}%)`
+                                      : `hsl(155, ${20 + pct * 65}%, ${15 + pct * 13}%)`
                                     return (
                                       <td
                                         key={hour}
@@ -2718,7 +2718,7 @@ function DashboardPageContent() {
                                     const pct = value ? value / rowMax : 0
                                     const bg = value === null
                                       ? '#1D1D1F'
-                                      : `hsl(160, ${20 + pct * 70}%, ${18 + pct * 17}%)`
+                                      : `hsl(155, ${20 + pct * 65}%, ${15 + pct * 13}%)`
                                     return (
                                       <td
                                         key={day}
