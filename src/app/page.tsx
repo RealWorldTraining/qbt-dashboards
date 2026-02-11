@@ -27,6 +27,7 @@ import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp
 import { GadsSummaryTab } from "@/components/google-ads/GadsSummaryTab"
 import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
+import { GadsAssetTab } from "@/components/google-ads/GadsAssetTab"
 import { BingSummaryTab } from "@/components/bing-ads/BingSummaryTab"
 import { BingCPCTab } from "@/components/bing-ads/BingCPCTab"
 
@@ -2019,7 +2020,7 @@ function DashboardPageContent() {
   // Google Ads Trends state
   const [gadsTrends, setGadsTrends] = useState<AdsTrendsResponse | null>(null)
   const [gadsMetric, setGadsMetric] = useState<AdsMetric>('conversions')
-  const [gadsView, setGadsView] = useState<'summary' | 'cpc' | 'age' | null>('summary')
+  const [gadsView, setGadsView] = useState<'summary' | 'cpc' | 'age' | 'assets' | null>('summary')
 
   // Bing Ads Trends state
   const [bingTrends, setBingTrends] = useState<AdsTrendsResponse | null>(null)
@@ -5478,6 +5479,7 @@ function DashboardPageContent() {
                 { key: 'summary' as const, label: 'Summary', color: '#1D1D1F' },
                 { key: 'cpc' as const, label: 'CPC Optimizer', color: '#10B981' },
                 { key: 'age' as const, label: 'Age Analysis', color: '#8B5CF6' },
+                { key: 'assets' as const, label: 'Asset Performance', color: '#F59E0B' },
               ]).map(({ key, label, color }) => (
                 <button
                   key={key}
@@ -5515,6 +5517,7 @@ function DashboardPageContent() {
             {gadsView === 'summary' && <GadsSummaryTab />}
             {gadsView === 'cpc' && <GadsCPCTab />}
             {gadsView === 'age' && <GadsAgeTab />}
+            {gadsView === 'assets' && <GadsAssetTab />}
 
             {/* Metric view (existing KPI + heatmaps + YoY) */}
             {gadsView === null && (
