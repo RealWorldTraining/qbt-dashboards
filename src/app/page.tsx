@@ -803,6 +803,21 @@ interface SubscriberMetricsData {
   current_avg_renewal: number
   // Quarterly cohort retention
   quarterly_cohort_retention: Record<string, { total_adds: number; still_active: number; retention_pct: number }>
+  // Subscription duration & lifecycle
+  avg_subscription_days: number
+  avg_subscription_months: number
+  median_subscription_days: number
+  median_subscription_months: number
+  lifetime_churn_rate: number
+  cohort_survival: Record<string, number>
+  renewal_trend: {
+    cohort_2023_avg: number
+    cohort_2024_avg: number
+    cohort_2025_avg: number
+    cohort_2026_avg: number
+    projected_12mo_avg: number
+    projected_increase_pct: number
+  }
 }
 
 interface SubscriberMetricsResponse {
@@ -6320,6 +6335,87 @@ export default function DashboardPage() {
                         <span className="font-bold text-amber-400">{subscriberMetrics.data.immediate_cancels_pct}%</span> of all cancellations
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Subscription Lifecycle */}
+                {subscriberMetrics?.available && subscriberMetrics.data?.avg_subscription_months && (
+                  <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
+                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">SUBSCRIPTION LIFECYCLE</div>
+                    <div className="text-gray-500 text-sm mb-5">Average subscription duration and cohort survival rates</div>
+
+                    {/* Duration hero stats */}
+                    <div className="grid grid-cols-4 gap-4 mb-6">
+                      <div className="bg-gradient-to-br from-cyan-900/30 to-cyan-950/30 rounded-lg p-4 text-center border border-cyan-800/20">
+                        <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
+                        <div className="text-4xl font-black text-cyan-400">{subscriberMetrics.data.avg_subscription_months}</div>
+                        <div className="text-gray-400 text-sm mt-1">months</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-violet-900/30 to-violet-950/30 rounded-lg p-4 text-center border border-violet-800/20">
+                        <div className="text-gray-400 text-sm mb-2">MEDIAN DURATION</div>
+                        <div className="text-4xl font-black text-violet-400">{subscriberMetrics.data.median_subscription_months}</div>
+                        <div className="text-gray-400 text-sm mt-1">months</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-amber-900/30 to-amber-950/30 rounded-lg p-4 text-center border border-amber-800/20">
+                        <div className="text-gray-400 text-sm mb-2">AVG DURATION</div>
+                        <div className="text-4xl font-black text-amber-400">{subscriberMetrics.data.avg_subscription_days}</div>
+                        <div className="text-gray-400 text-sm mt-1">days</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-red-900/30 to-red-950/30 rounded-lg p-4 text-center border border-red-800/20">
+                        <div className="text-gray-400 text-sm mb-2">LIFETIME CHURN</div>
+                        <div className="text-4xl font-black text-red-400">{subscriberMetrics.data.lifetime_churn_rate}%</div>
+                        <div className="text-gray-400 text-sm mt-1">of all subs</div>
+                      </div>
+                    </div>
+
+                    {/* Cohort Survival by Year */}
+                    {subscriberMetrics.data.cohort_survival && (
+                      <>
+                        <div className="text-gray-400 text-sm font-medium mb-3 tracking-wide">COHORT SURVIVAL BY SIGNUP YEAR</div>
+                        <div className="text-gray-500 text-sm mb-4">% of subscribers from each year still active today</div>
+                        <div className="grid grid-cols-7 gap-3 mb-6">
+                          {Object.entries(subscriberMetrics.data.cohort_survival).map(([year, pct]) => {
+                            const survColor = pct >= 40 ? 'text-emerald-400' : pct >= 20 ? 'text-cyan-400' : pct >= 10 ? 'text-amber-400' : 'text-red-400'
+                            const barColor = pct >= 40 ? 'bg-emerald-500' : pct >= 20 ? 'bg-cyan-500' : pct >= 10 ? 'bg-amber-500' : 'bg-red-500'
+                            return (
+                              <div key={year} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30">
+                                <div className="text-gray-300 text-sm font-semibold mb-2">{year}</div>
+                                <div className={`text-2xl font-black ${survColor}`}>{pct}%</div>
+                                <div className="mt-2 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                                  <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                                </div>
+                                <div className="text-gray-400 text-sm mt-1">still active</div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Renewal Trend by Cohort */}
+                    {subscriberMetrics.data.renewal_trend && (
+                      <div className="pt-4 border-t border-gray-700/50">
+                        <div className="text-gray-400 text-sm font-medium mb-3 tracking-wide">AVG REVENUE PER SUB BY COHORT</div>
+                        <div className="grid grid-cols-5 gap-4">
+                          {[
+                            { label: '2023 Cohort', value: subscriberMetrics.data.renewal_trend.cohort_2023_avg, color: 'text-gray-400' },
+                            { label: '2024 Cohort', value: subscriberMetrics.data.renewal_trend.cohort_2024_avg, color: 'text-blue-400' },
+                            { label: '2025 Cohort', value: subscriberMetrics.data.renewal_trend.cohort_2025_avg, color: 'text-cyan-400' },
+                            { label: '2026 Cohort', value: subscriberMetrics.data.renewal_trend.cohort_2026_avg, color: 'text-emerald-400' },
+                            { label: 'Projected 12mo', value: subscriberMetrics.data.renewal_trend.projected_12mo_avg, color: 'text-amber-400' },
+                          ].map(item => (
+                            <div key={item.label} className="text-center">
+                              <div className={`text-2xl font-bold ${item.color}`}>${item.value.toFixed(2)}</div>
+                              <div className="text-gray-400 text-sm">{item.label}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="text-center mt-3">
+                          <span className="text-emerald-400 text-sm font-semibold">+{subscriberMetrics.data.renewal_trend.projected_increase_pct}%</span>
+                          <span className="text-gray-500 text-sm"> projected revenue increase per subscriber</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
