@@ -51,6 +51,8 @@ export function BingCPCTab() {
   const [data, setData] = useState<BingCPCData | null>(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('ALL')
+  const [search, setSearch] = useState('')
+  const [minClicks, setMinClicks] = useState(10)
 
   useEffect(() => {
     fetch('/api/cpc-bing-recommendations').then(res => res.json())
@@ -78,22 +80,12 @@ export function BingCPCTab() {
     )
   }
 
-  const campaignOrder = [
-    'Certification-Desktop',
-    'Training-Desktop',
-    'Courses-Desktop',
-    'Classes-Desktop'
-  ]
-
-  const getCampaignSortKey = (campaign: string): number => {
-    const index = campaignOrder.findIndex(c => campaign.includes(c))
-    return index === -1 ? 999 : index
-  }
-
-  const filtered = (filter === 'ALL'
-    ? data.recommendations
-    : data.recommendations.filter(r => r.action === filter)
-  ).sort((a, b) => getCampaignSortKey(a.campaign) - getCampaignSortKey(b.campaign))
+  const searchLower = search.toLowerCase()
+  const filtered = data.recommendations
+    .filter(r => filter === 'ALL' || r.action === filter)
+    .filter(r => r.clicks >= minClicks)
+    .filter(r => !search || r.keyword.toLowerCase().includes(searchLower))
+    .sort((a, b) => b.clicks - a.clicks)
 
   const actionKeywords = data.recommendations
     .filter(r => r.action !== 'HOLD')
@@ -214,21 +206,43 @@ export function BingCPCTab() {
         </div>
       )}
 
-      {/* Filter */}
-      <div className="mb-3 flex gap-1.5">
-        {['ALL', 'RAISE', 'LOWER', 'HOLD'].map(action => (
-          <button
-            key={action}
-            onClick={() => setFilter(action)}
-            className={`px-3 py-1.5 rounded text-xs font-medium ${
-              filter === action
-                ? 'bg-cyan-600 text-white'
-                : 'bg-[#1a1a1a] text-gray-400 hover:bg-gray-800'
-            }`}
+      {/* Filter Bar */}
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex gap-1.5">
+          {['ALL', 'RAISE', 'LOWER', 'HOLD'].map(action => (
+            <button
+              key={action}
+              onClick={() => setFilter(action)}
+              className={`px-3 py-1.5 rounded text-xs font-medium ${
+                filter === action
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-[#1a1a1a] text-gray-400 hover:bg-gray-800'
+              }`}
+            >
+              {action}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Search keyword..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="bg-[#1a1a1a] text-gray-300 text-xs rounded px-3 py-1.5 border border-gray-700 focus:border-cyan-500 focus:outline-none w-48"
+        />
+        <div className="flex items-center gap-1.5">
+          <span className="text-gray-500 text-xs">Min clicks:</span>
+          <select
+            value={minClicks}
+            onChange={e => setMinClicks(Number(e.target.value))}
+            className="bg-[#1a1a1a] text-gray-300 text-xs rounded px-2 py-1.5 border border-gray-700 focus:border-cyan-500 focus:outline-none"
           >
-            {action}
-          </button>
-        ))}
+            {[0, 10, 25, 50, 100].map(n => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </div>
+        <span className="text-gray-500 text-xs ml-auto">{filtered.length} keywords</span>
       </div>
 
       {/* Table */}
