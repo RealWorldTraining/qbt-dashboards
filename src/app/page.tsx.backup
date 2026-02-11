@@ -1,7 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 import {
   Card,
   CardContent,
@@ -29,7 +28,6 @@ import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
 import { BingSummaryTab } from "@/components/bing-ads/BingSummaryTab"
 import { BingCPCTab } from "@/components/bing-ads/BingCPCTab"
-import { InteractiveJediCouncil } from "@/components/InteractiveJediCouncil"
 
 // Always use Railway API (no local Python backend needed)
 const PROPHET_API_URL = "https://qbtraining-site-production.up.railway.app"
@@ -1967,18 +1965,8 @@ async function fetchWithCache<T>(
 }
 
 
-const validTabs: TabType[] = ["sales", "traffic", "conversions", "conversion-pct", "google-ads", "bing-ads", "jedi-council", "subscriptions", "landing-pages"]
-
-function DashboardPageContent() {
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get("tab") as TabType | null
-  const [activeTab, setActiveTab] = useState<TabType>(tabParam && validTabs.includes(tabParam) ? tabParam : "sales")
-
-  useEffect(() => {
-    if (tabParam && validTabs.includes(tabParam)) {
-      setActiveTab(tabParam)
-    }
-  }, [tabParam])
+export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState<TabType>("sales")
 
   // Sales state
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null)
@@ -5915,7 +5903,7 @@ function DashboardPageContent() {
 
         {/* Jedi Council Tab */}
         {activeTab === "jedi-council" && (
-          <InteractiveJediCouncil />
+          <JediCouncilSection jediCouncil={jediCouncil} />
         )}
 
         {/* Landing Pages Tab */}
@@ -6620,10 +6608,5 @@ function DashboardPageContent() {
   )
 }
 
-export default function DashboardPage() {
-  return (
-    <Suspense>
-      <DashboardPageContent />
-    </Suspense>
-  )
-}
+
+
