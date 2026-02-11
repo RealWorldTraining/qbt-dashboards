@@ -18,7 +18,7 @@ import {
   LineChart,
   Area,
 } from "recharts"
-import { Doughnut, Scatter } from 'react-chartjs-2'
+import { Doughnut, Bar as ChartJSBar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   ArcElement,
@@ -804,22 +804,19 @@ function CPCTab() {
     }]
   }
 
-  const scatterData = {
+  const bidChangeRecs = data.recommendations
+    .filter(r => r.action === 'RAISE' || r.action === 'LOWER')
+    .sort((a, b) => b.changeAmount - a.changeAmount)
+    .slice(0, 15)
+
+  const bidChangeData = {
+    labels: bidChangeRecs.map(r => r.keyword.length > 25 ? r.keyword.slice(0, 22) + '...' : r.keyword),
     datasets: [{
-      label: 'RAISE',
-      data: data.recommendations.filter(r => r.action === 'RAISE').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
-      backgroundColor: '#10B981',
-      pointRadius: 6
-    }, {
-      label: 'LOWER',
-      data: data.recommendations.filter(r => r.action === 'LOWER').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
-      backgroundColor: '#EF4444',
-      pointRadius: 6
-    }, {
-      label: 'HOLD',
-      data: data.recommendations.filter(r => r.action === 'HOLD').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
-      backgroundColor: '#6B7280',
-      pointRadius: 6
+      label: 'Bid Change',
+      data: bidChangeRecs.map(r => r.changeAmount),
+      backgroundColor: bidChangeRecs.map(r => r.action === 'RAISE' ? '#10B981' : '#EF4444'),
+      borderRadius: 4,
+      barThickness: 18,
     }]
   }
 
@@ -949,32 +946,34 @@ function CPCTab() {
           </div>
         </div>
         <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-sm font-medium mb-4">CURRENT VS SUGGESTED CPC</h3>
+          <h3 className="text-gray-300 text-sm font-medium mb-4">BID CHANGES BY KEYWORD</h3>
           <div className="h-[280px]">
-            <Scatter data={scatterData} options={{
+            <ChartJSBar data={bidChangeData} options={{
               responsive: true,
               maintainAspectRatio: false,
+              indexAxis: 'y' as const,
               plugins: {
-                legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 11 } } },
+                legend: { display: false },
                 tooltip: {
                   backgroundColor: '#1F2937',
                   titleColor: '#F3F4F6',
                   bodyColor: '#D1D5DB',
                   callbacks: {
-                    label: (ctx: any) => `Current: $${ctx.parsed.x.toFixed(2)}, Suggested: $${ctx.parsed.y.toFixed(2)}`
+                    label: (ctx: any) => {
+                      const val = ctx.parsed.x
+                      return `${val >= 0 ? '+' : ''}$${val.toFixed(2)}`
+                    }
                   }
                 }
               },
               scales: {
                 x: {
-                  title: { display: true, text: 'Current Max CPC', color: '#9CA3AF' },
                   grid: { color: '#1F2937' },
-                  ticks: { color: '#9CA3AF', callback: (v: any) => '$' + v.toFixed(2) }
+                  ticks: { color: '#9CA3AF', callback: (v: any) => (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(2) }
                 },
                 y: {
-                  title: { display: true, text: 'Suggested Max CPC', color: '#9CA3AF' },
-                  grid: { color: '#1F2937' },
-                  ticks: { color: '#9CA3AF', callback: (v: any) => '$' + v.toFixed(2) }
+                  grid: { display: false },
+                  ticks: { color: '#D1D5DB', font: { size: 11 } }
                 }
               }
             }} />
