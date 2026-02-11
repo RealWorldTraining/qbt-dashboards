@@ -2026,16 +2026,21 @@ function DashboardPageContent() {
   // Refs for centering sub-tabs under active section
   const sectionRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const sectionRowRef = useRef<HTMLDivElement>(null)
+  const subTabsRef = useRef<HTMLDivElement>(null)
   const [subTabOffset, setSubTabOffset] = useState(0)
 
   const computeSubTabOffset = useCallback(() => {
     const activeBtn = sectionRefs.current[activeSection]
     const row = sectionRowRef.current
-    if (!activeBtn || !row) { setSubTabOffset(0); return }
+    const subTabs = subTabsRef.current
+    if (!activeBtn || !row || !subTabs) { setSubTabOffset(0); return }
     const rowRect = row.getBoundingClientRect()
     const btnRect = activeBtn.getBoundingClientRect()
-    // Align sub-tabs to the left edge of the active section button
-    setSubTabOffset(btnRect.left - rowRect.left)
+    const subTabsWidth = subTabs.scrollWidth
+    // Center sub-tabs under the active section button
+    const sectionCenter = btnRect.left + btnRect.width / 2 - rowRect.left
+    const offset = Math.max(0, sectionCenter - subTabsWidth / 2)
+    setSubTabOffset(offset)
   }, [activeSection])
 
   useEffect(() => {
@@ -2443,7 +2448,7 @@ function DashboardPageContent() {
           {/* Sub-Tab Navigation (Row 2) — centered under active section */}
           {sectionTabs[activeSection].length > 0 && (
             <div className="relative border-t border-[#E5E5E5] -mb-px">
-              <div className="flex items-center" style={{ paddingLeft: subTabOffset }}>
+              <div ref={subTabsRef} className="flex items-center" style={{ paddingLeft: subTabOffset }}>
                 {sectionTabs[activeSection].map((tab) => {
                   const Icon = tab.icon
                   return (
