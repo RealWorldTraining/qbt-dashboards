@@ -265,9 +265,9 @@ export function GadsSummaryTab() {
           { title: 'Mobile', data: [...mobileWeeklyData].reverse() },
         ].map(({ title, data: tableData }) => (
           <div key={title} className="bg-[#1a1a1a] rounded-xl p-4">
-            <h2 className="text-white text-base font-semibold mb-3">{title}</h2>
+            <h2 className="text-white text-lg font-semibold mb-3">{title}</h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-gray-700">
                     <th className="text-left py-2 px-2 text-gray-400 font-medium">Week</th>
