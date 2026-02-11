@@ -2326,17 +2326,10 @@ function DashboardPageContent() {
           <div className="flex gap-1 -mb-px">
             {tabs.map((tab) => {
               const Icon = tab.icon
-              const isExternal = 'external' in tab && tab.external
               return (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    if (isExternal) {
-                      window.open(tab.external, '_blank')
-                    } else {
-                      setActiveTab(tab.id)
-                    }
-                  }}
+                  onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
                       ? "border-[#0066CC] text-[#0066CC]"
