@@ -11,13 +11,40 @@ function parseNumber(val: string): number {
   return parseFloat(cleaned) || 0
 }
 
+// Normalize date strings to YYYY-MM-DD format
+// Handles: M/D/YYYY, MM/DD/YYYY, YYYY-MM-DD, Excel serial numbers
+function normalizeDate(dateStr: string): string {
+  if (!dateStr) return ''
+  const trimmed = dateStr.trim()
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(trimmed)) return trimmed
+  // M/D/YYYY or MM/DD/YYYY
+  if (trimmed.includes('/')) {
+    const parts = trimmed.split('/')
+    if (parts.length === 3) {
+      const [m, d, y] = parts.map(Number)
+      if (!isNaN(m) && !isNaN(d) && !isNaN(y)) {
+        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      }
+    }
+  }
+  // Excel serial date number
+  const num = Number(trimmed)
+  if (!isNaN(num) && num > 40000 && num < 60000) {
+    const epoch = new Date(1899, 11, 30)
+    const date = new Date(epoch.getTime() + num * 86400000)
+    return date.toISOString().split('T')[0]
+  }
+  return trimmed
+}
+
 function formatDateRange(start: string, end: string): string {
   const [startYear, startMonth, startDay] = start.split('-').map(Number)
   const [endYear, endMonth, endDay] = end.split('-').map(Number)
-  
+
   const startDate = new Date(startYear, startMonth - 1, startDay)
   const endDate = new Date(endYear, endMonth - 1, endDay)
-  
+
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
   return `${startDate.toLocaleDateString('en-US', opts)} - ${endDate.toLocaleDateString('en-US', opts)}`
 }
@@ -95,7 +122,9 @@ export async function GET() {
     const weeklyAgg = new Map<string, { impressions: number; clicks: number }>()
 
     rows.slice(1).forEach(row => {
-      const date = row[colDate]
+      const rawDate = row[colDate]
+      if (!rawDate) return
+      const date = normalizeDate(rawDate)
       if (!date) return
 
       const weekStart = getWeekStart(date)
@@ -154,9 +183,12 @@ export async function GET() {
     // Aggregate daily data into months (reusing dynamic column indices)
     const monthlyAgg = new Map<string, { impressions: number; clicks: number }>()
     rows.slice(1).forEach(row => {
-      const date = row[colDate]
+      const rawDate = row[colDate]
+      if (!rawDate) return
+      const date = normalizeDate(rawDate)
       if (!date) return
       const [y, m] = date.split('-').map(Number)
+      if (isNaN(y) || isNaN(m)) return
       const monthKey = `${y}-${String(m).padStart(2, '0')}`
       const existing = monthlyAgg.get(monthKey) || { impressions: 0, clicks: 0 }
       existing.impressions += parseNumber(row[colImp])
