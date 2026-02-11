@@ -6336,6 +6336,10 @@ function DashboardPageContent() {
                             </span>
                             <span className="text-gray-500">was {card.prev}</span>
                           </div>
+                          <div className="flex items-center justify-center gap-2 mt-3">
+                            <span className="text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">query !~ login</span>
+                            <span className="text-xs font-medium text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-full">country = USA</span>
+                          </div>
                         </div>
                       ))}
                     </div>
