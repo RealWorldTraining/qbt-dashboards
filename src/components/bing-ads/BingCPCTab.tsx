@@ -184,11 +184,11 @@ export function BingCPCTab() {
                 </thead>
                 <tbody>
                   {actionKeywords.map((r, idx) => {
-                    const actionColor = r.action === 'LOWER' ? 'text-red-400' : 'text-green-400'
+                    const actionColor = r.action === 'LOWER' ? 'text-red-400' : r.action === 'RAISE_WITH_CPA_CONCERN' ? 'text-yellow-400' : 'text-green-400'
                     return (
                       <tr key={`${r.keyword}-${idx}`} className={idx < actionKeywords.length - 1 ? 'border-b border-gray-800/50' : ''}>
                         <td className="text-white font-medium py-3 pr-4 whitespace-nowrap">{r.keyword}</td>
-                        <td className={`text-center font-bold py-3 px-3 ${actionColor}`}>{r.action}</td>
+                        <td className={`text-center font-bold py-3 px-3 ${actionColor}`}>{r.action === 'RAISE_WITH_CPA_CONCERN' ? 'RAISE*' : r.action}</td>
                         <td className="text-center py-3 px-3">
                           <span className="font-bold" style={{ color: classColors[r.searchImprClass] }}>
                             {r.searchImprShare.toFixed(1)}%
