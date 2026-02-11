@@ -25,6 +25,8 @@ import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp
 import { GadsSummaryTab } from "@/components/google-ads/GadsSummaryTab"
 import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
+import { BingSummaryTab } from "@/components/bing-ads/BingSummaryTab"
+import { BingCPCTab } from "@/components/bing-ads/BingCPCTab"
 
 // Always use Railway API (no local Python backend needed)
 const PROPHET_API_URL = "https://qbtraining-site-production.up.railway.app"
@@ -1983,6 +1985,7 @@ export default function DashboardPage() {
   // Bing Ads Trends state
   const [bingTrends, setBingTrends] = useState<AdsTrendsResponse | null>(null)
   const [bingMetric, setBingMetric] = useState<AdsMetric>('conversions')
+  const [bingView, setBingView] = useState<'summary' | 'cpc' | null>('summary')
 
   // Auction Insights state
   const [auctionInsights, setAuctionInsights] = useState<AuctionInsightsResponse | null>(null)
@@ -5549,24 +5552,52 @@ export default function DashboardPage() {
         {/* Bing Ads Tab */}
         {activeTab === "bing-ads" && (
           <>
-            {/* Bing Ads Metric Toggle */}
+            {/* Bing Ads View + Metric Toggle */}
             <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
-              {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
+              {/* View mode pills */}
+              {([
+                { key: 'summary' as const, label: 'Summary', color: '#1D1D1F' },
+                { key: 'cpc' as const, label: 'CPC Optimizer', color: '#10B981' },
+              ]).map(({ key, label, color }) => (
                 <button
                   key={key}
-                  onClick={() => setBingMetric(key)}
+                  onClick={() => { setBingView(key); }}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    bingMetric === key
+                    bingView === key
                       ? 'text-white shadow-md'
                       : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
                   }`}
-                  style={bingMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
+                  style={bingView === key ? { backgroundColor: color } : {}}
+                >
+                  {label}
+                </button>
+              ))}
+              {/* Separator */}
+              <div className="w-px bg-[#D2D2D7] mx-1 self-stretch" />
+              {/* Metric pills */}
+              {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => { setBingView(null); setBingMetric(key); }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    bingView === null && bingMetric === key
+                      ? 'text-white shadow-md'
+                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                  }`}
+                  style={bingView === null && bingMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
                 >
                   {ADS_METRIC_LABELS[key]}
                 </button>
               ))}
             </div>
 
+            {/* Summary / CPC views */}
+            {bingView === 'summary' && <BingSummaryTab />}
+            {bingView === 'cpc' && <BingCPCTab />}
+
+            {/* Metric view (existing KPI + heatmaps + YoY) */}
+            {bingView === null && (
+            <>
             {bingAdsLoading && !bingTrends ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-[#0066CC]" />
@@ -5843,6 +5874,8 @@ export default function DashboardPage() {
                   <p className="text-[#6E6E73]">Bing Ads trend data is not available</p>
                 </div>
               </div>
+            )}
+            </>
             )}
           </>
         )}
