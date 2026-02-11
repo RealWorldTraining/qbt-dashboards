@@ -806,7 +806,7 @@ function CPCTab() {
   return (
     <>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-white text-xl font-bold">Max CPC Recommendations</h2>
+        <h2 className="text-[#1D1D1F] text-xl font-bold">Max CPC Recommendations</h2>
         <div className="flex items-center gap-4">
           <a
             href="/cpc/trends"
