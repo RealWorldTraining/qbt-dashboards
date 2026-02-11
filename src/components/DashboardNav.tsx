@@ -16,10 +16,12 @@ import {
   Search,
   Smartphone,
   MapPin,
+  Brain,
 } from "lucide-react"
 
 const dashboards = [
   { name: "Command Center", href: "/", icon: LayoutGrid, description: "Sales, Traffic, Ads & more" },
+  { name: "Jedi Council", href: "https://jedi-council-zeta.vercel.app", icon: Brain, description: "Multi-agent AI analysis", external: true },
   { name: "GA4 Summary", href: "/?tab=traffic", icon: BarChart3, description: "Monthly traffic by channel" },
   { name: "Google Ads", href: "/?tab=google-ads", icon: BarChart3, description: "Google Ads weekly metrics" },
   { name: "Bing Ads", href: "/?tab=bing-ads", icon: Search, description: "Bing Ads weekly metrics" },
@@ -80,11 +82,15 @@ export function DashboardNav({ theme = "dark" }: DashboardNavProps) {
             {dashboards.map((dashboard) => {
               const Icon = dashboard.icon
               const isActive = fullPath === dashboard.href
+              const isExternal = 'external' in dashboard && dashboard.external
+              const linkProps = isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}
+              
               return (
                 <Link
                   key={dashboard.href}
                   href={dashboard.href}
                   onClick={() => setIsOpen(false)}
+                  {...linkProps}
                   className={`flex items-center gap-3 px-4 py-3 transition-colors border-l-2 ${
                     isDark
                       ? `hover:bg-white/5 ${isActive ? 'bg-white/10 border-cyan-400' : 'border-transparent'}`
