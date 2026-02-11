@@ -6486,20 +6486,20 @@ function DashboardPageContent() {
                 {/* Top 20 Keywords Table */}
                 {gscKeywordsData?.data && (
                   <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
-                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">TOP 20 KEYWORDS</div>
+                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">TOP 50 KEYWORDS</div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gray-700/50">
-                            <th className="text-left text-gray-400 font-medium py-3 px-4">#</th>
-                            <th className="text-left text-gray-400 font-medium py-3 px-4">Query</th>
+                            <th className="text-left text-gray-400 font-semibold text-base py-3 px-4">#</th>
+                            <th className="text-left text-gray-400 font-semibold text-base py-3 px-4">Query</th>
                             {gscKeywordsData.weeks?.map((week: string) => (
-                              <th key={week} className="text-right text-gray-400 font-medium py-3 px-4 whitespace-nowrap">
+                              <th key={week} className="text-right text-gray-400 font-semibold text-base py-3 px-4 whitespace-nowrap">
                                 <div>{week}</div>
-                                <div className="text-[10px] text-gray-500">imp / clicks / ctr</div>
+                                <div className="text-xs text-gray-500">imp / clicks / ctr</div>
                               </th>
                             ))}
-                            <th className="text-right text-gray-400 font-medium py-3 px-4">Total Clicks</th>
+                            <th className="text-right text-gray-400 font-semibold text-base py-3 px-4">Total Clicks</th>
                           </tr>
                         </thead>
                         <tbody>

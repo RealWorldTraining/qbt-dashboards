@@ -11,6 +11,29 @@ function parseNumber(val: string): number {
   return parseFloat(cleaned) || 0
 }
 
+// Normalize date strings to YYYY-MM-DD format
+function normalizeDate(dateStr: string): string {
+  if (!dateStr) return ''
+  const trimmed = dateStr.trim()
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(trimmed)) return trimmed
+  if (trimmed.includes('/')) {
+    const parts = trimmed.split('/')
+    if (parts.length === 3) {
+      const [m, d, y] = parts.map(Number)
+      if (!isNaN(m) && !isNaN(d) && !isNaN(y)) {
+        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      }
+    }
+  }
+  const num = Number(trimmed)
+  if (!isNaN(num) && num > 40000 && num < 60000) {
+    const epoch = new Date(1899, 11, 30)
+    const date = new Date(epoch.getTime() + num * 86400000)
+    return date.toISOString().split('T')[0]
+  }
+  return trimmed
+}
+
 function getWeekStart(dateStr: string): string {
   // Get the Sunday of the week containing this date
   const [year, month, day] = dateStr.split('-').map(Number)
@@ -64,10 +87,12 @@ export async function GET() {
     const weeklyKeywordAgg = new Map<string, Map<string, { clicks: number; impressions: number }>>()
     
     rows.slice(1).forEach(row => {
-      const date = row[0]
+      const rawDate = row[0]
       const query = row[1]
-      if (!date || !query) return
-      
+      if (!rawDate || !query) return
+      const date = normalizeDate(rawDate)
+      if (!date) return
+
       const weekStart = getWeekStart(date)
       
       if (!weeklyKeywordAgg.has(weekStart)) {
@@ -134,11 +159,11 @@ export async function GET() {
       return totalB - totalA
     })
 
-    // Return top 20 keywords
-    const top20 = keywordData.slice(0, 20)
+    // Return top 50 keywords
+    const top50 = keywordData.slice(0, 50)
 
     return NextResponse.json({
-      data: top20,
+      data: top50,
       weeks: last4Weeks.map(ws => formatWeekLabel(ws)),
       last_updated: new Date().toISOString()
     }, {
