@@ -2302,7 +2302,7 @@ function DashboardPageContent() {
     { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
     { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
     { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
-    { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
+    { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles, external: "https://jedi-council-zeta.vercel.app" },
   ]
 
   return (
@@ -2327,10 +2327,17 @@ function DashboardPageContent() {
           <div className="flex gap-1 -mb-px">
             {tabs.map((tab) => {
               const Icon = tab.icon
+              const isExternal = 'external' in tab && tab.external
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    if (isExternal) {
+                      window.open(tab.external, '_blank')
+                    } else {
+                      setActiveTab(tab.id)
+                    }
+                  }}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
                       ? "border-[#0066CC] text-[#0066CC]"
