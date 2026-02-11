@@ -98,7 +98,7 @@ export function BingCPCTab() {
   const actionKeywords = data.recommendations
     .filter(r => r.action !== 'HOLD')
     .sort((a, b) => {
-      const actionOrder: Record<string, number> = { RAISE: 0, LOWER: 1 }
+      const actionOrder: Record<string, number> = { RAISE: 0, RAISE_WITH_CPA_CONCERN: 0, LOWER: 1 }
       return (actionOrder[a.action] ?? 2) - (actionOrder[b.action] ?? 2)
     })
 
@@ -274,10 +274,11 @@ export function BingCPCTab() {
                     <td className="p-3 text-center">
                       <span className={`px-3 py-1.5 rounded text-base font-medium ${
                         rec.action === 'RAISE' ? 'bg-green-900 text-green-300' :
+                        rec.action === 'RAISE_WITH_CPA_CONCERN' ? 'bg-yellow-900 text-yellow-300' :
                         rec.action === 'LOWER' ? 'bg-red-900 text-red-300' :
                         'bg-gray-800 text-gray-400'
                       }`}>
-                        {rec.action}
+                        {rec.action === 'RAISE_WITH_CPA_CONCERN' ? 'RAISE*' : rec.action}
                       </span>
                     </td>
                     <td className="p-3 text-right text-gray-300">${rec.currentMaxCPC.toFixed(2)}</td>
