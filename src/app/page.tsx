@@ -6351,7 +6351,7 @@ function DashboardPageContent() {
                           <div key={tier.label} className={`bg-gray-800/40 rounded-lg p-4 text-center border-l-4`} style={{ borderLeftColor: tier.barColor }}>
                             <div className={`text-3xl font-black ${tier.textColor} mb-1`}>{tier.label}</div>
                             <div className="text-2xl font-bold text-white mb-2">{tier.count.toLocaleString()}</div>
-                            <div className={`inline-block text-sm font-semibold px-3 py-0.5 rounded-full`} style={{ backgroundColor: `${tier.barColor}20`, color: tier.barColor }}>{pct(tier.count).toFixed(1)}%</div>
+                            <div className={`inline-block text-2xl font-bold px-3 py-0.5 rounded-full`} style={{ backgroundColor: `${tier.barColor}20`, color: tier.barColor }}>{Math.round(pct(tier.count))}%</div>
                           </div>
                         ))}
                       </div>
