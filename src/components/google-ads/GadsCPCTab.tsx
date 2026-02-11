@@ -138,8 +138,9 @@ export function GadsCPCTab() {
     : data.recommendations.filter(r => r.action === filter)
   ).sort((a, b) => getCampaignSortKey(a.campaign) - getCampaignSortKey(b.campaign))
 
+  const actionLabelMap: Record<string, string> = { RAISE_WITH_CPA_CONCERN: 'RAISE*' }
   const actionData = {
-    labels: Object.keys(data.summary.actions),
+    labels: Object.keys(data.summary.actions).map(k => actionLabelMap[k] || k),
     datasets: [{
       data: Object.values(data.summary.actions),
       backgroundColor: ['#10B981', '#EF4444', '#6B7280', '#F59E0B'],
@@ -150,7 +151,7 @@ export function GadsCPCTab() {
   const scatterData = {
     datasets: [{
       label: 'RAISE',
-      data: data.recommendations.filter(r => r.action === 'RAISE').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
+      data: data.recommendations.filter(r => r.action === 'RAISE' || r.action === 'RAISE_WITH_CPA_CONCERN').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
       backgroundColor: '#10B981',
       pointRadius: 10
     }, {
@@ -388,10 +389,11 @@ export function GadsCPCTab() {
                     <td className="p-3 text-center">
                       <span className={`px-3 py-1.5 rounded text-base font-medium ${
                         rec.action === 'RAISE' ? 'bg-green-900 text-green-300' :
+                        rec.action === 'RAISE_WITH_CPA_CONCERN' ? 'bg-yellow-900 text-yellow-300' :
                         rec.action === 'LOWER' ? 'bg-red-900 text-red-300' :
                         'bg-gray-800 text-gray-400'
                       }`}>
-                        {rec.action}
+                        {rec.action === 'RAISE_WITH_CPA_CONCERN' ? 'RAISE*' : rec.action}
                       </span>
                     </td>
                     <td className="p-3 text-right text-gray-300">${rec.currentMaxCPC.toFixed(2)}</td>
