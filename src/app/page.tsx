@@ -6452,7 +6452,7 @@ function DashboardPageContent() {
                             {gscKeywordsData.weeks?.map((week: string) => (
                               <th key={week} className="text-right text-gray-400 font-medium py-3 px-4 whitespace-nowrap">
                                 <div>{week}</div>
-                                <div className="text-[10px] text-gray-500">clicks / imp</div>
+                                <div className="text-[10px] text-gray-500">imp / clicks / ctr</div>
                               </th>
                             ))}
                             <th className="text-right text-gray-400 font-medium py-3 px-4">Total Clicks</th>
@@ -6465,13 +6465,18 @@ function DashboardPageContent() {
                               <tr key={kw.query} className="border-b border-gray-800/30 hover:bg-gray-800/20">
                                 <td className="py-3 px-4 text-gray-500 font-mono text-xs">{i + 1}</td>
                                 <td className="py-3 px-4 text-white font-medium max-w-[300px] truncate">{kw.query}</td>
-                                {kw.weeks.map((w: any, wi: number) => (
-                                  <td key={wi} className="py-3 px-4 text-right whitespace-nowrap">
-                                    <span className="text-emerald-400 font-semibold">{w.clicks}</span>
-                                    <span className="text-gray-600 mx-1">/</span>
-                                    <span className="text-gray-400">{formatNumber(w.impressions)}</span>
-                                  </td>
-                                ))}
+                                {kw.weeks.map((w: any, wi: number) => {
+                                  const ctr = w.impressions > 0 ? ((w.clicks / w.impressions) * 100).toFixed(1) : '0.0'
+                                  return (
+                                    <td key={wi} className="py-3 px-4 text-right whitespace-nowrap">
+                                      <span className="text-gray-400">{formatNumber(w.impressions)}</span>
+                                      <span className="text-gray-600 mx-1">/</span>
+                                      <span className="text-emerald-400 font-semibold">{w.clicks}</span>
+                                      <span className="text-gray-600 mx-1">/</span>
+                                      <span className="text-cyan-400 font-semibold">{ctr}%</span>
+                                    </td>
+                                  )
+                                })}
                                 <td className="py-3 px-4 text-right text-cyan-400 font-bold">{totalClicks}</td>
                               </tr>
                             )
