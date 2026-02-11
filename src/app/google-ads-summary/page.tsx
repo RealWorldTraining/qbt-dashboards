@@ -1181,7 +1181,7 @@ function AgeTab() {
       </div>
 
       {/* Age Group Summary Cards */}
-      <div className="grid grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-6 gap-4 mb-8">
         {ytd2026Summary.map((ageSummary) => {
           const ageColor = AGE_COLORS[ageSummary.age]
           return (
