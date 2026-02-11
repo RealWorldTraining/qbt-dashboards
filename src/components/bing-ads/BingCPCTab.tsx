@@ -1,29 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Doughnut } from 'react-chartjs-2'
-import {
-  Chart as ChartJS,
-  ArcElement,
-  CategoryScale,
-  LinearScale,
-
-  BarElement,
-  Title,
-  Tooltip as ChartJSTooltip,
-  Legend as ChartJSLegend
-} from 'chart.js'
-
-ChartJS.register(
-  ArcElement,
-  CategoryScale,
-  LinearScale,
-
-  BarElement,
-  Title,
-  ChartJSTooltip,
-  ChartJSLegend
-)
 
 interface BingCPCRecommendation {
   analysisDate: string
@@ -118,14 +95,12 @@ export function BingCPCTab() {
     : data.recommendations.filter(r => r.action === filter)
   ).sort((a, b) => getCampaignSortKey(a.campaign) - getCampaignSortKey(b.campaign))
 
-  const actionData = {
-    labels: Object.keys(data.summary.actions),
-    datasets: [{
-      data: Object.values(data.summary.actions),
-      backgroundColor: ['#10B981', '#EF4444', '#6B7280', '#F59E0B'],
-      borderWidth: 0
-    }]
-  }
+  const actionKeywords = data.recommendations
+    .filter(r => r.action !== 'HOLD')
+    .sort((a, b) => {
+      const actionOrder: Record<string, number> = { RAISE: 0, LOWER: 1 }
+      return (actionOrder[a.action] ?? 2) - (actionOrder[b.action] ?? 2)
+    })
 
 
   return (
@@ -193,21 +168,53 @@ export function BingCPCTab() {
         </div>
       </div>
 
-      {/* Charts */}
-      <div className="mb-6">
-        <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-xl font-medium mb-4">ACTION DISTRIBUTION</h3>
-          <div className="h-[280px] flex items-center justify-center">
-            <Doughnut data={actionData} options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 17 } } }
-              }
-            }} />
+      {/* Keywords Requiring Action */}
+      {actionKeywords.length > 0 && (
+        <div className="mb-6">
+          <div className="bg-[#1a1a1a] rounded-lg p-6">
+            <h3 className="text-gray-300 text-xl font-medium mb-4">KEYWORDS REQUIRING ACTION</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-lg">
+                <thead>
+                  <tr className="border-b border-gray-800">
+                    <th className="text-left text-cyan-400 font-medium py-3 pr-4">Keyword</th>
+                    <th className="text-center text-cyan-400 font-medium py-3 px-3">Action</th>
+                    <th className="text-center text-cyan-400 font-medium py-3 px-3">Impr Share</th>
+                    <th className="text-center text-cyan-400 font-medium py-3 px-3">Top %</th>
+                    <th className="text-center text-cyan-400 font-medium py-3 px-3">Abs Top %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {actionKeywords.map((r, idx) => {
+                    const actionColor = r.action === 'LOWER' ? 'text-red-400' : 'text-green-400'
+                    return (
+                      <tr key={`${r.keyword}-${idx}`} className={idx < actionKeywords.length - 1 ? 'border-b border-gray-800/50' : ''}>
+                        <td className="text-white font-medium py-3 pr-4 whitespace-nowrap">{r.keyword}</td>
+                        <td className={`text-center font-bold py-3 px-3 ${actionColor}`}>{r.action}</td>
+                        <td className="text-center py-3 px-3">
+                          <span className="font-bold" style={{ color: classColors[r.searchImprClass] }}>
+                            {(r.searchImprShare * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="text-center py-3 px-3">
+                          <span className="font-bold" style={{ color: classColors[r.imprTopClass] }}>
+                            {(r.imprTopPct * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="text-center py-3 px-3">
+                          <span className="font-bold" style={{ color: classColors[r.imprAbsTopClass] }}>
+                            {(r.imprAbsTopPct * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Filter */}
       <div className="mb-4 flex gap-2">
