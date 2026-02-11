@@ -5898,22 +5898,22 @@ export default function DashboardPage() {
                 {/* GA4 Landing Pages */}
                 <Card className="bg-white border-[#D2D2D7] shadow-sm">
                   <CardHeader className="pb-1">
-                    <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-[#0A84FF]" />
+                    <CardTitle className="text-xl font-semibold text-[#1D1D1F] flex items-center gap-2">
+                      <MapPin className="h-6 w-6 text-[#0A84FF]" />
                       GA4 Landing Pages
                     </CardTitle>
-                    <p className="text-sm text-[#6E6E73]">Weekly users, conversions & conversion rate by page</p>
+                    <p className="text-base text-[#6E6E73]">Weekly users, conversions & conversion rate by page</p>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto rounded-xl">
-                      <table className="w-full text-sm bg-[#1D1D1F]">
+                      <table className="w-full text-base bg-[#1D1D1F]">
                         <thead>
                           <tr className="border-b border-[#3D3D3F]">
-                            <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[200px]">Landing Page</th>
+                            <th className="text-left py-4 px-4 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[260px]">Landing Page</th>
                             {landingPagesData.landing_pages[0]?.weeks.map((week, idx) => (
-                              <th key={idx} className="text-center py-3 px-3 min-w-[120px]">
-                                <div className="font-semibold text-white">{week.label}</div>
-                                <div className="text-xs text-white/40 mt-0.5">{week.date_range}</div>
+                              <th key={idx} className="text-center py-4 px-4 min-w-[150px]">
+                                <div className="font-semibold text-white text-base">{week.label}</div>
+                                <div className="text-sm text-white/40 mt-0.5">{week.date_range}</div>
                               </th>
                             ))}
                           </tr>
@@ -5921,7 +5921,7 @@ export default function DashboardPage() {
                         <tbody>
                           {landingPagesData.landing_pages.map((lp, lpIdx) => (
                             <tr key={lpIdx} className="border-b border-white/5">
-                              <td className="py-3 px-3 font-medium text-white sticky left-0 bg-[#1D1D1F] truncate max-w-[240px]" title={lp.landing_page}>
+                              <td className="py-4 px-4 font-medium text-white text-base sticky left-0 bg-[#1D1D1F] truncate max-w-[300px]" title={lp.landing_page}>
                                 {lp.landing_page}
                               </td>
                               {lp.weeks.map((week, weekIdx) => {
@@ -5930,10 +5930,10 @@ export default function DashboardPage() {
                                 const intensity = maxUsers > 0 ? users / maxUsers : 0
                                 const bgClass = users === 0 ? 'bg-[#1D1D1F]' : intensity >= 0.8 ? 'bg-blue-600' : intensity >= 0.6 ? 'bg-blue-600/80' : intensity >= 0.4 ? 'bg-blue-600/60' : intensity >= 0.2 ? 'bg-blue-600/40' : 'bg-blue-600/20'
                                 return (
-                                  <td key={weekIdx} className={`text-center py-3 px-3 ${bgClass}`}>
-                                    <div className="font-bold text-white">{users.toLocaleString()}</div>
-                                    <div className="text-white/50 text-xs">{week.purchases} conv</div>
-                                    <div className={`text-xs font-semibold ${week.conversion_rate >= 1.5 ? 'text-[#34C759]' : week.conversion_rate >= 0.5 ? 'text-[#FF9F0A]' : 'text-[#FF6B6B]'}`}>
+                                  <td key={weekIdx} className={`text-center py-4 px-4 ${bgClass}`}>
+                                    <div className="font-bold text-white text-lg">{users.toLocaleString()}</div>
+                                    <div className="text-white/50 text-sm">{week.purchases} conv</div>
+                                    <div className={`text-sm font-semibold ${week.conversion_rate >= 1.5 ? 'text-[#34C759]' : week.conversion_rate >= 0.5 ? 'text-[#FF9F0A]' : 'text-[#FF6B6B]'}`}>
                                       {week.conversion_rate.toFixed(2)}%
                                     </div>
                                   </td>
@@ -5950,18 +5950,18 @@ export default function DashboardPage() {
                 {/* Google Ads Landing Pages */}
                 <Card className="bg-white border-[#D2D2D7] shadow-sm">
                   <CardHeader className="pb-1">
-                    <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-[#34C759]" />
+                    <CardTitle className="text-xl font-semibold text-[#1D1D1F] flex items-center gap-2">
+                      <TrendingUp className="h-6 w-6 text-[#34C759]" />
                       Google Ads Landing Pages
                     </CardTitle>
-                    <p className="text-sm text-[#6E6E73]">Weekly clicks, conversions & conversion rate by page</p>
+                    <p className="text-base text-[#6E6E73]">Weekly clicks, conversions & conversion rate by page</p>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto rounded-xl">
-                      <table className="w-full text-sm bg-[#1D1D1F]">
+                      <table className="w-full text-base bg-[#1D1D1F]">
                         <thead>
                           <tr className="border-b border-[#3D3D3F]">
-                            <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[200px]">Landing Page</th>
+                            <th className="text-left py-4 px-4 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[260px]">Landing Page</th>
                             {(() => {
                               const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/'
                               const ga4Order = landingPagesData.landing_pages.map(lp => normalizePath(lp.landing_page))
@@ -5974,9 +5974,9 @@ export default function DashboardPage() {
                                 return aIdx - bIdx
                               })
                               return sorted[0]?.weeks.map((week, idx) => (
-                                <th key={idx} className="text-center py-3 px-3 min-w-[120px]">
-                                  <div className="font-semibold text-white">{week.label}</div>
-                                  <div className="text-xs text-white/40 mt-0.5">{week.date_range}</div>
+                                <th key={idx} className="text-center py-4 px-4 min-w-[150px]">
+                                  <div className="font-semibold text-white text-base">{week.label}</div>
+                                  <div className="text-sm text-white/40 mt-0.5">{week.date_range}</div>
                                 </th>
                               ))
                             })()}
@@ -5996,7 +5996,7 @@ export default function DashboardPage() {
                             })
                             return sorted.map((lp, lpIdx) => (
                               <tr key={lpIdx} className="border-b border-white/5">
-                                <td className="py-3 px-3 font-medium text-white sticky left-0 bg-[#1D1D1F] truncate max-w-[240px]" title={lp.landing_page}>
+                                <td className="py-4 px-4 font-medium text-white text-base sticky left-0 bg-[#1D1D1F] truncate max-w-[300px]" title={lp.landing_page}>
                                   {lp.landing_page}
                                 </td>
                                 {lp.weeks.map((week, weekIdx) => {
@@ -6005,10 +6005,10 @@ export default function DashboardPage() {
                                   const intensity = maxClicks > 0 ? clicks / maxClicks : 0
                                   const bgClass = clicks === 0 ? 'bg-[#1D1D1F]' : intensity >= 0.8 ? 'bg-blue-600' : intensity >= 0.6 ? 'bg-blue-600/80' : intensity >= 0.4 ? 'bg-blue-600/60' : intensity >= 0.2 ? 'bg-blue-600/40' : 'bg-blue-600/20'
                                   return (
-                                    <td key={weekIdx} className={`text-center py-3 px-3 ${bgClass}`}>
-                                      <div className="font-bold text-white">{clicks.toLocaleString()}</div>
-                                      <div className="text-white/50 text-xs">{Math.round(week.conversions)} conv</div>
-                                      <div className={`text-xs font-semibold ${week.conversion_rate >= 5 ? 'text-[#34C759]' : week.conversion_rate >= 2 ? 'text-[#FF9F0A]' : 'text-[#FF6B6B]'}`}>
+                                    <td key={weekIdx} className={`text-center py-4 px-4 ${bgClass}`}>
+                                      <div className="font-bold text-white text-lg">{clicks.toLocaleString()}</div>
+                                      <div className="text-white/50 text-sm">{Math.round(week.conversions)} conv</div>
+                                      <div className={`text-sm font-semibold ${week.conversion_rate >= 5 ? 'text-[#34C759]' : week.conversion_rate >= 2 ? 'text-[#FF9F0A]' : 'text-[#FF6B6B]'}`}>
                                         {week.conversion_rate.toFixed(2)}%
                                       </div>
                                     </td>
