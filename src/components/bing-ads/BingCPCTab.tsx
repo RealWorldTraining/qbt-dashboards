@@ -138,33 +138,31 @@ export function BingCPCTab() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div
           onClick={() => setFilter('ALL')}
-          className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'ALL' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
+          className={`bg-[#1a1a1a] rounded-lg p-6 cursor-pointer transition-all text-center ${filter === 'ALL' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-lg mb-1">TOTAL KEYWORDS</div>
-          <div className="text-white text-5xl font-bold">{data.summary.total}</div>
+          <div className="text-gray-400 text-lg mb-2">TOTAL KEYWORDS</div>
+          <div className="text-white text-7xl font-bold">{data.summary.total}</div>
         </div>
         <div
           onClick={() => setFilter('RAISE')}
-          className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'RAISE' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
+          className={`bg-[#1a1a1a] rounded-lg p-6 cursor-pointer transition-all text-center ${filter === 'RAISE' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-lg mb-1">RAISE BIDS</div>
-          <div className="text-green-500 text-5xl font-bold">{data.summary.actions.RAISE || 0}</div>
-          <div className="text-gray-500 text-base">+${data.summary.totalBidIncrease.toFixed(2)}</div>
+          <div className="text-gray-400 text-lg mb-2">RAISE BIDS</div>
+          <div className="text-green-500 text-7xl font-bold">{data.summary.actions.RAISE || 0}</div>
         </div>
         <div
           onClick={() => setFilter('LOWER')}
-          className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'LOWER' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
+          className={`bg-[#1a1a1a] rounded-lg p-6 cursor-pointer transition-all text-center ${filter === 'LOWER' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-lg mb-1">LOWER BIDS</div>
-          <div className="text-red-500 text-5xl font-bold">{data.summary.actions.LOWER || 0}</div>
-          <div className="text-gray-500 text-base">-${data.summary.totalBidDecrease.toFixed(2)}</div>
+          <div className="text-gray-400 text-lg mb-2">LOWER BIDS</div>
+          <div className="text-red-500 text-7xl font-bold">{data.summary.actions.LOWER || 0}</div>
         </div>
         <div
           onClick={() => setFilter('HOLD')}
-          className={`bg-[#1a1a1a] rounded-lg p-4 cursor-pointer transition-all ${filter === 'HOLD' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
+          className={`bg-[#1a1a1a] rounded-lg p-6 cursor-pointer transition-all text-center ${filter === 'HOLD' ? 'ring-2 ring-cyan-500' : 'hover:bg-gray-900'}`}
         >
-          <div className="text-gray-400 text-lg mb-1">HOLD</div>
-          <div className="text-gray-400 text-5xl font-bold">{data.summary.actions.HOLD || 0}</div>
+          <div className="text-gray-400 text-lg mb-2">HOLD</div>
+          <div className="text-gray-400 text-7xl font-bold">{data.summary.actions.HOLD || 0}</div>
         </div>
       </div>
 
