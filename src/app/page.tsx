@@ -29,7 +29,6 @@ import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
 import { BingSummaryTab } from "@/components/bing-ads/BingSummaryTab"
 import { BingCPCTab } from "@/components/bing-ads/BingCPCTab"
-import { InteractiveJediCouncil } from "@/components/InteractiveJediCouncil"
 
 // Always use Railway API (no local Python backend needed)
 const PROPHET_API_URL = "https://qbtraining-site-production.up.railway.app"
@@ -6075,7 +6074,14 @@ function DashboardPageContent() {
 
         {/* Jedi Council Tab */}
         {activeTab === "jedi-council" && (
-          <InteractiveJediCouncil />
+          <div className="w-full">
+            <iframe 
+              src="https://jedi-council-zeta.vercel.app" 
+              className="w-full h-[calc(100vh-200px)] border-0 rounded-lg shadow-sm"
+              title="Jedi Council"
+              allow="clipboard-read; clipboard-write"
+            />
+          </div>
         )}
 
         {/* Landing Pages Tab */}
