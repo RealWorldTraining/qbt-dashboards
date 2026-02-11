@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { 
-  LayoutGrid, 
-  DollarSign, 
-  Users, 
-  FileText, 
+import {
+  LayoutGrid,
+  DollarSign,
+  Users,
+  FileText,
   Tv,
   ChevronDown,
   ChevronRight,
@@ -23,6 +23,7 @@ import {
   FileType,
   Repeat,
   Sparkles,
+  Trophy,
 } from "lucide-react"
 
 interface DashboardItem {
@@ -71,6 +72,15 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
       { name: "Conversions", href: "/?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
       { name: "Search Console", href: "/?tab=gsc", icon: Search, description: "Search rankings & clicks" },
       { name: "Landing Pages", href: "/?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
+    ]
+  },
+  {
+    name: "SEO & Rankings",
+    icon: BarChart3,
+    items: [
+      { name: "Rank Tracker", href: "/seo/rankings", icon: TrendingUp, description: "Keyword positions & visibility" },
+      { name: "AI Search", href: "/seo/ai-search", icon: Brain, description: "ChatGPT & AIO performance" },
+      { name: "Competitor Intel", href: "/seo/competitors", icon: Trophy, description: "You vs Intuit side-by-side" },
     ]
   },
   {

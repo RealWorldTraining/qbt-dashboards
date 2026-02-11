@@ -1,0 +1,102 @@
+{
+  "snapshot_date": "2026-02-11",
+  "previous_date": "2026-02-04",
+  "search_engine": "Google US Desktop Organic",
+  "comparison": {
+    "quickbookstraining.com": {
+      "visibility_percent": 96.17,
+      "visibility_change": -0.11,
+      "average_rank": 2.15,
+      "avg_rank_change": 0.04,
+      "click_share": 19.23,
+      "click_share_change": -0.34,
+      "first_place": 61,
+      "first_place_change": -2,
+      "top3": 150,
+      "top3_change": -3,
+      "top5": 168,
+      "top10": 174,
+      "ranked": 174,
+      "not_ranked": 0,
+      "estimated_visits": 77675.75,
+      "visits_change": -1928.16,
+      "traffic_cost": "$464,160.66"
+    },
+    "intuit.com": {
+      "visibility_percent": 80.29,
+      "visibility_change": 0.86,
+      "average_rank": 7.78,
+      "avg_rank_change": -0.56,
+      "click_share": 22.99,
+      "click_share_change": 0.44,
+      "first_place": 75,
+      "first_place_change": 3,
+      "top3": 132,
+      "top3_change": 0,
+      "top5": 133,
+      "top10": 137,
+      "ranked": 174,
+      "not_ranked": 0,
+      "estimated_visits": 105186.22,
+      "visits_change": 4124.35,
+      "traffic_cost": "$666,410.17"
+    }
+  },
+  "domain_distribution": {
+    "quickbookstraining.com": {
+      "total_keywords": 174,
+      "first_place": 61,
+      "pos_2_5": 107,
+      "pos_6_10": 6,
+      "pos_11_20": 0,
+      "pos_21_50": 0,
+      "not_ranked": 0
+    },
+    "intuit.com": {
+      "total_keywords": 174,
+      "first_place": 75,
+      "pos_2_5": 58,
+      "pos_6_10": 4,
+      "pos_11_20": 6,
+      "pos_21_50": 31,
+      "not_ranked": 0
+    }
+  },
+  "intuit_top_urls": [
+    {
+      "url": "quickbooks.intuit.com/accountants/training-certification/",
+      "ranked_keywords": 134,
+      "first_place": 59,
+      "pos_2_5": 63,
+      "pos_6_10": 3
+    },
+    {
+      "url": "quickbooks.intuit.com/accountants/training-certification/certification/",
+      "ranked_keywords": 115,
+      "first_place": 5,
+      "pos_2_5": 45,
+      "pos_6_10": 30
+    },
+    {
+      "url": "quickbooks.intuit.com/proadvisor-academy/",
+      "ranked_keywords": 86,
+      "first_place": 0,
+      "pos_2_5": 2,
+      "pos_6_10": 9
+    },
+    {
+      "url": "academy.intuit.com/",
+      "ranked_keywords": 83,
+      "first_place": 0,
+      "pos_2_5": 18,
+      "pos_6_10": 12
+    },
+    {
+      "url": "academy.intuit.com/programs/quickbooks-products",
+      "ranked_keywords": 72,
+      "first_place": 0,
+      "pos_2_5": 45,
+      "pos_6_10": 14
+    }
+  ]
+}
