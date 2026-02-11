@@ -6168,8 +6168,8 @@ export default function DashboardPage() {
                         {tiers.map(tier => (
                           <div key={tier.label} className="text-center">
                             <div className={`text-2xl font-bold ${tier.textColor}`}>{tier.count.toLocaleString()}</div>
-                            <div className="text-gray-400 text-sm">{tier.label}</div>
-                            <div className="text-gray-500 text-xs">{pct(tier.count).toFixed(1)}%</div>
+                            <div className="text-gray-300 text-sm font-medium">{tier.label}</div>
+                            <div className="text-gray-400 text-sm">{pct(tier.count).toFixed(1)}%</div>
                           </div>
                         ))}
                       </div>
@@ -6191,11 +6191,11 @@ export default function DashboardPage() {
                           <div key={quarter} className={`bg-gradient-to-b from-gray-800/60 to-gray-900/60 rounded-lg p-4 text-center border ${ringColor}`}>
                             <div className="text-cyan-400 text-sm font-semibold mb-3">{quarter}</div>
                             <div className="text-3xl font-black text-white">{qData.total_adds.toLocaleString()}</div>
-                            <div className="text-gray-500 text-xs mb-3">new adds</div>
+                            <div className="text-gray-400 text-sm mb-3">new adds</div>
                             <div className={`text-2xl font-bold ${retColor}`}>
                               {qData.still_active.toLocaleString()}
                             </div>
-                            <div className="text-gray-400 text-xs mb-1">still active</div>
+                            <div className="text-gray-400 text-sm mb-1">still active</div>
                             {/* Retention gauge */}
                             <div className="mt-2">
                               <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
@@ -6335,14 +6335,14 @@ export default function DashboardPage() {
                         const intensity = Math.min(rate / 20, 1)
                         return (
                           <div key={month} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30 hover:border-red-500/30 transition-colors">
-                            <div className="text-gray-400 text-xs font-medium mb-2">{month}</div>
+                            <div className="text-gray-300 text-sm font-medium mb-2">{month}</div>
                             <div className={`text-2xl font-black ${count > 0 ? 'text-red-400' : 'text-gray-500'}`}>
                               {count}
                             </div>
                             <div className="mt-2 h-1 bg-gray-700 rounded-full overflow-hidden">
                               <div className="h-full bg-red-500 rounded-full" style={{ width: `${intensity * 100}%` }} />
                             </div>
-                            <div className="text-gray-500 text-xs mt-1.5">
+                            <div className="text-gray-400 text-sm mt-1.5">
                               {rate}% of {newAdds}
                             </div>
                           </div>
@@ -6365,14 +6365,14 @@ export default function DashboardPage() {
                         const rateColor = adjustedRate >= 60 ? 'text-red-400' : adjustedRate >= 45 ? 'text-amber-400' : 'text-emerald-400'
                         return (
                           <div key={month} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30">
-                            <div className="text-gray-400 text-xs font-medium mb-2">{month}</div>
+                            <div className="text-gray-300 text-sm font-medium mb-2">{month}</div>
                             <div className={`text-2xl font-black ${count > 0 ? 'text-orange-400' : 'text-gray-500'}`}>
                               {count}
                             </div>
                             <div className={`text-sm font-semibold mt-1 ${rateColor}`}>
                               {adjustedRate}%
                             </div>
-                            <div className="text-gray-600 text-xs mt-0.5">
+                            <div className="text-gray-400 text-sm mt-0.5">
                               {totalChurn} - {immediateChurn} imm
                             </div>
                           </div>
@@ -6382,19 +6382,19 @@ export default function DashboardPage() {
                     {/* Summary metrics */}
                     <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-700/50">
                       <div className="text-center">
-                        <div className="text-gray-500 text-xs mb-1 tracking-wide">AVG TOTAL CHURN/MO</div>
+                        <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG TOTAL CHURN/MO</div>
                         <div className="text-2xl font-bold text-red-400">{subscriberMetrics.data.avg_churn_12mo}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-gray-500 text-xs mb-1 tracking-wide">AVG IMMEDIATE/MO</div>
+                        <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG IMMEDIATE/MO</div>
                         <div className="text-2xl font-bold text-red-300">{Math.round(subscriberMetrics.data.immediate_cancels_avg_monthly)}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-gray-500 text-xs mb-1 tracking-wide">AVG ADJUSTED/MO</div>
+                        <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG ADJUSTED/MO</div>
                         <div className="text-2xl font-bold text-orange-400">{subscriberMetrics.data.avg_adjusted_churn_12mo}</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-gray-500 text-xs mb-1 tracking-wide">IMMEDIATE % OF CHURN</div>
+                        <div className="text-gray-400 text-sm mb-1 tracking-wide">IMMEDIATE % OF CHURN</div>
                         <div className="text-2xl font-bold text-white">{subscriberMetrics.data.immediate_cancels_pct}%</div>
                       </div>
                     </div>
