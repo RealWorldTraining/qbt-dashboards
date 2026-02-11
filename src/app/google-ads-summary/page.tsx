@@ -1268,7 +1268,7 @@ function GoogleAdsPageInner() {
 
   return (
     <div className="min-h-screen bg-black p-6">
-      <div className="max-w-[1800px] mx-auto">
+      <div className="max-w-[1920px] mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-4">
@@ -1311,7 +1311,7 @@ export default function GoogleAdsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-black p-6">
-        <div className="max-w-[1800px] mx-auto">
+        <div className="max-w-[1920px] mx-auto">
           <div className="flex items-center gap-4 mb-6">
             <DashboardNav />
             <h1 className="text-white text-2xl font-bold">Google Ads</h1>
