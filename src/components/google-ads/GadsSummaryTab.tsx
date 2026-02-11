@@ -197,7 +197,7 @@ export function GadsSummaryTab() {
       }
     })
     return {
-      week: week.date_range,
+      week: week.date_range.split(' - ')[0],
       week_start: week.week,
       spend: Math.round(spend),
       impressions,
@@ -228,7 +228,7 @@ export function GadsSummaryTab() {
         }
       })
       return {
-        week: week.date_range,
+        week: week.date_range.split(' - ')[0],
         week_start: week.week,
         spend: Math.round(spend),
         impressions,
