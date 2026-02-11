@@ -157,7 +157,6 @@ export async function GET() {
     const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
     const monthlyData = Array.from(monthlyAgg.entries())
       .sort((a, b) => b[0].localeCompare(a[0]))
-      .slice(0, 15)
       .map(([key, data]) => {
         const [y, m] = key.split('-').map(Number)
         const monthDate = new Date(y, m - 1, 1)
