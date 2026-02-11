@@ -364,9 +364,9 @@ export function GadsCPCTab() {
       {/* Table */}
       <div className="bg-[#1a1a1a] rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xl">
             <thead className="bg-black">
-              <tr className="text-gray-400 text-xs">
+              <tr className="text-gray-400 text-lg">
                 <th className="text-left p-3">KEYWORD</th>
                 <th className="text-left p-3">CAMPAIGN</th>
                 <th className="text-right p-3">IMPR</th>
@@ -394,7 +394,7 @@ export function GadsCPCTab() {
                 return (
                   <tr key={i} className={`border-t border-gray-800 hover:bg-gray-700 ${bgClass}`}>
                     <td className="p-3 text-gray-300">{rec.keyword}</td>
-                    <td className="p-3 text-gray-500 text-xs">{rec.campaign}</td>
+                    <td className="p-3 text-gray-500 text-base">{rec.campaign}</td>
                     <td className="p-3 text-right text-gray-400">{rec.impressions.toLocaleString()}</td>
                     <td className="p-3 text-right text-gray-400">{rec.clicks.toLocaleString()}</td>
                     <td className="p-3 text-right text-gray-400">
@@ -404,7 +404,7 @@ export function GadsCPCTab() {
                     <td className="p-3 text-right text-gray-400">{Math.round(rec.conversions)}</td>
                     <td className="p-3 text-right text-gray-400">${Math.round(rec.costPerConv)}</td>
                     <td className="p-3 text-center">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      <span className={`px-3 py-1.5 rounded text-base font-medium ${
                         rec.action === 'RAISE' ? 'bg-green-900 text-green-300' :
                         rec.action === 'LOWER' ? 'bg-red-900 text-red-300' :
                         'bg-gray-800 text-gray-400'
@@ -417,33 +417,33 @@ export function GadsCPCTab() {
                     <td className={`p-3 text-right font-medium ${rec.changeAmount > 0 ? 'text-green-500' : 'text-red-500'}`}>
                       {rec.changeAmount > 0 ? '+' : ''}${rec.changeAmount.toFixed(2)}
                     </td>
-                    <td className="p-3 text-center text-gray-300 text-xs">{rec.signals}</td>
+                    <td className="p-3 text-center text-gray-300 text-base">{rec.signals}</td>
                     <td className="p-3 text-center">
-                      <div className="w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium"
+                      <div className="w-16 h-8 rounded mx-auto flex items-center justify-center text-sm font-medium"
                            style={{ backgroundColor: classColors[rec.searchImprClass], color: 'white' }}>
                         {rec.searchImprShare.toFixed(0)}%
                       </div>
                     </td>
                     <td className="p-3 text-center">
-                      <div className="w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium"
+                      <div className="w-16 h-8 rounded mx-auto flex items-center justify-center text-sm font-medium"
                            style={{ backgroundColor: classColors[rec.imprTopClass], color: 'white' }}>
                         {rec.imprTopPct.toFixed(0)}%
                       </div>
                     </td>
                     <td className="p-3 text-center">
-                      <div className="w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium"
+                      <div className="w-16 h-8 rounded mx-auto flex items-center justify-center text-sm font-medium"
                            style={{ backgroundColor: classColors[rec.clickShareClass], color: 'white' }}>
                         {rec.clickShare.toFixed(0)}%
                       </div>
                     </td>
                     <td className="p-3 text-center">
-                      <div className="w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium"
+                      <div className="w-16 h-8 rounded mx-auto flex items-center justify-center text-sm font-medium"
                            style={{ backgroundColor: classColors[rec.imprAbsTopClass], color: 'white' }}>
                         {rec.imprAbsTopPct.toFixed(0)}%
                       </div>
                     </td>
                     <td className="p-3 text-center">
-                      <div className="w-12 h-6 rounded mx-auto flex items-center justify-center text-xs font-medium"
+                      <div className="w-16 h-8 rounded mx-auto flex items-center justify-center text-sm font-medium"
                            style={{ backgroundColor: classColors[rec.searchLostClass], color: 'white' }}>
                         {rec.searchLostIsRank.toFixed(1)}%
                       </div>
