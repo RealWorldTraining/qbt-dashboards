@@ -6533,7 +6533,7 @@ function DashboardPageContent() {
                         const activeAtStart = subscriberMetrics.data?.active_at_start_by_month?.[month] || 0
                         const rateColor = attritionRate >= 5 ? 'text-red-400' : attritionRate >= 3.5 ? 'text-amber-400' : 'text-emerald-400'
                         return (
-                          <div key={month} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30">
+                          <div key={month} className="bg-gradient-to-b from-gray-800/50 to-gray-900/50 rounded-lg p-3 text-center border border-gray-700/30" title={`${count} subscribers cancelled in ${month} after being subscribed for more than 30 days (${totalChurn} total cancels minus ${immediateChurn} immediate cancels). The ${attritionRate}% attrition rate = ${count} adjusted cancels ÷ ${activeAtStart.toLocaleString()} active subscribers at the start of ${month}.`}>
                             <div className="text-gray-300 text-sm font-medium mb-2">{month}</div>
                             <div className={`text-2xl font-black ${count > 0 ? 'text-orange-400' : 'text-gray-500'}`}>
                               {count}
@@ -6554,23 +6554,23 @@ function DashboardPageContent() {
                       const avgAttrition = attritionRates.length > 0 ? (attritionRates.reduce((a, b) => a + b, 0) / attritionRates.length).toFixed(1) : '0'
                       return (
                         <div className="grid grid-cols-5 gap-4 pt-4 border-t border-gray-700/50">
-                          <div className="text-center">
+                          <div className="text-center" title="Average total cancellations per month (including immediate cancels) over the last 12 months.">
                             <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG TOTAL CHURN/MO</div>
                             <div className="text-2xl font-bold text-red-400">{subscriberMetrics.data.avg_churn_12mo}</div>
                           </div>
-                          <div className="text-center">
+                          <div className="text-center" title="Average number of immediate cancels per month — subscribers who cancelled within 30 days of signing up.">
                             <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG IMMEDIATE/MO</div>
                             <div className="text-2xl font-bold text-red-300">{Math.round(subscriberMetrics.data.immediate_cancels_avg_monthly)}</div>
                           </div>
-                          <div className="text-center">
+                          <div className="text-center" title="Average monthly cancels after removing immediate cancels. These are subscribers who stayed more than 30 days before cancelling.">
                             <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG ADJUSTED/MO</div>
                             <div className="text-2xl font-bold text-orange-400">{subscriberMetrics.data.avg_adjusted_churn_12mo}</div>
                           </div>
-                          <div className="text-center">
+                          <div className="text-center" title="Average monthly attrition rate — adjusted cancels divided by active subscribers at the start of each month, averaged across all months shown.">
                             <div className="text-gray-400 text-sm mb-1 tracking-wide">AVG ATTRITION RATE</div>
                             <div className="text-2xl font-bold text-cyan-400">{avgAttrition}%</div>
                           </div>
-                          <div className="text-center">
+                          <div className="text-center" title="What percentage of all cancellations are immediate (within 30 days). These are typically buyer's remorse or trial users who never intended to stay.">
                             <div className="text-gray-400 text-sm mb-1 tracking-wide">IMMEDIATE % OF CHURN</div>
                             <div className="text-2xl font-bold text-white">{subscriberMetrics.data.immediate_cancels_pct}%</div>
                           </div>
