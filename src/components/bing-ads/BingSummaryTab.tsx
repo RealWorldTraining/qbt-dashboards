@@ -208,9 +208,9 @@ export function BingSummaryTab() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((row, idx) => (
+                {[...data].reverse().map((row, idx) => (
                   <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
-                    <td className="py-3 px-4 text-white font-medium">{row.week}</td>
+                    <td className="py-3 px-4 text-white font-medium">{row.week.split(' - ')[0]}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatCurrency(row.spend)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.impressions)}</td>
                     <td className="text-right py-3 px-4 text-gray-300">{formatNumber(row.clicks)}</td>
@@ -308,16 +308,16 @@ export function BingSummaryTab() {
                 <tr className="border-b border-gray-700">
                   <th className="text-left py-3 px-4 text-gray-400 font-medium">Campaign</th>
                   <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
-                    {campaignData.weeks[0]?.date_range || 'Last Week'}
+                    {campaignData.weeks[0]?.date_range.split(' - ')[0] || 'Last Week'}
                   </th>
                   <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
-                    {campaignData.weeks[1]?.date_range || '2 Weeks Ago'}
+                    {campaignData.weeks[1]?.date_range.split(' - ')[0] || '2 Weeks Ago'}
                   </th>
                   <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
-                    {campaignData.weeks[2]?.date_range || '3 Weeks Ago'}
+                    {campaignData.weeks[2]?.date_range.split(' - ')[0] || '3 Weeks Ago'}
                   </th>
                   <th className="text-center py-3 px-4 text-gray-400 font-medium" colSpan={2}>
-                    {campaignData.weeks[3]?.date_range || '4 Weeks Ago'}
+                    {campaignData.weeks[3]?.date_range.split(' - ')[0] || '4 Weeks Ago'}
                   </th>
                 </tr>
                 <tr className="border-b border-gray-700">
@@ -354,7 +354,7 @@ export function BingSummaryTab() {
           </div>
 
           {/* Detailed Campaign Metrics - Last Week */}
-          <h3 className="text-white text-md font-semibold mt-8 mb-4">Detailed Metrics - {campaignData.weeks[0]?.date_range || 'Last Week'}</h3>
+          <h3 className="text-white text-md font-semibold mt-8 mb-4">Detailed Metrics - {campaignData.weeks[0]?.date_range.split(' - ')[0] || 'Last Week'}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
