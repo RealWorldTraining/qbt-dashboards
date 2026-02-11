@@ -85,12 +85,26 @@
 | Live Help Archive | `1Rf9sf4xEIBhOJZGfA2wvLEmDUNd0onuHBZfCBFXx7y4` | Historical live help logs |
 | Jedi Council Output | `1ckBSMiwhFIHKzR2vyr8MlFtOq2DK7NL7pEjYUT9Fbrg` | Analysis output from Jedi Council workflow |
 
+## Google Sheets — Additional Active
+
+| Sheet | ID | Notes |
+|---|---|---|
+| Adveronix: MASTER DATA | `1INXxnW3WVkENN7Brvo3sgPcs96C06r3O6mEkgEABxk8` | Subscription data ("KPI BEES" tab). ~44K rows, 2013-present. Updated daily. Used by Prophet API (`SUBSCRIPTIONS_SHEET_ID`). |
+
 ## Google Sheets — Deprecated (DO NOT USE)
 
 | Sheet | ID | Notes |
 |---|---|---|
 | Old Google Ads Sheet | `1WeRmk0bZ-OU6jnbk0pfC1s3xK32WCwAIlTUa0-jYcuM` | Only used by google-ads-monthly (old) — migrate away |
-| Bing Ads (Old) | `1INXxnW3WVkENN7Brvo3sgPcs96C06r3O6mEkgEABxk8` | Used by old bing-ads routes — migrate away |
+
+## Prophet API (Backend for Sales/Subscription Reports)
+
+- **Live URL:** `https://qbtraining-site-production.up.railway.app`
+- **Hosted on:** Railway (auto-deploys from GitHub)
+- **CRITICAL: Deploys from a SEPARATE repo: `RealWorldTraining/prophet-api`**
+- The `prophet-api/` folder in `qbtraining-site` is a local reference copy — changes there do NOT deploy
+- To deploy Prophet API changes: clone/edit `RealWorldTraining/prophet-api` and push to `main`
+- Subscription data source: Adveronix: MASTER DATA sheet, "KPI BEES" tab (see above)
 
 ## Related n8n Workflows
 
