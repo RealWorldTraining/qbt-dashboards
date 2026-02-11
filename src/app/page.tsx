@@ -5908,45 +5908,71 @@ export default function DashboardPage() {
                     <p className="text-base text-[#6E6E73]">Weekly users, conversions & conversion rate by page</p>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto rounded-xl">
-                      <table className="w-full text-base bg-[#1D1D1F]">
-                        <thead>
-                          <tr className="border-b border-[#3D3D3F]">
-                            <th className="text-left py-4 px-4 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[260px]">Landing Page</th>
-                            {landingPagesData.landing_pages[0]?.weeks.map((week, idx) => (
-                              <th key={idx} className="text-center py-4 px-4 min-w-[150px]">
-                                <div className="font-semibold text-white text-base">{week.label}</div>
-                                <div className="text-sm text-white/40 mt-0.5">{week.date_range}</div>
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {landingPagesData.landing_pages.map((lp, lpIdx) => (
-                            <tr key={lpIdx} className="border-b border-white/5">
-                              <td className="py-4 px-4 font-medium text-white text-base sticky left-0 bg-[#1D1D1F] truncate max-w-[300px]" title={lp.landing_page}>
-                                {lp.landing_page}
-                              </td>
-                              {lp.weeks.map((week, weekIdx) => {
-                                const users = Math.round(week.users)
-                                const maxUsers = Math.max(...lp.weeks.map(w => Math.round(w.users)))
-                                const intensity = maxUsers > 0 ? users / maxUsers : 0
-                                const bgClass = users === 0 ? 'bg-[#1D1D1F]' : intensity >= 0.8 ? 'bg-blue-600' : intensity >= 0.6 ? 'bg-blue-600/80' : intensity >= 0.4 ? 'bg-blue-600/60' : intensity >= 0.2 ? 'bg-blue-600/40' : 'bg-blue-600/20'
+                    {(() => {
+                      const activeWeeks = landingPagesData.landing_pages[0]?.weeks
+                        .map((_, idx) => idx)
+                        .filter(idx => !landingPagesData.landing_pages.every(lp => Math.round(lp.weeks[idx]?.users || 0) === 0)) || []
+                      return (
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-base bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b-2 border-[#3D3D3F]">
+                                <th className="text-left py-4 px-5 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[260px]">Landing Page</th>
+                                {activeWeeks.map(idx => {
+                                  const week = landingPagesData.landing_pages[0].weeks[idx]
+                                  return (
+                                    <th key={idx} className="text-center py-4 px-4 min-w-[160px]">
+                                      <div className="font-semibold text-white text-base">{week.label}</div>
+                                      <div className="text-sm text-white/40 mt-0.5">{week.date_range.split(' - ')[0]}</div>
+                                    </th>
+                                  )
+                                })}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {landingPagesData.landing_pages.map((lp, lpIdx) => {
+                                const rowBg = lpIdx % 2 === 0 ? 'bg-[#1D1D1F]' : 'bg-[#252528]'
                                 return (
-                                  <td key={weekIdx} className={`text-center py-4 px-4 ${bgClass}`}>
-                                    <div className="font-bold text-white text-lg">{users.toLocaleString()}</div>
-                                    <div className="text-white/50 text-sm">{week.purchases} conv</div>
-                                    <div className={`text-sm font-semibold ${week.conversion_rate >= 1.5 ? 'text-[#34C759]' : week.conversion_rate >= 0.5 ? 'text-[#FF9F0A]' : 'text-[#FF6B6B]'}`}>
-                                      {week.conversion_rate.toFixed(2)}%
-                                    </div>
-                                  </td>
+                                  <tr key={lpIdx} className={`border-b border-white/5 ${rowBg}`}>
+                                    <td className={`py-4 px-5 font-medium text-white text-base sticky left-0 ${rowBg} truncate max-w-[300px]`} title={lp.landing_page}>
+                                      {lp.landing_page}
+                                    </td>
+                                    {activeWeeks.map(weekIdx => {
+                                      const week = lp.weeks[weekIdx]
+                                      const users = Math.round(week.users)
+                                      const nextActiveIdx = activeWeeks[activeWeeks.indexOf(weekIdx) + 1]
+                                      const prevWeek = nextActiveIdx !== undefined ? lp.weeks[nextActiveIdx] : null
+                                      const prevUsers = prevWeek ? Math.round(prevWeek.users) : null
+                                      const wowChange = prevUsers && prevUsers > 0 ? ((users - prevUsers) / prevUsers * 100) : null
+                                      if (users === 0 && week.purchases === 0) {
+                                        return (
+                                          <td key={weekIdx} className="text-center py-4 px-4">
+                                            <div className="text-white/15 text-lg">—</div>
+                                          </td>
+                                        )
+                                      }
+                                      return (
+                                        <td key={weekIdx} className="text-center py-4 px-4">
+                                          <div className="font-bold text-white text-xl">{users.toLocaleString()}</div>
+                                          {wowChange !== null && (
+                                            <div className={`text-xs font-medium mt-0.5 ${wowChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                              {wowChange >= 0 ? '▲' : '▼'} {Math.abs(wowChange).toFixed(0)}%
+                                            </div>
+                                          )}
+                                          <div className="text-white/40 text-sm mt-1">
+                                            {week.purchases} conv · <span className={`font-semibold ${week.conversion_rate >= 1.5 ? 'text-emerald-400' : week.conversion_rate >= 0.5 ? 'text-amber-400' : 'text-white/40'}`}>{week.conversion_rate.toFixed(2)}%</span>
+                                          </div>
+                                        </td>
+                                      )
+                                    })}
+                                  </tr>
                                 )
                               })}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                            </tbody>
+                          </table>
+                        </div>
+                      )
+                    })()}
                   </CardContent>
                 </Card>
 
@@ -5960,69 +5986,82 @@ export default function DashboardPage() {
                     <p className="text-base text-[#6E6E73]">Weekly clicks, conversions & conversion rate by page</p>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto rounded-xl">
-                      <table className="w-full text-base bg-[#1D1D1F]">
-                        <thead>
-                          <tr className="border-b border-[#3D3D3F]">
-                            <th className="text-left py-4 px-4 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[260px]">Landing Page</th>
-                            {(() => {
-                              const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/'
-                              const ga4Order = landingPagesData.landing_pages.map(lp => normalizePath(lp.landing_page))
-                              const sorted = [...gadsLandingPagesData.landing_pages].sort((a, b) => {
-                                const aIdx = ga4Order.indexOf(normalizePath(a.landing_page))
-                                const bIdx = ga4Order.indexOf(normalizePath(b.landing_page))
-                                if (aIdx === -1 && bIdx === -1) return 0
-                                if (aIdx === -1) return 1
-                                if (bIdx === -1) return -1
-                                return aIdx - bIdx
-                              })
-                              return sorted[0]?.weeks.map((week, idx) => (
-                                <th key={idx} className="text-center py-4 px-4 min-w-[150px]">
-                                  <div className="font-semibold text-white text-base">{week.label}</div>
-                                  <div className="text-sm text-white/40 mt-0.5">{week.date_range}</div>
-                                </th>
-                              ))
-                            })()}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/'
-                            const ga4Order = landingPagesData.landing_pages.map(lp => normalizePath(lp.landing_page))
-                            const sorted = [...gadsLandingPagesData.landing_pages].sort((a, b) => {
-                              const aIdx = ga4Order.indexOf(normalizePath(a.landing_page))
-                              const bIdx = ga4Order.indexOf(normalizePath(b.landing_page))
-                              if (aIdx === -1 && bIdx === -1) return 0
-                              if (aIdx === -1) return 1
-                              if (bIdx === -1) return -1
-                              return aIdx - bIdx
-                            })
-                            return sorted.map((lp, lpIdx) => (
-                              <tr key={lpIdx} className="border-b border-white/5">
-                                <td className="py-4 px-4 font-medium text-white text-base sticky left-0 bg-[#1D1D1F] truncate max-w-[300px]" title={lp.landing_page}>
-                                  {lp.landing_page}
-                                </td>
-                                {lp.weeks.map((week, weekIdx) => {
-                                  const clicks = Math.round(week.clicks)
-                                  const maxClicks = Math.max(...lp.weeks.map(w => Math.round(w.clicks)))
-                                  const intensity = maxClicks > 0 ? clicks / maxClicks : 0
-                                  const bgClass = clicks === 0 ? 'bg-[#1D1D1F]' : intensity >= 0.8 ? 'bg-blue-600' : intensity >= 0.6 ? 'bg-blue-600/80' : intensity >= 0.4 ? 'bg-blue-600/60' : intensity >= 0.2 ? 'bg-blue-600/40' : 'bg-blue-600/20'
+                    {(() => {
+                      const normalizePath = (p: string) => p.replace(/\/+$/, '') || '/'
+                      const ga4Order = landingPagesData.landing_pages.map(lp => normalizePath(lp.landing_page))
+                      const sorted = [...gadsLandingPagesData.landing_pages].sort((a, b) => {
+                        const aIdx = ga4Order.indexOf(normalizePath(a.landing_page))
+                        const bIdx = ga4Order.indexOf(normalizePath(b.landing_page))
+                        if (aIdx === -1 && bIdx === -1) return 0
+                        if (aIdx === -1) return 1
+                        if (bIdx === -1) return -1
+                        return aIdx - bIdx
+                      })
+                      const activeWeeks = sorted[0]?.weeks
+                        .map((_, idx) => idx)
+                        .filter(idx => !sorted.every(lp => Math.round(lp.weeks[idx]?.clicks || 0) === 0)) || []
+                      return (
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full text-base bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b-2 border-[#3D3D3F]">
+                                <th className="text-left py-4 px-5 font-bold text-white text-lg sticky left-0 bg-[#1D1D1F] min-w-[260px]">Landing Page</th>
+                                {activeWeeks.map(idx => {
+                                  const week = sorted[0].weeks[idx]
                                   return (
-                                    <td key={weekIdx} className={`text-center py-4 px-4 ${bgClass}`}>
-                                      <div className="font-bold text-white text-lg">{clicks.toLocaleString()}</div>
-                                      <div className="text-white/50 text-sm">{Math.round(week.conversions)} conv</div>
-                                      <div className={`text-sm font-semibold ${week.conversion_rate >= 5 ? 'text-[#34C759]' : week.conversion_rate >= 2 ? 'text-[#FF9F0A]' : 'text-[#FF6B6B]'}`}>
-                                        {week.conversion_rate.toFixed(2)}%
-                                      </div>
-                                    </td>
+                                    <th key={idx} className="text-center py-4 px-4 min-w-[160px]">
+                                      <div className="font-semibold text-white text-base">{week.label}</div>
+                                      <div className="text-sm text-white/40 mt-0.5">{week.date_range.split(' - ')[0]}</div>
+                                    </th>
                                   )
                                 })}
                               </tr>
-                            ))
-                          })()}
-                        </tbody>
-                      </table>
-                    </div>
+                            </thead>
+                            <tbody>
+                              {sorted.map((lp, lpIdx) => {
+                                const rowBg = lpIdx % 2 === 0 ? 'bg-[#1D1D1F]' : 'bg-[#252528]'
+                                return (
+                                  <tr key={lpIdx} className={`border-b border-white/5 ${rowBg}`}>
+                                    <td className={`py-4 px-5 font-medium text-white text-base sticky left-0 ${rowBg} truncate max-w-[300px]`} title={lp.landing_page}>
+                                      {lp.landing_page}
+                                    </td>
+                                    {activeWeeks.map(weekIdx => {
+                                      const week = lp.weeks[weekIdx]
+                                      const clicks = Math.round(week.clicks)
+                                      const conversions = Math.round(week.conversions)
+                                      const nextActiveIdx = activeWeeks[activeWeeks.indexOf(weekIdx) + 1]
+                                      const prevWeek = nextActiveIdx !== undefined ? lp.weeks[nextActiveIdx] : null
+                                      const prevClicks = prevWeek ? Math.round(prevWeek.clicks) : null
+                                      const wowChange = prevClicks && prevClicks > 0 ? ((clicks - prevClicks) / prevClicks * 100) : null
+                                      if (clicks === 0 && conversions === 0) {
+                                        return (
+                                          <td key={weekIdx} className="text-center py-4 px-4">
+                                            <div className="text-white/15 text-lg">—</div>
+                                          </td>
+                                        )
+                                      }
+                                      return (
+                                        <td key={weekIdx} className="text-center py-4 px-4">
+                                          <div className="font-bold text-white text-xl">{clicks.toLocaleString()}</div>
+                                          {wowChange !== null && (
+                                            <div className={`text-xs font-medium mt-0.5 ${wowChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                              {wowChange >= 0 ? '▲' : '▼'} {Math.abs(wowChange).toFixed(0)}%
+                                            </div>
+                                          )}
+                                          <div className="text-white/40 text-sm mt-1">
+                                            {conversions} conv · <span className={`font-semibold ${week.conversion_rate >= 5 ? 'text-emerald-400' : week.conversion_rate >= 2 ? 'text-amber-400' : 'text-white/40'}`}>{week.conversion_rate.toFixed(2)}%</span>
+                                          </div>
+                                        </td>
+                                      )
+                                    })}
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )
+                    })()}
                   </CardContent>
                 </Card>
               </>
