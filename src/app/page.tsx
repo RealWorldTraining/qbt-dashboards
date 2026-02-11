@@ -836,7 +836,34 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type TabType = "sales" | "traffic" | "conversions" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions" | "landing-pages" | "gsc"
+type SectionType = "revenue" | "advertising" | "organic" | "tools"
+
+type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages"
+
+const SECTION_TABS: Record<SectionType, TabType[]> = {
+  revenue: ["sales", "subscriptions"],
+  advertising: ["google-ads", "bing-ads"],
+  organic: ["traffic", "conversions", "gsc", "landing-pages"],
+  tools: [],
+}
+
+const SECTION_DEFAULTS: Record<SectionType, TabType | null> = {
+  revenue: "sales",
+  advertising: "google-ads",
+  organic: "traffic",
+  tools: null,
+}
+
+const TAB_TO_SECTION: Record<TabType, SectionType> = {
+  sales: "revenue",
+  subscriptions: "revenue",
+  "google-ads": "advertising",
+  "bing-ads": "advertising",
+  traffic: "organic",
+  conversions: "organic",
+  gsc: "organic",
+  "landing-pages": "organic",
+}
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -1866,7 +1893,6 @@ const CACHE_TTL = {
   googleAds: 24 * 60 * 60 * 1000, // 24 hours for Google Ads (updates daily)
   bingAds: 24 * 60 * 60 * 1000,   // 24 hours for Bing Ads (updates daily)
   subscriptions: 60 * 60 * 1000,  // 1 hour for subscriptions
-  jedi: 60 * 60 * 1000,           // 1 hour for jedi council
   gsc: 24 * 60 * 60 * 1000,      // 24 hours for GSC (updates daily)
 }
 
@@ -1974,18 +2000,48 @@ async function fetchWithCache<T>(
 }
 
 
-const validTabs: TabType[] = ["sales", "traffic", "conversions", "google-ads", "bing-ads", "jedi-council", "subscriptions", "landing-pages", "gsc"]
+const validTabs: TabType[] = ["sales", "subscriptions", "google-ads", "bing-ads", "traffic", "conversions", "gsc", "landing-pages"]
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
-  const tabParam = searchParams.get("tab") as TabType | null
-  const [activeTab, setActiveTab] = useState<TabType>(tabParam && validTabs.includes(tabParam) ? tabParam : "sales")
+  const tabParam = searchParams.get("tab") as string | null
+  // Handle legacy ?tab=jedi-council → tools hub
+  const resolvedTab: TabType | null = tabParam === "jedi-council" ? null : (tabParam && validTabs.includes(tabParam as TabType) ? tabParam as TabType : null)
+  const [activeTab, setActiveTab] = useState<TabType | null>(resolvedTab ?? "sales")
+  const [activeSection, setActiveSection] = useState<SectionType>(
+    resolvedTab ? TAB_TO_SECTION[resolvedTab] : (tabParam === "jedi-council" ? "tools" : "revenue")
+  )
 
   useEffect(() => {
-    if (tabParam && validTabs.includes(tabParam)) {
-      setActiveTab(tabParam)
+    if (tabParam === "jedi-council") {
+      setActiveSection("tools")
+      setActiveTab(null)
+      window.history.replaceState({}, "", "/?section=tools")
+    } else if (tabParam && validTabs.includes(tabParam as TabType)) {
+      const tab = tabParam as TabType
+      setActiveTab(tab)
+      setActiveSection(TAB_TO_SECTION[tab])
     }
   }, [tabParam])
+
+  // Section click handler
+  const handleSectionClick = (section: SectionType) => {
+    setActiveSection(section)
+    const defaultTab = SECTION_DEFAULTS[section]
+    setActiveTab(defaultTab)
+    if (defaultTab) {
+      window.history.replaceState({}, "", `/?tab=${defaultTab}`)
+    } else {
+      window.history.replaceState({}, "", `/?section=${section}`)
+    }
+  }
+
+  // Sub-tab click handler
+  const handleSubTabClick = (tab: TabType) => {
+    setActiveTab(tab)
+    setActiveSection(TAB_TO_SECTION[tab])
+    window.history.replaceState({}, "", `/?tab=${tab}`)
+  }
 
   // Sales state
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null)
@@ -2044,9 +2100,6 @@ function DashboardPageContent() {
   // Google Ads Weekly state
   const [googleCampaignsWeekly, setGoogleCampaignsWeekly] = useState<CampaignsWeeklyResponse | null>(null)
 
-  // Jedi Council state
-  const [jediCouncil, setJediCouncil] = useState<JediCouncilResponse | null>(null)
-
   // Subscriptions state
   const [subscriptions, setSubscriptions] = useState<SubscriptionsResponse | null>(null)
   const [subscriberMetrics, setSubscriberMetrics] = useState<SubscriberMetricsResponse | null>(null)
@@ -2065,7 +2118,6 @@ function DashboardPageContent() {
   const [conversionsLoading, setConversionsLoading] = useState(true)
   const [googleAdsLoading, setGoogleAdsLoading] = useState(true)
   const [bingAdsLoading, setBingAdsLoading] = useState(true)
-  const [jediLoading, setJediLoading] = useState(true)
   const [subscriptionsLoading, setSubscriptionsLoading] = useState(true)
   const [landingPagesLoading, setLandingPagesLoading] = useState(true)
   const [gscLoading, setGscLoading] = useState(true)
@@ -2172,20 +2224,6 @@ function DashboardPageContent() {
     }
   }
 
-  // Fetch Jedi Council tab data (lazy load)
-  const fetchJediData = async () => {
-    if (loadedTabs.has('jedi-council') && !isCacheStale('jedi')) return
-    setJediLoading(true)
-    try {
-      await fetchWithCache(`${PROPHET_API_URL}/jedi-council`, 'jedi', CACHE_TTL.jedi, setJediCouncil)
-    } catch (err) {
-      console.error("Failed to load Jedi Council data:", err)
-    } finally {
-      setJediLoading(false)
-      setLoadedTabs(prev => new Set([...prev, 'jedi-council']))
-    }
-  }
-
   const fetchSubscriptionsData = async () => {
     if (loadedTabs.has('subscriptions') && !isCacheStale('subscriptions')) return
     setSubscriptionsLoading(true)
@@ -2287,7 +2325,6 @@ function DashboardPageContent() {
     const prefetchTimer = setTimeout(() => {
       fetchTrafficData()
       fetchGoogleAdsData()
-      fetchJediData()
     }, 1000) // 1 second delay to not block initial render
 
     return () => clearTimeout(prefetchTimer)
@@ -2299,7 +2336,6 @@ function DashboardPageContent() {
     else if (activeTab === 'conversions') { fetchTrafficData(); fetchConversionData() }
     else if (activeTab === 'google-ads') fetchGoogleAdsData()
     else if (activeTab === 'bing-ads') fetchBingAdsData()
-    else if (activeTab === 'jedi-council') fetchJediData()
     else if (activeTab === 'subscriptions') fetchSubscriptionsData()
     else if (activeTab === 'landing-pages') fetchLandingPagesData()
     else if (activeTab === 'gsc') fetchGscData()
@@ -2317,42 +2353,35 @@ function DashboardPageContent() {
     return () => clearInterval(refreshInterval)
   }, [activeTab])
 
-  const tabGroups = [
-    {
-      label: "Sales & Revenue",
-      tabs: [
-        { id: "sales" as TabType, label: "Sales", icon: DollarSign },
-        { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
-      ],
-    },
-    {
-      label: "Paid Advertising",
-      tabs: [
-        { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
-        { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
-      ],
-    },
-    {
-      label: "Organic Growth",
-      tabs: [
-        { id: "traffic" as TabType, label: "Traffic", icon: Users },
-        { id: "conversions" as TabType, label: "Conversions", icon: CheckCircle2 },
-        { id: "gsc" as TabType, label: "Search Console", icon: Search },
-      ],
-    },
-    {
-      label: "Content",
-      tabs: [
-        { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
-      ],
-    },
-    {
-      label: "AI Tools",
-      tabs: [
-        { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
-      ],
-    },
+  const sections: Array<{
+    id: SectionType
+    label: string
+    icon: any
+    description: string
+  }> = [
+    { id: "revenue", label: "Revenue", icon: DollarSign, description: "Daily sales, subscription health, and product revenue" },
+    { id: "advertising", label: "Advertising", icon: Target, description: "Google Ads and Bing Ads campaign performance" },
+    { id: "organic", label: "Organic & SEO", icon: TrendingUp, description: "Traffic sources, conversions, search rankings, and landing pages" },
+    { id: "tools", label: "Insights & Tools", icon: Sparkles, description: "AI analysis, forecasting, and operational tools" },
   ]
+
+  const sectionTabs: Record<SectionType, Array<{ id: TabType; label: string; icon: any }>> = {
+    revenue: [
+      { id: "sales", label: "Sales", icon: DollarSign },
+      { id: "subscriptions", label: "Subscriptions", icon: RefreshCw },
+    ],
+    advertising: [
+      { id: "google-ads", label: "Google Ads", icon: TrendingUp },
+      { id: "bing-ads", label: "Bing Ads", icon: Target },
+    ],
+    organic: [
+      { id: "traffic", label: "Traffic", icon: Users },
+      { id: "conversions", label: "Conversions", icon: CheckCircle2 },
+      { id: "gsc", label: "Search Console", icon: Search },
+      { id: "landing-pages", label: "Landing Pages", icon: MapPin },
+    ],
+    tools: [],
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F7]">
@@ -2372,35 +2401,49 @@ function DashboardPageContent() {
               </span>
             )}
           </div>
-          {/* Tab Navigation */}
+          {/* Section Navigation (Row 1) */}
           <div className="flex items-center -mb-px">
-            {tabGroups.map((group, gi) => (
-              <div key={group.label} className="flex items-center">
-                {gi > 0 && (
-                  <div className="h-6 w-px bg-[#D2D2D7] mx-2" />
-                )}
-                <div className="flex gap-1">
-                  {group.tabs.map((tab) => {
-                    const Icon = tab.icon
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                          activeTab === tab.id
-                            ? "border-[#0066CC] text-[#0066CC]"
-                            : "border-transparent text-[#6E6E73] hover:text-[#1D1D1F] hover:border-[#D2D2D7]"
-                        }`}
-                      >
-                        <Icon className="h-4 w-4" />
-                        {tab.label}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
+            {sections.map((section) => {
+              const Icon = section.icon
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => handleSectionClick(section.id)}
+                  title={section.description}
+                  className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold uppercase tracking-wide border-b-3 transition-colors ${
+                    activeSection === section.id
+                      ? "border-[#0066CC] text-[#0066CC]"
+                      : "border-transparent text-[#6E6E73] hover:text-[#1D1D1F]"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {section.label}
+                </button>
+              )
+            })}
           </div>
+          {/* Sub-Tab Navigation (Row 2) */}
+          {sectionTabs[activeSection].length > 0 && (
+            <div className="flex items-center border-t border-[#E5E5E5] -mb-px">
+              {sectionTabs[activeSection].map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleSubTabClick(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === tab.id
+                        ? "border-[#0066CC] text-[#0066CC]"
+                        : "border-transparent text-[#86868B] hover:text-[#1D1D1F]"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       </header>
 
@@ -6136,28 +6179,69 @@ function DashboardPageContent() {
         )}
 
 
-        {/* Jedi Council Tab - Opens externally */}
-        {activeTab === "jedi-council" && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="text-center max-w-2xl">
-              <div className="text-6xl mb-4">🎓</div>
-              <h2 className="text-3xl font-bold text-[#1D1D1F] mb-4">Jedi Council</h2>
-              <p className="text-lg text-[#6E6E73] mb-8">
-                Multi-agent AI analysis with Claude Opus 4, GPT-4o, and Gemini 2.5 Pro
-              </p>
-              <a
-                href="https://jedi-council-zeta.vercel.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
-              >
-                <span>Open Jedi Council</span>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
-              <p className="text-sm text-[#86868B] mt-4">Opens in a new window</p>
-            </div>
+        {/* Insights & Tools Hub */}
+        {activeSection === "tools" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: "Jedi Council",
+                description: "Multi-agent AI analysis with Claude, GPT-4o, and Gemini",
+                icon: Sparkles,
+                href: "https://jedi-council-zeta.vercel.app",
+                external: true,
+                gradient: "from-purple-500 to-indigo-500",
+              },
+              {
+                title: "The Prophet",
+                description: "Sales forecasting and predictive analytics",
+                icon: Brain,
+                href: "/data",
+                external: false,
+                gradient: "from-blue-500 to-cyan-500",
+              },
+              {
+                title: "Live Help",
+                description: "Real-time room status and availability",
+                icon: Users,
+                href: "/live-help",
+                external: false,
+                gradient: "from-green-500 to-emerald-500",
+              },
+              {
+                title: "P&L Recap",
+                description: "Monthly profit and loss reports",
+                icon: DollarSign,
+                href: "/recap",
+                external: false,
+                gradient: "from-orange-500 to-amber-500",
+              },
+            ].map((card) => {
+              const CardIcon = card.icon
+              return (
+                <a
+                  key={card.title}
+                  href={card.href}
+                  {...(card.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="group bg-white rounded-xl border border-[#D2D2D7] shadow-sm hover:shadow-md transition-all p-6 flex flex-col gap-4"
+                >
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
+                    <CardIcon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#1D1D1F] group-hover:text-[#0066CC] transition-colors">
+                      {card.title}
+                    </h3>
+                    <p className="text-sm text-[#6E6E73] mt-1">{card.description}</p>
+                  </div>
+                  <div className="mt-auto flex items-center gap-1 text-sm font-medium text-[#0066CC]">
+                    <span>Open</span>
+                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </a>
+              )
+            })}
           </div>
         )}
 

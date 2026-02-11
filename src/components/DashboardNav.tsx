@@ -40,23 +40,23 @@ interface DashboardCategory {
 }
 
 const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
-  { 
-    name: "Command Center", 
-    href: "/", 
-    icon: LayoutGrid, 
-    description: "Overview dashboard - Sales, Traffic, Ads" 
+  {
+    name: "Command Center",
+    href: "/",
+    icon: LayoutGrid,
+    description: "Overview dashboard - Sales, Traffic, Ads"
   },
   {
-    name: "Sales & Revenue",
+    name: "Revenue",
     icon: DollarSign,
     items: [
-      { name: "Sales Deep Dive", href: "/?tab=sales", icon: DollarSign, description: "Detailed sales analysis" },
+      { name: "Sales", href: "/?tab=sales", icon: DollarSign, description: "Daily sales analysis" },
       { name: "Subscriptions", href: "/?tab=subscriptions", icon: Repeat, description: "Subscription metrics & churn" },
-      { name: "Intuit Sales", href: "/intuit-sales", icon: FileText, description: "Intuit revenue by category" },
+      { name: "Intuit Revenue", href: "/intuit-sales", icon: FileText, description: "Intuit revenue by category" },
     ]
   },
   {
-    name: "Paid Advertising",
+    name: "Advertising",
     icon: Target,
     items: [
       { name: "Google Ads", href: "/?tab=google-ads", icon: BarChart3, description: "Google Ads performance" },
@@ -64,39 +64,24 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
     ]
   },
   {
-    name: "Organic Growth",
+    name: "Organic & SEO",
     icon: Sprout,
     items: [
-      { name: "Traffic Sources", href: "/?tab=traffic", icon: Users, description: "GA4 traffic by channel" },
+      { name: "Traffic", href: "/?tab=traffic", icon: Users, description: "GA4 traffic by channel" },
       { name: "Conversions", href: "/?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
-    ]
-  },
-  {
-    name: "Content",
-    icon: FileType,
-    items: [
+      { name: "Search Console", href: "/?tab=gsc", icon: Search, description: "Search rankings & clicks" },
       { name: "Landing Pages", href: "/?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
     ]
   },
   {
-    name: "AI Tools",
+    name: "Insights & Tools",
     icon: Sparkles,
     items: [
+      { name: "Jedi Council", href: "https://jedi-council-zeta.vercel.app", icon: Brain, description: "Multi-agent AI analysis", external: true },
       { name: "The Prophet", href: "/data", icon: Tv, description: "Sales forecasting & predictions" },
-      { name: "Jedi Council", href: "https://jedi-council-zeta.vercel.app", icon: Brain, description: "Multi-agent strategic analysis", external: true },
+      { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
+      { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
     ]
-  },
-  { 
-    name: "Live Help", 
-    href: "/live-help", 
-    icon: Users, 
-    description: "Real-time room status" 
-  },
-  { 
-    name: "P&L Recap", 
-    href: "/recap", 
-    icon: FileText, 
-    description: "Monthly P&L reports" 
   },
 ]
 
