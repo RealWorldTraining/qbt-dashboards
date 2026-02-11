@@ -3853,6 +3853,7 @@ function DashboardPageContent() {
                 </button>
               ))}
             </div>
+            <div className="text-xs text-[#8E8E93] -mt-4 mb-4">Data from Google Analytics 4</div>
 
             {trafficLoading && !traffic ? (
               <div className="flex items-center justify-center h-64">
