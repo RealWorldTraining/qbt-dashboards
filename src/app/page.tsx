@@ -835,7 +835,7 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type TabType = "sales" | "traffic" | "conversions" | "conversion-pct" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions" | "landing-pages"
+type TabType = "sales" | "traffic" | "conversions" | "conversion-pct" | "google-ads" | "bing-ads" | "jedi-council" | "subscriptions" | "landing-pages" | "gsc"
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -1866,6 +1866,7 @@ const CACHE_TTL = {
   bingAds: 24 * 60 * 60 * 1000,   // 24 hours for Bing Ads (updates daily)
   subscriptions: 60 * 60 * 1000,  // 1 hour for subscriptions
   jedi: 60 * 60 * 1000,           // 1 hour for jedi council
+  gsc: 24 * 60 * 60 * 1000,      // 24 hours for GSC (updates daily)
 }
 
 // Clear all dashboard cache when version changes
@@ -1972,7 +1973,7 @@ async function fetchWithCache<T>(
 }
 
 
-const validTabs: TabType[] = ["sales", "traffic", "conversions", "conversion-pct", "google-ads", "bing-ads", "jedi-council", "subscriptions", "landing-pages"]
+const validTabs: TabType[] = ["sales", "traffic", "conversions", "conversion-pct", "google-ads", "bing-ads", "jedi-council", "subscriptions", "landing-pages", "gsc"]
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -2052,6 +2053,10 @@ function DashboardPageContent() {
   const [landingPagesData, setLandingPagesData] = useState<{ landing_pages: Array<{ landing_page: string; weeks: Array<{ label: string; date_range: string; users: number; purchases: number; conversion_rate: number }> }>; last_updated: string } | null>(null)
   const [gadsLandingPagesData, setGadsLandingPagesData] = useState<{ landing_pages: Array<{ landing_page: string; weeks: Array<{ label: string; date_range: string; clicks: number; conversions: number; conversion_rate: number }> }>; last_updated: string } | null>(null)
 
+  // GSC (Search Console) state
+  const [gscWeeklyData, setGscWeeklyData] = useState<any>(null)
+  const [gscKeywordsData, setGscKeywordsData] = useState<any>(null)
+
   // Loading states per tab
   const [salesLoading, setSalesLoading] = useState(true)
   const [trafficLoading, setTrafficLoading] = useState(true)
@@ -2061,6 +2066,7 @@ function DashboardPageContent() {
   const [jediLoading, setJediLoading] = useState(true)
   const [subscriptionsLoading, setSubscriptionsLoading] = useState(true)
   const [landingPagesLoading, setLandingPagesLoading] = useState(true)
+  const [gscLoading, setGscLoading] = useState(true)
 
   // Track which tabs have been loaded
   const [loadedTabs, setLoadedTabs] = useState<Set<TabType>>(new Set())
@@ -2212,6 +2218,23 @@ function DashboardPageContent() {
     }
   }
 
+  // Fetch GSC (Search Console) tab data (lazy load)
+  const fetchGscData = async () => {
+    if (loadedTabs.has('gsc') && !isCacheStale('gscWeekly') && gscWeeklyData) return
+    setGscLoading(true)
+    try {
+      await Promise.all([
+        fetchWithCache('/api/gsc-weekly', 'gscWeekly', CACHE_TTL.gsc, setGscWeeklyData),
+        fetchWithCache('/api/gsc-keywords-weekly', 'gscKeywords', CACHE_TTL.gsc, setGscKeywordsData),
+      ])
+    } catch (err) {
+      console.error("Failed to load GSC data:", err)
+    } finally {
+      setGscLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'gsc']))
+    }
+  }
+
   // Initial load: Sales tab first (priority)
   useEffect(() => {
     // Clear old traffic cache to force fetch of new weekly data
@@ -2278,6 +2301,7 @@ function DashboardPageContent() {
     else if (activeTab === 'jedi-council') fetchJediData()
     else if (activeTab === 'subscriptions') fetchSubscriptionsData()
     else if (activeTab === 'landing-pages') fetchLandingPagesData()
+    else if (activeTab === 'gsc') fetchGscData()
   }, [activeTab])
 
   // Auto-refresh sales data every 5 minutes when on sales tab
@@ -2300,6 +2324,7 @@ function DashboardPageContent() {
     { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
     { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
     { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
+    { id: "gsc" as TabType, label: "Search Console", icon: Search },
     { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
     { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
   ]
@@ -6268,6 +6293,195 @@ function DashboardPageContent() {
               <Card className="bg-white border-[#D2D2D7] shadow-sm">
                 <CardContent className="py-12 text-center">
                   <p className="text-[#6E6E73]">Failed to load landing pages data</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Search Console Tab */}
+        {activeTab === "gsc" && (
+          <div className="space-y-5">
+            {gscLoading && !gscWeeklyData ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+              </div>
+            ) : gscWeeklyData?.data ? (
+              <>
+                {/* Hero Cards Row */}
+                {(() => {
+                  const weeks = gscWeeklyData.data
+                  const latest = weeks[0]
+                  const prev = weeks[1]
+                  const impChange = prev?.impressions > 0 ? ((latest.impressions - prev.impressions) / prev.impressions) * 100 : 0
+                  const clickChange = prev?.clicks > 0 ? ((latest.clicks - prev.clicks) / prev.clicks) * 100 : 0
+                  const ctrChange = prev?.ctr > 0 ? ((latest.ctr - prev.ctr) / prev.ctr) * 100 : 0
+
+                  const heroCards = [
+                    { label: 'IMPRESSIONS', value: formatNumber(latest.impressions), change: impChange, prev: formatNumber(prev?.impressions || 0), border: 'border-cyan-900/30', accent: 'bg-cyan-500/5' },
+                    { label: 'CLICKS', value: formatNumber(latest.clicks), change: clickChange, prev: formatNumber(prev?.clicks || 0), border: 'border-emerald-900/30', accent: 'bg-emerald-500/5' },
+                    { label: 'CTR', value: `${latest.ctr.toFixed(2)}%`, change: ctrChange, prev: `${(prev?.ctr || 0).toFixed(2)}%`, border: 'border-violet-900/30', accent: 'bg-violet-500/5' },
+                  ]
+
+                  return (
+                    <div className="grid grid-cols-3 gap-4">
+                      {heroCards.map(card => (
+                        <div key={card.label} className={`bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 ${card.border} border relative overflow-hidden text-center`}>
+                          <div className={`absolute top-0 right-0 w-24 h-24 ${card.accent} rounded-full -translate-y-8 translate-x-8`} />
+                          <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">{card.label}</div>
+                          <div className="text-5xl font-black text-white tracking-tight mb-2">{card.value}</div>
+                          <div className="flex items-center justify-center gap-2 text-sm">
+                            <span className={card.change >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                              {card.change >= 0 ? '+' : ''}{card.change.toFixed(1)}% WoW
+                            </span>
+                            <span className="text-gray-500">was {card.prev}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()}
+
+                {/* Week label */}
+                <div className="text-gray-500 text-sm text-center">
+                  Latest complete week: {gscWeeklyData.data[0]?.week}
+                </div>
+
+                {/* 8-Week Trend Table */}
+                <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
+                  <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">8-WEEK TREND</div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-700/50">
+                          <th className="text-left text-gray-400 font-medium py-3 px-4">Week</th>
+                          <th className="text-right text-gray-400 font-medium py-3 px-4">Impressions</th>
+                          <th className="text-right text-gray-400 font-medium py-3 px-4">Clicks</th>
+                          <th className="text-right text-gray-400 font-medium py-3 px-4">CTR</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {gscWeeklyData.data.map((week: any, i: number) => {
+                          const prev = gscWeeklyData.data[i + 1]
+                          const impDelta = prev ? ((week.impressions - prev.impressions) / prev.impressions) * 100 : null
+                          const clickDelta = prev ? ((week.clicks - prev.clicks) / prev.clicks) * 100 : null
+                          return (
+                            <tr key={week.week_start} className={`border-b border-gray-800/30 ${i === 0 ? 'bg-gray-800/20' : ''}`}>
+                              <td className="py-3 px-4 text-gray-300 font-medium">{week.week}</td>
+                              <td className="py-3 px-4 text-right text-white font-semibold">
+                                {formatNumber(week.impressions)}
+                                {impDelta !== null && (
+                                  <span className={`ml-2 text-xs ${impDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {impDelta >= 0 ? '+' : ''}{impDelta.toFixed(1)}%
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-right text-white font-semibold">
+                                {formatNumber(week.clicks)}
+                                {clickDelta !== null && (
+                                  <span className={`ml-2 text-xs ${clickDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {clickDelta >= 0 ? '+' : ''}{clickDelta.toFixed(1)}%
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-right text-cyan-400 font-semibold">{week.ctr.toFixed(2)}%</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Year-over-Year Comparison */}
+                {gscWeeklyData.yoyData && (() => {
+                  const currentWeeks = gscWeeklyData.data.filter((w: any) => w.year === new Date().getFullYear()).slice(0, 4)
+                  const yoyWeeks = gscWeeklyData.yoyData
+
+                  const sumCurrent = { impressions: 0, clicks: 0 }
+                  const sumYoY = { impressions: 0, clicks: 0 }
+                  currentWeeks.forEach((w: any) => { sumCurrent.impressions += w.impressions; sumCurrent.clicks += w.clicks })
+                  yoyWeeks.forEach((w: any) => { sumYoY.impressions += w.impressions; sumYoY.clicks += w.clicks })
+
+                  const impYoY = sumYoY.impressions > 0 ? ((sumCurrent.impressions - sumYoY.impressions) / sumYoY.impressions) * 100 : 0
+                  const clickYoY = sumYoY.clicks > 0 ? ((sumCurrent.clicks - sumYoY.clicks) / sumYoY.clicks) * 100 : 0
+                  const currentCtr = sumCurrent.impressions > 0 ? (sumCurrent.clicks / sumCurrent.impressions) * 100 : 0
+                  const yoyCtr = sumYoY.impressions > 0 ? (sumYoY.clicks / sumYoY.impressions) * 100 : 0
+                  const ctrYoY = yoyCtr > 0 ? ((currentCtr - yoyCtr) / yoyCtr) * 100 : 0
+
+                  const yoyCards = [
+                    { label: 'IMPRESSIONS YoY', change: impYoY, current: formatNumber(sumCurrent.impressions), previous: formatNumber(sumYoY.impressions) },
+                    { label: 'CLICKS YoY', change: clickYoY, current: formatNumber(sumCurrent.clicks), previous: formatNumber(sumYoY.clicks) },
+                    { label: 'CTR YoY', change: ctrYoY, current: `${currentCtr.toFixed(2)}%`, previous: `${yoyCtr.toFixed(2)}%` },
+                  ]
+
+                  return (
+                    <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">YEAR-OVER-YEAR (4-WEEK AVG)</div>
+                      <div className="grid grid-cols-3 gap-4">
+                        {yoyCards.map(card => (
+                          <div key={card.label} className="bg-gradient-to-b from-gray-800/60 to-gray-900/60 rounded-lg p-5 text-center border border-gray-700/30">
+                            <div className="text-gray-400 text-sm font-medium mb-2">{card.label}</div>
+                            <div className={`text-3xl font-black mb-2 ${card.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {card.change >= 0 ? '+' : ''}{card.change.toFixed(1)}%
+                            </div>
+                            <div className="text-gray-400 text-xs">
+                              {card.current} <span className="text-gray-600">vs</span> {card.previous}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Top 20 Keywords Table */}
+                {gscKeywordsData?.data && (
+                  <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
+                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">TOP 20 KEYWORDS</div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-700/50">
+                            <th className="text-left text-gray-400 font-medium py-3 px-4">#</th>
+                            <th className="text-left text-gray-400 font-medium py-3 px-4">Query</th>
+                            {gscKeywordsData.weeks?.map((week: string) => (
+                              <th key={week} className="text-right text-gray-400 font-medium py-3 px-4 whitespace-nowrap">
+                                <div>{week}</div>
+                                <div className="text-[10px] text-gray-500">clicks / imp</div>
+                              </th>
+                            ))}
+                            <th className="text-right text-gray-400 font-medium py-3 px-4">Total Clicks</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gscKeywordsData.data.map((kw: any, i: number) => {
+                            const totalClicks = kw.weeks.reduce((sum: number, w: any) => sum + w.clicks, 0)
+                            return (
+                              <tr key={kw.query} className="border-b border-gray-800/30 hover:bg-gray-800/20">
+                                <td className="py-3 px-4 text-gray-500 font-mono text-xs">{i + 1}</td>
+                                <td className="py-3 px-4 text-white font-medium max-w-[300px] truncate">{kw.query}</td>
+                                {kw.weeks.map((w: any, wi: number) => (
+                                  <td key={wi} className="py-3 px-4 text-right whitespace-nowrap">
+                                    <span className="text-emerald-400 font-semibold">{w.clicks}</span>
+                                    <span className="text-gray-600 mx-1">/</span>
+                                    <span className="text-gray-400">{formatNumber(w.impressions)}</span>
+                                  </td>
+                                ))}
+                                <td className="py-3 px-4 text-right text-cyan-400 font-bold">{totalClicks}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Card className="bg-[#1C1C1E] border-[#2C2C2E]">
+                <CardContent className="flex items-center justify-center py-10">
+                  <p className="text-[#6E6E73]">No Search Console data available</p>
                 </CardContent>
               </Card>
             )}
