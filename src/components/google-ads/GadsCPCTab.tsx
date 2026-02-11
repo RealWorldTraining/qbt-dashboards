@@ -249,8 +249,8 @@ export function GadsCPCTab() {
                   </tr>
                 </thead>
                 <tbody>
-                  {fourWeekData.weeks.map((week, idx) => {
-                    const labels = ['Current Week', 'Last Week', '2 Weeks Ago', '3 Weeks Ago', '4 Weeks Ago', '5 Weeks Ago']
+                  {[...fourWeekData.weeks].reverse().map((week, idx) => {
+                    const labels = ['5 Weeks Ago', '4 Weeks Ago', '3 Weeks Ago', '2 Weeks Ago', 'Last Week', 'Current Week']
                     return (
                       <tr key={week.date} className={idx < fourWeekData.weeks.length - 1 ? 'border-b border-gray-800/50' : ''}>
                         <td className="text-gray-400 font-medium py-3 pr-4 whitespace-nowrap">
