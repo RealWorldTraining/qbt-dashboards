@@ -2318,26 +2318,36 @@ function DashboardPageContent() {
 
   const tabGroups = [
     {
-      label: "Core Metrics",
+      label: "Sales & Revenue",
       tabs: [
         { id: "sales" as TabType, label: "Sales", icon: DollarSign },
-        { id: "traffic" as TabType, label: "Traffic", icon: Users },
-        { id: "conversions" as TabType, label: "Conversions", icon: CheckCircle2 },
+        { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
       ],
     },
     {
-      label: "Channels",
+      label: "Paid Advertising",
       tabs: [
         { id: "google-ads" as TabType, label: "Google Ads", icon: TrendingUp },
         { id: "bing-ads" as TabType, label: "Bing Ads", icon: Target },
+      ],
+    },
+    {
+      label: "Organic Growth",
+      tabs: [
+        { id: "traffic" as TabType, label: "Traffic", icon: Users },
+        { id: "conversions" as TabType, label: "Conversions", icon: CheckCircle2 },
         { id: "gsc" as TabType, label: "Search Console", icon: Search },
       ],
     },
     {
-      label: "Operations",
+      label: "Content",
       tabs: [
         { id: "landing-pages" as TabType, label: "Landing Pages", icon: MapPin },
-        { id: "subscriptions" as TabType, label: "Subscriptions", icon: RefreshCw },
+      ],
+    },
+    {
+      label: "AI Tools",
+      tabs: [
         { id: "jedi-council" as TabType, label: "Jedi Council", icon: Sparkles },
       ],
     },
