@@ -2576,7 +2576,7 @@ export default function DashboardPage() {
                 {/* Direct QTY */}
                 <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
                   <CardHeader className="px-4 gap-0">
-                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                    <CardTitle className="text-xl font-bold text-[#1D1D1F]">
                       Direct QTY
                     </CardTitle>
                   </CardHeader>
@@ -2587,7 +2587,7 @@ export default function DashboardPage() {
                       </div>
                     ) : extendedWeeklyTrends ? (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
+                        <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-[#D2D2D7]">
                               <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
@@ -2603,8 +2603,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
                                   </td>
                                   {extendedWeeklyTrends.days.map((day) => {
                                     const value = week.daily_cumulative[day]
@@ -2630,7 +2630,7 @@ export default function DashboardPage() {
                 {/* Direct Revenue */}
                 <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
                   <CardHeader className="px-4 gap-0">
-                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                    <CardTitle className="text-xl font-bold text-[#1D1D1F]">
                       Direct Revenue
                     </CardTitle>
                   </CardHeader>
@@ -2641,7 +2641,7 @@ export default function DashboardPage() {
                       </div>
                     ) : extendedWeeklyTrends ? (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
+                        <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-[#D2D2D7]">
                               <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
@@ -2657,8 +2657,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
                                   </td>
                                   {extendedWeeklyTrends.days.map((day) => {
                                     const value = week.daily_cumulative[day]
@@ -2687,7 +2687,7 @@ export default function DashboardPage() {
                 {/* Renewal QTY */}
                 <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
                   <CardHeader className="px-4 gap-0">
-                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                    <CardTitle className="text-xl font-bold text-[#1D1D1F]">
                       Renewal QTY
                     </CardTitle>
                   </CardHeader>
@@ -2698,7 +2698,7 @@ export default function DashboardPage() {
                       </div>
                     ) : extendedWeeklyTrends ? (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
+                        <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-[#D2D2D7]">
                               <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
@@ -2714,8 +2714,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
                                   </td>
                                   {extendedWeeklyTrends.days.map((day) => {
                                     const value = week.daily_cumulative[day]
@@ -2741,7 +2741,7 @@ export default function DashboardPage() {
                 {/* Renewal Revenue */}
                 <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
                   <CardHeader className="px-4 gap-0">
-                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                    <CardTitle className="text-xl font-bold text-[#1D1D1F]">
                       Renewal Revenue
                     </CardTitle>
                   </CardHeader>
@@ -2752,7 +2752,7 @@ export default function DashboardPage() {
                       </div>
                     ) : extendedWeeklyTrends ? (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
+                        <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-[#D2D2D7]">
                               <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
@@ -2768,8 +2768,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
                                   </td>
                                   {extendedWeeklyTrends.days.map((day) => {
                                     const value = week.daily_cumulative[day]
@@ -2798,7 +2798,7 @@ export default function DashboardPage() {
                 {/* Total Gross Revenue */}
                 <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
                   <CardHeader className="px-4 gap-0">
-                    <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                    <CardTitle className="text-xl font-bold text-[#1D1D1F]">
                       Total Gross Revenue
                     </CardTitle>
                   </CardHeader>
@@ -2809,7 +2809,7 @@ export default function DashboardPage() {
                       </div>
                     ) : extendedWeeklyTrends ? (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
+                        <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-[#D2D2D7]">
                               <th className="text-left py-2 px-1 font-semibold text-[#1D1D1F] min-w-[80px]">Week</th>
@@ -2825,8 +2825,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={week.week_label} className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className={`py-2 px-1 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
                                   </td>
                                   {extendedWeeklyTrends.days.map((day) => {
                                     const value = week.daily_cumulative[day]
@@ -2852,7 +2852,7 @@ export default function DashboardPage() {
               {/* Product Mix By Week Table */}
               <Card className="bg-white border-[#D2D2D7] shadow-sm gap-1 py-3">
                 <CardHeader className="px-4 gap-0">
-                  <CardTitle className="text-base font-bold text-[#1D1D1F]">
+                  <CardTitle className="text-xl font-bold text-[#1D1D1F]">
                     Product Mix By Week
                   </CardTitle>
                 </CardHeader>
@@ -2867,22 +2867,22 @@ export default function DashboardPage() {
                     </div>
                   ) : productMix ? (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-[#D2D2D7]">
-                            <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                            <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">
                               Week
                             </th>
-                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">
                               Total
                             </th>
-                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">
                               Cert
                             </th>
-                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">
                               Learner
                             </th>
-                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">
+                            <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">
                               Team
                             </th>
                           </tr>
@@ -2896,8 +2896,8 @@ export default function DashboardPage() {
                                 className={`border-b border-[#E5E5E5] ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}
                               >
                                 <td className={`py-2 px-2 ${isCurrentWeek ? "bg-[#E8F4FF]" : ""}`}>
-                                  <div className="font-medium text-[#1D1D1F] text-xs">{week.week_label}</div>
-                                  <div className="text-[10px] text-[#6E6E73]">{week.week_start}</div>
+                                  <div className="font-medium text-[#1D1D1F] text-sm">{week.week_label}</div>
+                                  <div className="text-xs text-[#6E6E73]">{week.week_start}</div>
                                 </td>
                                 <td className="text-center py-2 px-2 font-medium text-[#1D1D1F]">
                                   {week.total}
@@ -2934,16 +2934,16 @@ export default function DashboardPage() {
                   {/* Direct QTY */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Direct QTY</CardTitle>
+                      <CardTitle className="text-base font-semibold text-[#1D1D1F]">Direct QTY</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-base">
                           <thead>
                             <tr className="border-b-2 border-[#D2D2D7]">
-                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Period</th>
                               {monthlyTrends.weeks.map(wk => (
-                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">{wk}</th>
                               ))}
                             </tr>
                           </thead>
@@ -2953,8 +2953,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className="py-2 px-2">
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{row.row_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{row.month_label}</div>
                                   </td>
                                   {monthlyTrends.weeks.map(wk => (
                                     <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
@@ -2973,16 +2973,16 @@ export default function DashboardPage() {
                   {/* Direct Revenue */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Direct Revenue</CardTitle>
+                      <CardTitle className="text-base font-semibold text-[#1D1D1F]">Direct Revenue</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-base">
                           <thead>
                             <tr className="border-b-2 border-[#D2D2D7]">
-                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Period</th>
                               {monthlyTrends.weeks.map(wk => (
-                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">{wk}</th>
                               ))}
                             </tr>
                           </thead>
@@ -2992,8 +2992,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className="py-2 px-2">
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{row.row_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{row.month_label}</div>
                                   </td>
                                   {monthlyTrends.weeks.map(wk => (
                                     <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
@@ -3012,16 +3012,16 @@ export default function DashboardPage() {
                   {/* Renewal QTY */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Renewal QTY</CardTitle>
+                      <CardTitle className="text-base font-semibold text-[#1D1D1F]">Renewal QTY</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-base">
                           <thead>
                             <tr className="border-b-2 border-[#D2D2D7]">
-                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Period</th>
                               {monthlyTrends.weeks.map(wk => (
-                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">{wk}</th>
                               ))}
                             </tr>
                           </thead>
@@ -3031,8 +3031,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className="py-2 px-2">
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{row.row_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{row.month_label}</div>
                                   </td>
                                   {monthlyTrends.weeks.map(wk => (
                                     <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
@@ -3051,16 +3051,16 @@ export default function DashboardPage() {
                   {/* Renewal Revenue */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Renewal Revenue</CardTitle>
+                      <CardTitle className="text-base font-semibold text-[#1D1D1F]">Renewal Revenue</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-base">
                           <thead>
                             <tr className="border-b-2 border-[#D2D2D7]">
-                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Period</th>
                               {monthlyTrends.weeks.map(wk => (
-                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">{wk}</th>
                               ))}
                             </tr>
                           </thead>
@@ -3070,8 +3070,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className="py-2 px-2">
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{row.row_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{row.month_label}</div>
                                   </td>
                                   {monthlyTrends.weeks.map(wk => (
                                     <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
@@ -3090,16 +3090,16 @@ export default function DashboardPage() {
                   {/* Total Gross Revenue */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Total Gross Revenue</CardTitle>
+                      <CardTitle className="text-base font-semibold text-[#1D1D1F]">Total Gross Revenue</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-base">
                           <thead>
                             <tr className="border-b-2 border-[#D2D2D7]">
-                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Period</th>
                               {monthlyTrends.weeks.map(wk => (
-                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">{wk}</th>
+                                <th key={wk} className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">{wk}</th>
                               ))}
                             </tr>
                           </thead>
@@ -3109,8 +3109,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className="py-2 px-2">
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{row.row_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{row.month_label}</div>
                                   </td>
                                   {monthlyTrends.weeks.map(wk => (
                                     <td key={wk} className="text-center py-2 px-2 text-[#1D1D1F] font-medium">
@@ -3129,18 +3129,18 @@ export default function DashboardPage() {
                   {/* Product Mix By Month */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-semibold text-[#1D1D1F]">Product Mix By Month</CardTitle>
+                      <CardTitle className="text-base font-semibold text-[#1D1D1F]">Product Mix By Month</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-base">
                           <thead>
                             <tr className="border-b-2 border-[#D2D2D7]">
-                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Period</th>
-                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Total</th>
-                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Cert %</th>
-                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Team %</th>
-                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-[10px] tracking-wide">Learner %</th>
+                              <th className="text-left py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Period</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Total</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Cert %</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Team %</th>
+                              <th className="text-center py-2 px-2 font-semibold text-[#6E6E73] uppercase text-xs tracking-wide">Learner %</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -3153,8 +3153,8 @@ export default function DashboardPage() {
                               return (
                                 <tr key={row.row_label} className={`border-b border-[#E5E5E5] ${isCurrentMonth ? "bg-[#E8F4FF]" : ""}`}>
                                   <td className="py-2 px-2">
-                                    <div className="font-medium text-[#1D1D1F] text-xs">{row.row_label}</div>
-                                    <div className="text-[10px] text-[#6E6E73]">{row.month_label}</div>
+                                    <div className="font-medium text-[#1D1D1F] text-sm">{row.row_label}</div>
+                                    <div className="text-xs text-[#6E6E73]">{row.month_label}</div>
                                   </td>
                                   <td className="text-center py-2 px-2 text-[#1D1D1F] font-medium">{total}</td>
                                   <td className="text-center py-2 px-2 text-[#1D1D1F]">{certPct}%</td>
