@@ -6351,49 +6351,60 @@ function DashboardPageContent() {
                   Latest complete week: {gscWeeklyData.data[0]?.week}
                 </div>
 
-                {/* 8-Week Trend Table */}
-                <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
-                  <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">8-WEEK TREND</div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-gray-700/50">
-                          <th className="text-left text-gray-400 font-medium py-3 px-4">Week</th>
-                          <th className="text-right text-gray-400 font-medium py-3 px-4">Impressions</th>
-                          <th className="text-right text-gray-400 font-medium py-3 px-4">Clicks</th>
-                          <th className="text-right text-gray-400 font-medium py-3 px-4">CTR</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {gscWeeklyData.data.map((week: any, i: number) => {
-                          const prev = gscWeeklyData.data[i + 1]
-                          const impDelta = prev ? ((week.impressions - prev.impressions) / prev.impressions) * 100 : null
-                          const clickDelta = prev ? ((week.clicks - prev.clicks) / prev.clicks) * 100 : null
-                          return (
+                {/* Weekly Trend + Monthly Summary side by side */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* 14-Week Trend Table */}
+                  <div className="bg-[#111827] rounded-xl p-5 border border-gray-800/50">
+                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-3">WEEKLY TREND</div>
+                    <div className="overflow-y-auto max-h-[520px]">
+                      <table className="w-full text-xs">
+                        <thead className="sticky top-0 bg-[#111827]">
+                          <tr className="border-b border-gray-700/50">
+                            <th className="text-left text-gray-400 font-medium py-2 px-3">Week</th>
+                            <th className="text-right text-gray-400 font-medium py-2 px-3">Impressions</th>
+                            <th className="text-right text-gray-400 font-medium py-2 px-3">Clicks</th>
+                            <th className="text-right text-gray-400 font-medium py-2 px-3">CTR</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gscWeeklyData.data.map((week: any, i: number) => (
                             <tr key={week.week_start} className={`border-b border-gray-800/30 ${i === 0 ? 'bg-gray-800/20' : ''}`}>
-                              <td className="py-3 px-4 text-gray-300 font-medium">{week.week}</td>
-                              <td className="py-3 px-4 text-right text-white font-semibold">
-                                {formatNumber(week.impressions)}
-                                {impDelta !== null && (
-                                  <span className={`ml-2 text-xs ${impDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {impDelta >= 0 ? '+' : ''}{impDelta.toFixed(1)}%
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4 text-right text-white font-semibold">
-                                {formatNumber(week.clicks)}
-                                {clickDelta !== null && (
-                                  <span className={`ml-2 text-xs ${clickDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {clickDelta >= 0 ? '+' : ''}{clickDelta.toFixed(1)}%
-                                  </span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4 text-right text-cyan-400 font-semibold">{week.ctr.toFixed(2)}%</td>
+                              <td className="py-2 px-3 text-gray-300">{week.week}</td>
+                              <td className="py-2 px-3 text-right text-white">{formatNumber(week.impressions)}</td>
+                              <td className="py-2 px-3 text-right text-white">{formatNumber(week.clicks)}</td>
+                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{week.ctr.toFixed(2)}%</td>
                             </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Monthly Summary Table */}
+                  <div className="bg-[#111827] rounded-xl p-5 border border-gray-800/50">
+                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-3">MONTHLY SUMMARY</div>
+                    <div className="overflow-y-auto max-h-[520px]">
+                      <table className="w-full text-xs">
+                        <thead className="sticky top-0 bg-[#111827]">
+                          <tr className="border-b border-gray-700/50">
+                            <th className="text-left text-gray-400 font-medium py-2 px-3">Month</th>
+                            <th className="text-right text-gray-400 font-medium py-2 px-3">Impressions</th>
+                            <th className="text-right text-gray-400 font-medium py-2 px-3">Clicks</th>
+                            <th className="text-right text-gray-400 font-medium py-2 px-3">CTR</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gscWeeklyData.monthlyData?.map((m: any, i: number) => (
+                            <tr key={m.month_key} className={`border-b border-gray-800/30 ${i === 0 ? 'bg-gray-800/20' : ''}`}>
+                              <td className="py-2 px-3 text-gray-300">{m.month}</td>
+                              <td className="py-2 px-3 text-right text-white">{formatNumber(m.impressions)}</td>
+                              <td className="py-2 px-3 text-right text-white">{formatNumber(m.clicks)}</td>
+                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{m.ctr.toFixed(2)}%</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
 

@@ -125,10 +125,10 @@ export async function GET() {
       return weekEnd < today
     })
 
-    // Get last 8 weeks for current year and matching weeks from previous year
-    const last8Weeks = completeWeeks.slice(0, 8)
-    const currentYearWeeks = last8Weeks.filter(w => w.year === new Date().getFullYear())
-    
+    // Get last 14 weeks for current year and matching weeks from previous year
+    const last14Weeks = completeWeeks.slice(0, 14)
+    const currentYearWeeks = last14Weeks.filter(w => w.year === new Date().getFullYear())
+
     // Find year-over-year comparison weeks (same weeks from previous year)
     const yoyWeeks: WeekData[] = []
     for (const currentWeek of currentYearWeeks.slice(0, 4)) {
@@ -140,8 +140,40 @@ export async function GET() {
       }
     }
 
+    // Aggregate daily data into months
+    const monthlyAgg = new Map<string, { impressions: number; clicks: number }>()
+    rows.slice(1).forEach(row => {
+      const date = row[0]
+      if (!date) return
+      const [y, m] = date.split('-').map(Number)
+      const monthKey = `${y}-${String(m).padStart(2, '0')}`
+      const existing = monthlyAgg.get(monthKey) || { impressions: 0, clicks: 0 }
+      existing.impressions += parseNumber(row[1])
+      existing.clicks += parseNumber(row[2])
+      monthlyAgg.set(monthKey, existing)
+    })
+
+    // Convert to sorted array (most recent first), exclude current month (incomplete)
+    const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+    const monthlyData = Array.from(monthlyAgg.entries())
+      .filter(([key]) => key !== currentMonth)
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .slice(0, 14)
+      .map(([key, data]) => {
+        const [y, m] = key.split('-').map(Number)
+        const monthDate = new Date(y, m - 1, 1)
+        return {
+          month: monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          month_key: key,
+          impressions: data.impressions,
+          clicks: data.clicks,
+          ctr: data.impressions > 0 ? (data.clicks / data.impressions) * 100 : 0,
+        }
+      })
+
     return NextResponse.json({
-      data: last8Weeks,
+      data: last14Weeks,
+      monthlyData,
       yoyData: yoyWeeks.length === 4 ? yoyWeeks : null,
       last_updated: new Date().toISOString()
     }, {
