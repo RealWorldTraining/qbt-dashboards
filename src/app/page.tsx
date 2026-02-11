@@ -2479,18 +2479,15 @@ function DashboardPageContent() {
                                     </td>
                                     {hourlyComparison.hours.map((hour) => {
                                       const value = period.hourly_sales[hour]
-                                      const intensity = value ? Math.round((value / rowMax) * 100) : 0
-                                      const bgColor = value === null
-                                        ? 'bg-[#1D1D1F]'
-                                        : intensity > 80 ? 'bg-blue-900'
-                                        : intensity > 60 ? 'bg-blue-800'
-                                        : intensity > 40 ? 'bg-blue-700'
-                                        : intensity > 20 ? 'bg-blue-600/50'
-                                        : 'bg-blue-500/25'
+                                      const pct = value ? value / rowMax : 0
+                                      const bg = value === null
+                                        ? '#1D1D1F'
+                                        : `hsl(220, ${20 + pct * 70}%, ${18 + pct * 17}%)`
                                       return (
                                         <td
                                           key={hour}
-                                          className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                          style={{ backgroundColor: bg }}
+                                          className={`text-center py-3 px-1 ${value === null ? "text-white/20" : "text-white font-semibold"}`}
                                         >
                                           {value === null ? "-" : value}
                                         </td>
@@ -2567,18 +2564,15 @@ function DashboardPageContent() {
                                   </td>
                                   {hours.map((hour, hIdx) => {
                                     const value = getIndividualValue(period, hIdx)
-                                    const intensity = value ? Math.round((value / rowMax) * 100) : 0
-                                    const bgColor = value === null
-                                      ? 'bg-[#1D1D1F]'
-                                      : intensity > 80 ? 'bg-emerald-900'
-                                      : intensity > 60 ? 'bg-emerald-800'
-                                      : intensity > 40 ? 'bg-emerald-700'
-                                      : intensity > 20 ? 'bg-emerald-600/50'
-                                      : 'bg-emerald-500/25'
+                                    const pct = value ? value / rowMax : 0
+                                    const bg = value === null
+                                      ? '#1D1D1F'
+                                      : `hsl(160, ${20 + pct * 70}%, ${18 + pct * 17}%)`
                                     return (
                                       <td
                                         key={hour}
-                                        className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                        style={{ backgroundColor: bg }}
+                                        className={`text-center py-3 px-1 ${value === null ? "text-white/20" : "text-white font-semibold"}`}
                                       >
                                         {value === null ? "-" : value}
                                       </td>
@@ -2642,18 +2636,15 @@ function DashboardPageContent() {
                                   </td>
                                   {days.map(day => {
                                     const value = week.daily_cumulative[day]
-                                    const intensity = value ? Math.round((value / rowMax) * 100) : 0
-                                    const bgColor = value === null || value === undefined
-                                      ? 'bg-[#1D1D1F]'
-                                      : intensity > 80 ? 'bg-blue-900'
-                                      : intensity > 60 ? 'bg-blue-800'
-                                      : intensity > 40 ? 'bg-blue-700'
-                                      : intensity > 20 ? 'bg-blue-600/50'
-                                      : 'bg-blue-500/25'
+                                    const pct = value ? value / rowMax : 0
+                                    const bg = value === null || value === undefined
+                                      ? '#1D1D1F'
+                                      : `hsl(220, ${20 + pct * 70}%, ${18 + pct * 17}%)`
                                     return (
                                       <td
                                         key={day}
-                                        className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                        style={{ backgroundColor: bg }}
+                                        className={`text-center py-3 px-1 ${value === null ? "text-white/20" : "text-white font-semibold"}`}
                                       >
                                         {value ?? '-'}
                                       </td>
@@ -2724,18 +2715,15 @@ function DashboardPageContent() {
                                   </td>
                                   {days.map((day, dIdx) => {
                                     const value = getIndividualValue(week, dIdx)
-                                    const intensity = value ? Math.round((value / rowMax) * 100) : 0
-                                    const bgColor = value === null
-                                      ? 'bg-[#1D1D1F]'
-                                      : intensity > 80 ? 'bg-emerald-900'
-                                      : intensity > 60 ? 'bg-emerald-800'
-                                      : intensity > 40 ? 'bg-emerald-700'
-                                      : intensity > 20 ? 'bg-emerald-600/50'
-                                      : 'bg-emerald-500/25'
+                                    const pct = value ? value / rowMax : 0
+                                    const bg = value === null
+                                      ? '#1D1D1F'
+                                      : `hsl(160, ${20 + pct * 70}%, ${18 + pct * 17}%)`
                                     return (
                                       <td
                                         key={day}
-                                        className={`text-center py-3 px-1 ${bgColor} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                        style={{ backgroundColor: bg }}
+                                        className={`text-center py-3 px-1 ${value === null ? "text-white/20" : "text-white font-semibold"}`}
                                       >
                                         {value ?? '-'}
                                       </td>
