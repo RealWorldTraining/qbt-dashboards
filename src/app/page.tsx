@@ -810,6 +810,10 @@ interface SubscriberMetricsData {
   avg_subscription_months: number
   median_subscription_days: number
   median_subscription_months: number
+  active_avg_subscription_months: number
+  active_median_subscription_months: number
+  cancelled_avg_subscription_months: number
+  cancelled_median_subscription_months: number
   lifetime_churn_rate: number
   cohort_survival: Record<string, number>
   avg_duration_by_year: Record<string, number>
@@ -2478,11 +2482,11 @@ function DashboardPageContent() {
                                       const intensity = value ? Math.round((value / rowMax) * 100) : 0
                                       const bgColor = value === null
                                         ? 'bg-[#1D1D1F]'
-                                        : intensity > 80 ? 'bg-blue-600'
-                                        : intensity > 60 ? 'bg-blue-500'
-                                        : intensity > 40 ? 'bg-blue-600/60'
-                                        : intensity > 20 ? 'bg-blue-600/40'
-                                        : 'bg-blue-600/20'
+                                        : intensity > 80 ? 'bg-blue-900'
+                                        : intensity > 60 ? 'bg-blue-800'
+                                        : intensity > 40 ? 'bg-blue-700'
+                                        : intensity > 20 ? 'bg-blue-600/50'
+                                        : 'bg-blue-500/25'
                                       return (
                                         <td
                                           key={hour}
@@ -2566,11 +2570,11 @@ function DashboardPageContent() {
                                     const intensity = value ? Math.round((value / rowMax) * 100) : 0
                                     const bgColor = value === null
                                       ? 'bg-[#1D1D1F]'
-                                      : intensity > 80 ? 'bg-emerald-600'
-                                      : intensity > 60 ? 'bg-emerald-500'
-                                      : intensity > 40 ? 'bg-emerald-600/60'
-                                      : intensity > 20 ? 'bg-emerald-600/40'
-                                      : 'bg-emerald-600/20'
+                                      : intensity > 80 ? 'bg-emerald-900'
+                                      : intensity > 60 ? 'bg-emerald-800'
+                                      : intensity > 40 ? 'bg-emerald-700'
+                                      : intensity > 20 ? 'bg-emerald-600/50'
+                                      : 'bg-emerald-500/25'
                                     return (
                                       <td
                                         key={hour}
@@ -2641,11 +2645,11 @@ function DashboardPageContent() {
                                     const intensity = value ? Math.round((value / rowMax) * 100) : 0
                                     const bgColor = value === null || value === undefined
                                       ? 'bg-[#1D1D1F]'
-                                      : intensity > 80 ? 'bg-blue-600'
-                                      : intensity > 60 ? 'bg-blue-500'
-                                      : intensity > 40 ? 'bg-blue-600/60'
-                                      : intensity > 20 ? 'bg-blue-600/40'
-                                      : 'bg-blue-600/20'
+                                      : intensity > 80 ? 'bg-blue-900'
+                                      : intensity > 60 ? 'bg-blue-800'
+                                      : intensity > 40 ? 'bg-blue-700'
+                                      : intensity > 20 ? 'bg-blue-600/50'
+                                      : 'bg-blue-500/25'
                                     return (
                                       <td
                                         key={day}
@@ -2723,11 +2727,11 @@ function DashboardPageContent() {
                                     const intensity = value ? Math.round((value / rowMax) * 100) : 0
                                     const bgColor = value === null
                                       ? 'bg-[#1D1D1F]'
-                                      : intensity > 80 ? 'bg-emerald-600'
-                                      : intensity > 60 ? 'bg-emerald-500'
-                                      : intensity > 40 ? 'bg-emerald-600/60'
-                                      : intensity > 20 ? 'bg-emerald-600/40'
-                                      : 'bg-emerald-600/20'
+                                      : intensity > 80 ? 'bg-emerald-900'
+                                      : intensity > 60 ? 'bg-emerald-800'
+                                      : intensity > 40 ? 'bg-emerald-700'
+                                      : intensity > 20 ? 'bg-emerald-600/50'
+                                      : 'bg-emerald-500/25'
                                     return (
                                       <td
                                         key={day}
