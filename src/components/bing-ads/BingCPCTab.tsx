@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Doughnut, Scatter } from 'react-chartjs-2'
+import { Doughnut } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   ArcElement,
   CategoryScale,
   LinearScale,
-  PointElement,
+
   BarElement,
   Title,
   Tooltip as ChartJSTooltip,
@@ -18,7 +18,7 @@ ChartJS.register(
   ArcElement,
   CategoryScale,
   LinearScale,
-  PointElement,
+
   BarElement,
   Title,
   ChartJSTooltip,
@@ -63,18 +63,6 @@ interface BingCPCData {
   }
 }
 
-interface WeekPerfData {
-  date: string
-  impressions: number
-  clicks: number
-  cost: number
-  conversions: number
-}
-
-interface FourWeekData {
-  weeks: WeekPerfData[]
-}
-
 const classColors: Record<string, string> = {
   BLUE: '#3B82F6',
   GREEN: '#10B981',
@@ -84,18 +72,13 @@ const classColors: Record<string, string> = {
 
 export function BingCPCTab() {
   const [data, setData] = useState<BingCPCData | null>(null)
-  const [fourWeekData, setFourWeekData] = useState<FourWeekData | null>(null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('ALL')
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/cpc-bing-recommendations').then(res => res.json()),
-      fetch('/api/cpc-bing-four-week').then(res => res.json())
-    ])
-      .then(([recommendations, fourWeek]) => {
+    fetch('/api/cpc-bing-recommendations').then(res => res.json())
+      .then(recommendations => {
         setData(recommendations)
-        setFourWeekData(fourWeek)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -144,24 +127,6 @@ export function BingCPCTab() {
     }]
   }
 
-  const scatterData = {
-    datasets: [{
-      label: 'RAISE',
-      data: data.recommendations.filter(r => r.action === 'RAISE').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
-      backgroundColor: '#10B981',
-      pointRadius: 10
-    }, {
-      label: 'LOWER',
-      data: data.recommendations.filter(r => r.action === 'LOWER').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
-      backgroundColor: '#EF4444',
-      pointRadius: 10
-    }, {
-      label: 'HOLD',
-      data: data.recommendations.filter(r => r.action === 'HOLD').map(r => ({ x: r.currentMaxCPC, y: r.suggestedMaxCPC })),
-      backgroundColor: '#6B7280',
-      pointRadius: 10
-    }]
-  }
 
   return (
     <>
@@ -228,53 +193,8 @@ export function BingCPCTab() {
         </div>
       </div>
 
-      {/* 6-Week Performance Table */}
-      <div className="mb-6">
-        <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-2xl font-medium mb-4">TRAILING 6-WEEK PERFORMANCE</h3>
-          {fourWeekData && fourWeekData.weeks.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-2xl">
-                <thead>
-                  <tr className="border-b border-gray-800">
-                    <th className="text-left text-gray-400 font-medium py-3 pr-4"></th>
-                    <th className="text-center py-3 px-3 text-cyan-400 text-xl font-medium">Impressions</th>
-                    <th className="text-center py-3 px-3 text-cyan-400 text-xl font-medium">Clicks</th>
-                    <th className="text-center py-3 px-3 text-cyan-400 text-xl font-medium">CTR</th>
-                    <th className="text-center py-3 px-3 text-cyan-400 text-xl font-medium">Cost</th>
-                    <th className="text-center py-3 px-3 text-cyan-400 text-xl font-medium">Conversions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...fourWeekData.weeks].reverse().map((week, idx) => {
-                    const labels = ['5 Weeks Ago', '4 Weeks Ago', '3 Weeks Ago', '2 Weeks Ago', 'Last Week', 'Current Week']
-                    return (
-                      <tr key={week.date} className={idx < fourWeekData.weeks.length - 1 ? 'border-b border-gray-800/50' : ''}>
-                        <td className="text-gray-400 font-medium py-3 pr-4 whitespace-nowrap">
-                          <div>{labels[idx]}</div>
-                          <div className="text-gray-500 text-lg">{week.date}</div>
-                        </td>
-                        <td className="text-white text-center font-bold py-3 px-3">{week.impressions.toLocaleString()}</td>
-                        <td className="text-white text-center font-bold py-3 px-3">{week.clicks.toLocaleString()}</td>
-                        <td className="text-white text-center font-bold py-3 px-3">
-                          {week.impressions > 0 ? ((week.clicks / week.impressions) * 100).toFixed(1) : '0.0'}%
-                        </td>
-                        <td className="text-white text-center font-bold py-3 px-3">${Math.round(week.cost).toLocaleString()}</td>
-                        <td className="text-white text-center font-bold py-3 px-3">{Math.round(week.conversions)}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-gray-500 text-center py-16">Loading...</div>
-          )}
-        </div>
-      </div>
-
       {/* Charts */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6">
         <div className="bg-[#1a1a1a] rounded-lg p-6">
           <h3 className="text-gray-300 text-xl font-medium mb-4">ACTION DISTRIBUTION</h3>
           <div className="h-[280px] flex items-center justify-center">
@@ -283,40 +203,6 @@ export function BingCPCTab() {
               maintainAspectRatio: false,
               plugins: {
                 legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 17 } } }
-              }
-            }} />
-          </div>
-        </div>
-        <div className="bg-[#1a1a1a] rounded-lg p-6">
-          <h3 className="text-gray-300 text-xl font-medium mb-4">CURRENT VS SUGGESTED CPC</h3>
-          <div className="h-[280px]">
-            <Scatter data={scatterData} options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { position: 'bottom', labels: { color: '#9CA3AF', font: { size: 17 } } },
-                tooltip: {
-                  backgroundColor: '#1F2937',
-                  titleColor: '#F3F4F6',
-                  bodyColor: '#D1D5DB',
-                  titleFont: { size: 15 },
-                  bodyFont: { size: 15 },
-                  callbacks: {
-                    label: (ctx: any) => `Current: $${ctx.parsed.x.toFixed(2)}, Suggested: $${ctx.parsed.y.toFixed(2)}`
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  title: { display: true, text: 'Current Max CPC', color: '#9CA3AF', font: { size: 15 } },
-                  grid: { color: '#1F2937' },
-                  ticks: { color: '#9CA3AF', font: { size: 14 }, callback: (v: any) => '$' + v.toFixed(2) }
-                },
-                y: {
-                  title: { display: true, text: 'Suggested Max CPC', color: '#9CA3AF', font: { size: 15 } },
-                  grid: { color: '#1F2937' },
-                  ticks: { color: '#9CA3AF', font: { size: 14 }, callback: (v: any) => '$' + v.toFixed(2) }
-                }
               }
             }} />
           </div>
