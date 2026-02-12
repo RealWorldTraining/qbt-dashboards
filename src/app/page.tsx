@@ -2421,7 +2421,7 @@ function DashboardPageContent() {
             )}
           </div>
           {/* Section Navigation — Glass Panel Segment Control */}
-          <div className="relative flex items-center bg-white/[0.06] border border-white/[0.08] rounded-xl p-1 mb-3 backdrop-blur-sm overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
+          <div className="relative flex items-center justify-center bg-white/[0.06] border border-white/[0.08] rounded-xl p-1 mb-3 backdrop-blur-sm overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
             {/* Sliding pill indicator */}
             <div
               className="absolute top-1 bottom-1 bg-gradient-to-r from-[#0066CC] to-[#0052A3] rounded-lg shadow-[0_0_20px_rgba(0,102,204,0.25)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
@@ -5551,7 +5551,7 @@ function DashboardPageContent() {
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                     gadsView === key
                       ? 'text-white shadow-md'
-                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                      : 'bg-white text-[#1D1D1F] border border-[#B0B0B5] shadow-sm hover:border-[#6E6E73] hover:shadow'
                   }`}
                   style={gadsView === key ? { backgroundColor: color } : {}}
                 >
@@ -5559,7 +5559,7 @@ function DashboardPageContent() {
                 </button>
               ))}
               {/* Separator */}
-              <div className="w-px bg-[#D2D2D7] mx-1 self-stretch" />
+              <div className="w-px bg-[#B0B0B5] mx-1 self-stretch" />
               {/* Metric pills */}
               {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
                 <button
@@ -5568,7 +5568,7 @@ function DashboardPageContent() {
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                     gadsView === null && gadsMetric === key
                       ? 'text-white shadow-md'
-                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                      : 'bg-white text-[#1D1D1F] border border-[#B0B0B5] shadow-sm hover:border-[#6E6E73] hover:shadow'
                   }`}
                   style={gadsView === null && gadsMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
                 >
@@ -5884,7 +5884,7 @@ function DashboardPageContent() {
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                     bingView === key
                       ? 'text-white shadow-md'
-                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                      : 'bg-white text-[#1D1D1F] border border-[#B0B0B5] shadow-sm hover:border-[#6E6E73] hover:shadow'
                   }`}
                   style={bingView === key ? { backgroundColor: color } : {}}
                 >
@@ -5892,7 +5892,7 @@ function DashboardPageContent() {
                 </button>
               ))}
               {/* Separator */}
-              <div className="w-px bg-[#D2D2D7] mx-1 self-stretch" />
+              <div className="w-px bg-[#B0B0B5] mx-1 self-stretch" />
               {/* Metric pills */}
               {(Object.keys(ADS_METRIC_LABELS) as AdsMetric[]).map((key) => (
                 <button
@@ -5901,7 +5901,7 @@ function DashboardPageContent() {
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                     bingView === null && bingMetric === key
                       ? 'text-white shadow-md'
-                      : 'bg-white text-[#6E6E73] border border-[#D2D2D7] hover:border-[#8E8E93]'
+                      : 'bg-white text-[#1D1D1F] border border-[#B0B0B5] shadow-sm hover:border-[#6E6E73] hover:shadow'
                   }`}
                   style={bingView === null && bingMetric === key ? { backgroundColor: ADS_METRIC_COLORS[key] } : {}}
                 >
