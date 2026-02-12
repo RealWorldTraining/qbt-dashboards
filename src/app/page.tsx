@@ -2413,13 +2413,13 @@ function DashboardPageContent() {
                   ref={(el) => { sectionRefs.current[section.id] = el }}
                   onClick={() => handleSectionClick(section.id)}
                   title={section.description}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                  className={`flex items-center gap-2.5 px-5 py-2.5 text-base font-semibold rounded-lg whitespace-nowrap transition-colors ${
                     isActive
                       ? "text-[#2563eb] border border-[#2563eb]/60"
-                      : "text-gray-400 border border-transparent hover:text-gray-200"
+                      : "text-gray-300 border border-transparent hover:text-white"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-5 w-5" />
                   {section.label}
                 </button>
               )
@@ -2435,13 +2435,13 @@ function DashboardPageContent() {
                   <button
                     key={tab.id}
                     onClick={() => handleSubTabClick(tab.id)}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2 text-base font-medium rounded-full whitespace-nowrap transition-colors ${
                       isActive
                         ? "bg-[#2563eb] text-white"
-                        : "text-gray-400 hover:text-gray-200"
+                        : "text-gray-300 hover:text-white"
                     }`}
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className="h-4.5 w-4.5" />
                     {tab.label}
                   </button>
                 )
