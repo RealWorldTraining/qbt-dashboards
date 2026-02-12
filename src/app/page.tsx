@@ -6317,7 +6317,7 @@ function DashboardPageContent() {
                                           <span className="font-bold text-white text-lg">{users.toLocaleString()}</span>
                                         </td>,
                                         <td key={`${weekIdx}-c`} className="text-center py-3 px-2 text-emerald-400 text-base font-semibold">{week.purchases}</td>,
-                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-2 text-base font-semibold ${week.conversion_rate >= 1.5 ? 'text-emerald-400' : week.conversion_rate >= 0.5 ? 'text-amber-400' : 'text-white/40'}`}>
+                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-2 text-base font-semibold ${week.conversion_rate >= 1.5 ? 'text-emerald-400' : week.conversion_rate >= 0.75 ? 'text-amber-400' : week.conversion_rate >= 0.25 ? 'text-white/40' : 'text-red-400'}`}>
                                           {week.conversion_rate.toFixed(2)}%
                                         </td>
                                       ]
@@ -6405,7 +6405,7 @@ function DashboardPageContent() {
                                           <span className="font-bold text-white text-lg">{clicks.toLocaleString()}</span>
                                         </td>,
                                         <td key={`${weekIdx}-c`} className="text-center py-3 px-2 text-emerald-400 text-base font-semibold">{conversions}</td>,
-                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-2 text-base font-semibold ${week.conversion_rate >= 5 ? 'text-emerald-400' : week.conversion_rate >= 2 ? 'text-amber-400' : 'text-white/40'}`}>
+                                        <td key={`${weekIdx}-r`} className={`text-center py-3 px-2 text-base font-semibold ${week.conversion_rate >= 5 ? 'text-emerald-400' : week.conversion_rate >= 3 ? 'text-amber-400' : week.conversion_rate >= 1 ? 'text-white/40' : 'text-red-400'}`}>
                                           {week.conversion_rate.toFixed(2)}%
                                         </td>
                                       ]
