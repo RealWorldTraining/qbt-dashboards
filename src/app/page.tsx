@@ -838,15 +838,14 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type SectionType = "revenue" | "advertising" | "organic" | "tools" | "reports"
+type SectionType = "revenue" | "advertising" | "organic" | "reports"
 
 type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages"
 
 const SECTION_TABS: Record<SectionType, TabType[]> = {
   revenue: ["sales", "subscriptions"],
   advertising: ["google-ads", "bing-ads"],
-  organic: ["traffic", "conversions", "gsc"],
-  tools: ["landing-pages"],
+  organic: ["traffic", "conversions", "gsc", "landing-pages"],
   reports: [],
 }
 
@@ -854,7 +853,6 @@ const SECTION_DEFAULTS: Record<SectionType, TabType | null> = {
   revenue: "sales",
   advertising: "google-ads",
   organic: "traffic",
-  tools: "landing-pages",
   reports: null,
 }
 
@@ -866,7 +864,7 @@ const TAB_TO_SECTION: Record<TabType, SectionType> = {
   traffic: "organic",
   conversions: "organic",
   gsc: "organic",
-  "landing-pages": "tools",
+  "landing-pages": "organic",
 }
 
 function formatCurrency(value: number): string {
@@ -2009,19 +2007,14 @@ const validTabs: TabType[] = ["sales", "subscriptions", "google-ads", "bing-ads"
 function DashboardPageContent() {
   const searchParams = useSearchParams()
   const tabParam = searchParams.get("tab") as string | null
-  // Handle legacy ?tab=jedi-council → tools hub
-  const resolvedTab: TabType | null = tabParam === "jedi-council" ? null : (tabParam && validTabs.includes(tabParam as TabType) ? tabParam as TabType : null)
+  const resolvedTab: TabType | null = tabParam && validTabs.includes(tabParam as TabType) ? tabParam as TabType : null
   const [activeTab, setActiveTab] = useState<TabType | null>(resolvedTab ?? "sales")
   const [activeSection, setActiveSection] = useState<SectionType>(
-    resolvedTab ? TAB_TO_SECTION[resolvedTab] : (tabParam === "jedi-council" ? "tools" : "revenue")
+    resolvedTab ? TAB_TO_SECTION[resolvedTab] : "revenue"
   )
 
   useEffect(() => {
-    if (tabParam === "jedi-council") {
-      setActiveSection("tools")
-      setActiveTab(null)
-      window.history.replaceState({}, "", "/?section=tools")
-    } else if (tabParam && validTabs.includes(tabParam as TabType)) {
+    if (tabParam && validTabs.includes(tabParam as TabType)) {
       const tab = tabParam as TabType
       setActiveTab(tab)
       setActiveSection(TAB_TO_SECTION[tab])
@@ -2394,7 +2387,6 @@ function DashboardPageContent() {
     { id: "revenue", label: "Revenue", icon: DollarSign, description: "Daily sales, subscription health, and product revenue" },
     { id: "advertising", label: "Advertising", icon: Target, description: "Google Ads and Bing Ads campaign performance" },
     { id: "organic", label: "Organic & SEO", icon: TrendingUp, description: "Traffic sources, conversions, search rankings, and landing pages" },
-    { id: "tools", label: "Insights", icon: Sparkles, description: "Landing page performance and analytical tools" },
     { id: "reports", label: "Other Reports", icon: FileText, description: "Forecasting, AI analysis, and operational tools" },
   ]
 
@@ -2411,8 +2403,6 @@ function DashboardPageContent() {
       { id: "traffic", label: "Traffic", icon: Users },
       { id: "conversions", label: "Conversions", icon: CheckCircle2 },
       { id: "gsc", label: "Search Console", icon: Search },
-    ],
-    tools: [
       { id: "landing-pages", label: "Landing Pages", icon: MapPin },
     ],
     reports: [],
@@ -4728,7 +4718,7 @@ function DashboardPageContent() {
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
                       <CardHeader className="pb-1">
                         <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <Calendar className="h-5 w-5 text-[#34C759]" />
+                          <Calendar className="h-5 w-5" style={{ color: { total: '#34C759', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[conversionSource] }} />
                           Weekly Trends ({conversionSource === 'total' ? 'Total Conversions' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1) + ' Conversions'})
                         </CardTitle>
                       </CardHeader>
@@ -4741,7 +4731,7 @@ function DashboardPageContent() {
                                 {conversionTrends.weekly_trends.days.map((day) => (
                                   <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
                                 ))}
-                                <th className="text-center py-3 px-3 font-bold text-white bg-[#34C759] whitespace-nowrap">Total</th>
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: { total: '#34C759', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[conversionSource] }}>Total</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -4752,15 +4742,13 @@ function DashboardPageContent() {
                                   days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
                                 )
                                 const maxValue = Math.max(...allValues, 1)
+                                const sourceColor = { total: '#34C759', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[conversionSource]
 
-                                const getHeatmapClass = (value: number | null | undefined) => {
-                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
-                                  const intensity = Math.round((value / maxValue) * 100)
-                                  if (intensity > 80) return 'bg-green-600'
-                                  if (intensity > 60) return 'bg-green-500'
-                                  if (intensity > 40) return 'bg-green-600/60'
-                                  if (intensity > 20) return 'bg-green-600/40'
-                                  return 'bg-green-600/20'
+                                const getHeatmapStyle = (value: number | null | undefined): React.CSSProperties => {
+                                  if (value === null || value === undefined) return {}
+                                  const intensity = value / maxValue
+                                  const alpha = 0.2 + intensity * 0.8
+                                  return { backgroundColor: `color-mix(in srgb, ${sourceColor} ${Math.round(alpha * 100)}%, #1D1D1F)` }
                                 }
 
                                 return weekRows.map((week, idx) => {
@@ -4777,7 +4765,8 @@ function DashboardPageContent() {
                                         return (
                                           <td
                                             key={day}
-                                            className={`text-center py-3 px-1 ${getHeatmapClass(value)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                            className={`text-center py-3 px-1 ${value === null || value === undefined ? "bg-[#1D1D1F] text-white/20" : "text-white font-semibold"}`}
+                                            style={getHeatmapStyle(value)}
                                           >
                                             {value !== null && value !== undefined ? value.toLocaleString() : '-'}
                                           </td>
@@ -4804,7 +4793,7 @@ function DashboardPageContent() {
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
                       <CardHeader className="pb-1">
                         <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <Calendar className="h-5 w-5 text-[#34C759]" />
+                          <Calendar className="h-5 w-5" style={{ color: { total: '#34C759', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[conversionSource] }} />
                           Monthly Trends ({conversionSource === 'total' ? 'Total Conversions' : conversionSource.charAt(0).toUpperCase() + conversionSource.slice(1) + ' Conversions'})
                         </CardTitle>
                       </CardHeader>
@@ -4817,7 +4806,7 @@ function DashboardPageContent() {
                                 {conversionTrends.monthly_trends.weeks.map((wk) => (
                                   <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
                                 ))}
-                                <th className="text-center py-3 px-3 font-bold text-white bg-[#34C759] whitespace-nowrap">Total</th>
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: { total: '#34C759', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[conversionSource] }}>Total</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -4828,15 +4817,13 @@ function DashboardPageContent() {
                                   weeks.map(wk => row[conversionSource][wk]).filter((v): v is number => typeof v === 'number')
                                 )
                                 const maxValue = Math.max(...allValues, 1)
+                                const sourceColor = { total: '#34C759', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[conversionSource]
 
-                                const getHeatmapClass = (value: number | null | undefined) => {
-                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
-                                  const intensity = Math.round((value / maxValue) * 100)
-                                  if (intensity > 80) return 'bg-green-600'
-                                  if (intensity > 60) return 'bg-green-500'
-                                  if (intensity > 40) return 'bg-green-600/60'
-                                  if (intensity > 20) return 'bg-green-600/40'
-                                  return 'bg-green-600/20'
+                                const getHeatmapStyle = (value: number | null | undefined): React.CSSProperties => {
+                                  if (value === null || value === undefined) return {}
+                                  const intensity = value / maxValue
+                                  const alpha = 0.2 + intensity * 0.8
+                                  return { backgroundColor: `color-mix(in srgb, ${sourceColor} ${Math.round(alpha * 100)}%, #1D1D1F)` }
                                 }
 
                                 const getSourceTotal = (row: TrafficTrendMonthRow): number => {
@@ -4859,7 +4846,8 @@ function DashboardPageContent() {
                                         return (
                                           <td
                                             key={wk}
-                                            className={`text-center py-3 px-3 ${getHeatmapClass(value)} ${value === null || value === undefined ? "text-white/20" : "text-white font-semibold"}`}
+                                            className={`text-center py-3 px-3 ${value === null || value === undefined ? "bg-[#1D1D1F] text-white/20" : "text-white font-semibold"}`}
+                                            style={getHeatmapStyle(value)}
                                           >
                                             {value !== null && value !== undefined ? value.toLocaleString() : '-'}
                                           </td>
@@ -5273,7 +5261,7 @@ function DashboardPageContent() {
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
                       <CardHeader className="pb-1">
                         <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <Calendar className="h-5 w-5 text-[#5856D6]" />
+                          <Calendar className="h-5 w-5" style={{ color: { total: '#5856D6', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[convPctSource] }} />
                           Weekly Conversion % ({convPctSource === 'total' ? 'Total' : convPctSource.charAt(0).toUpperCase() + convPctSource.slice(1)})
                         </CardTitle>
                       </CardHeader>
@@ -5286,7 +5274,7 @@ function DashboardPageContent() {
                                 {conversionTrends.weekly_trends.days.map((day) => (
                                   <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
                                 ))}
-                                <th className="text-center py-3 px-3 font-bold text-white bg-[#5856D6] whitespace-nowrap">Avg</th>
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: { total: '#5856D6', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[convPctSource] }}>Avg</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -5295,14 +5283,13 @@ function DashboardPageContent() {
                                 const convWeeks = conversionTrends.weekly_trends.data[convPctSource]
                                 const trafWeeks = trafficTrends.weekly_trends.data[convPctSource]
                                 const trafMap = new Map(trafWeeks.map(w => [w.week_label, w]))
+                                const sourceColor = { total: '#5856D6', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[convPctSource]
 
-                                const getHeatmapClass = (pct: number | null) => {
-                                  if (pct === null) return 'bg-[#1D1D1F]'
-                                  if (pct >= 8) return 'bg-purple-600'
-                                  if (pct >= 6) return 'bg-purple-500'
-                                  if (pct >= 4) return 'bg-purple-600/60'
-                                  if (pct >= 2) return 'bg-purple-600/40'
-                                  return 'bg-purple-600/20'
+                                const getHeatmapStyle = (pct: number | null): React.CSSProperties => {
+                                  if (pct === null) return {}
+                                  const intensity = Math.min(pct / 10, 1)
+                                  const alpha = 0.2 + intensity * 0.8
+                                  return { backgroundColor: `color-mix(in srgb, ${sourceColor} ${Math.round(alpha * 100)}%, #1D1D1F)` }
                                 }
 
                                 return convWeeks.map((week, idx) => {
@@ -5325,7 +5312,8 @@ function DashboardPageContent() {
                                         return (
                                           <td
                                             key={day}
-                                            className={`text-center py-3 px-1 ${getHeatmapClass(pct)} ${pct === null ? "text-white/20" : "text-white font-semibold"}`}
+                                            className={`text-center py-3 px-1 ${pct === null ? "bg-[#1D1D1F] text-white/20" : "text-white font-semibold"}`}
+                                            style={getHeatmapStyle(pct)}
                                           >
                                             {pct !== null ? `${pct.toFixed(1)}%` : '-'}
                                           </td>
@@ -5352,7 +5340,7 @@ function DashboardPageContent() {
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
                       <CardHeader className="pb-1">
                         <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <Calendar className="h-5 w-5 text-[#5856D6]" />
+                          <Calendar className="h-5 w-5" style={{ color: { total: '#5856D6', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[convPctSource] }} />
                           Monthly Conversion % ({convPctSource === 'total' ? 'Total' : convPctSource.charAt(0).toUpperCase() + convPctSource.slice(1)})
                         </CardTitle>
                       </CardHeader>
@@ -5365,7 +5353,7 @@ function DashboardPageContent() {
                                 {conversionTrends.monthly_trends.weeks.map((wk) => (
                                   <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
                                 ))}
-                                <th className="text-center py-3 px-3 font-bold text-white bg-[#5856D6] whitespace-nowrap">Avg</th>
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: { total: '#5856D6', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[convPctSource] }}>Avg</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -5375,13 +5363,12 @@ function DashboardPageContent() {
                                 const trafMonths = trafficTrends.monthly_trends.months
                                 const trafMap = new Map(trafMonths.map(m => [m.month_key, m]))
 
-                                const getHeatmapClass = (pct: number | null) => {
-                                  if (pct === null) return 'bg-[#1D1D1F]'
-                                  if (pct >= 8) return 'bg-purple-600'
-                                  if (pct >= 6) return 'bg-purple-500'
-                                  if (pct >= 4) return 'bg-purple-600/60'
-                                  if (pct >= 2) return 'bg-purple-600/40'
-                                  return 'bg-purple-600/20'
+                                const sourceColor = { total: '#5856D6', organic: '#0066CC', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[convPctSource]
+                                const getHeatmapStyle = (pct: number | null): React.CSSProperties => {
+                                  if (pct === null) return {}
+                                  const intensity = Math.min(pct / 10, 1)
+                                  const alpha = 0.2 + intensity * 0.8
+                                  return { backgroundColor: `color-mix(in srgb, ${sourceColor} ${Math.round(alpha * 100)}%, #1D1D1F)` }
                                 }
 
                                 return convMonths.map((row, idx) => {
@@ -5404,7 +5391,8 @@ function DashboardPageContent() {
                                         return (
                                           <td
                                             key={wk}
-                                            className={`text-center py-3 px-3 ${getHeatmapClass(pct)} ${pct === null ? "text-white/20" : "text-white font-semibold"}`}
+                                            className={`text-center py-3 px-3 ${pct === null ? "bg-[#1D1D1F] text-white/20" : "text-white font-semibold"}`}
+                                            style={getHeatmapStyle(pct)}
                                           >
                                             {pct !== null ? `${pct.toFixed(1)}%` : '-'}
                                           </td>

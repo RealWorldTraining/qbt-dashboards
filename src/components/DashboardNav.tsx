@@ -8,18 +8,15 @@ import {
   DollarSign,
   Users,
   FileText,
-  Tv,
   ChevronDown,
   ChevronRight,
   BarChart3,
   TrendingUp,
   Search,
   MapPin,
-  Brain,
   Target,
   Sprout,
   Repeat,
-  Sparkles,
 } from "lucide-react"
 
 interface DashboardItem {
@@ -67,17 +64,7 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
       { name: "Traffic", href: "/?tab=traffic", icon: Users, description: "GA4 traffic by channel" },
       { name: "Conversions", href: "/?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
       { name: "Search Console", href: "/?tab=gsc", icon: Search, description: "Search rankings & clicks" },
-    ]
-  },
-  {
-    name: "Insights",
-    icon: Sparkles,
-    items: [
       { name: "Landing Pages", href: "/?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
-      { name: "Jedi Council", href: "https://jedi-council-zeta.vercel.app", icon: Brain, description: "Multi-agent AI analysis", external: true },
-      { name: "The Prophet", href: "/data", icon: Tv, description: "Sales forecasting & predictions" },
-      { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time room status" },
-      { name: "P&L Recap", href: "/recap", icon: FileText, description: "Monthly P&L reports" },
     ]
   },
 ]
