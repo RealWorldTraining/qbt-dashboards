@@ -66,13 +66,13 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
     items: [
       { name: "Traffic", href: "/?tab=traffic", icon: Users, description: "GA4 traffic by channel" },
       { name: "Conversions", href: "/?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
+      { name: "Search Console", href: "/?tab=gsc", icon: Search, description: "Search rankings & clicks" },
     ]
   },
   {
-    name: "Insights & Tools",
+    name: "Insights",
     icon: Sparkles,
     items: [
-      { name: "Search Console", href: "/?tab=gsc", icon: Search, description: "Search rankings & clicks" },
       { name: "Landing Pages", href: "/?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
       { name: "Jedi Council", href: "https://jedi-council-zeta.vercel.app", icon: Brain, description: "Multi-agent AI analysis", external: true },
       { name: "The Prophet", href: "/data", icon: Tv, description: "Sales forecasting & predictions" },

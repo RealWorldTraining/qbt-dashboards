@@ -845,8 +845,8 @@ type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic"
 const SECTION_TABS: Record<SectionType, TabType[]> = {
   revenue: ["sales", "subscriptions"],
   advertising: ["google-ads", "bing-ads"],
-  organic: ["traffic", "conversions"],
-  tools: ["gsc", "landing-pages"],
+  organic: ["traffic", "conversions", "gsc"],
+  tools: ["landing-pages"],
   reports: [],
 }
 
@@ -854,7 +854,7 @@ const SECTION_DEFAULTS: Record<SectionType, TabType | null> = {
   revenue: "sales",
   advertising: "google-ads",
   organic: "traffic",
-  tools: "gsc",
+  tools: "landing-pages",
   reports: null,
 }
 
@@ -865,7 +865,7 @@ const TAB_TO_SECTION: Record<TabType, SectionType> = {
   "bing-ads": "advertising",
   traffic: "organic",
   conversions: "organic",
-  gsc: "tools",
+  gsc: "organic",
   "landing-pages": "tools",
 }
 
@@ -2394,7 +2394,7 @@ function DashboardPageContent() {
     { id: "revenue", label: "Revenue", icon: DollarSign, description: "Daily sales, subscription health, and product revenue" },
     { id: "advertising", label: "Advertising", icon: Target, description: "Google Ads and Bing Ads campaign performance" },
     { id: "organic", label: "Organic & SEO", icon: TrendingUp, description: "Traffic sources, conversions, search rankings, and landing pages" },
-    { id: "tools", label: "Insights & Tools", icon: Sparkles, description: "SEO rank tracking, AI search, and competitor intelligence" },
+    { id: "tools", label: "Insights", icon: Sparkles, description: "Landing page performance and analytical tools" },
     { id: "reports", label: "Other Reports", icon: FileText, description: "Forecasting, AI analysis, and operational tools" },
   ]
 
@@ -2410,9 +2410,9 @@ function DashboardPageContent() {
     organic: [
       { id: "traffic", label: "Traffic", icon: Users },
       { id: "conversions", label: "Conversions", icon: CheckCircle2 },
+      { id: "gsc", label: "Search Console", icon: Search },
     ],
     tools: [
-      { id: "gsc", label: "Search Console", icon: Search },
       { id: "landing-pages", label: "Landing Pages", icon: MapPin },
     ],
     reports: [],
