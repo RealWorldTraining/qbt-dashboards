@@ -20,6 +20,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts"
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
 import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin, FileText } from "lucide-react"
@@ -837,13 +840,13 @@ interface SubscriberMetricsResponse {
 
 type SectionType = "revenue" | "advertising" | "organic" | "tools" | "reports"
 
-type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages" | "seo-rankings" | "seo-ai-search" | "seo-competitors"
+type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages" | "seo-rankings" | "seo-ai-search" | "seo-competitors" | "seo-intent" | "seo-urls" | "seo-desktop-mobile" | "seo-movers" | "seo-click-share"
 
 const SECTION_TABS: Record<SectionType, TabType[]> = {
   revenue: ["sales", "subscriptions"],
   advertising: ["google-ads", "bing-ads"],
   organic: ["traffic", "conversions", "gsc", "landing-pages"],
-  tools: ["seo-rankings", "seo-ai-search", "seo-competitors"],
+  tools: ["seo-rankings", "seo-ai-search", "seo-competitors", "seo-intent", "seo-urls", "seo-desktop-mobile", "seo-movers", "seo-click-share"],
   reports: [],
 }
 
@@ -867,6 +870,11 @@ const TAB_TO_SECTION: Record<TabType, SectionType> = {
   "seo-rankings": "tools",
   "seo-ai-search": "tools",
   "seo-competitors": "tools",
+  "seo-intent": "tools",
+  "seo-urls": "tools",
+  "seo-desktop-mobile": "tools",
+  "seo-movers": "tools",
+  "seo-click-share": "tools",
 }
 
 function formatCurrency(value: number): string {
@@ -2398,7 +2406,7 @@ function DashboardPageContent() {
     else if (activeTab === 'subscriptions') fetchSubscriptionsData()
     else if (activeTab === 'landing-pages') fetchLandingPagesData()
     else if (activeTab === 'gsc') fetchGscData()
-    else if (activeTab === 'seo-rankings' || activeTab === 'seo-ai-search' || activeTab === 'seo-competitors') fetchAwrData()
+    else if (activeTab?.startsWith('seo-')) fetchAwrData()
   }, [activeTab])
 
   // Auto-refresh sales data every 5 minutes when on sales tab
@@ -2445,6 +2453,11 @@ function DashboardPageContent() {
       { id: "seo-rankings", label: "Rank Tracker", icon: TrendingUp },
       { id: "seo-ai-search", label: "AI Search", icon: Brain },
       { id: "seo-competitors", label: "Competitor Intel", icon: Swords },
+      { id: "seo-intent", label: "Search Intent", icon: Lightbulb },
+      { id: "seo-urls", label: "URL Performance", icon: FileText },
+      { id: "seo-desktop-mobile", label: "Desktop vs Mobile", icon: Monitor },
+      { id: "seo-movers", label: "Keyword Movers", icon: ArrowUp },
+      { id: "seo-click-share", label: "Click Share", icon: Percent },
     ],
     reports: [],
   }
@@ -6854,6 +6867,795 @@ function DashboardPageContent() {
                       </CardContent>
                     </Card>
                   )}
+                </div>
+              )
+            })() : null}
+          </>
+        )}
+
+        {/* Search Intent Breakdown Tab */}
+        {activeTab === "seo-intent" && (
+          <>
+            {awrLoading && !awrRankings ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrRankings ? (() => {
+              // Count intent occurrences and aggregate traffic
+              const intentMap: Record<string, { count: number; visits: number; keywords: string[] }> = {}
+              awrRankings.keywords.forEach((kw: any) => {
+                (kw.search_intent || []).forEach((intent: string) => {
+                  if (!intentMap[intent]) intentMap[intent] = { count: 0, visits: 0, keywords: [] }
+                  intentMap[intent].count++
+                  intentMap[intent].visits += kw.estimated_visits || 0
+                  if (intentMap[intent].keywords.length < 5) intentMap[intent].keywords.push(kw.keyword)
+                })
+              })
+              const intentData = Object.entries(intentMap)
+                .map(([name, data]) => ({ name, ...data }))
+                .sort((a, b) => b.count - a.count)
+              const INTENT_COLORS: Record<string, string> = {
+                Informational: '#3B82F6',
+                Commercial: '#22C55E',
+                Navigational: '#EAB308',
+                Transactional: '#F97316',
+              }
+              const totalKeywords = awrRankings.keywords.length
+              const totalVisits = intentData.reduce((sum, d) => sum + d.visits, 0)
+
+              return (
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {intentData.map(d => (
+                      <Card key={d.name} className="bg-white border-[#D2D2D7] shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: INTENT_COLORS[d.name] || '#6B7280' }} />
+                            <p className="text-xs font-medium text-[#86868B] uppercase">{d.name}</p>
+                          </div>
+                          <p className="text-2xl font-bold text-[#1D1D1F]">{d.count}</p>
+                          <p className="text-xs text-[#86868B] mt-1">{((d.count / totalKeywords) * 100).toFixed(0)}% of keywords</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Donut Chart */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Intent Distribution</CardTitle>
+                        <p className="text-sm text-[#6E6E73]">Keywords by search intent type</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[300px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={intentData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={70}
+                                outerRadius={110}
+                                dataKey="count"
+                                nameKey="name"
+                                paddingAngle={3}
+                                label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {intentData.map((d, i) => (
+                                  <Cell key={i} fill={INTENT_COLORS[d.name] || '#6B7280'} />
+                                ))}
+                              </Pie>
+                              <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any, name: any) => [`${v} keywords`, name]} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Traffic by Intent */}
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Estimated Visits by Intent</CardTitle>
+                        <p className="text-sm text-[#6E6E73]">Which intent types drive the most traffic</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[300px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={intentData} layout="vertical" margin={{ top: 10, right: 30, left: 100, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" horizontal={false} />
+                              <XAxis type="number" tick={{ fontSize: 13, fill: '#6E6E73' }} tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                              <YAxis type="category" dataKey="name" tick={{ fontSize: 13, fill: '#1D1D1F' }} width={95} />
+                              <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any) => [Math.round(v).toLocaleString() + ' visits', 'Est. Visits']} />
+                              <Bar dataKey="visits" radius={[0, 6, 6, 0]} barSize={28}>
+                                {intentData.map((d, i) => (
+                                  <Cell key={i} fill={INTENT_COLORS[d.name] || '#6B7280'} />
+                                ))}
+                              </Bar>
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Intent Detail Table */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Intent Breakdown Detail</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-[#D2D2D7]">
+                            <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Intent</th>
+                            <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Keywords</th>
+                            <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">% of Total</th>
+                            <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Est. Visits</th>
+                            <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">% Traffic</th>
+                            <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Sample Keywords</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {intentData.map(d => (
+                            <tr key={d.name} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
+                              <td className="px-3 py-2.5 text-sm font-medium text-[#1D1D1F]">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: INTENT_COLORS[d.name] || '#6B7280' }} />
+                                  {d.name}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right font-medium">{d.count}</td>
+                              <td className="px-3 py-2.5 text-sm text-[#6E6E73] text-right">{((d.count / totalKeywords) * 100).toFixed(1)}%</td>
+                              <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right font-medium">{Math.round(d.visits).toLocaleString()}</td>
+                              <td className="px-3 py-2.5 text-sm text-[#6E6E73] text-right">{totalVisits > 0 ? ((d.visits / totalVisits) * 100).toFixed(1) : '0'}%</td>
+                              <td className="px-3 py-2.5 text-xs text-[#86868B] max-w-[300px] truncate">{d.keywords.join(', ')}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </CardContent>
+                  </Card>
+                </div>
+              )
+            })() : null}
+          </>
+        )}
+
+        {/* URL Performance Tab */}
+        {activeTab === "seo-urls" && (
+          <>
+            {awrLoading && !awrRankings ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrRankings ? (() => {
+              // Group keywords by URL
+              const urlMap: Record<string, { keywords: number; visits: number; firstPlace: number; top3: number; avgRank: number; ranks: number[]; topKeyword: string; topVolume: number }> = {}
+              awrRankings.keywords.forEach((kw: any) => {
+                const url = kw.url?.replace('https://quickbookstraining.com', '') || '/'
+                if (!urlMap[url]) urlMap[url] = { keywords: 0, visits: 0, firstPlace: 0, top3: 0, avgRank: 0, ranks: [], topKeyword: '', topVolume: 0 }
+                urlMap[url].keywords++
+                urlMap[url].visits += kw.estimated_visits || 0
+                urlMap[url].ranks.push(kw.position)
+                if (kw.position === 1) urlMap[url].firstPlace++
+                if (kw.position <= 3) urlMap[url].top3++
+                if (kw.search_volume > urlMap[url].topVolume) {
+                  urlMap[url].topVolume = kw.search_volume
+                  urlMap[url].topKeyword = kw.keyword
+                }
+              })
+              const urlData = Object.entries(urlMap)
+                .map(([url, data]) => ({
+                  url,
+                  ...data,
+                  avgRank: data.ranks.length > 0 ? data.ranks.reduce((a, b) => a + b, 0) / data.ranks.length : 0,
+                }))
+                .sort((a, b) => b.visits - a.visits)
+
+              return (
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">Unique URLs</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{urlData.length}</p>
+                        <p className="text-xs text-[#86868B] mt-1">Ranking landing pages</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">Top Page</p>
+                        <p className="text-lg font-bold text-[#1D1D1F] mt-1 truncate">{urlData[0]?.url || '-'}</p>
+                        <p className="text-xs text-[#86868B] mt-1">{urlData[0]?.keywords || 0} keywords</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">Homepage Traffic</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{Math.round(urlMap['/']?.visits || 0).toLocaleString()}</p>
+                        <p className="text-xs text-[#86868B] mt-1">{urlMap['/']?.keywords || 0} keywords</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">Total Est. Visits</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{Math.round(urlData.reduce((s, d) => s + d.visits, 0)).toLocaleString()}</p>
+                        <p className="text-xs text-[#86868B] mt-1">Across all pages</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Bar Chart - Visits by URL */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Estimated Visits by Landing Page</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">Top pages by organic traffic volume</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[350px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={urlData.slice(0, 10)} layout="vertical" margin={{ top: 10, right: 30, left: 200, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" horizontal={false} />
+                            <XAxis type="number" tick={{ fontSize: 12, fill: '#6E6E73' }} tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis type="category" dataKey="url" tick={{ fontSize: 11, fill: '#1D1D1F' }} width={195} />
+                            <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any) => [Math.round(v).toLocaleString() + ' visits', 'Est. Visits']} />
+                            <Bar dataKey="visits" fill="#0066CC" radius={[0, 6, 6, 0]} barSize={22} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* URL Detail Table */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">All Landing Pages</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">{urlData.length} pages ranked for {awrRankings.keywords.length} keywords</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">URL</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Keywords</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">1st Place</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Top 3</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Avg Rank</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Est. Visits</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Top Keyword</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {urlData.map(d => (
+                              <tr key={d.url} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
+                                <td className="px-3 py-2.5 text-sm text-[#0066CC] font-medium truncate max-w-[300px]">{d.url}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right font-medium">{d.keywords}</td>
+                                <td className="px-3 py-2.5 text-sm text-yellow-600 text-right font-medium">{d.firstPlace}</td>
+                                <td className="px-3 py-2.5 text-sm text-green-600 text-right font-medium">{d.top3}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right">{d.avgRank.toFixed(1)}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right font-medium">{Math.round(d.visits).toLocaleString()}</td>
+                                <td className="px-3 py-2.5 text-xs text-[#86868B] truncate max-w-[200px]">{d.topKeyword}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )
+            })() : null}
+          </>
+        )}
+
+        {/* Desktop vs Mobile Tab */}
+        {activeTab === "seo-desktop-mobile" && (
+          <>
+            {awrLoading && !awrVisibility ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrVisibility ? (() => {
+              const desktop = awrVisibility.search_engines.find((e: any) => e.short_name === 'Google Desktop')
+              const mobile = awrVisibility.search_engines.find((e: any) => e.short_name === 'Google Mobile')
+              if (!desktop || !mobile) return <p className="text-[#6E6E73] text-center py-10">Desktop/Mobile data not available</p>
+
+              const metrics = [
+                { label: 'Visibility %', desktopVal: desktop.visibility_percent, mobileVal: mobile.visibility_percent, desktopChg: desktop.visibility_change, mobileChg: mobile.visibility_change, suffix: '%' },
+                { label: 'Avg Rank', desktopVal: desktop.average_rank, mobileVal: mobile.average_rank, desktopChg: desktop.avg_rank_change, mobileChg: mobile.avg_rank_change, lowerBetter: true },
+                { label: 'Click Share %', desktopVal: desktop.click_share, mobileVal: mobile.click_share, desktopChg: desktop.click_share_change, mobileChg: mobile.click_share_change, suffix: '%' },
+                { label: 'First Place', desktopVal: desktop.first_place, mobileVal: mobile.first_place, desktopChg: desktop.first_place_change, mobileChg: mobile.first_place_change },
+                { label: 'Top 3', desktopVal: desktop.top3, mobileVal: mobile.top3, desktopChg: desktop.top3_change, mobileChg: mobile.top3_change },
+                { label: 'Est. Visits', desktopVal: Math.round(desktop.estimated_visits), mobileVal: Math.round(mobile.estimated_visits), desktopChg: Math.round(desktop.visits_change), mobileChg: Math.round(mobile.visits_change) },
+              ]
+
+              const comparisonData = [
+                { name: 'Visibility %', Desktop: desktop.visibility_percent, Mobile: mobile.visibility_percent },
+                { name: 'Click Share %', Desktop: desktop.click_share, Mobile: mobile.click_share },
+                { name: 'Avg Rank', Desktop: desktop.average_rank, Mobile: mobile.average_rank },
+              ]
+
+              const visitsData = [
+                { name: 'Desktop', visits: Math.round(desktop.estimated_visits), fill: '#0066CC' },
+                { name: 'Mobile', visits: Math.round(mobile.estimated_visits), fill: '#22C55E' },
+              ]
+
+              return (
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg">
+                      <Monitor className="h-5 w-5 text-[#0066CC]" />
+                      <span className="text-sm font-semibold text-[#0066CC]">Desktop</span>
+                    </div>
+                    <span className="text-[#86868B] text-sm">vs</span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-lg">
+                      <Smartphone className="h-5 w-5 text-green-600" />
+                      <span className="text-sm font-semibold text-green-600">Mobile</span>
+                    </div>
+                    <span className="text-xs text-[#86868B]">Data from {awrVisibility.snapshot_date}</span>
+                  </div>
+
+                  {/* Comparison Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {metrics.map(m => {
+                      const desktopWins = m.lowerBetter ? m.desktopVal < m.mobileVal : m.desktopVal > m.mobileVal
+                      const gap = Math.abs(m.desktopVal - m.mobileVal)
+                      return (
+                        <Card key={m.label} className="bg-white border-[#D2D2D7] shadow-sm">
+                          <CardContent className="p-4">
+                            <p className="text-xs font-medium text-[#86868B] uppercase mb-3">{m.label}</p>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                  <Monitor className="h-3.5 w-3.5 text-[#0066CC]" />
+                                  <p className="text-xs text-[#86868B]">{desktopWins ? '👑 ' : ''}Desktop</p>
+                                </div>
+                                <p className={`text-xl font-bold ${desktopWins ? 'text-[#0066CC]' : 'text-[#1D1D1F]'}`}>{m.desktopVal.toLocaleString()}{m.suffix || ''}</p>
+                                {m.desktopChg !== undefined && (
+                                  <p className={`text-xs mt-0.5 ${(m.lowerBetter ? m.desktopChg <= 0 : m.desktopChg >= 0) ? 'text-green-600' : 'text-red-600'}`}>
+                                    {m.desktopChg >= 0 ? '+' : ''}{m.desktopChg}{m.suffix || ''}
+                                  </p>
+                                )}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                  <Smartphone className="h-3.5 w-3.5 text-green-600" />
+                                  <p className="text-xs text-[#86868B]">{!desktopWins ? '👑 ' : ''}Mobile</p>
+                                </div>
+                                <p className={`text-xl font-bold ${!desktopWins ? 'text-green-600' : 'text-[#1D1D1F]'}`}>{m.mobileVal.toLocaleString()}{m.suffix || ''}</p>
+                                {m.mobileChg !== undefined && (
+                                  <p className={`text-xs mt-0.5 ${(m.lowerBetter ? m.mobileChg <= 0 : m.mobileChg >= 0) ? 'text-green-600' : 'text-red-600'}`}>
+                                    {m.mobileChg >= 0 ? '+' : ''}{m.mobileChg}{m.suffix || ''}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            {gap > 0 && (
+                              <p className="text-xs text-[#86868B] mt-2 pt-2 border-t border-[#E5E5E5]">
+                                Gap: {typeof m.desktopVal === 'number' && m.desktopVal % 1 !== 0 ? gap.toFixed(2) : gap.toLocaleString()}{m.suffix || ''}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+
+                  {/* Side-by-side Bar Chart */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Desktop vs Mobile Comparison</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">Key metrics side by side</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[280px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={comparisonData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                            <XAxis dataKey="name" tick={{ fontSize: 13, fill: '#1D1D1F' }} />
+                            <YAxis tick={{ fontSize: 13, fill: '#6E6E73' }} />
+                            <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} />
+                            <Bar dataKey="Desktop" fill="#0066CC" radius={[6, 6, 0, 0]} barSize={40} />
+                            <Bar dataKey="Mobile" fill="#22C55E" radius={[6, 6, 0, 0]} barSize={40} />
+                            <Legend />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Estimated Visits Comparison */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Estimated Visits</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">Weekly traffic estimate by device</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={visitsData} layout="vertical" margin={{ top: 10, right: 30, left: 80, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" horizontal={false} />
+                            <XAxis type="number" tick={{ fontSize: 13, fill: '#6E6E73' }} tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis type="category" dataKey="name" tick={{ fontSize: 13, fill: '#1D1D1F' }} width={75} />
+                            <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any) => [Math.round(v).toLocaleString() + ' visits', 'Est. Visits']} />
+                            <Bar dataKey="visits" radius={[0, 6, 6, 0]} barSize={28}>
+                              {visitsData.map((d, i) => (
+                                <Cell key={i} fill={d.fill} />
+                              ))}
+                            </Bar>
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )
+            })() : null}
+          </>
+        )}
+
+        {/* Keyword Movers Tab */}
+        {activeTab === "seo-movers" && (
+          <>
+            {awrLoading && !awrRankings ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrRankings ? (() => {
+              const movers = awrRankings.keywords
+                .filter((kw: any) => kw.position_change !== 0)
+                .sort((a: any, b: any) => a.position_change - b.position_change)
+
+              // Negative position_change means improved (moved up)
+              const gainers = movers.filter((kw: any) => kw.position_change < 0)
+              const losers = movers.filter((kw: any) => kw.position_change > 0)
+              const stable = awrRankings.keywords.filter((kw: any) => kw.position_change === 0)
+
+              return (
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ArrowUp className="h-4 w-4 text-green-600" />
+                          <p className="text-xs font-medium text-[#86868B] uppercase">Gainers</p>
+                        </div>
+                        <p className="text-2xl font-bold text-green-600">{gainers.length}</p>
+                        <p className="text-xs text-[#86868B] mt-1">Keywords that moved up</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ArrowDown className="h-4 w-4 text-red-600" />
+                          <p className="text-xs font-medium text-[#86868B] uppercase">Losers</p>
+                        </div>
+                        <p className="text-2xl font-bold text-red-600">{losers.length}</p>
+                        <p className="text-xs text-[#86868B] mt-1">Keywords that dropped</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Minus className="h-4 w-4 text-[#86868B]" />
+                          <p className="text-xs font-medium text-[#86868B] uppercase">Stable</p>
+                        </div>
+                        <p className="text-2xl font-bold text-[#1D1D1F]">{stable.length}</p>
+                        <p className="text-xs text-[#86868B] mt-1">No position change</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Movers Chart */}
+                  {movers.length > 0 && (
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Position Changes</CardTitle>
+                        <p className="text-sm text-[#6E6E73]">Keywords that moved since {awrRankings.previous_date}</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[350px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={movers.slice(0, 20).map((kw: any) => ({
+                              keyword: kw.keyword.length > 30 ? kw.keyword.slice(0, 27) + '...' : kw.keyword,
+                              change: -kw.position_change,
+                              volume: kw.search_volume,
+                            }))} layout="vertical" margin={{ top: 10, right: 30, left: 180, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" horizontal={false} />
+                              <XAxis type="number" tick={{ fontSize: 12, fill: '#6E6E73' }} />
+                              <YAxis type="category" dataKey="keyword" tick={{ fontSize: 11, fill: '#1D1D1F' }} width={175} />
+                              <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any, name: any) => [name === 'change' ? `${v > 0 ? '+' : ''}${v} positions` : v.toLocaleString(), name === 'change' ? 'Movement' : 'Search Vol']} />
+                              <Bar dataKey="change" radius={[0, 6, 6, 0]} barSize={18}>
+                                {movers.slice(0, 20).map((kw: any, i: number) => (
+                                  <Cell key={i} fill={kw.position_change < 0 ? '#22C55E' : '#EF4444'} />
+                                ))}
+                              </Bar>
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Gainers Table */}
+                  {gainers.length > 0 && (
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <ArrowUp className="h-5 w-5 text-green-600" />
+                          Gainers ({gainers.length})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Keyword</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Position</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Change</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Volume</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Est. Visits</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {gainers.map((kw: any) => (
+                              <tr key={kw.keyword} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
+                                <td className="px-3 py-2.5 text-sm font-medium text-[#1D1D1F]">{kw.keyword}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right">{kw.position}</td>
+                                <td className="px-3 py-2.5 text-sm text-green-600 text-right font-semibold flex items-center justify-end gap-1">
+                                  <ArrowUp className="h-3.5 w-3.5" />
+                                  {Math.abs(kw.position_change)}
+                                </td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73] text-right">{kw.search_volume.toLocaleString()}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right">{Math.round(kw.estimated_visits).toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Losers Table */}
+                  {losers.length > 0 && (
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                          <ArrowDown className="h-5 w-5 text-red-600" />
+                          Losers ({losers.length})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Keyword</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Position</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Change</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Volume</th>
+                              <th className="px-3 py-3 text-right text-xs font-semibold text-[#86868B] uppercase">Est. Visits</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {losers.map((kw: any) => (
+                              <tr key={kw.keyword} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7]">
+                                <td className="px-3 py-2.5 text-sm font-medium text-[#1D1D1F]">{kw.keyword}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right">{kw.position}</td>
+                                <td className="px-3 py-2.5 text-sm text-red-600 text-right font-semibold flex items-center justify-end gap-1">
+                                  <ArrowDown className="h-3.5 w-3.5" />
+                                  {Math.abs(kw.position_change)}
+                                </td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73] text-right">{kw.search_volume.toLocaleString()}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#1D1D1F] text-right">{Math.round(kw.estimated_visits).toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {movers.length === 0 && (
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="py-12 text-center">
+                        <Minus className="h-8 w-8 text-[#86868B] mx-auto mb-3" />
+                        <p className="text-[#6E6E73]">All keywords are stable — no position changes this week.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )
+            })() : null}
+          </>
+        )}
+
+        {/* Click Share vs Intuit Tab */}
+        {activeTab === "seo-click-share" && (
+          <>
+            {awrLoading && !awrCompetitors ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrCompetitors ? (() => {
+              const qbt = awrCompetitors.comparison?.['quickbookstraining.com']
+              const intuit = awrCompetitors.comparison?.['intuit.com']
+              if (!qbt || !intuit) return <p className="text-[#6E6E73] text-center py-10">Competitor data not available</p>
+
+              const shareData = [
+                { name: 'Click Share %', QBT: qbt.click_share, Intuit: intuit.click_share },
+                { name: 'Visibility %', QBT: qbt.visibility_percent, Intuit: intuit.visibility_percent },
+              ]
+
+              const trafficData = [
+                { name: 'QBT', visits: Math.round(qbt.estimated_visits), fill: '#0066CC' },
+                { name: 'Intuit', visits: Math.round(intuit.estimated_visits), fill: '#7C3AED' },
+              ]
+
+              const positionData = [
+                { name: '1st Place', QBT: qbt.first_place, Intuit: intuit.first_place },
+                { name: 'Top 3', QBT: qbt.top3, Intuit: intuit.top3 },
+                { name: 'Top 5', QBT: qbt.top5, Intuit: intuit.top5 },
+                { name: 'Top 10', QBT: qbt.top10, Intuit: intuit.top10 },
+              ]
+
+              // Pie chart data for click share
+              const pieData = [
+                { name: 'QBT', value: qbt.click_share, fill: '#0066CC' },
+                { name: 'Intuit', value: intuit.click_share, fill: '#7C3AED' },
+                { name: 'Other', value: Math.max(0, 100 - qbt.click_share - intuit.click_share), fill: '#E5E5E5' },
+              ]
+
+              return (
+                <div className="space-y-6">
+                  {/* Top-level cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">QBT Click Share</p>
+                        <p className="text-2xl font-bold text-[#0066CC] mt-1">{qbt.click_share}%</p>
+                        <p className={`text-xs mt-1 ${qbt.click_share_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {qbt.click_share_change >= 0 ? '+' : ''}{qbt.click_share_change}% WoW
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">Intuit Click Share</p>
+                        <p className="text-2xl font-bold text-purple-600 mt-1">{intuit.click_share}%</p>
+                        <p className={`text-xs mt-1 ${intuit.click_share_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {intuit.click_share_change >= 0 ? '+' : ''}{intuit.click_share_change}% WoW
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">QBT Est. Visits</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{Math.round(qbt.estimated_visits).toLocaleString()}</p>
+                        <p className={`text-xs mt-1 ${qbt.visits_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {qbt.visits_change >= 0 ? '+' : ''}{Math.round(qbt.visits_change).toLocaleString()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">Intuit Est. Visits</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{Math.round(intuit.estimated_visits).toLocaleString()}</p>
+                        <p className={`text-xs mt-1 ${intuit.visits_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {intuit.visits_change >= 0 ? '+' : ''}{Math.round(intuit.visits_change).toLocaleString()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Click Share Pie */}
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Click Share Distribution</CardTitle>
+                        <p className="text-sm text-[#6E6E73]">Share of organic clicks across 174 keywords</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[300px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={pieData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={70}
+                                outerRadius={110}
+                                dataKey="value"
+                                nameKey="name"
+                                paddingAngle={2}
+                                label={({ name, value }: any) => `${name} ${value.toFixed(1)}%`}
+                              >
+                                {pieData.map((d, i) => (
+                                  <Cell key={i} fill={d.fill} />
+                                ))}
+                              </Pie>
+                              <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any) => [`${v}%`, 'Click Share']} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Estimated Visits Bar */}
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Estimated Visits</CardTitle>
+                        <p className="text-sm text-[#6E6E73]">Weekly organic traffic estimate</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[300px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={trafficData} layout="vertical" margin={{ top: 10, right: 30, left: 60, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" horizontal={false} />
+                              <XAxis type="number" tick={{ fontSize: 13, fill: '#6E6E73' }} tickFormatter={(v: any) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                              <YAxis type="category" dataKey="name" tick={{ fontSize: 13, fill: '#1D1D1F' }} width={55} />
+                              <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any) => [Math.round(v).toLocaleString() + ' visits', 'Est. Visits']} />
+                              <Bar dataKey="visits" radius={[0, 6, 6, 0]} barSize={32}>
+                                {trafficData.map((d, i) => (
+                                  <Cell key={i} fill={d.fill} />
+                                ))}
+                              </Bar>
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Position Distribution Comparison */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Ranking Position Comparison</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">Number of keywords in each position bracket</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[280px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={positionData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                            <XAxis dataKey="name" tick={{ fontSize: 13, fill: '#1D1D1F' }} />
+                            <YAxis tick={{ fontSize: 13, fill: '#6E6E73' }} />
+                            <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any, name: any) => [`${v} keywords`, name]} />
+                            <Bar dataKey="QBT" fill="#0066CC" radius={[6, 6, 0, 0]} barSize={40} />
+                            <Bar dataKey="Intuit" fill="#7C3AED" radius={[6, 6, 0, 0]} barSize={40} />
+                            <Legend />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Traffic Cost Comparison */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Traffic Cost Value</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">Equivalent PPC cost to replicate organic traffic</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-8">
+                        <div className="text-center">
+                          <p className="text-xs font-medium text-[#86868B] uppercase mb-2">QBT</p>
+                          <p className="text-3xl font-bold text-[#0066CC]">{qbt.traffic_cost}</p>
+                          <p className="text-sm text-[#86868B] mt-1">Organic traffic value</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs font-medium text-[#86868B] uppercase mb-2">Intuit</p>
+                          <p className="text-3xl font-bold text-purple-600">{intuit.traffic_cost}</p>
+                          <p className="text-sm text-[#86868B] mt-1">Organic traffic value</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               )
             })() : null}
