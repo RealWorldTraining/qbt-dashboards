@@ -4017,7 +4017,7 @@ function DashboardPageContent() {
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
                       <CardHeader className="pb-1">
                         <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <Calendar className="h-5 w-5 text-[#0066CC]" />
+                          <Calendar className="h-5 w-5" style={{ color: { total: '#0066CC', organic: '#34C759', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[trafficSource] }} />
                           Weekly Trends ({trafficSource === 'total' ? 'Total Traffic' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1) + ' Traffic'})
                         </CardTitle>
                       </CardHeader>
@@ -4030,7 +4030,7 @@ function DashboardPageContent() {
                                 {trafficTrends.weekly_trends.days.map((day) => (
                                   <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
                                 ))}
-                                <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">Total</th>
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: { total: '#0066CC', organic: '#34C759', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[trafficSource] }}>Total</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -4041,15 +4041,13 @@ function DashboardPageContent() {
                                   days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
                                 )
                                 const maxValue = Math.max(...allValues, 1)
+                                const sourceColor = { total: '#0066CC', organic: '#34C759', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[trafficSource]
 
-                                const getHeatmapClass = (value: number | null | undefined) => {
-                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
-                                  const intensity = Math.round((value / maxValue) * 100)
-                                  if (intensity > 80) return 'bg-blue-600'
-                                  if (intensity > 60) return 'bg-blue-500'
-                                  if (intensity > 40) return 'bg-blue-600/60'
-                                  if (intensity > 20) return 'bg-blue-600/40'
-                                  return 'bg-blue-600/20'
+                                const getHeatmapStyle = (value: number | null | undefined): React.CSSProperties => {
+                                  if (value === null || value === undefined) return {}
+                                  const intensity = value / maxValue
+                                  const alpha = 0.2 + intensity * 0.8
+                                  return { backgroundColor: `color-mix(in srgb, ${sourceColor} ${Math.round(alpha * 100)}%, #1D1D1F)` }
                                 }
 
                                 return weekRows.map((week, idx) => {
@@ -4066,7 +4064,8 @@ function DashboardPageContent() {
                                         return (
                                           <td
                                             key={day}
-                                            className={`text-center py-3 px-1 ${getHeatmapClass(value)} ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                            className={`text-center py-3 px-1 ${value === null || value === undefined ? "bg-[#1D1D1F] text-white/20" : "text-white font-semibold"}`}
+                                            style={getHeatmapStyle(value)}
                                           >
                                             {value !== null && value !== undefined ? value.toLocaleString() : '-'}
                                           </td>
@@ -4093,7 +4092,7 @@ function DashboardPageContent() {
                     <Card className="bg-white border-[#D2D2D7] shadow-sm">
                       <CardHeader className="pb-1">
                         <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                          <Calendar className="h-5 w-5 text-[#0066CC]" />
+                          <Calendar className="h-5 w-5" style={{ color: { total: '#0066CC', organic: '#34C759', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[trafficSource] }} />
                           Monthly Trends ({trafficSource === 'total' ? 'Total Traffic' : trafficSource.charAt(0).toUpperCase() + trafficSource.slice(1) + ' Traffic'})
                         </CardTitle>
                       </CardHeader>
@@ -4106,7 +4105,7 @@ function DashboardPageContent() {
                                 {trafficTrends.monthly_trends.weeks.map((wk) => (
                                   <th key={wk} className="text-center py-3 px-3 font-semibold text-white whitespace-nowrap">{wk}</th>
                                 ))}
-                                <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">Total</th>
+                                <th className="text-center py-3 px-3 font-bold text-white whitespace-nowrap" style={{ backgroundColor: { total: '#0066CC', organic: '#34C759', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[trafficSource] }}>Total</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -4117,15 +4116,13 @@ function DashboardPageContent() {
                                   weeks.map(wk => row[trafficSource][wk]).filter((v): v is number => typeof v === 'number')
                                 )
                                 const maxValue = Math.max(...allValues, 1)
+                                const sourceColor = { total: '#0066CC', organic: '#34C759', direct: '#FF9500', referral: '#AF52DE', paid: '#FF3B30' }[trafficSource]
 
-                                const getHeatmapClass = (value: number | null | undefined) => {
-                                  if (value === null || value === undefined) return 'bg-[#1D1D1F]'
-                                  const intensity = Math.round((value / maxValue) * 100)
-                                  if (intensity > 80) return 'bg-blue-600'
-                                  if (intensity > 60) return 'bg-blue-500'
-                                  if (intensity > 40) return 'bg-blue-600/60'
-                                  if (intensity > 20) return 'bg-blue-600/40'
-                                  return 'bg-blue-600/20'
+                                const getHeatmapStyle = (value: number | null | undefined): React.CSSProperties => {
+                                  if (value === null || value === undefined) return {}
+                                  const intensity = value / maxValue
+                                  const alpha = 0.2 + intensity * 0.8
+                                  return { backgroundColor: `color-mix(in srgb, ${sourceColor} ${Math.round(alpha * 100)}%, #1D1D1F)` }
                                 }
 
                                 const getSourceTotal = (row: TrafficTrendMonthRow): number => {
@@ -4148,7 +4145,8 @@ function DashboardPageContent() {
                                         return (
                                           <td
                                             key={wk}
-                                            className={`text-center py-3 px-3 ${getHeatmapClass(value)} ${value === null || value === undefined ? "text-white/20" : "text-white font-semibold"}`}
+                                            className={`text-center py-3 px-3 ${value === null || value === undefined ? "bg-[#1D1D1F] text-white/20" : "text-white font-semibold"}`}
+                                            style={getHeatmapStyle(value)}
                                           >
                                             {value !== null && value !== undefined ? value.toLocaleString() : '-'}
                                           </td>
