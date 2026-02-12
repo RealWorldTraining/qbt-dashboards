@@ -2550,6 +2550,74 @@ function DashboardPageContent() {
                 </div>
               </div>
 
+            {/* Weekly Trends Heatmap - Direct QTY (cumulative, column-based) */}
+            {extendedWeeklyTrends && (
+              <div className="mb-6">
+                <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-[#0066CC]" />
+                      Weekly Trends (Direct QTY)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto rounded-xl">
+                      <table className="w-full text-lg bg-[#1D1D1F]">
+                        <thead>
+                          <tr className="border-b border-[#3D3D3F]">
+                            <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
+                            {extendedWeeklyTrends.days.map((day) => (
+                              <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
+                            ))}
+                            <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const days = extendedWeeklyTrends.days
+                            return extendedWeeklyTrends.direct_qty.map((week, idx) => {
+                              const isCurrentWeek = week.week_label === "Current Week"
+                              const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                              const rowValues = days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                              const rowMax = Math.max(...rowValues, 1)
+
+                              return (
+                                <tr key={idx} className="border-b border-white/5">
+                                  <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                    <div className="font-semibold text-white">{week.week_label}</div>
+                                    <div className="text-xs text-white/40">{week.week_start}</div>
+                                  </td>
+                                  {days.map(day => {
+                                    const value = week.daily_cumulative[day]
+                                    const pct = value ? value / rowMax : 0
+                                    const bg = value === null || value === undefined
+                                      ? '#1D1D1F'
+                                      : `hsl(220, ${20 + pct * 70}%, ${18 + pct * 17}%)`
+                                    return (
+                                      <td
+                                        key={day}
+                                        style={{ backgroundColor: bg }}
+                                        className={`text-center py-3 px-1 ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                      >
+                                        {value ?? '-'}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${week.week_total === null ? "text-white/20" : "text-white"}`}>
+                                    {week.week_total ?? '-'}
+                                  </td>
+                                </tr>
+                              )
+                            })
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
               {/* Hourly Comparison Section */}
               <div className="mb-6">
                   {/* Hourly Comparison Table */}
@@ -2723,75 +2791,6 @@ function DashboardPageContent() {
               </div>
               </>
             ) : null}
-
-            {/* Weekly Trends Heatmap - Direct QTY (cumulative, column-based) */}
-            {extendedWeeklyTrends && (
-              <div className="mt-8">
-                <Card className="bg-white border-[#D2D2D7] shadow-sm">
-                  <CardHeader className="pb-1">
-                    <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-[#0066CC]" />
-                      Weekly Trends (Direct QTY)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto rounded-xl">
-                      <table className="w-full text-lg bg-[#1D1D1F]">
-                        <thead>
-                          <tr className="border-b border-[#3D3D3F]">
-                            <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">Week</th>
-                            {extendedWeeklyTrends.days.map((day) => (
-                              <th key={day} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">{day}</th>
-                            ))}
-                            <th className="text-center py-3 px-3 font-bold text-white bg-[#0066CC] whitespace-nowrap">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            const days = extendedWeeklyTrends.days
-                            return extendedWeeklyTrends.direct_qty.map((week, idx) => {
-                              const isCurrentWeek = week.week_label === "Current Week"
-                              const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
-                              // Row-based max
-                              const rowValues = days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
-                              const rowMax = Math.max(...rowValues, 1)
-
-                              return (
-                                <tr key={idx} className="border-b border-white/5">
-                                  <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
-                                    <div className="font-semibold text-white">{week.week_label}</div>
-                                    <div className="text-xs text-white/40">{week.week_start}</div>
-                                  </td>
-                                  {days.map(day => {
-                                    const value = week.daily_cumulative[day]
-                                    const pct = value ? value / rowMax : 0
-                                    const bg = value === null || value === undefined
-                                      ? '#1D1D1F'
-                                      : `hsl(220, ${20 + pct * 70}%, ${18 + pct * 17}%)`
-                                    return (
-                                      <td
-                                        key={day}
-                                        style={{ backgroundColor: bg }}
-                                        className={`text-center py-3 px-1 ${value === null ? "text-white/20" : "text-white font-semibold"}`}
-                                      >
-                                        {value ?? '-'}
-                                      </td>
-                                    )
-                                  })}
-                                  <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${week.week_total === null ? "text-white/20" : "text-white"}`}>
-                                    {week.week_total ?? '-'}
-                                  </td>
-                                </tr>
-                              )
-                            })
-                          })()}
-                        </tbody>
-                      </table>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
 
             {/* New: Daily Sales by Day (non-cumulative) */}
             {extendedWeeklyTrends && (
