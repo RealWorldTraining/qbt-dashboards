@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useRef, useState, useCallback } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import {
   Card,
@@ -2024,25 +2024,6 @@ function DashboardPageContent() {
   // Refs for section navigation
   const sectionRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const sectionRowRef = useRef<HTMLDivElement>(null)
-  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
-
-  const computeIndicatorPosition = useCallback(() => {
-    const activeBtn = sectionRefs.current[activeSection]
-    const row = sectionRowRef.current
-    if (!activeBtn || !row) return
-    const rowRect = row.getBoundingClientRect()
-    const btnRect = activeBtn.getBoundingClientRect()
-    setIndicatorStyle({
-      left: btnRect.left - rowRect.left,
-      width: btnRect.width,
-    })
-  }, [activeSection])
-
-  useEffect(() => {
-    requestAnimationFrame(computeIndicatorPosition)
-    window.addEventListener('resize', computeIndicatorPosition)
-    return () => window.removeEventListener('resize', computeIndicatorPosition)
-  }, [computeIndicatorPosition])
 
   // Section click handler
   const handleSectionClick = (section: SectionType) => {
@@ -2408,9 +2389,10 @@ function DashboardPageContent() {
   return (
     <div className="min-h-screen bg-[#F5F5F7]">
       {/* Header */}
-      <header className="bg-gradient-to-r from-[#0F0F1A] to-[#1A1A2E] border-b border-white/[0.08] shadow-lg shadow-black/20 sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-[#0F0F1A] to-[#1A1A2E] sticky top-0 z-10">
         <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          {/* Title row */}
+          <div className="flex h-14 items-center justify-between">
             <h1 className="text-2xl font-semibold text-white tracking-tight">
               Command Center
             </h1>
@@ -2420,56 +2402,55 @@ function DashboardPageContent() {
               </span>
             )}
           </div>
-          {/* Section Navigation — Glass Panel Segment Control */}
-          <div className="relative flex items-center bg-white/[0.06] border border-white/[0.08] rounded-xl p-1 mb-3 backdrop-blur-sm overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
-            {/* Sliding pill indicator */}
-            <div
-              className="absolute top-1 bottom-1 bg-gradient-to-r from-[#0066CC] to-[#0052A3] rounded-lg shadow-[0_0_20px_rgba(0,102,204,0.25)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-              style={{ left: indicatorStyle.left, width: indicatorStyle.width, opacity: indicatorStyle.width > 0 ? 1 : 0 }}
-            />
+          {/* Main nav — left-aligned underline tabs */}
+          <div className="flex items-end border-b border-white/[0.12] overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
             {sections.map((section) => {
               const Icon = section.icon
+              const isActive = activeSection === section.id
               return (
                 <button
                   key={section.id}
                   ref={(el) => { sectionRefs.current[section.id] = el }}
                   onClick={() => handleSectionClick(section.id)}
                   title={section.description}
-                  className={`relative z-10 flex items-center gap-3 px-6 py-4 text-lg font-semibold uppercase tracking-wide rounded-lg transition-colors ${
-                    activeSection === section.id
-                      ? "text-white"
-                      : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.06]"
+                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap ${
+                    isActive
+                      ? "border-[#2563eb] text-[#2563eb]"
+                      : "border-transparent text-gray-400 hover:text-gray-200 hover:border-white/[0.2]"
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4 w-4" />
                   {section.label}
                 </button>
               )
             })}
           </div>
-          {/* Sub-Tab Navigation — Pill-style tabs */}
-          {sectionTabs[activeSection].length > 0 && (
-            <div key={activeSection} className="flex items-center gap-2 pb-3 animate-subtab-enter">
+        </div>
+        {/* Sub-nav — elevated row with pill buttons */}
+        {sectionTabs[activeSection].length > 0 && (
+          <div className="bg-white/[0.04] border-b border-white/[0.08]">
+            <div key={activeSection} className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8 flex items-center gap-1.5 py-2 overflow-x-auto scrollbar-hide animate-subtab-enter">
               {sectionTabs[activeSection].map((tab) => {
                 const Icon = tab.icon
+                const isActive = activeTab === tab.id
                 return (
                   <button
                     key={tab.id}
                     onClick={() => handleSubTabClick(tab.id)}
-                    className={`flex items-center gap-2.5 px-5 py-3 text-lg font-medium rounded-lg transition-colors ${
-                      activeTab === tab.id
-                        ? "text-[#0066CC] bg-[#0066CC]/[0.12]"
-                        : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.06]"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
+                      isActive
+                        ? "bg-[#2563eb] text-white"
+                        : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.08]"
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-3.5 w-3.5" />
                     {tab.label}
                   </button>
                 )
               })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
