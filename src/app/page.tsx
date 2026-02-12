@@ -837,20 +837,20 @@ interface SubscriberMetricsResponse {
 
 type SectionType = "revenue" | "advertising" | "organic" | "tools"
 
-type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages"
+type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages" | "seo-rankings" | "seo-ai-search" | "seo-competitors"
 
 const SECTION_TABS: Record<SectionType, TabType[]> = {
   revenue: ["sales", "subscriptions"],
   advertising: ["google-ads", "bing-ads"],
   organic: ["traffic", "conversions", "gsc", "landing-pages"],
-  tools: [],
+  tools: ["seo-rankings", "seo-ai-search", "seo-competitors"],
 }
 
 const SECTION_DEFAULTS: Record<SectionType, TabType | null> = {
   revenue: "sales",
   advertising: "google-ads",
   organic: "traffic",
-  tools: null,
+  tools: "seo-rankings",
 }
 
 const TAB_TO_SECTION: Record<TabType, SectionType> = {
@@ -862,6 +862,9 @@ const TAB_TO_SECTION: Record<TabType, SectionType> = {
   conversions: "organic",
   gsc: "organic",
   "landing-pages": "organic",
+  "seo-rankings": "tools",
+  "seo-ai-search": "tools",
+  "seo-competitors": "tools",
 }
 
 function formatCurrency(value: number): string {
@@ -2137,6 +2140,14 @@ function DashboardPageContent() {
   const [gscWeeklyData, setGscWeeklyData] = useState<any>(null)
   const [gscKeywordsData, setGscKeywordsData] = useState<any>(null)
 
+  // AWR SEO state
+  const [awrRankings, setAwrRankings] = useState<any>(null)
+  const [awrVisibility, setAwrVisibility] = useState<any>(null)
+  const [awrCompetitors, setAwrCompetitors] = useState<any>(null)
+  const [awrLoading, setAwrLoading] = useState(true)
+  const [awrSortField, setAwrSortField] = useState<string>('estimated_visits')
+  const [awrSortDir, setAwrSortDir] = useState<'asc' | 'desc'>('desc')
+
   // Loading states per tab
   const [salesLoading, setSalesLoading] = useState(true)
   const [trafficLoading, setTrafficLoading] = useState(true)
@@ -2300,6 +2311,27 @@ function DashboardPageContent() {
     }
   }
 
+  // Fetch AWR SEO data
+  const fetchAwrData = async () => {
+    if (loadedTabs.has('seo-rankings') && awrRankings) return
+    setAwrLoading(true)
+    try {
+      const [rankings, visibility, competitors] = await Promise.all([
+        fetch('/api/awr/rankings').then(r => r.json()),
+        fetch('/api/awr/visibility').then(r => r.json()),
+        fetch('/api/awr/competitors').then(r => r.json()),
+      ])
+      setAwrRankings(rankings)
+      setAwrVisibility(visibility)
+      setAwrCompetitors(competitors)
+    } catch (err) {
+      console.error("Failed to load AWR data:", err)
+    } finally {
+      setAwrLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'seo-rankings', 'seo-ai-search', 'seo-competitors']))
+    }
+  }
+
   // Initial load: Sales tab first (priority)
   useEffect(() => {
     // Clear old traffic cache to force fetch of new weekly data
@@ -2364,6 +2396,7 @@ function DashboardPageContent() {
     else if (activeTab === 'subscriptions') fetchSubscriptionsData()
     else if (activeTab === 'landing-pages') fetchLandingPagesData()
     else if (activeTab === 'gsc') fetchGscData()
+    else if (activeTab === 'seo-rankings' || activeTab === 'seo-ai-search' || activeTab === 'seo-competitors') fetchAwrData()
   }, [activeTab])
 
   // Auto-refresh sales data every 5 minutes when on sales tab
@@ -2405,7 +2438,11 @@ function DashboardPageContent() {
       { id: "gsc", label: "Search Console", icon: Search },
       { id: "landing-pages", label: "Landing Pages", icon: MapPin },
     ],
-    tools: [],
+    tools: [
+      { id: "seo-rankings", label: "Rank Tracker", icon: TrendingUp },
+      { id: "seo-ai-search", label: "AI Search", icon: Brain },
+      { id: "seo-competitors", label: "Competitor Intel", icon: Swords },
+    ],
   }
 
   return (
@@ -6203,66 +6240,14 @@ function DashboardPageContent() {
         )}
 
 
-        {/* Insights & Tools Hub */}
+        {/* Tools quick-link cards — shown above all Insights & Tools tabs */}
         {activeSection === "tools" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             {[
-              {
-                title: "Jedi Council",
-                description: "Multi-agent AI analysis with Claude, GPT-4o, and Gemini",
-                icon: Sparkles,
-                href: "https://jedi-council-zeta.vercel.app",
-                external: true,
-                gradient: "from-purple-500 to-indigo-500",
-              },
-              {
-                title: "The Prophet",
-                description: "Sales forecasting and predictive analytics",
-                icon: Brain,
-                href: "/data",
-                external: false,
-                gradient: "from-blue-500 to-cyan-500",
-              },
-              {
-                title: "Live Help",
-                description: "Real-time room status and availability",
-                icon: Users,
-                href: "/live-help",
-                external: false,
-                gradient: "from-green-500 to-emerald-500",
-              },
-              {
-                title: "P&L Recap",
-                description: "Monthly profit and loss reports",
-                icon: DollarSign,
-                href: "/recap",
-                external: false,
-                gradient: "from-orange-500 to-amber-500",
-              },
-              {
-                title: "Rank Tracker",
-                description: "174 keywords tracked — positions, visibility & traffic",
-                icon: TrendingUp,
-                href: "/seo/rankings",
-                external: false,
-                gradient: "from-cyan-500 to-blue-500",
-              },
-              {
-                title: "AI Search Monitor",
-                description: "ChatGPT & AIO visibility with drop alerts",
-                icon: Brain,
-                href: "/seo/ai-search",
-                external: false,
-                gradient: "from-pink-500 to-purple-500",
-              },
-              {
-                title: "Competitor Intel",
-                description: "QBT vs Intuit side-by-side rankings",
-                icon: Swords,
-                href: "/seo/competitors",
-                external: false,
-                gradient: "from-red-500 to-orange-500",
-              },
+              { title: "Jedi Council", icon: Sparkles, href: "https://jedi-council-zeta.vercel.app", external: true, gradient: "from-purple-500 to-indigo-500" },
+              { title: "The Prophet", icon: Brain, href: "/data", external: false, gradient: "from-blue-500 to-cyan-500" },
+              { title: "Live Help", icon: Users, href: "/live-help", external: false, gradient: "from-green-500 to-emerald-500" },
+              { title: "P&L Recap", icon: DollarSign, href: "/recap", external: false, gradient: "from-orange-500 to-amber-500" },
             ].map((card) => {
               const CardIcon = card.icon
               return (
@@ -6270,27 +6255,473 @@ function DashboardPageContent() {
                   key={card.title}
                   href={card.href}
                   {...(card.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className="group bg-white rounded-xl border border-[#D2D2D7] shadow-sm hover:shadow-md transition-all p-6 flex flex-col gap-4"
+                  className="group bg-white rounded-xl border border-[#D2D2D7] shadow-sm hover:shadow-md transition-all p-3 flex items-center gap-3"
                 >
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
-                    <CardIcon className="h-5 w-5 text-white" />
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center flex-shrink-0`}>
+                    <CardIcon className="h-4 w-4 text-white" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#1D1D1F] group-hover:text-[#0066CC] transition-colors">
-                      {card.title}
-                    </h3>
-                    <p className="text-sm text-[#6E6E73] mt-1">{card.description}</p>
-                  </div>
-                  <div className="mt-auto flex items-center gap-1 text-sm font-medium text-[#0066CC]">
-                    <span>Open</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
+                  <span className="text-sm font-semibold text-[#1D1D1F] group-hover:text-[#0066CC] transition-colors">{card.title}</span>
+                  <svg className="w-3.5 h-3.5 text-[#86868B] ml-auto group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </a>
               )
             })}
           </div>
+        )}
+
+        {/* SEO Rank Tracker Tab */}
+        {activeTab === "seo-rankings" && (
+          <>
+            {awrLoading && !awrRankings ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrRankings ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardContent className="p-4">
+                      <p className="text-xs font-medium text-[#86868B] uppercase">Visibility</p>
+                      <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{awrRankings.summary.visibility_percent}%</p>
+                      <p className={`text-xs mt-1 ${awrRankings.summary.visibility_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {awrRankings.summary.visibility_change >= 0 ? '+' : ''}{awrRankings.summary.visibility_change}% vs prev
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardContent className="p-4">
+                      <p className="text-xs font-medium text-[#86868B] uppercase">Avg Rank</p>
+                      <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{awrRankings.summary.average_rank}</p>
+                      <p className={`text-xs mt-1 ${awrRankings.summary.average_rank_change <= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {awrRankings.summary.average_rank_change > 0 ? '+' : ''}{awrRankings.summary.average_rank_change} positions
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardContent className="p-4">
+                      <p className="text-xs font-medium text-[#86868B] uppercase">Top 3</p>
+                      <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{awrRankings.summary.top3}<span className="text-base text-[#86868B]">/{awrRankings.summary.total_keywords}</span></p>
+                      <p className="text-xs mt-1 text-[#86868B]">{((awrRankings.summary.top3 / awrRankings.summary.total_keywords) * 100).toFixed(0)}% of keywords</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardContent className="p-4">
+                      <p className="text-xs font-medium text-[#86868B] uppercase">First Place</p>
+                      <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{awrRankings.summary.first_place}</p>
+                      <p className={`text-xs mt-1 ${awrRankings.summary.first_place_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {awrRankings.summary.first_place_change >= 0 ? '+' : ''}{awrRankings.summary.first_place_change} vs prev
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="text-xl font-semibold text-[#1D1D1F] flex items-center gap-2">
+                      <TrendingUp className="h-6 w-6 text-[#0A84FF]" />
+                      Keyword Rankings
+                    </CardTitle>
+                    <p className="text-sm text-[#6E6E73]">{awrRankings.search_engine} &bull; {awrRankings.snapshot_date}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto rounded-xl">
+                      <table className="w-full bg-[#1D1D1F]">
+                        <thead>
+                          <tr className="border-b border-[#3D3D3F]">
+                            {[
+                              { key: 'keyword', label: 'Keyword' },
+                              { key: 'position', label: 'Pos' },
+                              { key: 'position_change', label: 'Chg' },
+                              { key: 'search_volume', label: 'Volume' },
+                              { key: 'cpc', label: 'CPC' },
+                              { key: 'estimated_visits', label: 'Est. Visits' },
+                              { key: 'traffic_cost', label: 'Traffic Cost' },
+                            ].map(col => (
+                              <th
+                                key={col.key}
+                                onClick={() => {
+                                  if (awrSortField === col.key) setAwrSortDir(d => d === 'asc' ? 'desc' : 'asc')
+                                  else { setAwrSortField(col.key); setAwrSortDir(col.key === 'keyword' ? 'asc' : 'desc') }
+                                }}
+                                className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase cursor-pointer hover:text-white transition-colors"
+                              >
+                                {col.label} {awrSortField === col.key && (awrSortDir === 'asc' ? '↑' : '↓')}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {awrRankings.keywords
+                            .slice()
+                            .sort((a: any, b: any) => {
+                              const parseCurr = (v: string) => parseFloat(v.replace(/[$,]/g, '')) || 0
+                              let aV: any, bV: any
+                              switch (awrSortField) {
+                                case 'keyword': aV = a.keyword; bV = b.keyword; break
+                                case 'cpc': aV = parseCurr(a.cpc); bV = parseCurr(b.cpc); break
+                                case 'traffic_cost': aV = parseCurr(a.traffic_cost); bV = parseCurr(b.traffic_cost); break
+                                default: aV = a[awrSortField]; bV = b[awrSortField]
+                              }
+                              if (typeof aV === 'string') return awrSortDir === 'asc' ? aV.localeCompare(bV) : bV.localeCompare(aV)
+                              return awrSortDir === 'asc' ? aV - bV : bV - aV
+                            })
+                            .map((kw: any) => (
+                              <tr key={kw.keyword} className="border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors">
+                                <td className="px-3 py-2.5">
+                                  <span className="text-sm font-medium text-white">{kw.keyword}</span>
+                                  <div className="text-xs text-gray-500">{kw.search_intent?.join(' · ')}</div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+                                    kw.position === 1 ? 'bg-yellow-500/20 text-yellow-400' :
+                                    kw.position <= 3 ? 'bg-green-500/20 text-green-400' :
+                                    'bg-blue-500/20 text-blue-400'
+                                  }`}>{kw.position}</span>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  {kw.position_change > 0 ? (
+                                    <span className="text-green-400 text-sm flex items-center gap-0.5"><ArrowUp className="h-3 w-3" />+{kw.position_change}</span>
+                                  ) : kw.position_change < 0 ? (
+                                    <span className="text-red-400 text-sm flex items-center gap-0.5"><ArrowDown className="h-3 w-3" />{kw.position_change}</span>
+                                  ) : (
+                                    <span className="text-gray-500 text-sm"><Minus className="h-3 w-3 inline" /> 0</span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{kw.search_volume?.toLocaleString()}</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{kw.cpc}</td>
+                                <td className="px-3 py-2.5 text-sm font-medium text-white">{kw.estimated_visits?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                <td className="px-3 py-2.5 text-sm text-emerald-400">{kw.traffic_cost}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : null}
+          </>
+        )}
+
+        {/* SEO AI Search Tab */}
+        {activeTab === "seo-ai-search" && (
+          <>
+            {awrLoading && !awrVisibility ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrVisibility ? (() => {
+              const chatgpt = awrVisibility.search_engines?.find((e: any) => e.short_name === 'ChatGPT')
+              const aioD = awrVisibility.search_engines?.find((e: any) => e.short_name === 'AIO Desktop')
+              const aioM = awrVisibility.search_engines?.find((e: any) => e.short_name === 'AIO Mobile')
+              return (
+                <div className="space-y-6">
+                  {/* ChatGPT Alert */}
+                  {chatgpt && chatgpt.visibility_change < -5 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-red-700">ChatGPT Visibility Drop</div>
+                        <p className="text-sm text-red-600 mt-1">
+                          Visibility dropped <strong>{chatgpt.visibility_change}%</strong> this week.
+                          Ranked keywords fell to {chatgpt.ranked}/174, with {Math.abs(chatgpt.visits_change).toLocaleString(undefined, { maximumFractionDigits: 0 })} estimated visits lost.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">ChatGPT</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{chatgpt?.visibility_percent ?? '—'}%</p>
+                        <p className={`text-xs mt-1 ${(chatgpt?.visibility_change ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(chatgpt?.visibility_change ?? 0) >= 0 ? '+' : ''}{chatgpt?.visibility_change ?? 0}%
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">AIO Desktop</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{aioD?.visibility_percent ?? '—'}%</p>
+                        <p className={`text-xs mt-1 ${(aioD?.visibility_change ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(aioD?.visibility_change ?? 0) >= 0 ? '+' : ''}{aioD?.visibility_change ?? 0}%
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">AIO Mobile</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{aioM?.visibility_percent ?? '—'}%</p>
+                        <p className={`text-xs mt-1 ${(aioM?.visibility_change ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(aioM?.visibility_change ?? 0) >= 0 ? '+' : ''}{aioM?.visibility_change ?? 0}%
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardContent className="p-4">
+                        <p className="text-xs font-medium text-[#86868B] uppercase">ChatGPT Ranked</p>
+                        <p className="text-2xl font-bold text-[#1D1D1F] mt-1">{chatgpt?.ranked ?? '—'}<span className="text-base text-[#86868B]">/174</span></p>
+                        <p className={`text-xs mt-1 ${(chatgpt?.ranked_change ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(chatgpt?.ranked_change ?? 0) >= 0 ? '+' : ''}{chatgpt?.ranked_change ?? 0}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Search Engine Comparison */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-xl font-semibold text-[#1D1D1F] flex items-center gap-2">
+                        <Search className="h-6 w-6 text-[#0A84FF]" />
+                        Search Engine Comparison
+                      </CardTitle>
+                      <p className="text-sm text-[#6E6E73]">All 6 tracked engines</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto rounded-xl">
+                        <table className="w-full bg-[#1D1D1F]">
+                          <thead>
+                            <tr className="border-b border-[#3D3D3F]">
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Engine</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Visibility</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Avg Rank</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Click Share</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Est. Visits</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">1st Place</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Ranked</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {awrVisibility.search_engines?.map((engine: any) => (
+                              <tr key={engine.name} className={`border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors ${
+                                engine.short_name === 'ChatGPT' && engine.visibility_change < -5 ? 'bg-red-500/10' : ''
+                              }`}>
+                                <td className="px-3 py-2.5">
+                                  <div className="text-sm font-medium text-white">{engine.short_name}</div>
+                                  <div className="text-xs text-gray-500">{engine.type === 'ai' ? 'AI Search' : 'Organic'}</div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <div className="text-sm text-white">{engine.visibility_percent}%</div>
+                                  <div className={`text-xs ${engine.visibility_change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    {engine.visibility_change >= 0 ? '+' : ''}{engine.visibility_change}%
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.average_rank}</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.click_share}%</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.estimated_visits?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.first_place}</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.ranked}/174</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Keyword Group Visibility */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Visibility by Keyword Group</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">Google Desktop Organic</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto rounded-xl">
+                        <table className="w-full bg-[#1D1D1F]">
+                          <thead>
+                            <tr className="border-b border-[#3D3D3F]">
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Group</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Visibility</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Avg Rank</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Click Share</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Keywords</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">1st Place</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {awrVisibility.keyword_groups?.map((g: any) => (
+                              <tr key={g.group} className="border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors">
+                                <td className="px-3 py-2.5 text-sm font-medium text-white">{g.group}</td>
+                                <td className="px-3 py-2.5">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 bg-[#3D3D3F] rounded-full h-1.5">
+                                      <div className="bg-[#0A84FF] h-1.5 rounded-full" style={{ width: `${g.visibility_percent}%` }} />
+                                    </div>
+                                    <span className="text-sm text-white">{g.visibility_percent}%</span>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{g.average_rank}</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{g.click_share}%</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-400">{g.keywords}</td>
+                                <td className="px-3 py-2.5 text-sm text-gray-300">{g.first_place}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )
+            })() : null}
+          </>
+        )}
+
+        {/* SEO Competitor Intel Tab */}
+        {activeTab === "seo-competitors" && (
+          <>
+            {awrLoading && !awrCompetitors ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6E6E73]" />
+              </div>
+            ) : awrCompetitors ? (() => {
+              const qbt = awrCompetitors.comparison?.['quickbookstraining.com']
+              const intuit = awrCompetitors.comparison?.['intuit.com']
+              const qbtDist = awrCompetitors.domain_distribution?.['quickbookstraining.com']
+              const intuitDist = awrCompetitors.domain_distribution?.['intuit.com']
+
+              const CompareMetric = ({ label, qbtVal, intuitVal, qbtChg, intuitChg, lowerBetter = false }: {
+                label: string; qbtVal: number; intuitVal: number; qbtChg?: number; intuitChg?: number; lowerBetter?: boolean
+              }) => {
+                const qbtWins = lowerBetter ? qbtVal < intuitVal : qbtVal > intuitVal
+                return (
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardContent className="p-4">
+                      <p className="text-xs font-medium text-[#86868B] uppercase mb-3">{label}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-[#86868B] mb-0.5">{qbtWins ? '👑 ' : ''}QBT</p>
+                          <p className={`text-xl font-bold ${qbtWins ? 'text-[#0066CC]' : 'text-[#1D1D1F]'}`}>{qbtVal.toLocaleString()}</p>
+                          {qbtChg !== undefined && (
+                            <p className={`text-xs mt-0.5 ${(lowerBetter ? qbtChg <= 0 : qbtChg >= 0) ? 'text-green-600' : 'text-red-600'}`}>
+                              {qbtChg >= 0 ? '+' : ''}{qbtChg}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs text-[#86868B] mb-0.5">{!qbtWins ? '👑 ' : ''}Intuit</p>
+                          <p className={`text-xl font-bold ${!qbtWins ? 'text-purple-600' : 'text-[#1D1D1F]'}`}>{intuitVal.toLocaleString()}</p>
+                          {intuitChg !== undefined && (
+                            <p className={`text-xs mt-0.5 ${(lowerBetter ? intuitChg <= 0 : intuitChg >= 0) ? 'text-green-600' : 'text-red-600'}`}>
+                              {intuitChg >= 0 ? '+' : ''}{intuitChg}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              }
+
+              const distSegs = [
+                { label: '1st', key: 'first_place', color: '#EAB308' },
+                { label: '2-5', key: 'pos_2_5', color: '#22C55E' },
+                { label: '6-10', key: 'pos_6_10', color: '#3B82F6' },
+                { label: '11-20', key: 'pos_11_20', color: '#A855F7' },
+                { label: '21-50', key: 'pos_21_50', color: '#F97316' },
+                { label: 'N/R', key: 'not_ranked', color: '#6B7280' },
+              ]
+
+              return (
+                <div className="space-y-6">
+                  {qbt && intuit && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <CompareMetric label="Visibility %" qbtVal={qbt.visibility_percent} intuitVal={intuit.visibility_percent} qbtChg={qbt.visibility_change} intuitChg={intuit.visibility_change} />
+                      <CompareMetric label="Avg Rank" qbtVal={qbt.average_rank} intuitVal={intuit.average_rank} qbtChg={qbt.avg_rank_change} intuitChg={intuit.avg_rank_change} lowerBetter />
+                      <CompareMetric label="First Place" qbtVal={qbt.first_place} intuitVal={intuit.first_place} qbtChg={qbt.first_place_change} intuitChg={intuit.first_place_change} />
+                      <CompareMetric label="Top 3" qbtVal={qbt.top3} intuitVal={intuit.top3} qbtChg={qbt.top3_change} intuitChg={intuit.top3_change} />
+                      <CompareMetric label="Click Share %" qbtVal={qbt.click_share} intuitVal={intuit.click_share} qbtChg={qbt.click_share_change} intuitChg={intuit.click_share_change} />
+                      <CompareMetric label="Est. Visits" qbtVal={Math.round(qbt.estimated_visits)} intuitVal={Math.round(intuit.estimated_visits)} qbtChg={Math.round(qbt.visits_change)} intuitChg={Math.round(intuit.visits_change)} />
+                    </div>
+                  )}
+
+                  {/* Distribution bars */}
+                  {qbtDist && intuitDist && (
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Ranking Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {[
+                            { name: 'QBT', dist: qbtDist },
+                            { name: 'Intuit', dist: intuitDist },
+                          ].map(({ name, dist }) => (
+                            <div key={name}>
+                              <p className="text-sm font-medium text-[#1D1D1F] mb-1">{name}</p>
+                              <div className="flex rounded-lg overflow-hidden h-7">
+                                {distSegs.map(seg => {
+                                  const val = dist[seg.key] || 0
+                                  const pct = (val / 174) * 100
+                                  if (pct === 0) return null
+                                  return (
+                                    <div
+                                      key={seg.key}
+                                      className="flex items-center justify-center text-xs font-bold text-white"
+                                      style={{ width: `${pct}%`, backgroundColor: seg.color }}
+                                      title={`${seg.label}: ${val}`}
+                                    >
+                                      {pct > 5 ? val : ''}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                          <div className="flex gap-4 flex-wrap mt-1">
+                            {distSegs.map(seg => (
+                              <div key={seg.key} className="flex items-center gap-1.5 text-xs text-[#86868B]">
+                                <div className="w-3 h-3 rounded" style={{ backgroundColor: seg.color }} />
+                                {seg.label}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Intuit Top URLs */}
+                  {awrCompetitors.intuit_top_urls && (
+                    <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                      <CardHeader className="pb-1">
+                        <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Intuit&apos;s Top Ranking URLs</CardTitle>
+                        <p className="text-sm text-[#6E6E73]">Pages competing for your keyword set</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto rounded-xl">
+                          <table className="w-full bg-[#1D1D1F]">
+                            <thead>
+                              <tr className="border-b border-[#3D3D3F]">
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">URL</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Ranked</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">1st</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">2-5</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">6-10</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {awrCompetitors.intuit_top_urls.map((u: any) => (
+                                <tr key={u.url} className="border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors">
+                                  <td className="px-3 py-2.5 text-sm text-gray-300 truncate max-w-[400px]">{u.url}</td>
+                                  <td className="px-3 py-2.5 text-sm text-gray-300">{u.ranked_keywords}</td>
+                                  <td className="px-3 py-2.5 text-sm text-yellow-400 font-medium">{u.first_place}</td>
+                                  <td className="px-3 py-2.5 text-sm text-gray-300">{u.pos_2_5}</td>
+                                  <td className="px-3 py-2.5 text-sm text-gray-300">{u.pos_6_10}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )
+            })() : null}
+          </>
         )}
 
         {/* Landing Pages Tab */}
