@@ -2402,8 +2402,8 @@ function DashboardPageContent() {
               </span>
             )}
           </div>
-          {/* Main nav — left-aligned underline tabs */}
-          <div className="flex items-end border-b border-white/[0.12] overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
+          {/* Main nav — left-aligned tabs with outline box on active */}
+          <div className="flex items-center gap-1 pt-1 pb-3 overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
             {sections.map((section) => {
               const Icon = section.icon
               const isActive = activeSection === section.id
@@ -2413,10 +2413,10 @@ function DashboardPageContent() {
                   ref={(el) => { sectionRefs.current[section.id] = el }}
                   onClick={() => handleSectionClick(section.id)}
                   title={section.description}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
                     isActive
-                      ? "border-[#2563eb] text-[#2563eb]"
-                      : "border-transparent text-gray-400 hover:text-gray-200 hover:border-white/[0.2]"
+                      ? "text-[#2563eb] border border-[#2563eb]/60"
+                      : "text-gray-400 border border-transparent hover:text-gray-200"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -2425,11 +2425,9 @@ function DashboardPageContent() {
               )
             })}
           </div>
-        </div>
-        {/* Sub-nav — elevated row with pill buttons */}
-        {sectionTabs[activeSection].length > 0 && (
-          <div className="bg-white/[0.04] border-b border-white/[0.08]">
-            <div key={activeSection} className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8 flex items-center gap-1.5 py-2 overflow-x-auto scrollbar-hide animate-subtab-enter">
+          {/* Sub-nav — same dark bg, left-aligned pill buttons */}
+          {sectionTabs[activeSection].length > 0 && (
+            <div key={activeSection} className="flex items-center gap-2 pb-3 overflow-x-auto scrollbar-hide animate-subtab-enter">
               {sectionTabs[activeSection].map((tab) => {
                 const Icon = tab.icon
                 const isActive = activeTab === tab.id
@@ -2437,10 +2435,10 @@ function DashboardPageContent() {
                   <button
                     key={tab.id}
                     onClick={() => handleSubTabClick(tab.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${
                       isActive
                         ? "bg-[#2563eb] text-white"
-                        : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.08]"
+                        : "text-gray-400 hover:text-gray-200"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -2449,8 +2447,8 @@ function DashboardPageContent() {
                 )
               })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </header>
 
       {/* Main Content */}
