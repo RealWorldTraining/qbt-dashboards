@@ -6356,6 +6356,66 @@ function DashboardPageContent() {
                   </Card>
                 </div>
 
+                {/* Ranking Position Distribution Chart */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Ranking Distribution</CardTitle>
+                    <p className="text-sm text-[#6E6E73]">{awrRankings.summary.total_keywords} tracked keywords</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[280px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={[
+                          { name: '1st Place', value: awrRankings.summary.first_place, fill: '#EAB308' },
+                          { name: '2nd-3rd', value: awrRankings.summary.top3 - awrRankings.summary.first_place, fill: '#22C55E' },
+                          { name: '4th-5th', value: awrRankings.summary.top5 - awrRankings.summary.top3, fill: '#3B82F6' },
+                          { name: '6th-10th', value: awrRankings.summary.top10 - awrRankings.summary.top5, fill: '#A855F7' },
+                        ]} layout="vertical" margin={{ top: 10, right: 30, left: 80, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" horizontal={false} />
+                          <XAxis type="number" tick={{ fontSize: 13, fill: '#6E6E73' }} />
+                          <YAxis type="category" dataKey="name" tick={{ fontSize: 13, fill: '#1D1D1F' }} width={75} />
+                          <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 14 }} formatter={(v: any) => [`${v} keywords`, 'Count']} />
+                          <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={28}>
+                            {[
+                              { name: '1st Place', fill: '#EAB308' },
+                              { name: '2nd-3rd', fill: '#22C55E' },
+                              { name: '4th-5th', fill: '#3B82F6' },
+                              { name: '6th-10th', fill: '#A855F7' },
+                            ].map((entry, idx) => (
+                              <rect key={idx} fill={entry.fill} />
+                            ))}
+                          </Bar>
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Top Keywords by Traffic Value - Horizontal Bar */}
+                <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Top Keywords by Estimated Visits</CardTitle>
+                    <p className="text-sm text-[#6E6E73]">Top 15 keywords driving organic traffic</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[500px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart
+                          data={awrRankings.keywords.slice().sort((a: any, b: any) => b.estimated_visits - a.estimated_visits).slice(0, 15).reverse()}
+                          layout="vertical"
+                          margin={{ top: 10, right: 80, left: 10, bottom: 10 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" horizontal={false} />
+                          <XAxis type="number" tick={{ fontSize: 12, fill: '#6E6E73' }} tickFormatter={(v) => v.toLocaleString()} />
+                          <YAxis type="category" dataKey="keyword" tick={{ fontSize: 11, fill: '#1D1D1F' }} width={200} />
+                          <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 13 }} formatter={(v: any) => [Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 }), 'Est. Visits']} />
+                          <Bar dataKey="estimated_visits" fill="#0066CC" radius={[0, 6, 6, 0]} barSize={22} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <Card className="bg-white border-[#D2D2D7] shadow-sm">
                   <CardHeader className="pb-1">
                     <CardTitle className="text-xl font-semibold text-[#1D1D1F] flex items-center gap-2">
@@ -6365,10 +6425,10 @@ function DashboardPageContent() {
                     <p className="text-sm text-[#6E6E73]">{awrRankings.search_engine} &bull; {awrRankings.snapshot_date}</p>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto rounded-xl">
-                      <table className="w-full bg-[#1D1D1F]">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
                         <thead>
-                          <tr className="border-b border-[#3D3D3F]">
+                          <tr className="border-b border-[#D2D2D7]">
                             {[
                               { key: 'keyword', label: 'Keyword' },
                               { key: 'position', label: 'Pos' },
@@ -6384,7 +6444,7 @@ function DashboardPageContent() {
                                   if (awrSortField === col.key) setAwrSortDir(d => d === 'asc' ? 'desc' : 'asc')
                                   else { setAwrSortField(col.key); setAwrSortDir(col.key === 'keyword' ? 'asc' : 'desc') }
                                 }}
-                                className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase cursor-pointer hover:text-white transition-colors"
+                                className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase cursor-pointer hover:text-[#1D1D1F] transition-colors"
                               >
                                 {col.label} {awrSortField === col.key && (awrSortDir === 'asc' ? '↑' : '↓')}
                               </th>
@@ -6407,31 +6467,31 @@ function DashboardPageContent() {
                               return awrSortDir === 'asc' ? aV - bV : bV - aV
                             })
                             .map((kw: any) => (
-                              <tr key={kw.keyword} className="border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors">
+                              <tr key={kw.keyword} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7] transition-colors">
                                 <td className="px-3 py-2.5">
-                                  <span className="text-sm font-medium text-white">{kw.keyword}</span>
-                                  <div className="text-xs text-gray-500">{kw.search_intent?.join(' · ')}</div>
+                                  <span className="text-sm font-medium text-[#1D1D1F]">{kw.keyword}</span>
+                                  <div className="text-xs text-[#86868B]">{kw.search_intent?.join(' · ')}</div>
                                 </td>
                                 <td className="px-3 py-2.5">
                                   <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
-                                    kw.position === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                                    kw.position <= 3 ? 'bg-green-500/20 text-green-400' :
-                                    'bg-blue-500/20 text-blue-400'
+                                    kw.position === 1 ? 'bg-yellow-100 text-yellow-700' :
+                                    kw.position <= 3 ? 'bg-green-100 text-green-700' :
+                                    'bg-blue-100 text-blue-700'
                                   }`}>{kw.position}</span>
                                 </td>
                                 <td className="px-3 py-2.5">
                                   {kw.position_change > 0 ? (
-                                    <span className="text-green-400 text-sm flex items-center gap-0.5"><ArrowUp className="h-3 w-3" />+{kw.position_change}</span>
+                                    <span className="text-green-600 text-sm flex items-center gap-0.5"><ArrowUp className="h-3 w-3" />+{kw.position_change}</span>
                                   ) : kw.position_change < 0 ? (
-                                    <span className="text-red-400 text-sm flex items-center gap-0.5"><ArrowDown className="h-3 w-3" />{kw.position_change}</span>
+                                    <span className="text-red-600 text-sm flex items-center gap-0.5"><ArrowDown className="h-3 w-3" />{kw.position_change}</span>
                                   ) : (
-                                    <span className="text-gray-500 text-sm"><Minus className="h-3 w-3 inline" /> 0</span>
+                                    <span className="text-[#86868B] text-sm"><Minus className="h-3 w-3 inline" /> 0</span>
                                   )}
                                 </td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{kw.search_volume?.toLocaleString()}</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{kw.cpc}</td>
-                                <td className="px-3 py-2.5 text-sm font-medium text-white">{kw.estimated_visits?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                <td className="px-3 py-2.5 text-sm text-emerald-400">{kw.traffic_cost}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{kw.search_volume?.toLocaleString()}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{kw.cpc}</td>
+                                <td className="px-3 py-2.5 text-sm font-medium text-[#1D1D1F]">{kw.estimated_visits?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                <td className="px-3 py-2.5 text-sm font-medium text-green-700">{kw.traffic_cost}</td>
                               </tr>
                             ))}
                         </tbody>
@@ -6510,6 +6570,42 @@ function DashboardPageContent() {
                     </Card>
                   </div>
 
+                  {/* Visibility by Engine - Bar Chart */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-1">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F]">Visibility by Search Engine</CardTitle>
+                      <p className="text-sm text-[#6E6E73]">Comparing organic and AI search engines</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart
+                            data={awrVisibility.search_engines?.map((e: any) => ({
+                              name: e.short_name,
+                              visibility: e.visibility_percent,
+                              fill: e.type === 'ai' ? '#8B5CF6' : '#0066CC',
+                            }))}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                            <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#1D1D1F' }} />
+                            <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#6E6E73' }} tickFormatter={(v) => `${v}%`} />
+                            <Tooltip contentStyle={{ backgroundColor: '#FFF', border: '1px solid #D2D2D7', borderRadius: '8px', fontSize: 13 }} formatter={(v: any) => [`${v}%`, 'Visibility']} />
+                            <Bar dataKey="visibility" radius={[6, 6, 0, 0]} barSize={40}>
+                              {awrVisibility.search_engines?.map((e: any, i: number) => (
+                                <rect key={i} fill={e.type === 'ai' ? '#8B5CF6' : '#0066CC'} />
+                              ))}
+                            </Bar>
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex gap-6 justify-center mt-2">
+                        <div className="flex items-center gap-2 text-sm text-[#6E6E73]"><div className="w-3 h-3 rounded bg-[#0066CC]" /> Organic</div>
+                        <div className="flex items-center gap-2 text-sm text-[#6E6E73]"><div className="w-3 h-3 rounded bg-[#8B5CF6]" /> AI Search</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Search Engine Comparison */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-1">
@@ -6520,39 +6616,39 @@ function DashboardPageContent() {
                       <p className="text-sm text-[#6E6E73]">All 6 tracked engines</p>
                     </CardHeader>
                     <CardContent>
-                      <div className="overflow-x-auto rounded-xl">
-                        <table className="w-full bg-[#1D1D1F]">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
                           <thead>
-                            <tr className="border-b border-[#3D3D3F]">
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Engine</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Visibility</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Avg Rank</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Click Share</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Est. Visits</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">1st Place</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Ranked</th>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Engine</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Visibility</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Avg Rank</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Click Share</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Est. Visits</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">1st Place</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Ranked</th>
                             </tr>
                           </thead>
                           <tbody>
                             {awrVisibility.search_engines?.map((engine: any) => (
-                              <tr key={engine.name} className={`border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors ${
-                                engine.short_name === 'ChatGPT' && engine.visibility_change < -5 ? 'bg-red-500/10' : ''
+                              <tr key={engine.name} className={`border-b border-[#E5E5E5] hover:bg-[#F5F5F7] transition-colors ${
+                                engine.short_name === 'ChatGPT' && engine.visibility_change < -5 ? 'bg-red-50' : ''
                               }`}>
                                 <td className="px-3 py-2.5">
-                                  <div className="text-sm font-medium text-white">{engine.short_name}</div>
-                                  <div className="text-xs text-gray-500">{engine.type === 'ai' ? 'AI Search' : 'Organic'}</div>
+                                  <div className="text-sm font-medium text-[#1D1D1F]">{engine.short_name}</div>
+                                  <div className="text-xs text-[#86868B]">{engine.type === 'ai' ? 'AI Search' : 'Organic'}</div>
                                 </td>
                                 <td className="px-3 py-2.5">
-                                  <div className="text-sm text-white">{engine.visibility_percent}%</div>
-                                  <div className={`text-xs ${engine.visibility_change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                  <div className="text-sm text-[#1D1D1F]">{engine.visibility_percent}%</div>
+                                  <div className={`text-xs ${engine.visibility_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {engine.visibility_change >= 0 ? '+' : ''}{engine.visibility_change}%
                                   </div>
                                 </td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.average_rank}</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.click_share}%</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.estimated_visits?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.first_place}</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{engine.ranked}/174</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{engine.average_rank}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{engine.click_share}%</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{engine.estimated_visits?.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{engine.first_place}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{engine.ranked}/174</td>
                               </tr>
                             ))}
                           </tbody>
@@ -6568,34 +6664,34 @@ function DashboardPageContent() {
                       <p className="text-sm text-[#6E6E73]">Google Desktop Organic</p>
                     </CardHeader>
                     <CardContent>
-                      <div className="overflow-x-auto rounded-xl">
-                        <table className="w-full bg-[#1D1D1F]">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
                           <thead>
-                            <tr className="border-b border-[#3D3D3F]">
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Group</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Visibility</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Avg Rank</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Click Share</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Keywords</th>
-                              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">1st Place</th>
+                            <tr className="border-b border-[#D2D2D7]">
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Group</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Visibility</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Avg Rank</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Click Share</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Keywords</th>
+                              <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">1st Place</th>
                             </tr>
                           </thead>
                           <tbody>
                             {awrVisibility.keyword_groups?.map((g: any) => (
-                              <tr key={g.group} className="border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors">
-                                <td className="px-3 py-2.5 text-sm font-medium text-white">{g.group}</td>
+                              <tr key={g.group} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7] transition-colors">
+                                <td className="px-3 py-2.5 text-sm font-medium text-[#1D1D1F]">{g.group}</td>
                                 <td className="px-3 py-2.5">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-16 bg-[#3D3D3F] rounded-full h-1.5">
-                                      <div className="bg-[#0A84FF] h-1.5 rounded-full" style={{ width: `${g.visibility_percent}%` }} />
+                                    <div className="w-16 bg-[#E5E5E5] rounded-full h-1.5">
+                                      <div className="bg-[#0066CC] h-1.5 rounded-full" style={{ width: `${g.visibility_percent}%` }} />
                                     </div>
-                                    <span className="text-sm text-white">{g.visibility_percent}%</span>
+                                    <span className="text-sm text-[#1D1D1F]">{g.visibility_percent}%</span>
                                   </div>
                                 </td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{g.average_rank}</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{g.click_share}%</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-400">{g.keywords}</td>
-                                <td className="px-3 py-2.5 text-sm text-gray-300">{g.first_place}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{g.average_rank}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{g.click_share}%</td>
+                                <td className="px-3 py-2.5 text-sm text-[#86868B]">{g.keywords}</td>
+                                <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{g.first_place}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -6731,25 +6827,25 @@ function DashboardPageContent() {
                         <p className="text-sm text-[#6E6E73]">Pages competing for your keyword set</p>
                       </CardHeader>
                       <CardContent>
-                        <div className="overflow-x-auto rounded-xl">
-                          <table className="w-full bg-[#1D1D1F]">
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
                             <thead>
-                              <tr className="border-b border-[#3D3D3F]">
-                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">URL</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Ranked</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">1st</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">2-5</th>
-                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase">6-10</th>
+                              <tr className="border-b border-[#D2D2D7]">
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">URL</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">Ranked</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">1st</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">2-5</th>
+                                <th className="px-3 py-3 text-left text-xs font-semibold text-[#86868B] uppercase">6-10</th>
                               </tr>
                             </thead>
                             <tbody>
                               {awrCompetitors.intuit_top_urls.map((u: any) => (
-                                <tr key={u.url} className="border-b border-[#2D2D2F] hover:bg-[#2A2A2C] transition-colors">
-                                  <td className="px-3 py-2.5 text-sm text-gray-300 truncate max-w-[400px]">{u.url}</td>
-                                  <td className="px-3 py-2.5 text-sm text-gray-300">{u.ranked_keywords}</td>
-                                  <td className="px-3 py-2.5 text-sm text-yellow-400 font-medium">{u.first_place}</td>
-                                  <td className="px-3 py-2.5 text-sm text-gray-300">{u.pos_2_5}</td>
-                                  <td className="px-3 py-2.5 text-sm text-gray-300">{u.pos_6_10}</td>
+                                <tr key={u.url} className="border-b border-[#E5E5E5] hover:bg-[#F5F5F7] transition-colors">
+                                  <td className="px-3 py-2.5 text-sm text-[#6E6E73] truncate max-w-[400px]">{u.url}</td>
+                                  <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{u.ranked_keywords}</td>
+                                  <td className="px-3 py-2.5 text-sm text-yellow-600 font-medium">{u.first_place}</td>
+                                  <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{u.pos_2_5}</td>
+                                  <td className="px-3 py-2.5 text-sm text-[#6E6E73]">{u.pos_6_10}</td>
                                 </tr>
                               ))}
                             </tbody>
