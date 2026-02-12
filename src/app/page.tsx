@@ -2421,7 +2421,7 @@ function DashboardPageContent() {
             )}
           </div>
           {/* Section Navigation — Glass Panel Segment Control */}
-          <div className="relative flex items-center justify-center bg-white/[0.06] border border-white/[0.08] rounded-xl p-1 mb-3 backdrop-blur-sm overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
+          <div className="relative flex items-center bg-white/[0.06] border border-white/[0.08] rounded-xl p-1 mb-3 backdrop-blur-sm overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
             {/* Sliding pill indicator */}
             <div
               className="absolute top-1 bottom-1 bg-gradient-to-r from-[#0066CC] to-[#0052A3] rounded-lg shadow-[0_0_20px_rgba(0,102,204,0.25)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
@@ -2435,13 +2435,13 @@ function DashboardPageContent() {
                   ref={(el) => { sectionRefs.current[section.id] = el }}
                   onClick={() => handleSectionClick(section.id)}
                   title={section.description}
-                  className={`relative z-10 flex items-center gap-2 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide rounded-lg transition-colors ${
+                  className={`relative z-10 flex items-center gap-3 px-6 py-4 text-lg font-semibold uppercase tracking-wide rounded-lg transition-colors ${
                     activeSection === section.id
                       ? "text-white"
                       : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.06]"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-5 w-5" />
                   {section.label}
                 </button>
               )
@@ -2449,20 +2449,20 @@ function DashboardPageContent() {
           </div>
           {/* Sub-Tab Navigation — Pill-style tabs */}
           {sectionTabs[activeSection].length > 0 && (
-            <div key={activeSection} className="flex items-center justify-center gap-1 pb-3 animate-subtab-enter">
+            <div key={activeSection} className="flex items-center gap-2 pb-3 animate-subtab-enter">
               {sectionTabs[activeSection].map((tab) => {
                 const Icon = tab.icon
                 return (
                   <button
                     key={tab.id}
                     onClick={() => handleSubTabClick(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    className={`flex items-center gap-2.5 px-5 py-3 text-lg font-medium rounded-lg transition-colors ${
                       activeTab === tab.id
                         ? "text-[#0066CC] bg-[#0066CC]/[0.12]"
                         : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.06]"
                     }`}
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className="h-5 w-5" />
                     {tab.label}
                   </button>
                 )
