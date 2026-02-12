@@ -22,7 +22,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
-import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin } from "lucide-react"
+import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin, FileText } from "lucide-react"
 import { GadsSummaryTab } from "@/components/google-ads/GadsSummaryTab"
 import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
@@ -835,7 +835,7 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type SectionType = "revenue" | "advertising" | "organic" | "tools"
+type SectionType = "revenue" | "advertising" | "organic" | "tools" | "reports"
 
 type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages" | "seo-rankings" | "seo-ai-search" | "seo-competitors"
 
@@ -844,6 +844,7 @@ const SECTION_TABS: Record<SectionType, TabType[]> = {
   advertising: ["google-ads", "bing-ads"],
   organic: ["traffic", "conversions", "gsc", "landing-pages"],
   tools: ["seo-rankings", "seo-ai-search", "seo-competitors"],
+  reports: [],
 }
 
 const SECTION_DEFAULTS: Record<SectionType, TabType | null> = {
@@ -851,6 +852,7 @@ const SECTION_DEFAULTS: Record<SectionType, TabType | null> = {
   advertising: "google-ads",
   organic: "traffic",
   tools: "seo-rankings",
+  reports: null,
 }
 
 const TAB_TO_SECTION: Record<TabType, SectionType> = {
@@ -2420,7 +2422,8 @@ function DashboardPageContent() {
     { id: "revenue", label: "Revenue", icon: DollarSign, description: "Daily sales, subscription health, and product revenue" },
     { id: "advertising", label: "Advertising", icon: Target, description: "Google Ads and Bing Ads campaign performance" },
     { id: "organic", label: "Organic & SEO", icon: TrendingUp, description: "Traffic sources, conversions, search rankings, and landing pages" },
-    { id: "tools", label: "Insights & Tools", icon: Sparkles, description: "AI analysis, forecasting, and operational tools" },
+    { id: "tools", label: "Insights & Tools", icon: Sparkles, description: "SEO rank tracking, AI search, and competitor intelligence" },
+    { id: "reports", label: "Other Reports", icon: FileText, description: "Forecasting, AI analysis, and operational tools" },
   ]
 
   const sectionTabs: Record<SectionType, Array<{ id: TabType; label: string; icon: any }>> = {
@@ -2443,6 +2446,7 @@ function DashboardPageContent() {
       { id: "seo-ai-search", label: "AI Search", icon: Brain },
       { id: "seo-competitors", label: "Competitor Intel", icon: Swords },
     ],
+    reports: [],
   }
 
   return (
@@ -6240,14 +6244,42 @@ function DashboardPageContent() {
         )}
 
 
-        {/* Tools quick-link cards — shown above all Insights & Tools tabs */}
-        {activeSection === "tools" && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {/* Other Reports Hub */}
+        {activeSection === "reports" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: "Jedi Council", icon: Sparkles, href: "https://jedi-council-zeta.vercel.app", external: true, gradient: "from-purple-500 to-indigo-500" },
-              { title: "The Prophet", icon: Brain, href: "/data", external: false, gradient: "from-blue-500 to-cyan-500" },
-              { title: "Live Help", icon: Users, href: "/live-help", external: false, gradient: "from-green-500 to-emerald-500" },
-              { title: "P&L Recap", icon: DollarSign, href: "/recap", external: false, gradient: "from-orange-500 to-amber-500" },
+              {
+                title: "Jedi Council",
+                description: "Multi-agent AI analysis with Claude, GPT-4o, and Gemini",
+                icon: Sparkles,
+                href: "https://jedi-council-zeta.vercel.app",
+                external: true,
+                gradient: "from-purple-500 to-indigo-500",
+              },
+              {
+                title: "The Prophet",
+                description: "Sales forecasting and predictive analytics",
+                icon: Brain,
+                href: "/data",
+                external: false,
+                gradient: "from-blue-500 to-cyan-500",
+              },
+              {
+                title: "Live Help",
+                description: "Real-time room status and availability",
+                icon: Users,
+                href: "/live-help",
+                external: false,
+                gradient: "from-green-500 to-emerald-500",
+              },
+              {
+                title: "P&L Recap",
+                description: "Monthly profit and loss reports",
+                icon: DollarSign,
+                href: "/recap",
+                external: false,
+                gradient: "from-orange-500 to-amber-500",
+              },
             ].map((card) => {
               const CardIcon = card.icon
               return (
@@ -6255,15 +6287,23 @@ function DashboardPageContent() {
                   key={card.title}
                   href={card.href}
                   {...(card.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className="group bg-white rounded-xl border border-[#D2D2D7] shadow-sm hover:shadow-md transition-all p-3 flex items-center gap-3"
+                  className="group bg-white rounded-xl border border-[#D2D2D7] shadow-sm hover:shadow-md transition-all p-6 flex flex-col gap-4"
                 >
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center flex-shrink-0`}>
-                    <CardIcon className="h-4 w-4 text-white" />
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
+                    <CardIcon className="h-5 w-5 text-white" />
                   </div>
-                  <span className="text-sm font-semibold text-[#1D1D1F] group-hover:text-[#0066CC] transition-colors">{card.title}</span>
-                  <svg className="w-3.5 h-3.5 text-[#86868B] ml-auto group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#1D1D1F] group-hover:text-[#0066CC] transition-colors">
+                      {card.title}
+                    </h3>
+                    <p className="text-sm text-[#6E6E73] mt-1">{card.description}</p>
+                  </div>
+                  <div className="mt-auto flex items-center gap-1 text-sm font-medium text-[#0066CC]">
+                    <span>Open</span>
+                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </a>
               )
             })}
