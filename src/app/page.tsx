@@ -2021,31 +2021,28 @@ function DashboardPageContent() {
     }
   }, [tabParam])
 
-  // Refs for centering sub-tabs under active section
+  // Refs for section navigation
   const sectionRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const sectionRowRef = useRef<HTMLDivElement>(null)
-  const subTabsRef = useRef<HTMLDivElement>(null)
-  const [subTabOffset, setSubTabOffset] = useState(0)
+  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
 
-  const computeSubTabOffset = useCallback(() => {
+  const computeIndicatorPosition = useCallback(() => {
     const activeBtn = sectionRefs.current[activeSection]
     const row = sectionRowRef.current
-    const subTabs = subTabsRef.current
-    if (!activeBtn || !row || !subTabs) { setSubTabOffset(0); return }
+    if (!activeBtn || !row) return
     const rowRect = row.getBoundingClientRect()
     const btnRect = activeBtn.getBoundingClientRect()
-    const subTabsWidth = subTabs.scrollWidth
-    // Center sub-tabs under the active section button
-    const sectionCenter = btnRect.left + btnRect.width / 2 - rowRect.left
-    const offset = Math.max(0, sectionCenter - subTabsWidth / 2)
-    setSubTabOffset(offset)
+    setIndicatorStyle({
+      left: btnRect.left - rowRect.left,
+      width: btnRect.width,
+    })
   }, [activeSection])
 
   useEffect(() => {
-    computeSubTabOffset()
-    window.addEventListener('resize', computeSubTabOffset)
-    return () => window.removeEventListener('resize', computeSubTabOffset)
-  }, [computeSubTabOffset])
+    requestAnimationFrame(computeIndicatorPosition)
+    window.addEventListener('resize', computeIndicatorPosition)
+    return () => window.removeEventListener('resize', computeIndicatorPosition)
+  }, [computeIndicatorPosition])
 
   // Section click handler
   const handleSectionClick = (section: SectionType) => {
@@ -2411,20 +2408,25 @@ function DashboardPageContent() {
   return (
     <div className="min-h-screen bg-[#F5F5F7]">
       {/* Header */}
-      <header className="border-b border-[#D2D2D7] bg-white/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="bg-gradient-to-r from-[#0F0F1A] to-[#1A1A2E] border-b border-white/[0.08] shadow-lg shadow-black/20 sticky top-0 z-10">
         <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <h1 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight">
+            <h1 className="text-2xl font-semibold text-white tracking-tight">
               Command Center
             </h1>
             {metrics && (
-              <span className="text-sm text-[#6E6E73]">
+              <span className="bg-white/[0.06] px-3 py-1 rounded-full border border-white/[0.08] text-gray-400 text-sm">
                 {metrics.today.date_range}
               </span>
             )}
           </div>
-          {/* Section Navigation (Row 1) */}
-          <div className="flex items-center -mb-px" ref={sectionRowRef}>
+          {/* Section Navigation — Glass Panel Segment Control */}
+          <div className="relative flex items-center bg-white/[0.06] border border-white/[0.08] rounded-xl p-1 mb-3 backdrop-blur-sm overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
+            {/* Sliding pill indicator */}
+            <div
+              className="absolute top-1 bottom-1 bg-gradient-to-r from-[#0066CC] to-[#0052A3] rounded-lg shadow-[0_0_20px_rgba(0,102,204,0.25)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+              style={{ left: indicatorStyle.left, width: indicatorStyle.width, opacity: indicatorStyle.width > 0 ? 1 : 0 }}
+            />
             {sections.map((section) => {
               const Icon = section.icon
               return (
@@ -2433,10 +2435,10 @@ function DashboardPageContent() {
                   ref={(el) => { sectionRefs.current[section.id] = el }}
                   onClick={() => handleSectionClick(section.id)}
                   title={section.description}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold uppercase tracking-wide border-b-3 transition-colors ${
+                  className={`relative z-10 flex items-center gap-2 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide rounded-lg transition-colors ${
                     activeSection === section.id
-                      ? "border-[#0066CC] text-[#0066CC]"
-                      : "border-transparent text-[#6E6E73] hover:text-[#1D1D1F]"
+                      ? "text-white"
+                      : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.06]"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -2445,28 +2447,26 @@ function DashboardPageContent() {
               )
             })}
           </div>
-          {/* Sub-Tab Navigation (Row 2) — centered under active section */}
+          {/* Sub-Tab Navigation — Pill-style tabs */}
           {sectionTabs[activeSection].length > 0 && (
-            <div className="relative border-t border-[#E5E5E5] -mb-px">
-              <div ref={subTabsRef} className="flex items-center" style={{ paddingLeft: subTabOffset }}>
-                {sectionTabs[activeSection].map((tab) => {
-                  const Icon = tab.icon
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleSubTabClick(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === tab.id
-                          ? "border-[#0066CC] text-[#0066CC]"
-                          : "border-transparent text-[#86868B] hover:text-[#1D1D1F]"
-                      }`}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {tab.label}
+            <div key={activeSection} className="flex items-center justify-center gap-1 pb-3 animate-subtab-enter">
+              {sectionTabs[activeSection].map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleSubTabClick(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      activeTab === tab.id
+                        ? "text-[#0066CC] bg-[#0066CC]/[0.12]"
+                        : "text-gray-500 hover:text-gray-300 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {tab.label}
                   </button>
                 )
               })}
-              </div>
             </div>
           )}
         </div>

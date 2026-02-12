@@ -39,3 +39,13 @@ body {
 .animate-preview-in {
   animation: preview-in 0.2s ease-out forwards;
 }
+
+@keyframes subtab-enter {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-subtab-enter {
+  animation: subtab-enter 0.2s ease-out forwards;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
