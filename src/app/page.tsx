@@ -3906,57 +3906,6 @@ function DashboardPageContent() {
           </>
         )}
 
-        {/* SEO & Rankings Quick Links - shown in Organic section */}
-        {activeSection === "organic" && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            {[
-              {
-                title: "Rank Tracker",
-                description: "174 keywords tracked — 96.2% visibility, avg rank 2.15",
-                icon: TrendingUp,
-                href: "/seo/rankings",
-                gradient: "from-cyan-500 to-blue-500",
-              },
-              {
-                title: "AI Search Monitor",
-                description: "ChatGPT & AIO performance — visibility alerts",
-                icon: Brain,
-                href: "/seo/ai-search",
-                gradient: "from-purple-500 to-pink-500",
-              },
-              {
-                title: "Competitor Intel",
-                description: "QBT vs Intuit side-by-side comparison",
-                icon: Swords,
-                href: "/seo/competitors",
-                gradient: "from-orange-500 to-red-500",
-              },
-            ].map((card) => {
-              const CardIcon = card.icon
-              return (
-                <a
-                  key={card.title}
-                  href={card.href}
-                  className="group bg-white rounded-xl border border-[#D2D2D7] shadow-sm hover:shadow-md transition-all p-4 flex items-center gap-4"
-                >
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center flex-shrink-0`}>
-                    <CardIcon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-[#1D1D1F] group-hover:text-[#0066CC] transition-colors">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs text-[#6E6E73] mt-0.5 truncate">{card.description}</p>
-                  </div>
-                  <svg className="w-4 h-4 text-[#0066CC] ml-auto flex-shrink-0 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              )
-            })}
-          </div>
-        )}
-
         {/* Traffic Tab */}
         {activeTab === "traffic" && (
           <>
@@ -6290,6 +6239,30 @@ function DashboardPageContent() {
                 href: "/recap",
                 external: false,
                 gradient: "from-orange-500 to-amber-500",
+              },
+              {
+                title: "Rank Tracker",
+                description: "174 keywords tracked — positions, visibility & traffic",
+                icon: TrendingUp,
+                href: "/seo/rankings",
+                external: false,
+                gradient: "from-cyan-500 to-blue-500",
+              },
+              {
+                title: "AI Search Monitor",
+                description: "ChatGPT & AIO visibility with drop alerts",
+                icon: Brain,
+                href: "/seo/ai-search",
+                external: false,
+                gradient: "from-pink-500 to-purple-500",
+              },
+              {
+                title: "Competitor Intel",
+                description: "QBT vs Intuit side-by-side rankings",
+                icon: Swords,
+                href: "/seo/competitors",
+                external: false,
+                gradient: "from-red-500 to-orange-500",
               },
             ].map((card) => {
               const CardIcon = card.icon
