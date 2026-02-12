@@ -6483,36 +6483,149 @@ function DashboardPageContent() {
                   Latest complete week: {gscWeeklyData.data[0]?.week}
                 </div>
 
-                {/* Weekly Trend + Monthly Summary side by side */}
+                {/* Weekly Impressions & Clicks Chart */}
+                {(() => {
+                  const chartData = gscWeeklyData.data.slice().reverse().map((w: any) => ({
+                    week: w.week.replace(/^(...).*( - .*)$/, '$1$2').replace(/ - /, '–'),
+                    impressions: w.impressions,
+                    clicks: w.clicks,
+                    ctr: w.ctr,
+                  }))
+                  return (
+                    <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 border border-gray-800/50">
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Weekly Impressions & Clicks</div>
+                      <div className="text-gray-500 text-sm mb-5">Impressions (bars) with Clicks overlay (line) and CTR on right axis</div>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={chartData} margin={{ top: 25, right: 50, left: 10, bottom: 5 }}>
+                            <defs>
+                              <linearGradient id="gsc-imp-gradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#6366F1" stopOpacity={0.9} />
+                                <stop offset="100%" stopColor="#4F46E5" stopOpacity={0.7} />
+                              </linearGradient>
+                              <linearGradient id="gsc-ctr-area" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.2} />
+                                <stop offset="100%" stopColor="#06B6D4" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid stroke="#ffffff08" vertical={false} />
+                            <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
+                            <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v.toFixed(1)}%`} domain={['auto', 'auto']} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                              itemStyle={{ color: '#E5E7EB' }}
+                              labelStyle={{ color: '#9CA3AF', fontWeight: 600 }}
+                              formatter={(value: any, name: any) => {
+                                if (name === 'ctr') return [`${Number(value).toFixed(2)}%`, 'CTR']
+                                if (name === 'impressions') return [Number(value).toLocaleString(), 'Impressions']
+                                if (name === 'clicks') return [Number(value).toLocaleString(), 'Clicks']
+                                return [value, name]
+                              }}
+                            />
+                            <Bar yAxisId="left" dataKey="impressions" fill="url(#gsc-imp-gradient)" radius={[6, 6, 0, 0]} name="impressions" label={{ position: 'top', fill: '#A5B4FC', fontSize: 11, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
+                            <Area yAxisId="right" type="monotone" dataKey="ctr" fill="url(#gsc-ctr-area)" stroke="transparent" name="ctrArea" />
+                            <Line yAxisId="right" type="monotone" dataKey="ctr" stroke="#06B6D4" strokeWidth={3} dot={{ fill: '#1a1a2e', stroke: '#06B6D4', strokeWidth: 3, r: 5 }} name="ctr" label={{ position: 'top', fill: '#06B6D4', fontSize: 11, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
+                            <Line yAxisId="left" type="monotone" dataKey="clicks" stroke="#10B981" strokeWidth={3} dot={{ fill: '#1a1a2e', stroke: '#10B981', strokeWidth: 3, r: 5 }} name="clicks" label={{ position: 'bottom', fill: '#10B981', fontSize: 12, fontWeight: 700, formatter: (v: any) => Number(v).toLocaleString() }} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex justify-center gap-6 mt-3">
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-indigo-500" /><span className="text-gray-400 text-sm">Impressions</span></div>
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span className="text-gray-400 text-sm">Clicks</span></div>
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-cyan-500" /><span className="text-gray-400 text-sm">CTR %</span></div>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Monthly Impressions & Clicks Chart */}
+                {gscWeeklyData.monthlyData && (() => {
+                  const chartData = gscWeeklyData.monthlyData.slice().reverse().map((m: any) => ({
+                    month: m.month.replace(' 2025', " '25").replace(' 2026', " '26").replace(' 2024', " '24"),
+                    impressions: m.impressions,
+                    clicks: m.clicks,
+                    ctr: m.ctr,
+                    isMtd: m.isMtd,
+                  }))
+                  return (
+                    <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 border border-gray-800/50">
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Monthly Impressions & Clicks</div>
+                      <div className="text-gray-500 text-sm mb-5">Monthly aggregates with Clicks overlay and CTR trend</div>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={chartData} margin={{ top: 25, right: 50, left: 10, bottom: 5 }}>
+                            <defs>
+                              <linearGradient id="gsc-imp-monthly" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#6366F1" stopOpacity={0.9} />
+                                <stop offset="100%" stopColor="#4F46E5" stopOpacity={0.7} />
+                              </linearGradient>
+                              <linearGradient id="gsc-ctr-monthly-area" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.2} />
+                                <stop offset="100%" stopColor="#06B6D4" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid stroke="#ffffff08" vertical={false} />
+                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
+                            <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v.toFixed(1)}%`} domain={['auto', 'auto']} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                              itemStyle={{ color: '#E5E7EB' }}
+                              labelStyle={{ color: '#9CA3AF', fontWeight: 600 }}
+                              formatter={(value: any, name: any) => {
+                                if (name === 'ctr') return [`${Number(value).toFixed(2)}%`, 'CTR']
+                                if (name === 'impressions') return [Number(value).toLocaleString(), 'Impressions']
+                                if (name === 'clicks') return [Number(value).toLocaleString(), 'Clicks']
+                                return [value, name]
+                              }}
+                            />
+                            <Bar yAxisId="left" dataKey="impressions" fill="url(#gsc-imp-monthly)" radius={[6, 6, 0, 0]} name="impressions" label={{ position: 'top', fill: '#A5B4FC', fontSize: 11, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
+                            <Area yAxisId="right" type="monotone" dataKey="ctr" fill="url(#gsc-ctr-monthly-area)" stroke="transparent" name="ctrArea" />
+                            <Line yAxisId="right" type="monotone" dataKey="ctr" stroke="#06B6D4" strokeWidth={3} dot={{ fill: '#1a1a2e', stroke: '#06B6D4', strokeWidth: 3, r: 5 }} name="ctr" label={{ position: 'top', fill: '#06B6D4', fontSize: 11, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
+                            <Line yAxisId="left" type="monotone" dataKey="clicks" stroke="#10B981" strokeWidth={3} dot={{ fill: '#1a1a2e', stroke: '#10B981', strokeWidth: 3, r: 5 }} name="clicks" label={{ position: 'bottom', fill: '#10B981', fontSize: 12, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(1)}k` : Number(v).toLocaleString() }} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex justify-center gap-6 mt-3">
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-indigo-500" /><span className="text-gray-400 text-sm">Impressions</span></div>
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500" /><span className="text-gray-400 text-sm">Clicks</span></div>
+                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-cyan-500" /><span className="text-gray-400 text-sm">CTR %</span></div>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Weekly Trend + Monthly Summary Tables */}
                 <div className="grid grid-cols-2 gap-4">
-                  {/* 14-Week Trend Table */}
-                  <div className="bg-[#111827] rounded-xl p-5 border border-gray-800/50">
-                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-3">WEEKLY TREND</div>
-                    <div className="overflow-y-auto max-h-[520px]">
-                      <table className="w-full text-xs">
+                  {/* Weekly Trend Table */}
+                  <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
+                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">WEEKLY TREND</div>
+                    <div className="overflow-y-auto max-h-[600px]">
+                      <table className="w-full text-sm">
                         <thead className="sticky top-0 bg-[#111827]">
                           <tr className="border-b border-gray-700/50">
-                            <th className="text-left text-gray-400 font-medium py-2 px-3">Week</th>
-                            <th className="text-right text-gray-400 font-medium py-2 px-3">Impressions</th>
-                            <th className="text-right text-gray-400 font-medium py-2 px-3">Clicks</th>
-                            <th className="text-right text-gray-400 font-medium py-2 px-3">CTR</th>
+                            <th className="text-left text-gray-400 font-semibold py-3 px-4">Week</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">Impressions</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">Clicks</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">CTR</th>
                           </tr>
                         </thead>
                         <tbody>
                           {gscWeeklyData.data.slice().reverse().map((week: any, i: number, arr: any[]) => (
                             <tr key={week.week_start} className={`border-b border-gray-800/30 ${i === arr.length - 1 ? 'bg-gray-800/20' : ''}`}>
-                              <td className="py-2 px-3 text-gray-300">{week.week}</td>
-                              <td className="py-2 px-3 text-right text-white">{formatNumber(week.impressions)}</td>
-                              <td className="py-2 px-3 text-right text-white">{formatNumber(week.clicks)}</td>
-                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{week.ctr.toFixed(2)}%</td>
+                              <td className="py-3 px-4 text-gray-300">{week.week}</td>
+                              <td className="py-3 px-4 text-right text-white font-medium">{formatNumber(week.impressions)}</td>
+                              <td className="py-3 px-4 text-right text-white font-medium">{formatNumber(week.clicks)}</td>
+                              <td className="py-3 px-4 text-right text-cyan-400 font-bold">{week.ctr.toFixed(2)}%</td>
                             </tr>
                           ))}
                           {gscWeeklyData.wtdWeek && (
                             <tr className="border-b border-gray-800/30 bg-amber-900/10">
-                              <td className="py-2 px-3 text-amber-400 font-semibold">{gscWeeklyData.wtdWeek.week} (WTD)</td>
-                              <td className="py-2 px-3 text-right text-white">{formatNumber(gscWeeklyData.wtdWeek.impressions)}</td>
-                              <td className="py-2 px-3 text-right text-white">{formatNumber(gscWeeklyData.wtdWeek.clicks)}</td>
-                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{gscWeeklyData.wtdWeek.ctr.toFixed(2)}%</td>
+                              <td className="py-3 px-4 text-amber-400 font-bold">{gscWeeklyData.wtdWeek.week} (WTD)</td>
+                              <td className="py-3 px-4 text-right text-white font-medium">{formatNumber(gscWeeklyData.wtdWeek.impressions)}</td>
+                              <td className="py-3 px-4 text-right text-white font-medium">{formatNumber(gscWeeklyData.wtdWeek.clicks)}</td>
+                              <td className="py-3 px-4 text-right text-cyan-400 font-bold">{gscWeeklyData.wtdWeek.ctr.toFixed(2)}%</td>
                             </tr>
                           )}
                         </tbody>
@@ -6521,25 +6634,25 @@ function DashboardPageContent() {
                   </div>
 
                   {/* Monthly Summary Table */}
-                  <div className="bg-[#111827] rounded-xl p-5 border border-gray-800/50">
-                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-3">MONTHLY SUMMARY</div>
-                    <div className="overflow-y-auto max-h-[520px]">
-                      <table className="w-full text-xs">
+                  <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
+                    <div className="text-gray-300 text-lg font-semibold tracking-wide mb-4">MONTHLY SUMMARY</div>
+                    <div className="overflow-y-auto max-h-[600px]">
+                      <table className="w-full text-sm">
                         <thead className="sticky top-0 bg-[#111827]">
                           <tr className="border-b border-gray-700/50">
-                            <th className="text-left text-gray-400 font-medium py-2 px-3">Month</th>
-                            <th className="text-right text-gray-400 font-medium py-2 px-3">Impressions</th>
-                            <th className="text-right text-gray-400 font-medium py-2 px-3">Clicks</th>
-                            <th className="text-right text-gray-400 font-medium py-2 px-3">CTR</th>
+                            <th className="text-left text-gray-400 font-semibold py-3 px-4">Month</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">Impressions</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">Clicks</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">CTR</th>
                           </tr>
                         </thead>
                         <tbody>
                           {gscWeeklyData.monthlyData?.slice().reverse().map((m: any, i: number, arr: any[]) => (
                             <tr key={m.month_key} className={`border-b border-gray-800/30 ${i === arr.length - 1 ? 'bg-gray-800/20' : ''} ${m.isMtd ? 'bg-amber-900/10' : ''}`}>
-                              <td className={`py-2 px-3 ${m.isMtd ? 'text-amber-400 font-semibold' : 'text-gray-300'}`}>{m.month}</td>
-                              <td className="py-2 px-3 text-right text-white">{formatNumber(m.impressions)}</td>
-                              <td className="py-2 px-3 text-right text-white">{formatNumber(m.clicks)}</td>
-                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{m.ctr.toFixed(2)}%</td>
+                              <td className={`py-3 px-4 ${m.isMtd ? 'text-amber-400 font-bold' : 'text-gray-300'}`}>{m.month}</td>
+                              <td className="py-3 px-4 text-right text-white font-medium">{formatNumber(m.impressions)}</td>
+                              <td className="py-3 px-4 text-right text-white font-medium">{formatNumber(m.clicks)}</td>
+                              <td className="py-3 px-4 text-right text-cyan-400 font-bold">{m.ctr.toFixed(2)}%</td>
                             </tr>
                           ))}
                         </tbody>
