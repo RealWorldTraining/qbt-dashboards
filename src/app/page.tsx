@@ -25,7 +25,7 @@ import {
   Cell,
 } from "recharts"
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
-import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin, FileText } from "lucide-react"
+import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin, FileText, BarChart3 } from "lucide-react"
 import { GadsSummaryTab } from "@/components/google-ads/GadsSummaryTab"
 import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
@@ -840,12 +840,12 @@ interface SubscriberMetricsResponse {
 
 type SectionType = "revenue" | "advertising" | "organic" | "reports"
 
-type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages"
+type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages" | "combined"
 
 const SECTION_TABS: Record<SectionType, TabType[]> = {
   revenue: ["sales", "subscriptions"],
   advertising: ["google-ads", "bing-ads"],
-  organic: ["traffic", "conversions", "gsc", "landing-pages"],
+  organic: ["traffic", "conversions", "gsc", "landing-pages", "combined"],
   reports: [],
 }
 
@@ -865,6 +865,7 @@ const TAB_TO_SECTION: Record<TabType, SectionType> = {
   conversions: "organic",
   gsc: "organic",
   "landing-pages": "organic",
+  "combined": "organic",
 }
 
 function formatCurrency(value: number): string {
@@ -2002,7 +2003,7 @@ async function fetchWithCache<T>(
 }
 
 
-const validTabs: TabType[] = ["sales", "subscriptions", "google-ads", "bing-ads", "traffic", "conversions", "gsc", "landing-pages"]
+const validTabs: TabType[] = ["sales", "subscriptions", "google-ads", "bing-ads", "traffic", "conversions", "gsc", "landing-pages", "combined"]
 
 function DashboardPageContent() {
   const searchParams = useSearchParams()
@@ -2113,6 +2114,8 @@ function DashboardPageContent() {
   const [gscWeeklyData, setGscWeeklyData] = useState<any>(null)
   const [gscKeywordsData, setGscKeywordsData] = useState<any>(null)
 
+  // Combined Performance state
+  const [combinedData, setCombinedData] = useState<any>(null)
 
   // Loading states per tab
   const [salesLoading, setSalesLoading] = useState(true)
@@ -2123,6 +2126,7 @@ function DashboardPageContent() {
   const [subscriptionsLoading, setSubscriptionsLoading] = useState(true)
   const [landingPagesLoading, setLandingPagesLoading] = useState(true)
   const [gscLoading, setGscLoading] = useState(true)
+  const [combinedLoading, setCombinedLoading] = useState(true)
 
   // Track which tabs have been loaded
   const [loadedTabs, setLoadedTabs] = useState<Set<TabType>>(new Set())
@@ -2277,6 +2281,21 @@ function DashboardPageContent() {
     }
   }
 
+  // Fetch Combined Performance tab data (lazy load)
+  const fetchCombinedData = async () => {
+    if (loadedTabs.has('combined')) return
+    setCombinedLoading(true)
+    try {
+      const res = await fetch('/api/combined-weekly')
+      if (res.ok) setCombinedData(await res.json())
+    } catch (err) {
+      console.error("Failed to load combined data:", err)
+    } finally {
+      setCombinedLoading(false)
+      setLoadedTabs(prev => new Set([...prev, 'combined']))
+    }
+  }
+
 
   // Initial load: Sales tab first (priority)
   useEffect(() => {
@@ -2342,6 +2361,7 @@ function DashboardPageContent() {
     else if (activeTab === 'subscriptions') fetchSubscriptionsData()
     else if (activeTab === 'landing-pages') fetchLandingPagesData()
     else if (activeTab === 'gsc') fetchGscData()
+    else if (activeTab === 'combined') fetchCombinedData()
   }, [activeTab])
 
   // Auto-refresh sales data every 5 minutes when on sales tab
@@ -2382,6 +2402,7 @@ function DashboardPageContent() {
       { id: "conversions", label: "Conversions", icon: CheckCircle2 },
       { id: "gsc", label: "Search Console", icon: Search },
       { id: "landing-pages", label: "Landing Pages", icon: MapPin },
+      { id: "combined", label: "Combined Performance", icon: BarChart3 },
     ],
     reports: [],
   }
@@ -6427,6 +6448,228 @@ function DashboardPageContent() {
                   <p className="text-[#6E6E73]">Failed to load landing pages data</p>
                 </CardContent>
               </Card>
+            )}
+          </div>
+        )}
+
+        {/* Combined Performance Tab */}
+        {activeTab === "combined" && (
+          <div className="space-y-5">
+            {combinedLoading && !combinedData ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+              </div>
+            ) : combinedData?.weeklyData ? (
+              <>
+                {/* Hero Cards Row */}
+                {(() => {
+                  const weeks = combinedData.weeklyData
+                  const latest = weeks[0]
+                  const prev = weeks[1]
+                  const impChange = prev?.total_impressions > 0 ? ((latest.total_impressions - prev.total_impressions) / prev.total_impressions) * 100 : 0
+                  const clickChange = prev?.total_clicks > 0 ? ((latest.total_clicks - prev.total_clicks) / prev.total_clicks) * 100 : 0
+                  const cvrChange = prev?.conv_rate > 0 ? ((latest.conv_rate - prev.conv_rate) / prev.conv_rate) * 100 : 0
+
+                  const heroCards = [
+                    { label: 'TOTAL IMPRESSIONS', value: formatNumber(latest.total_impressions), change: impChange, prev: formatNumber(prev?.total_impressions || 0), border: 'border-cyan-900/30', accent: 'bg-cyan-500/5' },
+                    { label: 'TOTAL CLICKS', value: formatNumber(latest.total_clicks), change: clickChange, prev: formatNumber(prev?.total_clicks || 0), border: 'border-emerald-900/30', accent: 'bg-emerald-500/5' },
+                    { label: 'CONVERSION RATE', value: `${latest.conv_rate.toFixed(2)}%`, change: cvrChange, prev: `${(prev?.conv_rate || 0).toFixed(2)}%`, border: 'border-violet-900/30', accent: 'bg-violet-500/5' },
+                  ]
+
+                  return (
+                    <div className="grid grid-cols-3 gap-4">
+                      {heroCards.map(card => (
+                        <div key={card.label} className={`bg-gradient-to-br from-[#0f2027] to-[#203a43] rounded-xl p-5 ${card.border} border relative overflow-hidden text-center`}>
+                          <div className={`absolute top-0 right-0 w-24 h-24 ${card.accent} rounded-full -translate-y-8 translate-x-8`} />
+                          <div className="text-gray-400 text-sm font-medium tracking-wide mb-3">{card.label}</div>
+                          <div className="text-5xl font-black text-white tracking-tight mb-2">{card.value}</div>
+                          <div className="flex items-center justify-center gap-2 text-sm">
+                            <span className={card.change >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                              {card.change >= 0 ? '+' : ''}{card.change.toFixed(1)}% WoW
+                            </span>
+                            <span className="text-gray-500">was {card.prev}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()}
+
+                {/* Week label */}
+                <div className="text-gray-500 text-sm text-center">
+                  Latest complete week: {combinedData.weeklyData[0]?.week}
+                </div>
+
+                {/* Weekly Combined Impressions & Conversion Rate Chart */}
+                {(() => {
+                  const chartData = combinedData.weeklyData.slice().reverse().map((w: any) => ({
+                    week: w.week,
+                    total_impressions: w.total_impressions,
+                    conv_rate: w.conv_rate,
+                    total_clicks: w.total_clicks,
+                    total_conversions: w.total_conversions,
+                  }))
+                  return (
+                    <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 border border-gray-800/50">
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Weekly Combined Impressions & Conversion Rate</div>
+                      <div className="text-gray-500 text-sm mb-5">All channels combined — GSC + Google Ads + Bing Ads</div>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={chartData} margin={{ top: 30, right: 50, left: 10, bottom: 5 }}>
+                            <defs>
+                              <linearGradient id="combined-imp-gradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.95} />
+                                <stop offset="100%" stopColor="#2563EB" stopOpacity={0.75} />
+                              </linearGradient>
+                              <linearGradient id="combined-cvr-area" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.25} />
+                                <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid stroke="#ffffff08" vertical={false} />
+                            <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
+                            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#FBBF24' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v.toFixed(1)}%`} domain={['auto', 'auto']} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                              itemStyle={{ color: '#E5E7EB' }}
+                              labelStyle={{ color: '#9CA3AF', fontWeight: 600 }}
+                              formatter={(value: any, name: any) => {
+                                if (name === 'conv_rate') return [`${Number(value).toFixed(2)}%`, 'Conversion Rate']
+                                if (name === 'total_impressions') return [Number(value).toLocaleString(), 'Impressions']
+                                if (name === 'total_clicks') return [Number(value).toLocaleString(), 'Clicks']
+                                if (name === 'total_conversions') return [Number(value).toLocaleString(), 'Conversions']
+                                return [value, name]
+                              }}
+                            />
+                            <Bar yAxisId="left" dataKey="total_impressions" fill="url(#combined-imp-gradient)" radius={[6, 6, 0, 0]} name="total_impressions" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
+                            <Area yAxisId="right" type="monotone" dataKey="conv_rate" fill="url(#combined-cvr-area)" stroke="transparent" name="cvrArea" />
+                            <Line yAxisId="right" type="monotone" dataKey="conv_rate" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="conv_rate" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, offset: 12, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex justify-center gap-8 mt-3">
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-blue-500" /><span className="text-gray-300 text-sm font-medium">Impressions</span></div>
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-amber-500" /><span className="text-gray-300 text-sm font-medium">CVR %</span></div>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Monthly Combined Impressions & Conversion Rate Chart */}
+                {combinedData.monthlyData && (() => {
+                  const chartData = combinedData.monthlyData.slice().reverse().map((m: any) => ({
+                    month: m.month.replace(' 2025', " '25").replace(' 2026', " '26").replace(' 2024', " '24"),
+                    total_impressions: m.total_impressions,
+                    conv_rate: m.conv_rate,
+                    total_clicks: m.total_clicks,
+                    total_conversions: m.total_conversions,
+                    isMtd: m.isMtd,
+                  }))
+                  return (
+                    <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 border border-gray-800/50">
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Monthly Combined Impressions & Conversion Rate</div>
+                      <div className="text-gray-500 text-sm mb-5">Monthly aggregates across all channels</div>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={chartData} margin={{ top: 30, right: 50, left: 10, bottom: 5 }}>
+                            <defs>
+                              <linearGradient id="combined-imp-monthly" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.95} />
+                                <stop offset="100%" stopColor="#2563EB" stopOpacity={0.75} />
+                              </linearGradient>
+                              <linearGradient id="combined-cvr-monthly-area" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.25} />
+                                <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid stroke="#ffffff08" vertical={false} />
+                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
+                            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#FBBF24' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v.toFixed(1)}%`} domain={['auto', 'auto']} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+                              itemStyle={{ color: '#E5E7EB' }}
+                              labelStyle={{ color: '#9CA3AF', fontWeight: 600 }}
+                              formatter={(value: any, name: any) => {
+                                if (name === 'conv_rate') return [`${Number(value).toFixed(2)}%`, 'Conversion Rate']
+                                if (name === 'total_impressions') return [Number(value).toLocaleString(), 'Impressions']
+                                if (name === 'total_clicks') return [Number(value).toLocaleString(), 'Clicks']
+                                if (name === 'total_conversions') return [Number(value).toLocaleString(), 'Conversions']
+                                return [value, name]
+                              }}
+                            />
+                            <Bar yAxisId="left" dataKey="total_impressions" fill="url(#combined-imp-monthly)" radius={[6, 6, 0, 0]} name="total_impressions" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
+                            <Area yAxisId="right" type="monotone" dataKey="conv_rate" fill="url(#combined-cvr-monthly-area)" stroke="transparent" name="cvrMonthlyArea" />
+                            <Line yAxisId="right" type="monotone" dataKey="conv_rate" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="conv_rate" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, offset: 12, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="flex justify-center gap-8 mt-3">
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-blue-500" /><span className="text-gray-300 text-sm font-medium">Impressions</span></div>
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-amber-500" /><span className="text-gray-300 text-sm font-medium">CVR %</span></div>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Source Breakdown Table */}
+                {(() => {
+                  const latest = combinedData.weeklyData[0]
+                  if (!latest) return null
+
+                  const gscCvr = '—'
+                  const gadsCvr = latest.gads_clicks > 0 ? `${((latest.gads_conversions / latest.gads_clicks) * 100).toFixed(2)}%` : '0%'
+                  const bingCvr = latest.bing_clicks > 0 ? `${((latest.bing_conversions / latest.bing_clicks) * 100).toFixed(2)}%` : '0%'
+                  const totalCvr = latest.total_clicks > 0 ? `${((latest.total_conversions / latest.total_clicks) * 100).toFixed(2)}%` : '0%'
+
+                  const sources = [
+                    { name: 'Google Search Console', impressions: latest.gsc_impressions, clicks: latest.gsc_clicks, conversions: '—', cvr: gscCvr, color: 'text-emerald-400' },
+                    { name: 'Google Ads', impressions: latest.gads_impressions, clicks: latest.gads_clicks, conversions: formatNumber(latest.gads_conversions), cvr: gadsCvr, color: 'text-blue-400' },
+                    { name: 'Bing Ads', impressions: latest.bing_impressions, clicks: latest.bing_clicks, conversions: formatNumber(latest.bing_conversions), cvr: bingCvr, color: 'text-purple-400' },
+                  ]
+
+                  return (
+                    <div className="bg-[#111827] rounded-xl p-6 border border-gray-800/50">
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Source Breakdown</div>
+                      <div className="text-gray-500 text-sm mb-4">Per-channel contribution for {latest.week}</div>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-700/50">
+                            <th className="text-left text-gray-400 font-semibold py-3 px-4">Source</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">Impressions</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">Clicks</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">Conversions</th>
+                            <th className="text-right text-gray-400 font-semibold py-3 px-4">CVR%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sources.map(s => (
+                            <tr key={s.name} className="border-b border-gray-800/30">
+                              <td className={`py-3 px-4 font-medium ${s.color}`}>{s.name}</td>
+                              <td className="py-3 px-4 text-right text-white">{formatNumber(s.impressions)}</td>
+                              <td className="py-3 px-4 text-right text-white">{formatNumber(s.clicks)}</td>
+                              <td className="py-3 px-4 text-right text-white">{s.conversions}</td>
+                              <td className="py-3 px-4 text-right text-cyan-400 font-bold">{s.cvr}</td>
+                            </tr>
+                          ))}
+                          <tr className="border-t-2 border-gray-600/50 bg-gray-800/20">
+                            <td className="py-3 px-4 font-bold text-white">Total</td>
+                            <td className="py-3 px-4 text-right text-white font-bold">{formatNumber(latest.total_impressions)}</td>
+                            <td className="py-3 px-4 text-right text-white font-bold">{formatNumber(latest.total_clicks)}</td>
+                            <td className="py-3 px-4 text-right text-white font-bold">{formatNumber(latest.total_conversions)}</td>
+                            <td className="py-3 px-4 text-right text-cyan-400 font-black">{totalCvr}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  )
+                })()}
+              </>
+            ) : (
+              <div className="bg-[#111827] rounded-xl p-12 text-center border border-gray-800/50">
+                <p className="text-gray-400">Failed to load combined performance data</p>
+              </div>
             )}
           </div>
         )}
