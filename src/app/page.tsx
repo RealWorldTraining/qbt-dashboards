@@ -6486,7 +6486,7 @@ function DashboardPageContent() {
                 {/* Weekly Impressions & CTR Chart */}
                 {(() => {
                   const chartData = gscWeeklyData.data.slice().reverse().map((w: any) => ({
-                    week: w.week.replace(/^(...).*( - .*)$/, '$1$2').replace(/ - /, '–'),
+                    week: w.week.replace(/^(\w+ \d+) - (\w+ \d+)$/, '$1–$2'),
                     impressions: w.impressions,
                     ctr: w.ctr,
                   }))
