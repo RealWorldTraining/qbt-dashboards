@@ -31,14 +31,14 @@ function normalizeDate(dateStr: string): string {
   return trimmed
 }
 
-function getWeekStartMonday(dateStr: string): string {
+// Get the Sunday of the week containing this date (matches GSC route)
+function getWeekStartSunday(dateStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number)
   const date = new Date(year, month - 1, day)
   const dayOfWeek = date.getDay() // 0=Sun, 1=Mon...6=Sat
-  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1 // days since Monday
-  const monday = new Date(date)
-  monday.setDate(date.getDate() - diff)
-  return monday.toISOString().split('T')[0]
+  const sunday = new Date(date)
+  sunday.setDate(date.getDate() - dayOfWeek)
+  return sunday.toISOString().split('T')[0]
 }
 
 function formatDateRange(start: string, end: string): string {
@@ -83,7 +83,7 @@ export async function GET() {
       sheets.spreadsheets.values.get({ spreadsheetId: SHEET_ID, range: 'BING: Account Summary Weekly!A:J' }),
     ])
 
-    // --- GSC: aggregate daily → weekly (Monday-based) ---
+    // --- GSC: aggregate daily → Sunday-based weeks ---
     const gscRows = gscRes.data.values || []
     const gscHeaders = gscRows[0]?.map((h: string) => h?.toLowerCase().trim() || '') || []
     const gscDateCol = gscHeaders.findIndex((h: string) => h.includes('date'))
@@ -99,43 +99,78 @@ export async function GET() {
       if (!rawDate) return
       const date = normalizeDate(rawDate)
       if (!date) return
-      const weekStart = getWeekStartMonday(date)
+      const weekStart = getWeekStartSunday(date)
       const existing = gscWeekly.get(weekStart) || { impressions: 0, clicks: 0 }
       existing.impressions += parseNumber(row[colImp])
       existing.clicks += parseNumber(row[colClick])
       gscWeekly.set(weekStart, existing)
     })
 
-    // --- Google Ads: aggregate by week_start across devices ---
+    // --- Google Ads: aggregate across devices, keyed by Sunday-based week ---
+    // The sheet has daily rolling windows × devices; group by Sunday week to align
     const gadsRows = gadsRes.data.values || []
-    const gadsWeekly = new Map<string, { impressions: number; clicks: number; conversions: number }>()
+    const gadsWeekly = new Map<string, { impressions: number; clicks: number; conversions: number; dates: Set<string> }>()
     gadsRows.slice(1).forEach(row => {
-      const week = row[0]
-      if (!week) return
-      const existing = gadsWeekly.get(week) || { impressions: 0, clicks: 0, conversions: 0 }
+      const rawWeek = row[0]
+      if (!rawWeek) return
+      const sundayWeek = getWeekStartSunday(rawWeek)
+      const existing = gadsWeekly.get(sundayWeek) || { impressions: 0, clicks: 0, conversions: 0, dates: new Set<string>() }
+      existing.dates.add(rawWeek)
       existing.impressions += parseNumber(row[4])
       existing.clicks += parseNumber(row[3])
       existing.conversions += parseNumber(row[9])
-      gadsWeekly.set(week, existing)
+      gadsWeekly.set(sundayWeek, existing)
     })
 
-    // --- Bing Ads: already weekly ---
+    // For Google Ads, if multiple raw dates map to same Sunday-week, each date had
+    // 3 device rows (Desktop/Mobile/Tablet) summed above. But if multiple DATES
+    // exist within the same week, the data might be overlapping rolling windows.
+    // To avoid double-counting, if >1 unique date maps to a week, pick only the
+    // entry closest to the Sunday start and re-aggregate just that date's rows.
+    const gadsClean = new Map<string, { impressions: number; clicks: number; conversions: number }>()
+    for (const [sundayWeek, data] of gadsWeekly.entries()) {
+      if (data.dates.size <= 1) {
+        // Single date in this week — safe to use as-is
+        gadsClean.set(sundayWeek, { impressions: data.impressions, clicks: data.clicks, conversions: data.conversions })
+      } else {
+        // Multiple dates in this week — pick the one closest to the Sunday start
+        const dates = Array.from(data.dates).sort()
+        const sundayMs = new Date(sundayWeek).getTime()
+        let bestDate = dates[0]
+        let bestDiff = Infinity
+        for (const d of dates) {
+          const diff = Math.abs(new Date(d).getTime() - sundayMs)
+          if (diff < bestDiff) { bestDiff = diff; bestDate = d }
+        }
+        // Re-aggregate only rows matching bestDate
+        const filtered = { impressions: 0, clicks: 0, conversions: 0 }
+        gadsRows.slice(1).forEach(row => {
+          if (row[0] === bestDate) {
+            filtered.impressions += parseNumber(row[4])
+            filtered.clicks += parseNumber(row[3])
+            filtered.conversions += parseNumber(row[9])
+          }
+        })
+        gadsClean.set(sundayWeek, filtered)
+      }
+    }
+
+    // --- Bing Ads: already weekly, use Sunday-based key ---
     const bingRows = bingRes.data.values || []
     const bingWeekly = new Map<string, { impressions: number; clicks: number; conversions: number }>()
     bingRows.slice(1).forEach(row => {
-      const week = row[0]
-      if (!week) return
-      const existing = bingWeekly.get(week) || { impressions: 0, clicks: 0, conversions: 0 }
+      const rawWeek = row[0]
+      if (!rawWeek) return
+      // Bing week_starts are already Sunday-based, but normalize just in case
+      const sundayWeek = getWeekStartSunday(rawWeek)
+      const existing = bingWeekly.get(sundayWeek) || { impressions: 0, clicks: 0, conversions: 0 }
       existing.impressions += parseNumber(row[2])
       existing.clicks += parseNumber(row[3])
       existing.conversions += parseNumber(row[7])
-      bingWeekly.set(week, existing)
+      bingWeekly.set(sundayWeek, existing)
     })
 
-    // --- Find overlapping weeks (all three sources must have data) ---
-    const allWeekStarts = new Set<string>()
-    gscWeekly.forEach((_, k) => allWeekStarts.add(k))
-
+    // --- Build combined weeks where all 3 sources have data ---
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
@@ -156,15 +191,13 @@ export async function GET() {
       conv_rate: number
     }> = []
 
-    // Only include weeks where all 3 sources have data AND week is complete
-    for (const weekStart of allWeekStarts) {
-      const gsc = gscWeekly.get(weekStart)
-      const gads = gadsWeekly.get(weekStart)
+    for (const [weekStart, gsc] of gscWeekly.entries()) {
+      const gads = gadsClean.get(weekStart)
       const bing = bingWeekly.get(weekStart)
 
-      if (!gsc || !gads || !bing) continue
+      if (!gads || !bing) continue
 
-      // Check if week is complete (Sunday = weekStart + 6 days is before today)
+      // Check if week is complete (Saturday = weekStart + 6)
       const [y, m, d] = weekStart.split('-').map(Number)
       const weekEnd = new Date(y, m - 1, d + 6)
       if (weekEnd >= today) continue
@@ -173,7 +206,7 @@ export async function GET() {
 
       const total_impressions = gsc.impressions + gads.impressions + bing.impressions
       const total_clicks = gsc.clicks + gads.clicks + bing.clicks
-      const total_conversions = gads.conversions + bing.conversions // GSC has no conversions
+      const total_conversions = gads.conversions + bing.conversions
       const conv_rate = total_clicks > 0 ? (total_conversions / total_clicks) * 100 : 0
 
       combinedWeeks.push({
@@ -194,44 +227,28 @@ export async function GET() {
       })
     }
 
-    // Sort most recent first, take last 6
     combinedWeeks.sort((a, b) => b.week_start.localeCompare(a.week_start))
     const weeklyData = combinedWeeks.slice(0, 6)
 
     // --- Monthly aggregates ---
     const monthlyAgg = new Map<string, WeekBucket>()
-
-    const addToMonth = (monthKey: string, bucket: Partial<WeekBucket>) => {
+    for (const w of combinedWeeks) {
+      const [y, m] = w.week_start.split('-').map(Number)
+      const monthKey = `${y}-${String(m).padStart(2, '0')}`
       const existing = monthlyAgg.get(monthKey) || {
         gsc_impressions: 0, gsc_clicks: 0,
         gads_impressions: 0, gads_clicks: 0, gads_conversions: 0,
         bing_impressions: 0, bing_clicks: 0, bing_conversions: 0,
       }
-      if (bucket.gsc_impressions) existing.gsc_impressions += bucket.gsc_impressions
-      if (bucket.gsc_clicks) existing.gsc_clicks += bucket.gsc_clicks
-      if (bucket.gads_impressions) existing.gads_impressions += bucket.gads_impressions
-      if (bucket.gads_clicks) existing.gads_clicks += bucket.gads_clicks
-      if (bucket.gads_conversions) existing.gads_conversions += bucket.gads_conversions
-      if (bucket.bing_impressions) existing.bing_impressions += bucket.bing_impressions
-      if (bucket.bing_clicks) existing.bing_clicks += bucket.bing_clicks
-      if (bucket.bing_conversions) existing.bing_conversions += bucket.bing_conversions
+      existing.gsc_impressions += w.gsc_impressions
+      existing.gsc_clicks += w.gsc_clicks
+      existing.gads_impressions += w.gads_impressions
+      existing.gads_clicks += w.gads_clicks
+      existing.gads_conversions += w.gads_conversions
+      existing.bing_impressions += w.bing_impressions
+      existing.bing_clicks += w.bing_clicks
+      existing.bing_conversions += w.bing_conversions
       monthlyAgg.set(monthKey, existing)
-    }
-
-    // Use the combined weekly data to build monthly aggregates
-    for (const w of combinedWeeks) {
-      const [y, m] = w.week_start.split('-').map(Number)
-      const monthKey = `${y}-${String(m).padStart(2, '0')}`
-      addToMonth(monthKey, {
-        gsc_impressions: w.gsc_impressions,
-        gsc_clicks: w.gsc_clicks,
-        gads_impressions: w.gads_impressions,
-        gads_clicks: w.gads_clicks,
-        gads_conversions: w.gads_conversions,
-        bing_impressions: w.bing_impressions,
-        bing_clicks: w.bing_clicks,
-        bing_conversions: w.bing_conversions,
-      })
     }
 
     const currentMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
