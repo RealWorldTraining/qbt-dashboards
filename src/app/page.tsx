@@ -6523,7 +6523,7 @@ function DashboardPageContent() {
                             />
                             <Bar yAxisId="left" dataKey="impressions" fill="url(#gsc-imp-gradient)" radius={[6, 6, 0, 0]} name="impressions" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
                             <Area yAxisId="right" type="monotone" dataKey="ctr" fill="url(#gsc-ctr-area)" stroke="transparent" name="ctrArea" />
-                            <Line yAxisId="right" type="monotone" dataKey="ctr" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="ctr" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
+                            <Line yAxisId="right" type="monotone" dataKey="ctr" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="ctr" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, offset: 12, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       </div>
@@ -6576,7 +6576,7 @@ function DashboardPageContent() {
                             />
                             <Bar yAxisId="left" dataKey="impressions" fill="url(#gsc-imp-monthly)" radius={[6, 6, 0, 0]} name="impressions" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
                             <Area yAxisId="right" type="monotone" dataKey="ctr" fill="url(#gsc-ctr-monthly-area)" stroke="transparent" name="ctrArea" />
-                            <Line yAxisId="right" type="monotone" dataKey="ctr" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="ctr" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
+                            <Line yAxisId="right" type="monotone" dataKey="ctr" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="ctr" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, offset: 12, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       </div>
