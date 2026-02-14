@@ -6500,24 +6500,23 @@ function DashboardPageContent() {
                   Latest complete week: {combinedData.weeklyData[0]?.week}
                 </div>
 
-                {/* Weekly Combined Impressions & Conversion Rate Chart */}
+                {/* Weekly Combined Clicks & Conversion Rate Chart */}
                 {(() => {
                   const chartData = combinedData.weeklyData.slice().reverse().map((w: any) => ({
                     week: w.week,
-                    total_impressions: w.total_impressions,
-                    conv_rate: w.conv_rate,
                     total_clicks: w.total_clicks,
+                    conv_rate: w.conv_rate,
                     total_conversions: w.total_conversions,
                   }))
                   return (
                     <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 border border-gray-800/50">
-                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Weekly Combined Impressions & Conversion Rate</div>
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Weekly Combined Clicks & Conversion Rate</div>
                       <div className="text-gray-500 text-sm mb-5">All channels combined — GSC + Google Ads + Bing Ads</div>
                       <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
                           <ComposedChart data={chartData} margin={{ top: 30, right: 50, left: 10, bottom: 5 }}>
                             <defs>
-                              <linearGradient id="combined-imp-gradient" x1="0" y1="0" x2="0" y2="1">
+                              <linearGradient id="combined-clicks-gradient" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.95} />
                                 <stop offset="100%" stopColor="#2563EB" stopOpacity={0.75} />
                               </linearGradient>
@@ -6528,7 +6527,7 @@ function DashboardPageContent() {
                             </defs>
                             <CartesianGrid stroke="#ffffff08" vertical={false} />
                             <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} />
                             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#FBBF24' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v.toFixed(1)}%`} domain={['auto', 'auto']} />
                             <Tooltip
                               contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
@@ -6536,45 +6535,43 @@ function DashboardPageContent() {
                               labelStyle={{ color: '#9CA3AF', fontWeight: 600 }}
                               formatter={(value: any, name: any) => {
                                 if (name === 'conv_rate') return [`${Number(value).toFixed(2)}%`, 'Conversion Rate']
-                                if (name === 'total_impressions') return [Number(value).toLocaleString(), 'Impressions']
                                 if (name === 'total_clicks') return [Number(value).toLocaleString(), 'Clicks']
                                 if (name === 'total_conversions') return [Number(value).toLocaleString(), 'Conversions']
                                 return [value, name]
                               }}
                             />
-                            <Bar yAxisId="left" dataKey="total_impressions" fill="url(#combined-imp-gradient)" radius={[6, 6, 0, 0]} name="total_impressions" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
+                            <Bar yAxisId="left" dataKey="total_clicks" fill="url(#combined-clicks-gradient)" radius={[6, 6, 0, 0]} name="total_clicks" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(1)}k` : v }} />
                             <Area yAxisId="right" type="monotone" dataKey="conv_rate" fill="url(#combined-cvr-area)" stroke="transparent" name="cvrArea" />
                             <Line yAxisId="right" type="monotone" dataKey="conv_rate" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="conv_rate" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, offset: 12, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       </div>
                       <div className="flex justify-center gap-8 mt-3">
-                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-blue-500" /><span className="text-gray-300 text-sm font-medium">Impressions</span></div>
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-blue-500" /><span className="text-gray-300 text-sm font-medium">Clicks</span></div>
                         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-amber-500" /><span className="text-gray-300 text-sm font-medium">CVR %</span></div>
                       </div>
                     </div>
                   )
                 })()}
 
-                {/* Monthly Combined Impressions & Conversion Rate Chart */}
+                {/* Monthly Combined Clicks & Conversion Rate Chart */}
                 {combinedData.monthlyData && (() => {
                   const chartData = combinedData.monthlyData.slice().reverse().map((m: any) => ({
                     month: m.month.replace(' 2025', " '25").replace(' 2026', " '26").replace(' 2024', " '24"),
-                    total_impressions: m.total_impressions,
-                    conv_rate: m.conv_rate,
                     total_clicks: m.total_clicks,
+                    conv_rate: m.conv_rate,
                     total_conversions: m.total_conversions,
                     isMtd: m.isMtd,
                   }))
                   return (
                     <div className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl p-6 border border-gray-800/50">
-                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Monthly Combined Impressions & Conversion Rate</div>
+                      <div className="text-gray-300 text-lg font-semibold tracking-wide mb-1">Monthly Combined Clicks & Conversion Rate</div>
                       <div className="text-gray-500 text-sm mb-5">Monthly aggregates across all channels</div>
                       <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
                           <ComposedChart data={chartData} margin={{ top: 30, right: 50, left: 10, bottom: 5 }}>
                             <defs>
-                              <linearGradient id="combined-imp-monthly" x1="0" y1="0" x2="0" y2="1">
+                              <linearGradient id="combined-clicks-monthly" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.95} />
                                 <stop offset="100%" stopColor="#2563EB" stopOpacity={0.75} />
                               </linearGradient>
@@ -6585,7 +6582,7 @@ function DashboardPageContent() {
                             </defs>
                             <CartesianGrid stroke="#ffffff08" vertical={false} />
                             <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
-                            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
+                            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} />
                             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#FBBF24' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v.toFixed(1)}%`} domain={['auto', 'auto']} />
                             <Tooltip
                               contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
@@ -6593,20 +6590,19 @@ function DashboardPageContent() {
                               labelStyle={{ color: '#9CA3AF', fontWeight: 600 }}
                               formatter={(value: any, name: any) => {
                                 if (name === 'conv_rate') return [`${Number(value).toFixed(2)}%`, 'Conversion Rate']
-                                if (name === 'total_impressions') return [Number(value).toLocaleString(), 'Impressions']
                                 if (name === 'total_clicks') return [Number(value).toLocaleString(), 'Clicks']
                                 if (name === 'total_conversions') return [Number(value).toLocaleString(), 'Conversions']
                                 return [value, name]
                               }}
                             />
-                            <Bar yAxisId="left" dataKey="total_impressions" fill="url(#combined-imp-monthly)" radius={[6, 6, 0, 0]} name="total_impressions" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(0)}k` : v }} />
+                            <Bar yAxisId="left" dataKey="total_clicks" fill="url(#combined-clicks-monthly)" radius={[6, 6, 0, 0]} name="total_clicks" label={{ position: 'top', fill: '#93C5FD', fontSize: 13, fontWeight: 700, formatter: (v: any) => Number(v) >= 1000 ? `${(Number(v) / 1000).toFixed(1)}k` : v }} />
                             <Area yAxisId="right" type="monotone" dataKey="conv_rate" fill="url(#combined-cvr-monthly-area)" stroke="transparent" name="cvrMonthlyArea" />
                             <Line yAxisId="right" type="monotone" dataKey="conv_rate" stroke="#F59E0B" strokeWidth={3.5} dot={{ fill: '#F59E0B', stroke: '#ffffff', strokeWidth: 2, r: 7 }} activeDot={{ r: 9, fill: '#F59E0B', stroke: '#fff', strokeWidth: 3 }} name="conv_rate" label={{ position: 'top', fill: '#FBBF24', fontSize: 14, fontWeight: 700, offset: 12, formatter: (v: any) => `${Number(v).toFixed(2)}%` }} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       </div>
                       <div className="flex justify-center gap-8 mt-3">
-                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-blue-500" /><span className="text-gray-300 text-sm font-medium">Impressions</span></div>
+                        <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-blue-500" /><span className="text-gray-300 text-sm font-medium">Clicks</span></div>
                         <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-amber-500" /><span className="text-gray-300 text-sm font-medium">CVR %</span></div>
                       </div>
                     </div>
