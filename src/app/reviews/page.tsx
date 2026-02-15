@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card"
 import { DashboardNav } from "@/components/DashboardNav"
 import { CardSkeleton } from "@/components/ui/skeleton"
-import { Star, TrendingUp, Filter, Search, RefreshCw, ArrowUpDown } from "lucide-react"
+import { Star, TrendingUp, Filter, Search, RefreshCw } from "lucide-react"
 
 interface Review {
   entryDate: string
@@ -50,9 +50,9 @@ export default function ReviewsPage() {
   // Filter states
   const [selectedService, setSelectedService] = useState<string>("")
   const [selectedInstructor, setSelectedInstructor] = useState<string>("")
-  const [selectedStars, setSelectedStars] = useState<string>("") // "" = all, "5" = 5 stars, etc.
+  const [selectedStars, setSelectedStars] = useState<string>("")
   const [searchTerm, setSearchTerm] = useState<string>("")
-  const [sortBy, setSortBy] = useState<string>("weight-desc") // weight-desc, weight-asc, date-desc, date-asc, stars-desc, stars-asc
+  const [sortBy, setSortBy] = useState<string>("weight-desc")
 
   // Stats
   const [stats, setStats] = useState({
@@ -193,11 +193,7 @@ export default function ReviewsPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <DashboardNav />
         <main className="container mx-auto px-4 py-8">
-          <div className="grid gap-4 md:grid-cols-3">
-            <CardSkeleton />
-            <CardSkeleton />
-            <CardSkeleton />
-          </div>
+          <CardSkeleton />
         </main>
       </div>
     )
@@ -231,203 +227,196 @@ export default function ReviewsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNav />
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Customer Reviews Dashboard
+            Customer Reviews
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Analyze and filter customer reviews
-          </p>
         </div>
 
-        {/* Filters - Moved to top */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter size={20} />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-              {/* Service Filter */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Service</label>
-                <select
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800"
-                >
-                  <option value="">All Services</option>
-                  {services.map((service) => (
-                    <option key={service} value={service}>
-                      {service}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Instructor Filter */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Instructor</label>
-                <select
-                  value={selectedInstructor}
-                  onChange={(e) => setSelectedInstructor(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800"
-                >
-                  <option value="">All Instructors</option>
-                  {instructors.map((instructor) => (
-                    <option key={instructor} value={instructor}>
-                      {instructor}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Stars Filter */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Stars</label>
-                <select
-                  value={selectedStars}
-                  onChange={(e) => setSelectedStars(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800"
-                >
-                  <option value="">All Ratings</option>
-                  <option value="5">5 Stars</option>
-                  <option value="4">4 Stars</option>
-                  <option value="3">3 Stars</option>
-                  <option value="2">2 Stars</option>
-                  <option value="1">1 Star</option>
-                </select>
-              </div>
-
-              {/* Sort By */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Sort By</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800"
-                >
-                  <option value="weight-desc">Quality (High to Low)</option>
-                  <option value="weight-asc">Quality (Low to High)</option>
-                  <option value="date-desc">Date (Newest First)</option>
-                  <option value="date-asc">Date (Oldest First)</option>
-                  <option value="stars-desc">Rating (High to Low)</option>
-                  <option value="stars-asc">Rating (Low to High)</option>
-                </select>
-              </div>
-
-              {/* Search */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Search</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search reviews..."
-                    className="w-full pl-10 pr-3 py-2 border rounded-md bg-white dark:bg-gray-800"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <button
-                onClick={resetFilters}
-                className="px-4 py-2 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                Reset Filters
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-              <Star className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.avgStars.toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground">
-                {stats.fiveStarPct.toFixed(1)}% are 5-star
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Actions</CardTitle>
-              <RefreshCw className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <button
-                onClick={fetchReviews}
-                className="w-full px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Refresh Data
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Reviews List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Reviews ({filteredReviews.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredReviews.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">
-                  No reviews match your filters
-                </p>
-              ) : (
-                filteredReviews.map((review, idx) => (
-                  <div
-                    key={idx}
-                    className="border-b pb-4 last:border-b-0"
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-semibold">
-                          {review.firstName} {review.lastName}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {review.service}
-                          {review.instructor && ` • ${review.instructor}`}
-                          {' • '}
-                          {new Date(review.entryDate).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div>
-                        {renderStars(review.stars)}
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                      {review.review}
-                    </p>
+        {/* Sidebar + Reviews Layout */}
+        <div className="flex gap-6">
+          {/* Left Sidebar - Filters (30% width, fixed) */}
+          <div className="w-[30%] flex-shrink-0">
+            <Card className="sticky top-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter size={20} />
+                  Filters & Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Stats at top */}
+                <div className="space-y-3 pb-6 border-b">
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
+                    <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                  <div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</div>
+                    <div className="text-2xl font-bold flex items-center gap-2">
+                      {stats.avgStars.toFixed(2)}
+                      <Star className="h-5 w-5 text-yellow-400" />
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {stats.fiveStarPct.toFixed(1)}% are 5-star
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filters */}
+                <div className="space-y-4">
+                  {/* Service Filter */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Service</label>
+                    <select
+                      value={selectedService}
+                      onChange={(e) => setSelectedService(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                    >
+                      <option value="">All Services</option>
+                      {services.map((service) => (
+                        <option key={service} value={service}>
+                          {service}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Instructor Filter */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Instructor</label>
+                    <select
+                      value={selectedInstructor}
+                      onChange={(e) => setSelectedInstructor(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                    >
+                      <option value="">All Instructors</option>
+                      {instructors.map((instructor) => (
+                        <option key={instructor} value={instructor}>
+                          {instructor}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Stars Filter */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Stars</label>
+                    <select
+                      value={selectedStars}
+                      onChange={(e) => setSelectedStars(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                    >
+                      <option value="">All Ratings</option>
+                      <option value="5">5 Stars</option>
+                      <option value="4">4 Stars</option>
+                      <option value="3">3 Stars</option>
+                      <option value="2">2 Stars</option>
+                      <option value="1">1 Star</option>
+                    </select>
+                  </div>
+
+                  {/* Sort By */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Sort By</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                    >
+                      <option value="weight-desc">Quality (High to Low)</option>
+                      <option value="weight-asc">Quality (Low to High)</option>
+                      <option value="date-desc">Date (Newest First)</option>
+                      <option value="date-asc">Date (Oldest First)</option>
+                      <option value="stars-desc">Rating (High to Low)</option>
+                      <option value="stars-asc">Rating (Low to High)</option>
+                    </select>
+                  </div>
+
+                  {/* Search */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Search</label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search reviews..."
+                        className="w-full pl-10 pr-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2 pt-4 border-t">
+                  <button
+                    onClick={resetFilters}
+                    className="w-full px-4 py-2 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    Reset Filters
+                  </button>
+                  <button
+                    onClick={fetchReviews}
+                    className="w-full px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw size={16} />
+                    Refresh Data
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Side - Reviews (70% width, scrollable) */}
+          <div className="w-[70%]">
+            <Card>
+              <CardHeader>
+                <CardTitle>Reviews ({filteredReviews.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  className="space-y-4 overflow-y-auto pr-2"
+                  style={{ maxHeight: 'calc(100vh - 250px)' }}
+                >
+                  {filteredReviews.length === 0 ? (
+                    <p className="text-center text-gray-500 py-8">
+                      No reviews match your filters
+                    </p>
+                  ) : (
+                    filteredReviews.map((review, idx) => (
+                      <div
+                        key={idx}
+                        className="border-b pb-4 last:border-b-0"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <div className="font-semibold">
+                              {review.firstName} {review.lastName}
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              {review.service}
+                              {review.instructor && ` • ${review.instructor}`}
+                              {' • '}
+                              {new Date(review.entryDate).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div>
+                            {renderStars(review.stars)}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {review.review}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </main>
     </div>
   )
