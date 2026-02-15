@@ -76,6 +76,14 @@ export default function ReviewsPage() {
     applyFilters()
   }, [reviews, selectedService, selectedInstructor, selectedStars, searchTerm, sortBy])
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchReviews()
+    }, 10 * 60 * 1000) // 10 minutes
+
+    return () => clearInterval(interval)
+  }, [])
+
   async function fetchReviews() {
     setLoading(true)
     setError(null)
