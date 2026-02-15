@@ -22,10 +22,10 @@ interface Review {
   baseScore: number;
 }
 
-// Cache reviews in memory for 5 minutes (reduces API calls)
+// Cache reviews in memory for 10 seconds for testing (set to 5 minutes in production)
 let cachedReviews: Review[] | null = null;
 let cacheTimestamp: number = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 10 * 1000; // 10 seconds for testing
 
 async function fetchReviewsFromSheet(): Promise<Review[]> {
   // Check cache first
