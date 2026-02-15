@@ -52,7 +52,7 @@ export default function ReviewsPage() {
   const [selectedInstructor, setSelectedInstructor] = useState<string>("")
   const [selectedStars, setSelectedStars] = useState<string>("")
   const [searchTerm, setSearchTerm] = useState<string>("")
-  const [sortBy, setSortBy] = useState<string>("weight-desc")
+  const [sortBy, setSortBy] = useState<string>("date-desc")
 
   // Stats
   const [stats, setStats] = useState({
@@ -193,7 +193,7 @@ export default function ReviewsPage() {
     setSelectedInstructor("")
     setSelectedStars("")
     setSearchTerm("")
-    setSortBy("weight-desc")
+    setSortBy("date-desc")
   }
 
   function renderStars(count: number) {
@@ -335,15 +335,15 @@ export default function ReviewsPage() {
 
                 {/* Filters */}
                 <div className="space-y-4">
-                  {/* Service Filter */}
+                  {/* Training Type Filter */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Service</label>
+                    <label className="block text-sm font-medium mb-2">Training Type</label>
                     <select
                       value={selectedService}
                       onChange={(e) => setSelectedService(e.target.value)}
                       className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
                     >
-                      <option value="">All Services</option>
+                      <option value="">All Types</option>
                       {services.map((service) => (
                         <option key={service} value={service}>
                           {service}
@@ -377,53 +377,21 @@ export default function ReviewsPage() {
                       onChange={(e) => setSortBy(e.target.value)}
                       className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
                     >
-                      <option value="weight-desc">Quality (High to Low)</option>
-                      <option value="weight-asc">Quality (Low to High)</option>
                       <option value="date-desc">Date (Newest First)</option>
                       <option value="date-asc">Date (Oldest First)</option>
+                      <option value="weight-desc">Quality (High to Low)</option>
+                      <option value="weight-asc">Quality (Low to High)</option>
                       <option value="stars-desc">Rating (High to Low)</option>
                       <option value="stars-asc">Rating (Low to High)</option>
                     </select>
                   </div>
-
-                  {/* Search */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Search</label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search reviews..."
-                        className="w-full pl-10 pr-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-2 pt-4 border-t">
-                  <button
-                    onClick={resetFilters}
-                    className="w-full px-4 py-2 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    Reset Filters
-                  </button>
-                  <button
-                    onClick={fetchReviews}
-                    className="w-full px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center gap-2"
-                  >
-                    <RefreshCw size={16} />
-                    Refresh Data
-                  </button>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Right Side - Reviews (70% width, scrollable) */}
-          <div className="w-[70%]">
+          <div className="w-[70%] space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Reviews ({filteredReviews.length})</CardTitle>
@@ -431,7 +399,7 @@ export default function ReviewsPage() {
               <CardContent>
                 <div 
                   className="space-y-4 overflow-y-auto pr-2"
-                  style={{ maxHeight: 'calc(100vh - 250px)' }}
+                  style={{ maxHeight: 'calc(100vh - 350px)' }}
                 >
                   {filteredReviews.length === 0 ? (
                     <p className="text-center text-gray-500 py-8">
@@ -468,6 +436,38 @@ export default function ReviewsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Actions below reviews */}
+            <div className="flex gap-4 items-center">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search reviews..."
+                  className="w-full pl-10 pr-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                />
+              </div>
+
+              {/* Reset Filters */}
+              <button
+                onClick={resetFilters}
+                className="px-4 py-2 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap"
+              >
+                Reset Filters
+              </button>
+
+              {/* Refresh Data */}
+              <button
+                onClick={fetchReviews}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 whitespace-nowrap"
+              >
+                <RefreshCw size={16} />
+                Refresh Data
+              </button>
+            </div>
           </div>
         </div>
       </main>
