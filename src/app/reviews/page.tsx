@@ -385,21 +385,50 @@ export default function ReviewsPage() {
                       <option value="stars-asc">Rating (Low to High)</option>
                     </select>
                   </div>
+
+                  {/* Search */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Search</label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search..."
+                        className="w-full pl-10 pr-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2 pt-4 border-t">
+                  <button
+                    onClick={resetFilters}
+                    className="w-full px-4 py-2 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    Reset Filters
+                  </button>
+                  <button
+                    onClick={fetchReviews}
+                    className="w-full px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw size={16} />
+                    Refresh Data
+                  </button>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Right Side - Reviews (70% width, scrollable) */}
-          <div className="w-[70%] space-y-4">
+          <div className="w-[70%]">
             <Card>
-              <CardHeader>
-                <CardTitle>Reviews ({filteredReviews.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div 
                   className="space-y-4 overflow-y-auto pr-2"
-                  style={{ maxHeight: 'calc(100vh - 350px)' }}
+                  style={{ maxHeight: 'calc(100vh - 200px)' }}
                 >
                   {filteredReviews.length === 0 ? (
                     <p className="text-center text-gray-500 py-8">
@@ -411,19 +440,24 @@ export default function ReviewsPage() {
                         key={idx}
                         className="border-b pb-4 last:border-b-0"
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex-1">
                             <div className="font-semibold">
                               {review.firstName} {review.lastName}
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
                               {review.service}
-                              {review.instructor && ` • ${review.instructor}`}
+                              {review.instructor && review.instructor.trim() && review.instructor !== 'Not Sure' && (
+                                <>
+                                  {' • '}
+                                  <span className="font-medium">{review.instructor}</span>
+                                </>
+                              )}
                               {' • '}
                               {new Date(review.entryDate).toLocaleDateString()}
                             </div>
                           </div>
-                          <div>
+                          <div className="flex-shrink-0 ml-4">
                             {renderStars(review.stars)}
                           </div>
                         </div>
@@ -436,38 +470,6 @@ export default function ReviewsPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Actions below reviews */}
-            <div className="flex gap-4 items-center">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search reviews..."
-                  className="w-full pl-10 pr-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
-                />
-              </div>
-
-              {/* Reset Filters */}
-              <button
-                onClick={resetFilters}
-                className="px-4 py-2 text-sm border rounded hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap"
-              >
-                Reset Filters
-              </button>
-
-              {/* Refresh Data */}
-              <button
-                onClick={fetchReviews}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 whitespace-nowrap"
-              >
-                <RefreshCw size={16} />
-                Refresh Data
-              </button>
-            </div>
           </div>
         </div>
       </main>
