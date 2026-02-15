@@ -249,7 +249,7 @@ export default function ReviewsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNav />
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Customer Reviews
           </h1>
@@ -344,7 +344,7 @@ export default function ReviewsPage() {
                       className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
                     >
                       <option value="">All Types</option>
-                      {services.map((service) => (
+                      {services.filter(service => service !== 'Live Classes').map((service) => (
                         <option key={service} value={service}>
                           {service}
                         </option>
