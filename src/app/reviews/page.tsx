@@ -268,48 +268,68 @@ export default function ReviewsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Stats at top */}
-                <div className="space-y-3 pb-6 border-b">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
-                      <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</div>
-                      <div className="text-2xl font-bold flex items-center gap-2">
-                        {stats.avgStars.toFixed(2)}
-                        <Star className="h-5 w-5 text-yellow-400" />
+                <div className="pb-6 border-b">
+                  <div className="flex gap-6">
+                    {/* Left Side - Stats */}
+                    <div className="flex-shrink-0 space-y-3">
+                      <div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Total Reviews</div>
+                        <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Avg Rating</div>
+                        <div className="text-2xl font-bold flex items-center gap-1">
+                          {stats.avgStars.toFixed(1)}
+                          <Star className="h-4 w-4 text-yellow-400" />
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Star Breakdown - Clickable */}
-                  <div className="space-y-2 pt-2">
-                    {[5, 4, 3, 2, 1].map((starLevel) => (
-                      <button
-                        key={starLevel}
-                        onClick={() => {
-                          // Toggle: if already selected, clear filter
-                          if (selectedStars === String(starLevel)) {
-                            setSelectedStars("")
-                          } else {
-                            setSelectedStars(String(starLevel))
-                          }
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded transition-colors ${
-                          selectedStars === String(starLevel)
-                            ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500'
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          {renderStars(starLevel)}
-                        </div>
-                        <div className="font-semibold">
-                          {stats.starBreakdown[starLevel as keyof typeof stats.starBreakdown]}
-                        </div>
-                      </button>
-                    ))}
+                    {/* Right Side - Star Breakdown Bar Chart */}
+                    <div className="flex-1 space-y-1">
+                      {[5, 4, 3, 2, 1].map((starLevel) => {
+                        const count = stats.starBreakdown[starLevel as keyof typeof stats.starBreakdown]
+                        const percentage = stats.totalReviews > 0 ? (count / stats.totalReviews) * 100 : 0
+                        
+                        return (
+                          <button
+                            key={starLevel}
+                            onClick={() => {
+                              // Toggle: if already selected, clear filter
+                              if (selectedStars === String(starLevel)) {
+                                setSelectedStars("")
+                              } else {
+                                setSelectedStars(String(starLevel))
+                              }
+                            }}
+                            className={`w-full flex items-center gap-2 text-sm transition-opacity ${
+                              selectedStars === String(starLevel) ? 'opacity-100' : 'opacity-80 hover:opacity-100'
+                            }`}
+                          >
+                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300 w-12">
+                              {starLevel} star
+                            </span>
+                            <div className="flex-1 h-5 bg-gray-200 dark:bg-gray-700 rounded-sm overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${
+                                  starLevel === 5 ? 'bg-orange-500' :
+                                  starLevel === 4 ? 'bg-orange-400' :
+                                  starLevel === 3 ? 'bg-orange-300' :
+                                  starLevel === 2 ? 'bg-orange-200' :
+                                  'bg-orange-100'
+                                } ${
+                                  selectedStars === String(starLevel) ? 'ring-2 ring-blue-500 ring-inset' : ''
+                                }`}
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 w-10 text-right">
+                              {percentage.toFixed(0)}%
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
 
