@@ -396,7 +396,7 @@ export default function ReviewsPage() {
               <CardContent className="px-6 pt-2 pb-0 flex-1 flex flex-col">
                 <div 
                   className="space-y-2 overflow-y-auto pr-2 flex-1"
-                  style={{ maxHeight: 'calc(100vh - 210px)' }}
+                  style={{ maxHeight: 'calc(100vh - 235px)' }}
                 >
                   {filteredReviews.length === 0 ? (
                     <p className="text-center text-gray-500 py-8">
