@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 
 const SPREADSHEET_ID = '1Nh1LRFfI7Ct6p8V34ixZfs51WUepJkQ22EkV7t64eTo';
-const SHEET_NAME = 'Sheet1'; // Adjust if your sheet has a different name
+const SHEET_NAME = 'Reviews';
 const RANGE = 'A:P'; // Columns A through P (includes all data + weight calculations)
 
 interface Review {
