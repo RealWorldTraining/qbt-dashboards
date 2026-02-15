@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 const SPREADSHEET_ID = '1Nh1LRFfI7Ct6p8V34ixZfs51WUepJkQ22EkV7t64eTo';
 const SHEET_NAME = 'Reviews';
-const RANGE = 'A:P'; // Columns A through P (includes all data + weight calculations)
+const RANGE = 'A:AB'; // Columns A through AB (includes all data + weight calculations + moderation status)
 
 interface Review {
   entryDate: string;
