@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card"
 import { DashboardNav } from "@/components/DashboardNav"
 import { CardSkeleton } from "@/components/ui/skeleton"
-import { Star, TrendingUp, Filter, Search, RefreshCw } from "lucide-react"
+import { Star, TrendingUp, Filter, Search, RefreshCw, ArrowUpDown } from "lucide-react"
 
 interface Review {
   entryDate: string
@@ -50,15 +50,14 @@ export default function ReviewsPage() {
   // Filter states
   const [selectedService, setSelectedService] = useState<string>("")
   const [selectedInstructor, setSelectedInstructor] = useState<string>("")
-  const [minStars, setMinStars] = useState<number>(0)
-  const [minWeight, setMinWeight] = useState<number>(0)
+  const [selectedStars, setSelectedStars] = useState<string>("") // "" = all, "5" = 5 stars, etc.
   const [searchTerm, setSearchTerm] = useState<string>("")
+  const [sortBy, setSortBy] = useState<string>("weight-desc") // weight-desc, weight-asc, date-desc, date-asc, stars-desc, stars-asc
 
   // Stats
   const [stats, setStats] = useState({
     totalReviews: 0,
     avgStars: 0,
-    avgWeight: 0,
     fiveStarPct: 0,
   })
 
@@ -68,7 +67,7 @@ export default function ReviewsPage() {
 
   useEffect(() => {
     applyFilters()
-  }, [reviews, selectedService, selectedInstructor, minStars, minWeight, searchTerm])
+  }, [reviews, selectedService, selectedInstructor, selectedStars, searchTerm, sortBy])
 
   async function fetchReviews() {
     setLoading(true)
@@ -109,14 +108,9 @@ export default function ReviewsPage() {
       filtered = filtered.filter(r => r.instructor === selectedInstructor)
     }
 
-    if (minStars > 0) {
-      filtered = filtered.filter(r => r.stars >= minStars)
-    }
-
-    if (minWeight > 0) {
-      filtered = filtered.filter(r => 
-        typeof r.finalWeight === 'number' && r.finalWeight >= minWeight
-      )
+    if (selectedStars) {
+      const starsNum = parseInt(selectedStars)
+      filtered = filtered.filter(r => r.stars === starsNum)
     }
 
     if (searchTerm) {
@@ -128,25 +122,46 @@ export default function ReviewsPage() {
       )
     }
 
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'weight-desc':
+          const aWeight = typeof a.finalWeight === 'number' ? a.finalWeight : 0
+          const bWeight = typeof b.finalWeight === 'number' ? b.finalWeight : 0
+          return bWeight - aWeight
+        case 'weight-asc':
+          const aWeightAsc = typeof a.finalWeight === 'number' ? a.finalWeight : 0
+          const bWeightAsc = typeof b.finalWeight === 'number' ? b.finalWeight : 0
+          return aWeightAsc - bWeightAsc
+        case 'date-desc':
+          return new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+        case 'date-asc':
+          return new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()
+        case 'stars-desc':
+          return b.stars - a.stars
+        case 'stars-asc':
+          return a.stars - b.stars
+        default:
+          return 0
+      }
+    })
+
     setFilteredReviews(filtered)
     calculateStats(filtered)
   }
 
   function calculateStats(reviewList: Review[]) {
     if (reviewList.length === 0) {
-      setStats({ totalReviews: 0, avgStars: 0, avgWeight: 0, fiveStarPct: 0 })
+      setStats({ totalReviews: 0, avgStars: 0, fiveStarPct: 0 })
       return
     }
 
     const totalStars = reviewList.reduce((sum, r) => sum + r.stars, 0)
-    const weights = reviewList.filter(r => typeof r.finalWeight === 'number')
-    const totalWeight = weights.reduce((sum, r) => sum + (r.finalWeight as number), 0)
     const fiveStarCount = reviewList.filter(r => r.stars === 5).length
 
     setStats({
       totalReviews: reviewList.length,
       avgStars: totalStars / reviewList.length,
-      avgWeight: weights.length > 0 ? totalWeight / weights.length : 0,
       fiveStarPct: (fiveStarCount / reviewList.length) * 100,
     })
   }
@@ -154,9 +169,9 @@ export default function ReviewsPage() {
   function resetFilters() {
     setSelectedService("")
     setSelectedInstructor("")
-    setMinStars(0)
-    setMinWeight(0)
+    setSelectedStars("")
     setSearchTerm("")
+    setSortBy("weight-desc")
   }
 
   function renderStars(count: number) {
@@ -178,8 +193,7 @@ export default function ReviewsPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <DashboardNav />
         <main className="container mx-auto px-4 py-8">
-          <div className="grid gap-4 md:grid-cols-4">
-            <CardSkeleton />
+          <div className="grid gap-4 md:grid-cols-3">
             <CardSkeleton />
             <CardSkeleton />
             <CardSkeleton />
@@ -222,65 +236,11 @@ export default function ReviewsPage() {
             Customer Reviews Dashboard
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Analyze and filter customer reviews with quality weighting
+            Analyze and filter customer reviews
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-              <Star className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.avgStars.toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground">
-                {stats.fiveStarPct.toFixed(1)}% are 5-star
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Weight</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.avgWeight.toFixed(1)}</div>
-              <div className="text-xs text-muted-foreground">
-                Quality score
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Actions</CardTitle>
-              <RefreshCw className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <button
-                onClick={fetchReviews}
-                className="w-full px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Refresh Data
-              </button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
+        {/* Filters - Moved to top */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -324,31 +284,38 @@ export default function ReviewsPage() {
                 </select>
               </div>
 
-              {/* Min Stars Filter */}
+              {/* Stars Filter */}
               <div>
-                <label className="block text-sm font-medium mb-2">Min Stars</label>
+                <label className="block text-sm font-medium mb-2">Stars</label>
                 <select
-                  value={minStars}
-                  onChange={(e) => setMinStars(Number(e.target.value))}
+                  value={selectedStars}
+                  onChange={(e) => setSelectedStars(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800"
                 >
-                  <option value="0">Any</option>
-                  <option value="3">3+</option>
-                  <option value="4">4+</option>
-                  <option value="5">5 only</option>
+                  <option value="">All Ratings</option>
+                  <option value="5">5 Stars</option>
+                  <option value="4">4 Stars</option>
+                  <option value="3">3 Stars</option>
+                  <option value="2">2 Stars</option>
+                  <option value="1">1 Star</option>
                 </select>
               </div>
 
-              {/* Min Weight Filter */}
+              {/* Sort By */}
               <div>
-                <label className="block text-sm font-medium mb-2">Min Weight</label>
-                <input
-                  type="number"
-                  value={minWeight}
-                  onChange={(e) => setMinWeight(Number(e.target.value))}
-                  placeholder="0"
+                <label className="block text-sm font-medium mb-2">Sort By</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
                   className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800"
-                />
+                >
+                  <option value="weight-desc">Quality (High to Low)</option>
+                  <option value="weight-asc">Quality (Low to High)</option>
+                  <option value="date-desc">Date (Newest First)</option>
+                  <option value="date-asc">Date (Oldest First)</option>
+                  <option value="stars-desc">Rating (High to Low)</option>
+                  <option value="stars-asc">Rating (Low to High)</option>
+                </select>
               </div>
 
               {/* Search */}
@@ -378,13 +345,51 @@ export default function ReviewsPage() {
           </CardContent>
         </Card>
 
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-3 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
+              <Star className="h-4 w-4 text-yellow-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.avgStars.toFixed(2)}</div>
+              <div className="text-xs text-muted-foreground">
+                {stats.fiveStarPct.toFixed(1)}% are 5-star
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Actions</CardTitle>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <button
+                onClick={fetchReviews}
+                className="w-full px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Refresh Data
+              </button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Reviews List */}
         <Card>
           <CardHeader>
             <CardTitle>Reviews ({filteredReviews.length})</CardTitle>
-            <CardDescription>
-              Sorted by weight (highest quality first)
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -410,22 +415,13 @@ export default function ReviewsPage() {
                           {new Date(review.entryDate).toLocaleDateString()}
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
+                      <div>
                         {renderStars(review.stars)}
-                        <div className="text-xs font-mono bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
-                          Weight: {typeof review.finalWeight === 'number' ? review.finalWeight.toFixed(1) : review.finalWeight}
-                        </div>
                       </div>
                     </div>
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       {review.review}
                     </p>
-                    <div className="mt-2 flex gap-4 text-xs text-gray-500">
-                      <span>Context: {review.context}</span>
-                      <span>Specificity: {review.specificity}</span>
-                      <span>Actionability: {review.actionability}</span>
-                      <span>Words: {review.wordCount}</span>
-                    </div>
                   </div>
                 ))
               )}

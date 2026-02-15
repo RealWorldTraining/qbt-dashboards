@@ -61,25 +61,25 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
       return [];
     }
 
-    // Skip header row, parse data
-    const reviews: Review[] = rows.slice(1).map((row) => {
+    // Skip first 2 rows (headers), data starts at row 3
+    const reviews: Review[] = rows.slice(2).map((row) => {
       return {
         entryDate: row[0] || '',
         firstName: row[1] || '',
         lastName: row[2] || '',
         service: row[3] || '',
         instructor: row[4] || '',
-        stars: parseInt(row[5]) || 0,
-        review: row[6] || '',
-        finalWeight: row[7] === 'FILTERED' ? 'FILTERED' : parseFloat(row[7]) || 0,
-        context: parseFloat(row[8]) || 0,
-        specificity: parseFloat(row[9]) || 0,
-        actionability: parseFloat(row[10]) || 0,
-        wordCount: parseInt(row[11]) || 0,
-        lengthBonus: parseFloat(row[12]) || 0,
-        baseScore: parseFloat(row[13]) || 0,
+        stars: parseInt(row[6]) || 0, // Column G
+        review: row[7] || '', // Column H
+        finalWeight: row[8] === 'FILTERED' ? 'FILTERED' : parseFloat(row[8]) || 0, // Column I
+        context: parseFloat(row[9]) || 0,
+        specificity: parseFloat(row[10]) || 0,
+        actionability: parseFloat(row[11]) || 0,
+        wordCount: parseInt(row[12]) || 0,
+        lengthBonus: parseFloat(row[13]) || 0,
+        baseScore: parseFloat(row[14]) || 0,
       };
-    }).filter(review => review.finalWeight !== 'FILTERED' && review.review.trim().length > 0);
+    }).filter(review => review.review.trim().length > 0);
 
     // Update cache
     cachedReviews = reviews;
