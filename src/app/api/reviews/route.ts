@@ -87,7 +87,7 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
         lengthBonus: parseFloat(row[13]) || 0,
         baseScore: parseFloat(row[14]) || 0,
       };
-    }).filter(review => review !== null && review.review.trim().length > 0) as Review[];
+    }).filter(review => review !== null) as Review[];
 
     // Update cache
     cachedReviews = reviews;
