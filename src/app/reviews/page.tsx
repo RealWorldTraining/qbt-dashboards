@@ -393,7 +393,7 @@ export default function ReviewsPage() {
           {/* Right Side - Reviews (70% width, scrollable) */}
           <div className="w-[70%] flex flex-col">
             <Card className="flex-1 flex flex-col">
-              <CardContent className="pt-2 flex-1 flex flex-col">
+              <CardContent className="p-2 flex-1 flex flex-col">
                 <div 
                   className="space-y-2 overflow-y-auto pr-2 flex-1"
                   style={{ maxHeight: 'calc(100vh - 300px)' }}
