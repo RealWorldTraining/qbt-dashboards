@@ -63,6 +63,14 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
 
     // Skip first 2 rows (headers), data starts at row 3
     const reviews: Review[] = rows.slice(2).map((row) => {
+      // Get status from column AB (column 27, 0-indexed)
+      const status = row[27] || ''
+      
+      // Filter out only "Removed" for qbt-dashboards. Show Unreviewed + Reviewed
+      if (status === 'Removed') {
+        return null
+      }
+
       return {
         entryDate: row[0] || '',
         firstName: row[1] || '',
@@ -79,7 +87,7 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
         lengthBonus: parseFloat(row[13]) || 0,
         baseScore: parseFloat(row[14]) || 0,
       };
-    }).filter(review => review.review.trim().length > 0);
+    }).filter(review => review !== null && review.review.trim().length > 0) as Review[];
 
     // Update cache
     cachedReviews = reviews;
