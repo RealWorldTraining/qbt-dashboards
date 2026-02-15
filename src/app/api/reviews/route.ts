@@ -68,7 +68,7 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
         firstName: row[1] || '',
         lastName: row[2] || '',
         service: row[3] || '',
-        instructor: row[4] || '',
+        instructor: row[5] || '', // Column F
         stars: parseInt(row[6]) || 0, // Column G
         review: row[7] || '', // Column H
         finalWeight: row[8] === 'FILTERED' ? 'FILTERED' : parseFloat(row[8]) || 0, // Column I

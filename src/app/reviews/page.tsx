@@ -59,6 +59,13 @@ export default function ReviewsPage() {
     totalReviews: 0,
     avgStars: 0,
     fiveStarPct: 0,
+    starBreakdown: {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    }
   })
 
   useEffect(() => {
@@ -152,17 +159,32 @@ export default function ReviewsPage() {
 
   function calculateStats(reviewList: Review[]) {
     if (reviewList.length === 0) {
-      setStats({ totalReviews: 0, avgStars: 0, fiveStarPct: 0 })
+      setStats({ 
+        totalReviews: 0, 
+        avgStars: 0, 
+        fiveStarPct: 0,
+        starBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+      })
       return
     }
 
     const totalStars = reviewList.reduce((sum, r) => sum + r.stars, 0)
     const fiveStarCount = reviewList.filter(r => r.stars === 5).length
 
+    // Calculate breakdown by star level
+    const breakdown = {
+      5: reviewList.filter(r => r.stars === 5).length,
+      4: reviewList.filter(r => r.stars === 4).length,
+      3: reviewList.filter(r => r.stars === 3).length,
+      2: reviewList.filter(r => r.stars === 2).length,
+      1: reviewList.filter(r => r.stars === 1).length,
+    }
+
     setStats({
       totalReviews: reviewList.length,
       avgStars: totalStars / reviewList.length,
       fiveStarPct: (fiveStarCount / reviewList.length) * 100,
+      starBreakdown: breakdown,
     })
   }
 
@@ -247,19 +269,47 @@ export default function ReviewsPage() {
               <CardContent className="space-y-6">
                 {/* Stats at top */}
                 <div className="space-y-3 pb-6 border-b">
-                  <div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
-                    <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</div>
+                      <div className="text-2xl font-bold">{stats.totalReviews.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</div>
+                      <div className="text-2xl font-bold flex items-center gap-2">
+                        {stats.avgStars.toFixed(2)}
+                        <Star className="h-5 w-5 text-yellow-400" />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</div>
-                    <div className="text-2xl font-bold flex items-center gap-2">
-                      {stats.avgStars.toFixed(2)}
-                      <Star className="h-5 w-5 text-yellow-400" />
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {stats.fiveStarPct.toFixed(1)}% are 5-star
-                    </div>
+
+                  {/* Star Breakdown - Clickable */}
+                  <div className="space-y-2 pt-2">
+                    {[5, 4, 3, 2, 1].map((starLevel) => (
+                      <button
+                        key={starLevel}
+                        onClick={() => {
+                          // Toggle: if already selected, clear filter
+                          if (selectedStars === String(starLevel)) {
+                            setSelectedStars("")
+                          } else {
+                            setSelectedStars(String(starLevel))
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded transition-colors ${
+                          selectedStars === String(starLevel)
+                            ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500'
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {renderStars(starLevel)}
+                        </div>
+                        <div className="font-semibold">
+                          {stats.starBreakdown[starLevel as keyof typeof stats.starBreakdown]}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -296,23 +346,6 @@ export default function ReviewsPage() {
                           {instructor}
                         </option>
                       ))}
-                    </select>
-                  </div>
-
-                  {/* Stars Filter */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Stars</label>
-                    <select
-                      value={selectedStars}
-                      onChange={(e) => setSelectedStars(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
-                    >
-                      <option value="">All Ratings</option>
-                      <option value="5">5 Stars</option>
-                      <option value="4">4 Stars</option>
-                      <option value="3">3 Stars</option>
-                      <option value="2">2 Stars</option>
-                      <option value="1">1 Star</option>
                     </select>
                   </div>
 
