@@ -29,6 +29,27 @@ git remote set-url origin git@github.com:RealWorldTraining/qbt-dashboards.git
 
 ---
 
+## 🔍 Data Quality Monitoring
+
+**System Status:** https://qbtraining.ai/health
+
+Automated daily validation runs at **12:30 AM CST**:
+- ✅ API health checks (all endpoints)
+- ✅ Data range validation (impressions, cost, CTR)
+- ✅ Cross-validation (Google Ads vs Bing ratios)
+- ✅ Freshness checks (data <7 days old)
+- ✅ Deduplication validation (catches Feb 17 bug)
+
+**Run tests locally:**
+```bash
+npm run test:data    # 24 validation checks
+npm run health       # Quick health check
+```
+
+**Documentation:** [docs/monitoring.md](docs/monitoring.md)
+
+---
+
 ## 📊 Dashboards
 
 ### Marketing Dashboards (Adveronix-powered)
