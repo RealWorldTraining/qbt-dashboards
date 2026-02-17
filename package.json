@@ -7,7 +7,11 @@
     "build": "rm -rf .next && next build",
     "start": "next start",
     "lint": "eslint",
-    "build:clean": "rm -rf .next .next-forced node_modules/.cache && next build"
+    "build:clean": "rm -rf .next .next-forced node_modules/.cache && next build",
+    "test": "vitest",
+    "test:data": "vitest run tests/data-validation.test.ts",
+    "test:visual": "playwright test",
+    "health": "curl -s https://qbtraining.ai/api/health | jq"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
@@ -24,6 +28,7 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -31,6 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.0.18"
   }
 }
