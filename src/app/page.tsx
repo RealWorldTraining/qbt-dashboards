@@ -392,13 +392,7 @@ export default function HomePage() {
 
             {/* Cards Grid */}
             <div
-              className={`grid gap-4 ${
-                section.items.length <= 2
-                  ? "grid-cols-1 sm:grid-cols-2"
-                  : section.items.length <= 4
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              }`}
+              className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             >
               {section.items.map((card, cardIdx) => (
                 <CardComponent
