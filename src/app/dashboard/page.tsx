@@ -25,7 +25,8 @@ import {
   Cell,
 } from "recharts"
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
-import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin, FileText, BarChart3 } from "lucide-react"
+import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin, FileText, BarChart3, Home } from "lucide-react"
+import Link from "next/link"
 import { GadsSummaryTab } from "@/components/google-ads/GadsSummaryTab"
 import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
@@ -2414,9 +2415,18 @@ function DashboardPageContent() {
         <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8">
           {/* Title row */}
           <div className="flex h-14 items-center justify-between">
-            <h1 className="text-2xl font-semibold text-white tracking-tight">
-              Command Center
-            </h1>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/[0.06] border border-white/[0.08] text-gray-400 hover:text-white hover:bg-white/[0.12] transition-colors"
+                title="Back to Home"
+              >
+                <Home className="h-4 w-4" />
+              </Link>
+              <h1 className="text-2xl font-semibold text-white tracking-tight">
+                Command Center
+              </h1>
+            </div>
             {metrics && (
               <span className="bg-white/[0.06] px-3 py-1 rounded-full border border-white/[0.08] text-gray-400 text-sm">
                 {metrics.today.date_range}
