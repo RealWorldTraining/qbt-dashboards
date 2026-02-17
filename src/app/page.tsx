@@ -36,10 +36,11 @@ interface DashboardCard {
 
 interface DashboardSection {
   title: string
-  accent: string // tailwind color classes
+  accent: string
   glowColor: string
   iconBg: string
   borderColor: string
+  gradientBar: string
   items: DashboardCard[]
 }
 
@@ -47,9 +48,10 @@ const sections: DashboardSection[] = [
   {
     title: "Revenue",
     accent: "text-emerald-400",
-    glowColor: "group-hover:shadow-emerald-500/20",
-    iconBg: "bg-emerald-500/15 text-emerald-400",
-    borderColor: "border-emerald-500/30 hover:border-emerald-400/60",
+    glowColor: "group-hover:shadow-emerald-500/25",
+    iconBg: "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/20",
+    borderColor: "border-white/[0.06] hover:border-emerald-400/40",
+    gradientBar: "from-emerald-400 to-emerald-600",
     items: [
       {
         name: "Sales",
@@ -70,9 +72,10 @@ const sections: DashboardSection[] = [
   {
     title: "Advertising",
     accent: "text-blue-400",
-    glowColor: "group-hover:shadow-blue-500/20",
-    iconBg: "bg-blue-500/15 text-blue-400",
-    borderColor: "border-blue-500/30 hover:border-blue-400/60",
+    glowColor: "group-hover:shadow-blue-500/25",
+    iconBg: "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/20",
+    borderColor: "border-white/[0.06] hover:border-blue-400/40",
+    gradientBar: "from-blue-400 to-blue-600",
     items: [
       {
         name: "Google Ads",
@@ -95,9 +98,10 @@ const sections: DashboardSection[] = [
   {
     title: "Organic & SEO",
     accent: "text-violet-400",
-    glowColor: "group-hover:shadow-violet-500/20",
-    iconBg: "bg-violet-500/15 text-violet-400",
-    borderColor: "border-violet-500/30 hover:border-violet-400/60",
+    glowColor: "group-hover:shadow-violet-500/25",
+    iconBg: "bg-violet-500/15 text-violet-400 ring-1 ring-violet-500/20",
+    borderColor: "border-white/[0.06] hover:border-violet-400/40",
+    gradientBar: "from-violet-400 to-violet-600",
     items: [
       {
         name: "Traffic",
@@ -130,7 +134,7 @@ const sections: DashboardSection[] = [
       {
         name: "Combined Performance",
         description: "Cross-channel organic performance overview",
-        href: "/dashboard?tab=traffic",
+        href: "/dashboard?tab=combined",
         icon: Layers,
         tags: ["Overview", "All Channels"],
       },
@@ -140,8 +144,9 @@ const sections: DashboardSection[] = [
     title: "Other Reports",
     accent: "text-slate-400",
     glowColor: "group-hover:shadow-slate-500/15",
-    iconBg: "bg-slate-500/15 text-slate-400",
-    borderColor: "border-slate-500/30 hover:border-slate-400/50",
+    iconBg: "bg-slate-500/15 text-slate-400 ring-1 ring-slate-500/20",
+    borderColor: "border-white/[0.06] hover:border-slate-400/30",
+    gradientBar: "from-slate-400 to-slate-600",
     items: [
       {
         name: "Command Center",
@@ -293,12 +298,12 @@ function CardComponent({ card, section, index }: { card: DashboardCard; section:
   return (
     <Link
       href={card.href}
-      className={`group relative flex flex-col rounded-2xl border backdrop-blur-sm bg-white/[0.03] p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-white/[0.06] hover:shadow-2xl ${section.borderColor} ${section.glowColor} card-enter`}
+      className={`group relative flex flex-col rounded-2xl border backdrop-blur-sm bg-white/[0.03] p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-white/[0.07] hover:shadow-2xl ${section.borderColor} ${section.glowColor} card-enter`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Arrow indicator */}
       <div className="absolute top-5 right-5 opacity-0 translate-x-[-4px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-        <ArrowUpRight className="h-4 w-4 text-white/40" />
+        <ArrowUpRight className={`h-4 w-4 ${section.accent} opacity-60`} />
       </div>
 
       {/* Icon */}
@@ -307,8 +312,8 @@ function CardComponent({ card, section, index }: { card: DashboardCard; section:
       </div>
 
       {/* Content */}
-      <h3 className="text-[15px] font-semibold text-white mb-1">{card.name}</h3>
-      <p className="text-[13px] text-white/50 leading-relaxed mb-4 flex-1">{card.description}</p>
+      <h3 className="text-base font-semibold text-white mb-1.5 group-hover:text-white transition-colors">{card.name}</h3>
+      <p className="text-[13px] text-white/45 leading-relaxed mb-4 flex-1">{card.description}</p>
 
       {/* Sub-tabs */}
       {card.subtabs && (
@@ -316,7 +321,7 @@ function CardComponent({ card, section, index }: { card: DashboardCard; section:
           {card.subtabs.map((tab) => (
             <span
               key={tab}
-              className={`px-2 py-0.5 text-[11px] font-medium rounded-md border border-white/10 bg-white/[0.04] text-white/60`}
+              className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/50 group-hover:border-white/[0.12] group-hover:text-white/60 transition-colors"
             >
               {tab}
             </span>
@@ -326,9 +331,9 @@ function CardComponent({ card, section, index }: { card: DashboardCard; section:
 
       {/* Tags */}
       {card.tags && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 mt-auto">
           {card.tags.map((tag, i) => (
-            <span key={tag} className="text-[11px] text-white/30">
+            <span key={tag} className="text-[11px] text-white/25">
               {i > 0 && <span className="mr-1.5">·</span>}
               {tag}
             </span>
@@ -352,36 +357,32 @@ export default function HomePage() {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
-        <header className="mb-14 header-enter">
-          <div className="flex items-center gap-3.5 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 shadow-lg shadow-cyan-500/20">
-              <Zap className="h-5 w-5 text-white" />
+        <header className="mb-16 header-enter">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 shadow-lg shadow-cyan-500/25">
+              <Zap className="h-5.5 w-5.5 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white tracking-tight">
               QuickBooks Training
             </h1>
           </div>
-          <p className="text-white/40 text-sm ml-[54px]">Analytics & Dashboards</p>
+          <p className="text-white/35 text-sm ml-[60px]">Analytics & Dashboards</p>
         </header>
 
         {/* Sections */}
         {sections.map((section, sectionIdx) => (
           <section
             key={section.title}
-            className="mb-12 section-enter"
+            className="mb-14 section-enter"
             style={{ animationDelay: `${sectionIdx * 100}ms` }}
           >
             {/* Section Header */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className={`h-5 w-1 rounded-full bg-gradient-to-b ${
-                section.title === "Revenue" ? "from-emerald-400 to-emerald-600" :
-                section.title === "Advertising" ? "from-blue-400 to-blue-600" :
-                section.title === "Organic & SEO" ? "from-violet-400 to-violet-600" :
-                "from-slate-400 to-slate-600"
-              }`} />
-              <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-white/50">
+            <div className="flex items-center gap-4 mb-7">
+              <div className={`h-7 w-1.5 rounded-full bg-gradient-to-b ${section.gradientBar}`} />
+              <h2 className={`text-sm font-bold uppercase tracking-[0.15em] ${section.accent}`}>
                 {section.title}
               </h2>
+              <div className="flex-1 h-px bg-gradient-to-r from-white/[0.06] to-transparent" />
             </div>
 
             {/* Cards Grid */}
