@@ -247,7 +247,7 @@ export default async function EnhancedHealthPage() {
                 {charts.map(chart => (
                   <div key={chart.id} className="border rounded-lg p-4 hover:bg-gray-50">
                     <div className="flex items-start justify-between mb-3">
-                      <div>
+                      <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <StatusBadge status={chart.status} />
                           <h3 className="font-semibold text-gray-900">{chart.name}</h3>
@@ -260,6 +260,18 @@ export default async function EnhancedHealthPage() {
                         <a href={chart.route} className="text-sm text-blue-600 hover:underline">
                           {chart.route}
                         </a>
+                        
+                        {/* Show WHY it's degraded */}
+                        {chart.status === 'degraded' && chart.issues.filter(i => i.status === 'open' || i.status === 'investigating').length > 0 && (
+                          <div className="mt-2 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                            <div className="text-sm font-medium text-yellow-800 mb-1">Why degraded:</div>
+                            {chart.issues.filter(i => i.status === 'open' || i.status === 'investigating').map((issue, idx) => (
+                              <div key={idx} className="text-sm text-yellow-900">
+                                • {issue.issue}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     

@@ -190,6 +190,39 @@ export default async function HealthPage() {
           </div>
         </div>
 
+        {/* Failed Endpoints Summary (if any) */}
+        {health.summary.failed > 0 && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  {health.summary.failed} endpoint{health.summary.failed > 1 ? 's are' : ' is'} not responding
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <ul className="list-disc list-inside space-y-1">
+                    {health.checks.filter(c => !c.ok).map(check => (
+                      <li key={check.endpoint}>
+                        <strong>{check.name}</strong>: {check.error || `HTTP ${check.statusCode}`}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-3">
+                  <a 
+                    href="/health/enhanced" 
+                    className="text-sm font-medium text-yellow-800 hover:text-yellow-900 underline"
+                  >
+                    View enhanced dashboard for full details →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Checks Table */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
