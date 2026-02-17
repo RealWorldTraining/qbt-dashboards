@@ -23,6 +23,7 @@ import {
   ShoppingCart,
   ArrowUpRight,
   Zap,
+  Smartphone,
 } from "lucide-react"
 
 interface DashboardCard {
@@ -141,6 +142,30 @@ const sections: DashboardSection[] = [
     ],
   },
   {
+    title: "Mobile Optimized",
+    accent: "text-amber-400",
+    glowColor: "group-hover:shadow-amber-500/25",
+    iconBg: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20",
+    borderColor: "border-white/[0.06] hover:border-amber-400/40",
+    gradientBar: "from-amber-400 to-amber-600",
+    items: [
+      {
+        name: "Phone Dashboard",
+        description: "Phone call metrics & performance",
+        href: "/phone",
+        icon: Phone,
+        tags: ["Calls", "Mobile"],
+      },
+      {
+        name: "Sales Snapshot",
+        description: "Real-time forecasts for office TV & mobile",
+        href: "/data",
+        icon: Monitor,
+        tags: ["TV", "Real-time"],
+      },
+    ],
+  },
+  {
     title: "Other Reports",
     accent: "text-slate-400",
     glowColor: "group-hover:shadow-slate-500/15",
@@ -168,13 +193,6 @@ const sections: DashboardSection[] = [
         href: "/sales",
         icon: ShoppingCart,
         tags: ["Revenue", "Orders"],
-      },
-      {
-        name: "Sales Snapshot",
-        description: "Real-time forecasts for office TV",
-        href: "/data",
-        icon: Monitor,
-        tags: ["TV", "Real-time"],
       },
       {
         name: "P&L Recap",
@@ -224,13 +242,6 @@ const sections: DashboardSection[] = [
         href: "/intuit-sales",
         icon: DollarSign,
         tags: ["Intuit"],
-      },
-      {
-        name: "Phone Dashboard",
-        description: "Phone call metrics & performance",
-        href: "/phone",
-        icon: Phone,
-        tags: ["Calls"],
       },
       {
         name: "Team Dashboard",
