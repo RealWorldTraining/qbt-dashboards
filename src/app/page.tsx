@@ -265,27 +265,6 @@ const sections: DashboardSection[] = [
         tags: ["History"],
       },
       {
-        name: "SEO Rankings",
-        description: "AWR keyword rankings & visibility",
-        href: "/seo/rankings",
-        icon: TrendingUp,
-        tags: ["Rankings", "AWR"],
-      },
-      {
-        name: "SEO Competitors",
-        description: "Competitor ranking analysis",
-        href: "/seo/competitors",
-        icon: Users,
-        tags: ["Competitors"],
-      },
-      {
-        name: "AI Search",
-        description: "AI search visibility & citations",
-        href: "/seo/ai-search",
-        icon: Search,
-        tags: ["AI", "Citations"],
-      },
-      {
         name: "Age Analysis",
         description: "Google Ads age demographic breakdown",
         href: "/age-analysis",
