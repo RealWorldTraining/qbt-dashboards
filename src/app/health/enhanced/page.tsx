@@ -116,12 +116,22 @@ export default async function EnhancedHealthPage() {
     const chartIssues = ISSUE_LOG.filter(issue => issue.chartId === chart.id);
     const openChartIssues = chartIssues.filter(i => i.status === 'open' || i.status === 'investigating');
     
+    // Determine degraded reason from health check or issue log
+    let degradedReason: string | undefined;
+    if (apiCheck && !apiCheck.ok) {
+      degradedReason = apiCheck.error || `HTTP ${apiCheck.statusCode}`;
+    } else if (openChartIssues.length > 0) {
+      degradedReason = openChartIssues[0].issue; // Show first open issue
+    }
+    
     return {
       ...chart,
       status: apiCheck?.ok ? 'healthy' : 'degraded',
       lastCheck: health.timestamp,
       issues: chartIssues,
-      openIssues: openChartIssues.length
+      openIssues: openChartIssues.length,
+      healthCheck: apiCheck,
+      degradedReason
     };
   });
   
@@ -262,14 +272,17 @@ export default async function EnhancedHealthPage() {
                         </a>
                         
                         {/* Show WHY it's degraded */}
-                        {chart.status === 'degraded' && chart.issues.filter(i => i.status === 'open' || i.status === 'investigating').length > 0 && (
+                        {chart.status === 'degraded' && chart.degradedReason && (
                           <div className="mt-2 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                            <div className="text-sm font-medium text-yellow-800 mb-1">Why degraded:</div>
-                            {chart.issues.filter(i => i.status === 'open' || i.status === 'investigating').map((issue, idx) => (
-                              <div key={idx} className="text-sm text-yellow-900">
-                                • {issue.issue}
+                            <div className="text-sm font-medium text-yellow-800 mb-1">⚠️ Why degraded:</div>
+                            <div className="text-sm text-yellow-900">
+                              {chart.degradedReason}
+                            </div>
+                            {chart.healthCheck && !chart.healthCheck.ok && (
+                              <div className="text-xs text-yellow-700 mt-1">
+                                Health check failed: {chart.healthCheck.endpoint || 'Unknown endpoint'}
                               </div>
-                            ))}
+                            )}
                           </div>
                         )}
                       </div>
