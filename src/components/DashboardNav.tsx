@@ -83,6 +83,7 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
 interface DashboardNavProps {
   theme?: "dark" | "light"
   activeHref?: string
+  size?: "default" | "large"
 }
 
 function isCategory(item: DashboardItem | DashboardCategory): item is DashboardCategory {
@@ -93,7 +94,7 @@ function isDashboardItem(item: DashboardItem | DashboardCategory): item is Dashb
   return 'href' in item
 }
 
-export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) {
+export function DashboardNav({ theme = "dark", activeHref, size = "default" }: DashboardNavProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const pathname = usePathname()
@@ -161,15 +162,15 @@ export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) 
       </Link>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-          isDark
-            ? "text-gray-300 hover:text-white hover:bg-white/10"
-            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+        className={`flex items-center rounded-lg transition-colors ${
+          size === "large"
+            ? `gap-3 px-3 py-1.5 ${isDark ? "text-white hover:bg-white/10" : "text-gray-900 hover:bg-gray-100"}`
+            : `gap-2 px-3 py-2 text-sm font-medium ${isDark ? "text-gray-300 hover:text-white hover:bg-white/10" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`
         }`}
       >
-        <CurrentIcon className="h-4 w-4" />
-        <span>{currentDashboard.name}</span>
-        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <CurrentIcon className={size === "large" ? "h-5 w-5" : "h-4 w-4"} />
+        <span className={size === "large" ? "text-2xl font-semibold tracking-tight" : ""}>{currentDashboard.name}</span>
+        <ChevronDown className={`transition-transform ${isOpen ? 'rotate-180' : ''} ${size === "large" ? "h-5 w-5 opacity-40" : "h-3.5 w-3.5"}`} />
       </button>
 
       {isOpen && (

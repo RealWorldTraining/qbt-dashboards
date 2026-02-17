@@ -2329,10 +2329,7 @@ function DashboardPageContent() {
         <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8">
           <div className="flex h-14 items-center justify-between">
             <div className="flex items-center gap-3">
-              <DashboardNav theme="dark" activeHref={activeTab ? `/dashboard?tab=${activeTab}` : "/dashboard"} />
-              <h1 className="text-2xl font-semibold text-white tracking-tight">
-                Command Center
-              </h1>
+              <DashboardNav theme="dark" activeHref={activeTab ? `/dashboard?tab=${activeTab}` : "/dashboard"} size="large" />
             </div>
             {metrics && (
               <span className="bg-white/[0.06] px-3 py-1 rounded-full border border-white/[0.08] text-gray-400 text-sm">
