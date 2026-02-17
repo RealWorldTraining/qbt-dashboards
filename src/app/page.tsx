@@ -114,7 +114,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard?tab=traffic",
         icon: Users,
         tags: ["Sessions", "Channels"],
-        preview: "/previews/playground.png",
+        preview: "/previews/traffic.png",
       },
       {
         name: "Conversions",
