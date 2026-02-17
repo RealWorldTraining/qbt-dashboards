@@ -147,6 +147,14 @@ const sections: DashboardSection[] = [
         tags: ["Overview", "All Channels"],
         preview: "/previews/combined.png",
       },
+      {
+        name: "GA4 Traffic by Channel",
+        description: "Monthly traffic by channel from GA4",
+        href: "/playground",
+        icon: BarChart3,
+        tags: ["Traffic", "Channels"],
+        preview: "/previews/playground.png",
+      },
     ],
   },
   {
@@ -198,14 +206,6 @@ const sections: DashboardSection[] = [
         icon: FileText,
         tags: ["Monthly"],
         preview: "/previews/recap.png",
-      },
-      {
-        name: "GA4 Summary",
-        description: "Monthly traffic by channel from GA4",
-        href: "/playground",
-        icon: BarChart3,
-        tags: ["Traffic", "Channels"],
-        preview: "/previews/playground.png",
       },
       {
         name: "Trend Analysis",
