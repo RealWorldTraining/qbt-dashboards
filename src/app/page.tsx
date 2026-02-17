@@ -188,13 +188,6 @@ const sections: DashboardSection[] = [
         tags: ["Traffic", "Ads", "ROI"],
       },
       {
-        name: "Sales Dashboard",
-        description: "Detailed sales analytics and trends",
-        href: "/sales",
-        icon: ShoppingCart,
-        tags: ["Revenue", "Orders"],
-      },
-      {
         name: "P&L Recap",
         description: "Monthly profit & loss reports",
         href: "/recap",
