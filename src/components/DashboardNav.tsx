@@ -18,6 +18,7 @@ import {
   Sprout,
   Repeat,
   Home,
+  Layers,
 } from "lucide-react"
 
 interface DashboardItem {
@@ -31,6 +32,8 @@ interface DashboardItem {
 interface DashboardCategory {
   name: string
   icon: any
+  accent: string      // tailwind color for left border & icon bg
+  iconColor: string   // tailwind text color for icon
   items: DashboardItem[]
 }
 
@@ -50,29 +53,35 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
   {
     name: "Revenue",
     icon: DollarSign,
+    accent: "border-emerald-500",
+    iconColor: "bg-emerald-500/20 text-emerald-400",
     items: [
-      { name: "Sales", href: "/dashboard?tab=sales", icon: DollarSign, description: "Daily sales analysis" },
-      { name: "Subscriptions", href: "/dashboard?tab=subscriptions", icon: Repeat, description: "Subscription metrics & churn" },
-      { name: "Intuit Revenue", href: "/intuit-sales", icon: FileText, description: "Intuit revenue by category" },
+      { name: "Sales", href: "/dashboard?tab=sales", icon: DollarSign, description: "Daily sales & hourly pace" },
+      { name: "Subscriptions", href: "/dashboard?tab=subscriptions", icon: Repeat, description: "MRR, churn & retention" },
+      { name: "Intuit Revenue", href: "/intuit-sales", icon: FileText, description: "Revenue by category" },
     ]
   },
   {
     name: "Advertising",
     icon: Target,
+    accent: "border-violet-500",
+    iconColor: "bg-violet-500/20 text-violet-400",
     items: [
-      { name: "Google Ads", href: "/dashboard?tab=google-ads", icon: BarChart3, description: "Google Ads performance" },
-      { name: "Bing Ads", href: "/dashboard?tab=bing-ads", icon: Search, description: "Bing Ads performance" },
+      { name: "Google Ads", href: "/dashboard?tab=google-ads", icon: BarChart3, description: "Campaigns, spend & ROAS" },
+      { name: "Bing Ads", href: "/dashboard?tab=bing-ads", icon: Search, description: "Microsoft Ads metrics" },
     ]
   },
   {
     name: "Organic & SEO",
     icon: Sprout,
+    accent: "border-sky-500",
+    iconColor: "bg-sky-500/20 text-sky-400",
     items: [
       { name: "Traffic", href: "/dashboard?tab=traffic", icon: Users, description: "GA4 traffic by channel" },
-      { name: "Conversions", href: "/dashboard?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
-      { name: "Search Console", href: "/dashboard?tab=gsc", icon: Search, description: "Search rankings & clicks" },
-      { name: "Landing Pages", href: "/dashboard?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
-      { name: "Combined Performance", href: "/dashboard?tab=combined", icon: BarChart3, description: "All organic channels combined" },
+      { name: "Conversions", href: "/dashboard?tab=conversions", icon: TrendingUp, description: "Goals & conversion rates" },
+      { name: "Search Console", href: "/dashboard?tab=gsc", icon: Search, description: "Rankings, clicks & CTR" },
+      { name: "Landing Pages", href: "/dashboard?tab=landing-pages", icon: MapPin, description: "Page performance" },
+      { name: "Combined", href: "/dashboard?tab=combined", icon: Layers, description: "All organic channels" },
     ]
   },
 ]
@@ -105,7 +114,16 @@ export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) 
     }
   }, [pathname, activeHref])
 
-  // Find current dashboard and determine which group it belongs to
+  // Auto-expand the group containing the active item
+  useEffect(() => {
+    for (const group of dashboardGroups) {
+      if (isCategory(group) && group.items.some(i => i.href === fullPath)) {
+        setExpandedGroups(prev => new Set(prev).add(group.name))
+        break
+      }
+    }
+  }, [fullPath])
+
   const findCurrentDashboard = () => {
     for (const group of dashboardGroups) {
       if (isDashboardItem(group) && group.href === fullPath) {
@@ -157,47 +175,49 @@ export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) 
       >
         <CurrentIcon className="h-4 w-4" />
         <span>{currentDashboard.name}</span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
         <>
-          <div 
-            className="fixed inset-0 z-40" 
+          <div
+            className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className={`absolute top-full left-0 mt-2 w-72 rounded-lg shadow-xl z-50 overflow-hidden max-h-[80vh] overflow-y-auto ${
-            isDark 
-              ? "bg-gray-900 border border-gray-700" 
-              : "bg-white border border-gray-200"
+          <div className={`absolute top-full left-0 mt-2 w-80 rounded-xl shadow-2xl z-50 overflow-hidden max-h-[85vh] overflow-y-auto ${
+            isDark
+              ? "bg-[#111827] border border-white/10 ring-1 ring-white/5"
+              : "bg-white border border-gray-200 ring-1 ring-gray-100"
           }`}>
-            {dashboardGroups.map((group, idx) => {
-              if (isDashboardItem(group)) {
-                // Render individual item
+            {/* Top items: Home & Command Center */}
+            <div className={`p-2 ${isDark ? 'border-b border-white/[0.06]' : 'border-b border-gray-100'}`}>
+              {dashboardGroups.filter(isDashboardItem).map((group) => {
                 const Icon = group.icon
                 const isActive = fullPath === group.href
                 const isExternal = group.external
                 const linkProps = isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}
-                
+
                 return (
                   <Link
                     key={group.href}
                     href={group.href}
                     onClick={() => setIsOpen(false)}
                     {...linkProps}
-                    className={`flex items-center gap-3 px-4 py-3 transition-colors border-l-2 ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                       isDark
-                        ? `hover:bg-white/5 ${isActive ? 'bg-white/10 border-cyan-400' : 'border-transparent'}`
-                        : `hover:bg-gray-50 ${isActive ? 'bg-blue-50 border-blue-500' : 'border-transparent'}`
+                        ? `hover:bg-white/[0.06] ${isActive ? 'bg-white/[0.08]' : ''}`
+                        : `hover:bg-gray-50 ${isActive ? 'bg-blue-50' : ''}`
                     }`}
                   >
-                    <Icon className={`h-5 w-5 ${
+                    <div className={`flex items-center justify-center h-8 w-8 rounded-lg ${
                       isDark
-                        ? isActive ? 'text-cyan-400' : 'text-gray-400'
-                        : isActive ? 'text-blue-500' : 'text-gray-400'
-                    }`} />
+                        ? isActive ? 'bg-cyan-500/20 text-cyan-400' : 'bg-white/[0.06] text-gray-400'
+                        : isActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
                     <div className="flex-1">
-                      <div className={`font-medium ${
+                      <div className={`text-sm font-medium ${
                         isDark
                           ? isActive ? 'text-white' : 'text-gray-200'
                           : isActive ? 'text-gray-900' : 'text-gray-700'
@@ -210,64 +230,76 @@ export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) 
                     </div>
                   </Link>
                 )
-              } else {
-                // Render category with items
+              })}
+            </div>
+
+            {/* Category groups */}
+            <div className="p-2 space-y-1">
+              {dashboardGroups.filter(isCategory).map((group) => {
                 const Icon = group.icon
                 const isExpanded = expandedGroups.has(group.name)
                 const hasActiveItem = group.items.some(item => item.href === fullPath)
-                
+
                 return (
                   <div key={group.name}>
+                    {/* Section header */}
                     <button
                       onClick={() => toggleGroup(group.name)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors group ${
                         isDark
-                          ? 'hover:bg-white/5 text-gray-300'
-                          : 'hover:bg-gray-50 text-gray-600'
+                          ? 'hover:bg-white/[0.04]'
+                          : 'hover:bg-gray-50'
                       }`}
                     >
+                      <div className={`h-8 w-1 rounded-full ${group.accent}`} />
                       <Icon className={`h-5 w-5 ${
                         isDark
-                          ? hasActiveItem ? 'text-cyan-400' : 'text-gray-400'
-                          : hasActiveItem ? 'text-blue-500' : 'text-gray-500'
+                          ? hasActiveItem ? 'text-white' : 'text-gray-400 group-hover:text-gray-300'
+                          : hasActiveItem ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'
                       }`} />
-                      <div className={`flex-1 text-left font-semibold ${
+                      <span className={`flex-1 text-left text-[11px] font-bold tracking-[0.1em] uppercase ${
                         isDark
-                          ? hasActiveItem ? 'text-cyan-400' : 'text-gray-200'
-                          : hasActiveItem ? 'text-blue-600' : 'text-gray-700'
+                          ? hasActiveItem ? 'text-white' : 'text-gray-400 group-hover:text-gray-300'
+                          : hasActiveItem ? 'text-gray-900' : 'text-gray-500 group-hover:text-gray-700'
                       }`}>
                         {group.name}
-                      </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''} ${
-                        isDark ? 'text-gray-500' : 'text-gray-400'
+                      </span>
+                      <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} ${
+                        isDark ? 'text-gray-600 group-hover:text-gray-400' : 'text-gray-300 group-hover:text-gray-500'
                       }`} />
                     </button>
+
+                    {/* Expanded items */}
                     {isExpanded && (
-                      <div className={isDark ? 'bg-white/5' : 'bg-gray-50'}>
+                      <div className="ml-4 pl-3 space-y-0.5 pb-1" style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
                         {group.items.map((item) => {
                           const ItemIcon = item.icon
                           const isActive = fullPath === item.href
                           const isExternal = item.external
                           const linkProps = isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}
-                          
+
                           return (
                             <Link
                               key={item.href}
                               href={item.href}
                               onClick={() => setIsOpen(false)}
                               {...linkProps}
-                              className={`flex items-center gap-3 pl-12 pr-4 py-2.5 transition-colors border-l-2 ${
+                              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                                 isDark
-                                  ? `hover:bg-white/5 ${isActive ? 'bg-white/10 border-cyan-400' : 'border-transparent'}`
-                                  : `hover:bg-gray-100 ${isActive ? 'bg-blue-50 border-blue-500' : 'border-transparent'}`
+                                  ? `hover:bg-white/[0.06] ${isActive ? 'bg-white/[0.08]' : ''}`
+                                  : `hover:bg-gray-50 ${isActive ? 'bg-blue-50' : ''}`
                               }`}
                             >
-                              <ItemIcon className={`h-4 w-4 ${
-                                isDark
-                                  ? isActive ? 'text-cyan-400' : 'text-gray-500'
-                                  : isActive ? 'text-blue-500' : 'text-gray-500'
-                              }`} />
-                              <div className="flex-1">
+                              <div className={`flex items-center justify-center h-7 w-7 rounded-md ${
+                                isActive
+                                  ? group.iconColor
+                                  : isDark
+                                    ? 'bg-white/[0.04] text-gray-500'
+                                    : 'bg-gray-100 text-gray-400'
+                              }`}>
+                                <ItemIcon className="h-3.5 w-3.5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
                                 <div className={`text-sm font-medium ${
                                   isDark
                                     ? isActive ? 'text-white' : 'text-gray-300'
@@ -275,7 +307,9 @@ export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) 
                                 }`}>
                                   {item.name}
                                 </div>
-                                <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                                <div className={`text-[11px] truncate ${
+                                  isDark ? 'text-gray-600' : 'text-gray-400'
+                                }`}>
                                   {item.description}
                                 </div>
                               </div>
@@ -286,8 +320,8 @@ export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) 
                     )}
                   </div>
                 )
-              }
-            })}
+              })}
+            </div>
           </div>
         </>
       )}
