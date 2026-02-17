@@ -15,7 +15,6 @@ import {
   Activity,
   Eye,
   Phone,
-  UserCheck,
   Star,
   Headphones,
   Monitor,
@@ -231,13 +230,6 @@ const sections: DashboardSection[] = [
         icon: DollarSign,
         tags: ["Intuit"],
         preview: "/previews/intuit-sales.png",
-      },
-      {
-        name: "Team Dashboard",
-        description: "Team performance metrics",
-        href: "/team",
-        icon: UserCheck,
-        tags: ["Team"],
       },
       {
         name: "Reviews",
