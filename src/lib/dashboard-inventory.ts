@@ -35,6 +35,12 @@ export const DASHBOARD_INVENTORY: Chart[] = [
     category: 'paid-ads',
     dataSources: [
       {
+        type: 'api',
+        name: 'Combined Weekly API',
+        endpoint: '/api/combined-weekly',
+        updateFrequency: 'Real-time'
+      },
+      {
         type: 'adveronix',
         name: 'Google Ads Account Weekly',
         tab: 'GADS: Account: Weekly (Devices)',
