@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function SalesPage() {
-  redirect('/')
+  redirect('/dashboard?tab=sales')
 }

@@ -17,6 +17,7 @@ import {
   Target,
   Sprout,
   Repeat,
+  Home,
 } from "lucide-react"
 
 interface DashboardItem {
@@ -71,12 +72,14 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
       { name: "Conversions", href: "/dashboard?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
       { name: "Search Console", href: "/dashboard?tab=gsc", icon: Search, description: "Search rankings & clicks" },
       { name: "Landing Pages", href: "/dashboard?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
+      { name: "Combined Performance", href: "/dashboard?tab=combined", icon: BarChart3, description: "All organic channels combined" },
     ]
   },
 ]
 
 interface DashboardNavProps {
   theme?: "dark" | "light"
+  activeHref?: string
 }
 
 function isCategory(item: DashboardItem | DashboardCategory): item is DashboardCategory {
@@ -87,16 +90,20 @@ function isDashboardItem(item: DashboardItem | DashboardCategory): item is Dashb
   return 'href' in item
 }
 
-export function DashboardNav({ theme = "dark" }: DashboardNavProps) {
+export function DashboardNav({ theme = "dark", activeHref }: DashboardNavProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const pathname = usePathname()
   const [fullPath, setFullPath] = useState(pathname)
 
   useEffect(() => {
-    const tab = new URLSearchParams(window.location.search).get("tab")
-    setFullPath(tab && pathname === "/dashboard" ? `/dashboard?tab=${tab}` : pathname)
-  }, [pathname])
+    if (activeHref) {
+      setFullPath(activeHref)
+    } else {
+      const tab = new URLSearchParams(window.location.search).get("tab")
+      setFullPath(tab && pathname === "/dashboard" ? `/dashboard?tab=${tab}` : pathname)
+    }
+  }, [pathname, activeHref])
 
   // Find current dashboard and determine which group it belongs to
   const findCurrentDashboard = () => {
@@ -128,12 +135,23 @@ export function DashboardNav({ theme = "dark" }: DashboardNavProps) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-1">
+      <Link
+        href="/"
+        className={`flex items-center justify-center h-8 w-8 rounded-lg transition-colors ${
+          isDark
+            ? "text-gray-400 hover:text-white hover:bg-white/10"
+            : "text-gray-400 hover:text-gray-900 hover:bg-gray-100"
+        }`}
+        title="Home"
+      >
+        <Home className="h-4 w-4" />
+      </Link>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-          isDark 
-            ? "text-gray-300 hover:text-white hover:bg-white/10" 
+          isDark
+            ? "text-gray-300 hover:text-white hover:bg-white/10"
             : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
         }`}
       >

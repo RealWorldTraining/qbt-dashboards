@@ -27,6 +27,7 @@ import {
 import { CardSkeleton, TableSkeleton } from "@/components/ui/skeleton"
 import { TrendingUp, TrendingDown, Calendar, Loader2, Users, DollarSign, ArrowUp, ArrowDown, Minus, AlertTriangle, Shield, Target, Sparkles, CheckCircle2, Clock, Lightbulb, Brain, Swords, Wallet, Image, Search, RefreshCw, Pause, XCircle, Play, ChevronUp, ChevronDown, Monitor, Smartphone, Percent, MapPin, FileText, BarChart3, Home } from "lucide-react"
 import Link from "next/link"
+import { DashboardNav } from "@/components/DashboardNav"
 import { GadsSummaryTab } from "@/components/google-ads/GadsSummaryTab"
 import { GadsCPCTab } from "@/components/google-ads/GadsCPCTab"
 import { GadsAgeTab } from "@/components/google-ads/GadsAgeTab"
@@ -839,35 +840,7 @@ interface SubscriberMetricsResponse {
   message: string
 }
 
-type SectionType = "revenue" | "advertising" | "organic" | "reports"
-
 type TabType = "sales" | "subscriptions" | "google-ads" | "bing-ads" | "traffic" | "conversions" | "gsc" | "landing-pages" | "combined"
-
-const SECTION_TABS: Record<SectionType, TabType[]> = {
-  revenue: ["sales", "subscriptions"],
-  advertising: ["google-ads", "bing-ads"],
-  organic: ["traffic", "conversions", "gsc", "landing-pages", "combined"],
-  reports: [],
-}
-
-const SECTION_DEFAULTS: Record<SectionType, TabType | null> = {
-  revenue: "sales",
-  advertising: "google-ads",
-  organic: "traffic",
-  reports: null,
-}
-
-const TAB_TO_SECTION: Record<TabType, SectionType> = {
-  sales: "revenue",
-  subscriptions: "revenue",
-  "google-ads": "advertising",
-  "bing-ads": "advertising",
-  traffic: "organic",
-  conversions: "organic",
-  gsc: "organic",
-  "landing-pages": "organic",
-  "combined": "organic",
-}
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -2011,40 +1984,12 @@ function DashboardPageContent() {
   const tabParam = searchParams.get("tab") as string | null
   const resolvedTab: TabType | null = tabParam && validTabs.includes(tabParam as TabType) ? tabParam as TabType : null
   const [activeTab, setActiveTab] = useState<TabType | null>(resolvedTab ?? "sales")
-  const [activeSection, setActiveSection] = useState<SectionType>(
-    resolvedTab ? TAB_TO_SECTION[resolvedTab] : "revenue"
-  )
 
   useEffect(() => {
     if (tabParam && validTabs.includes(tabParam as TabType)) {
-      const tab = tabParam as TabType
-      setActiveTab(tab)
-      setActiveSection(TAB_TO_SECTION[tab])
+      setActiveTab(tabParam as TabType)
     }
   }, [tabParam])
-
-  // Refs for section navigation
-  const sectionRefs = useRef<Record<string, HTMLButtonElement | null>>({})
-  const sectionRowRef = useRef<HTMLDivElement>(null)
-
-  // Section click handler
-  const handleSectionClick = (section: SectionType) => {
-    setActiveSection(section)
-    const defaultTab = SECTION_DEFAULTS[section]
-    setActiveTab(defaultTab)
-    if (defaultTab) {
-      window.history.replaceState({}, "", `/?tab=${defaultTab}`)
-    } else {
-      window.history.replaceState({}, "", `/?section=${section}`)
-    }
-  }
-
-  // Sub-tab click handler
-  const handleSubTabClick = (tab: TabType) => {
-    setActiveTab(tab)
-    setActiveSection(TAB_TO_SECTION[tab])
-    window.history.replaceState({}, "", `/?tab=${tab}`)
-  }
 
   // Sales state
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null)
@@ -2377,52 +2322,14 @@ function DashboardPageContent() {
     return () => clearInterval(refreshInterval)
   }, [activeTab])
 
-  const sections: Array<{
-    id: SectionType
-    label: string
-    icon: any
-    description: string
-  }> = [
-    { id: "revenue", label: "Revenue", icon: DollarSign, description: "Daily sales, subscription health, and product revenue" },
-    { id: "advertising", label: "Advertising", icon: Target, description: "Google Ads and Bing Ads campaign performance" },
-    { id: "organic", label: "Organic & SEO", icon: TrendingUp, description: "Traffic sources, conversions, search rankings, and landing pages" },
-    { id: "reports", label: "Other Reports", icon: FileText, description: "Forecasting, AI analysis, and operational tools" },
-  ]
-
-  const sectionTabs: Record<SectionType, Array<{ id: TabType; label: string; icon: any }>> = {
-    revenue: [
-      { id: "sales", label: "Sales", icon: DollarSign },
-      { id: "subscriptions", label: "Subscriptions", icon: RefreshCw },
-    ],
-    advertising: [
-      { id: "google-ads", label: "Google Ads", icon: TrendingUp },
-      { id: "bing-ads", label: "Bing Ads", icon: Target },
-    ],
-    organic: [
-      { id: "traffic", label: "Traffic", icon: Users },
-      { id: "conversions", label: "Conversions", icon: CheckCircle2 },
-      { id: "gsc", label: "Search Console", icon: Search },
-      { id: "landing-pages", label: "Landing Pages", icon: MapPin },
-      { id: "combined", label: "Combined Performance", icon: BarChart3 },
-    ],
-    reports: [],
-  }
-
   return (
     <div className="min-h-screen bg-[#F5F5F7]">
       {/* Header */}
       <header className="bg-gradient-to-r from-[#0F0F1A] to-[#1A1A2E] sticky top-0 z-10">
         <div className="mx-auto max-w-[1920px] px-4 sm:px-6 lg:px-8">
-          {/* Title row */}
           <div className="flex h-14 items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/[0.06] border border-white/[0.08] text-gray-400 hover:text-white hover:bg-white/[0.12] transition-colors"
-                title="Back to Home"
-              >
-                <Home className="h-4 w-4" />
-              </Link>
+              <DashboardNav theme="dark" activeHref={activeTab ? `/dashboard?tab=${activeTab}` : "/dashboard"} />
               <h1 className="text-2xl font-semibold text-white tracking-tight">
                 Command Center
               </h1>
@@ -2433,52 +2340,6 @@ function DashboardPageContent() {
               </span>
             )}
           </div>
-          {/* Main nav — left-aligned tabs with outline box on active */}
-          <div className="flex items-center gap-1 pt-1 pb-3 overflow-x-auto scrollbar-hide" ref={sectionRowRef}>
-            {sections.map((section) => {
-              const Icon = section.icon
-              const isActive = activeSection === section.id
-              return (
-                <button
-                  key={section.id}
-                  ref={(el) => { sectionRefs.current[section.id] = el }}
-                  onClick={() => handleSectionClick(section.id)}
-                  title={section.description}
-                  className={`flex items-center gap-3 px-6 py-3 text-lg font-semibold rounded-full whitespace-nowrap transition-colors ${
-                    isActive
-                      ? "bg-[#2563eb] text-white"
-                      : "text-gray-300 hover:text-white"
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  {section.label}
-                </button>
-              )
-            })}
-          </div>
-          {/* Sub-nav — same dark bg, left-aligned pill buttons */}
-          {sectionTabs[activeSection].length > 0 && (
-            <div key={activeSection} className="flex items-center gap-2 pb-3 overflow-x-auto scrollbar-hide animate-subtab-enter">
-              {sectionTabs[activeSection].map((tab) => {
-                const Icon = tab.icon
-                const isActive = activeTab === tab.id
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleSubTabClick(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2 text-base font-medium rounded-lg whitespace-nowrap transition-colors ${
-                      isActive
-                        ? "text-white border border-white/30 bg-white/[0.08]"
-                        : "text-gray-400 border border-transparent hover:text-gray-200"
-                    }`}
-                  >
-                    <Icon className="h-4.5 w-4.5" />
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </div>
-          )}
         </div>
       </header>
 
@@ -6210,71 +6071,6 @@ function DashboardPageContent() {
         )}
 
 
-        {/* Other Reports Hub */}
-        {activeSection === "reports" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: "Jedi Council",
-                description: "Multi-agent AI analysis with Claude, GPT-4o, and Gemini",
-                icon: Sparkles,
-                href: "https://jedi-council-zeta.vercel.app",
-                external: true,
-                gradient: "from-purple-500 to-indigo-500",
-              },
-              {
-                title: "The Prophet",
-                description: "Sales forecasting and predictive analytics",
-                icon: Brain,
-                href: "/data",
-                external: false,
-                gradient: "from-blue-500 to-cyan-500",
-              },
-              {
-                title: "Live Help",
-                description: "Real-time room status and availability",
-                icon: Users,
-                href: "/live-help",
-                external: false,
-                gradient: "from-green-500 to-emerald-500",
-              },
-              {
-                title: "P&L Recap",
-                description: "Monthly profit and loss reports",
-                icon: DollarSign,
-                href: "/recap",
-                external: false,
-                gradient: "from-orange-500 to-amber-500",
-              },
-            ].map((card) => {
-              const CardIcon = card.icon
-              return (
-                <a
-                  key={card.title}
-                  href={card.href}
-                  {...(card.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className="group bg-white rounded-xl border border-[#D2D2D7] shadow-sm hover:shadow-md transition-all p-6 flex flex-col gap-4"
-                >
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center`}>
-                    <CardIcon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[#1D1D1F] group-hover:text-[#0066CC] transition-colors">
-                      {card.title}
-                    </h3>
-                    <p className="text-sm text-[#6E6E73] mt-1">{card.description}</p>
-                  </div>
-                  <div className="mt-auto flex items-center gap-1 text-sm font-medium text-[#0066CC]">
-                    <span>Open</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </a>
-              )
-            })}
-          </div>
-        )}
 
 
 
