@@ -223,6 +223,19 @@ export default async function HealthPage() {
           </table>
         </div>
 
+        {/* Enhanced Dashboard Link */}
+        <div className="mt-6 text-center">
+          <a 
+            href="/health/enhanced" 
+            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            📊 View Enhanced Dashboard
+            <span className="ml-2 text-sm">
+              (Full inventory + issue tracking)
+            </span>
+          </a>
+        </div>
+
         {/* Auto-refresh notice */}
         <div className="mt-4 text-center text-sm text-gray-500">
           <p>Page auto-refreshes every 30 seconds</p>
