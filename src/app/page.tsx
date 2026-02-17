@@ -123,6 +123,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard?tab=conversions",
         icon: TrendingUp,
         tags: ["Goals", "Rates"],
+        preview: "/previews/conversions.png",
       },
       {
         name: "Search Console",
@@ -130,6 +131,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard?tab=gsc",
         icon: Search,
         tags: ["Rankings", "CTR"],
+        preview: "/previews/gsc.png",
       },
       {
         name: "Landing Pages",
@@ -145,6 +147,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard?tab=combined",
         icon: Layers,
         tags: ["Overview", "All Channels"],
+        preview: "/previews/combined.png",
       },
     ],
   },
