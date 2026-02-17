@@ -8,6 +8,27 @@ Real-time marketing performance dashboards powered by Google Sheets (Adveronix) 
 
 ---
 
+## 🔑 GitHub SSH Setup (REQUIRED)
+
+**⚠️ This repo requires SSH authentication.**
+
+If you're getting `Permission denied` or token errors, you need to set up SSH keys:
+
+👉 **[Complete SSH Setup Guide](docs/github-ssh-setup.md)**
+
+**Quick test:**
+```bash
+ssh -T git@github.com
+# Should say: "Hi ThanosAndProfessorX!"
+```
+
+**Already cloned with HTTPS?** Switch to SSH:
+```bash
+git remote set-url origin git@github.com:RealWorldTraining/qbt-dashboards.git
+```
+
+---
+
 ## 📊 Dashboards
 
 ### Marketing Dashboards (Adveronix-powered)
