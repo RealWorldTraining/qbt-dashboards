@@ -45,12 +45,6 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
     description: "All dashboards & reports"
   },
   {
-    name: "Command Center",
-    href: "/dashboard",
-    icon: LayoutGrid,
-    description: "Overview dashboard - Sales, Traffic, Ads"
-  },
-  {
     name: "Revenue",
     icon: DollarSign,
     accent: "border-emerald-500",
