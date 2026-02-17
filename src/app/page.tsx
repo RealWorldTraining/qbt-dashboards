@@ -1,6 +1,8 @@
 "use client"
 
+import { useState, useRef, useCallback } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import {
   DollarSign,
   Repeat,
@@ -33,6 +35,7 @@ interface DashboardCard {
   icon: any
   tags?: string[]
   subtabs?: string[]
+  preview?: string
 }
 
 interface DashboardSection {
@@ -51,7 +54,7 @@ const sections: DashboardSection[] = [
     accent: "text-emerald-400",
     glowColor: "group-hover:shadow-emerald-500/25",
     iconBg: "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/20",
-    borderColor: "border-white/[0.06] hover:border-emerald-400/40",
+    borderColor: "border-white/[0.08] hover:border-emerald-400/50",
     gradientBar: "from-emerald-400 to-emerald-600",
     items: [
       {
@@ -60,6 +63,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard?tab=sales",
         icon: DollarSign,
         tags: ["Revenue", "Orders", "Forecasts"],
+        preview: "/previews/sales.png",
       },
       {
         name: "Subscriptions",
@@ -75,7 +79,7 @@ const sections: DashboardSection[] = [
     accent: "text-blue-400",
     glowColor: "group-hover:shadow-blue-500/25",
     iconBg: "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/20",
-    borderColor: "border-white/[0.06] hover:border-blue-400/40",
+    borderColor: "border-white/[0.08] hover:border-blue-400/50",
     gradientBar: "from-blue-400 to-blue-600",
     items: [
       {
@@ -85,6 +89,7 @@ const sections: DashboardSection[] = [
         icon: BarChart3,
         tags: ["Spend", "Conversions", "ROAS"],
         subtabs: ["Summary", "CPC", "Age", "Assets"],
+        preview: "/previews/dashboard.png",
       },
       {
         name: "Bing Ads",
@@ -93,6 +98,7 @@ const sections: DashboardSection[] = [
         icon: Search,
         tags: ["Spend", "Conversions", "ROAS"],
         subtabs: ["Summary", "CPC"],
+        preview: "/previews/cpc-bing.png",
       },
     ],
   },
@@ -101,7 +107,7 @@ const sections: DashboardSection[] = [
     accent: "text-violet-400",
     glowColor: "group-hover:shadow-violet-500/25",
     iconBg: "bg-violet-500/15 text-violet-400 ring-1 ring-violet-500/20",
-    borderColor: "border-white/[0.06] hover:border-violet-400/40",
+    borderColor: "border-white/[0.08] hover:border-violet-400/50",
     gradientBar: "from-violet-400 to-violet-600",
     items: [
       {
@@ -110,6 +116,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard?tab=traffic",
         icon: Users,
         tags: ["Sessions", "Channels"],
+        preview: "/previews/playground.png",
       },
       {
         name: "Conversions",
@@ -131,6 +138,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard?tab=landing-pages",
         icon: MapPin,
         tags: ["Pages", "Performance"],
+        preview: "/previews/landing-pages.png",
       },
       {
         name: "Combined Performance",
@@ -146,7 +154,7 @@ const sections: DashboardSection[] = [
     accent: "text-amber-400",
     glowColor: "group-hover:shadow-amber-500/25",
     iconBg: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20",
-    borderColor: "border-white/[0.06] hover:border-amber-400/40",
+    borderColor: "border-white/[0.08] hover:border-amber-400/50",
     gradientBar: "from-amber-400 to-amber-600",
     items: [
       {
@@ -155,6 +163,7 @@ const sections: DashboardSection[] = [
         href: "/phone",
         icon: Smartphone,
         tags: ["Sales", "Mobile"],
+        preview: "/previews/phone.png",
       },
       {
         name: "Sales Snapshot",
@@ -162,6 +171,7 @@ const sections: DashboardSection[] = [
         href: "/data",
         icon: Monitor,
         tags: ["TV", "Real-time"],
+        preview: "/previews/data.png",
       },
     ],
   },
@@ -170,7 +180,7 @@ const sections: DashboardSection[] = [
     accent: "text-slate-400",
     glowColor: "group-hover:shadow-slate-500/15",
     iconBg: "bg-slate-500/15 text-slate-400 ring-1 ring-slate-500/20",
-    borderColor: "border-white/[0.06] hover:border-slate-400/30",
+    borderColor: "border-white/[0.08] hover:border-slate-400/40",
     gradientBar: "from-slate-400 to-slate-600",
     items: [
       {
@@ -179,6 +189,7 @@ const sections: DashboardSection[] = [
         href: "/dashboard",
         icon: LayoutGrid,
         tags: ["All-in-one"],
+        preview: "/previews/dashboard.png",
       },
       {
         name: "Marketing Dashboard",
@@ -186,6 +197,7 @@ const sections: DashboardSection[] = [
         href: "/ads",
         icon: Activity,
         tags: ["Traffic", "Ads", "ROI"],
+        preview: "/previews/ads.png",
       },
       {
         name: "P&L Recap",
@@ -193,6 +205,7 @@ const sections: DashboardSection[] = [
         href: "/recap",
         icon: FileText,
         tags: ["Monthly"],
+        preview: "/previews/recap.png",
       },
       {
         name: "GA4 Summary",
@@ -200,6 +213,7 @@ const sections: DashboardSection[] = [
         href: "/playground",
         icon: BarChart3,
         tags: ["Traffic", "Channels"],
+        preview: "/previews/playground.png",
       },
       {
         name: "Google Ads Summary",
@@ -207,6 +221,7 @@ const sections: DashboardSection[] = [
         href: "/google-ads-summary",
         icon: BarChart3,
         tags: ["Spend", "ROAS"],
+        preview: "/previews/google-ads-summary.png",
       },
       {
         name: "Bing Ads Summary",
@@ -214,6 +229,7 @@ const sections: DashboardSection[] = [
         href: "/bing-ads-summary",
         icon: Search,
         tags: ["Spend", "ROAS"],
+        preview: "/previews/bing-ads-summary.png",
       },
       {
         name: "Trend Analysis",
@@ -221,6 +237,7 @@ const sections: DashboardSection[] = [
         href: "/trend-analysis",
         icon: TrendingUp,
         tags: ["Trends", "YoY"],
+        preview: "/previews/trend-analysis.png",
       },
       {
         name: "Vision Analytics",
@@ -228,6 +245,7 @@ const sections: DashboardSection[] = [
         href: "/vision",
         icon: Eye,
         tags: ["Keywords"],
+        preview: "/previews/vision.png",
       },
       {
         name: "Intuit Revenue",
@@ -235,6 +253,7 @@ const sections: DashboardSection[] = [
         href: "/intuit-sales",
         icon: DollarSign,
         tags: ["Intuit"],
+        preview: "/previews/intuit-sales.png",
       },
       {
         name: "Team Dashboard",
@@ -270,19 +289,52 @@ const sections: DashboardSection[] = [
         href: "/age-analysis",
         icon: BarChart3,
         tags: ["Demographics"],
+        preview: "/previews/age-analysis.png",
       },
     ],
   },
 ]
 
-function CardComponent({ card, section, index }: { card: DashboardCard; section: DashboardSection; index: number }) {
+function CardComponent({
+  card,
+  section,
+  index,
+}: {
+  card: DashboardCard
+  section: DashboardSection
+  index: number
+}) {
   const Icon = card.icon
+  const [showPreview, setShowPreview] = useState(false)
+  const [previewPos, setPreviewPos] = useState<"above" | "below">("below")
+  const cardRef = useRef<HTMLAnchorElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleMouseEnter = useCallback(() => {
+    if (!card.preview) return
+    timeoutRef.current = setTimeout(() => {
+      if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect()
+        const spaceBelow = window.innerHeight - rect.bottom
+        setPreviewPos(spaceBelow < 320 ? "above" : "below")
+      }
+      setShowPreview(true)
+    }, 300)
+  }, [card.preview])
+
+  const handleMouseLeave = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setShowPreview(false)
+  }, [])
 
   return (
     <Link
+      ref={cardRef}
       href={card.href}
-      className={`group relative flex flex-col rounded-2xl border backdrop-blur-sm bg-white/[0.03] p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-white/[0.07] hover:shadow-2xl ${section.borderColor} ${section.glowColor} card-enter`}
+      className={`group relative flex flex-col rounded-2xl border backdrop-blur-sm bg-white/[0.04] p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-white/[0.09] hover:shadow-2xl ${section.borderColor} ${section.glowColor} card-enter`}
       style={{ animationDelay: `${index * 60}ms` }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Arrow indicator */}
       <div className="absolute top-5 right-5 opacity-0 translate-x-[-4px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
@@ -290,13 +342,19 @@ function CardComponent({ card, section, index }: { card: DashboardCard; section:
       </div>
 
       {/* Icon */}
-      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${section.iconBg} mb-4 transition-transform duration-300 group-hover:scale-110`}>
+      <div
+        className={`flex h-12 w-12 items-center justify-center rounded-xl ${section.iconBg} mb-4 transition-transform duration-300 group-hover:scale-110`}
+      >
         <Icon className="h-6 w-6" />
       </div>
 
       {/* Content */}
-      <h3 className="text-base font-semibold text-white mb-1.5 group-hover:text-white transition-colors">{card.name}</h3>
-      <p className="text-[13px] text-white/45 leading-relaxed mb-4 flex-1">{card.description}</p>
+      <h3 className="text-base font-semibold text-white/90 mb-1.5 group-hover:text-white transition-colors">
+        {card.name}
+      </h3>
+      <p className="text-[13px] text-white/40 leading-relaxed mb-4 flex-1">
+        {card.description}
+      </p>
 
       {/* Sub-tabs */}
       {card.subtabs && (
@@ -304,7 +362,7 @@ function CardComponent({ card, section, index }: { card: DashboardCard; section:
           {card.subtabs.map((tab) => (
             <span
               key={tab}
-              className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/50 group-hover:border-white/[0.12] group-hover:text-white/60 transition-colors"
+              className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-white/[0.1] bg-white/[0.04] text-white/55 group-hover:border-white/[0.15] group-hover:text-white/70 transition-colors"
             >
               {tab}
             </span>
@@ -321,6 +379,32 @@ function CardComponent({ card, section, index }: { card: DashboardCard; section:
               {tag}
             </span>
           ))}
+        </div>
+      )}
+
+      {/* Hover Preview */}
+      {card.preview && showPreview && (
+        <div
+          className={`absolute left-1/2 z-50 w-[380px] rounded-xl border border-white/[0.12] bg-[#141825] shadow-2xl shadow-black/60 overflow-hidden animate-preview-in pointer-events-none ${
+            previewPos === "above" ? "bottom-full mb-3" : "top-full mt-3"
+          }`}
+          style={{ transform: "translateX(-50%)" }}
+        >
+          <div className="relative w-full h-[220px]">
+            <Image
+              src={card.preview}
+              alt={`${card.name} preview`}
+              fill
+              className="object-cover object-top"
+              sizes="380px"
+              unoptimized
+            />
+          </div>
+          <div className="px-3 py-2 border-t border-white/[0.06]">
+            <p className="text-[11px] text-white/40 text-center">
+              {card.name}
+            </p>
+          </div>
         </div>
       )}
     </Link>
@@ -341,15 +425,17 @@ export default function HomePage() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <header className="mb-16 header-enter">
-          <div className="flex items-center gap-4 mb-2">
+          <div className="flex items-center gap-4 mb-1">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 shadow-lg shadow-cyan-500/25">
               <Zap className="h-5.5 w-5.5 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">
-              QuickBooks Training
+            <h1 className="text-4xl font-extrabold text-white tracking-tight uppercase">
+              Command Center
             </h1>
           </div>
-          <p className="text-white/35 text-sm ml-[60px]">Analytics & Dashboards</p>
+          <p className="text-white/30 text-sm ml-[60px]">
+            QuickBooks Training · Analytics & Dashboards
+          </p>
         </header>
 
         {/* Sections */}
@@ -361,21 +447,27 @@ export default function HomePage() {
           >
             {/* Section Header */}
             <div className="flex items-center gap-4 mb-7">
-              <div className={`h-7 w-1.5 rounded-full bg-gradient-to-b ${section.gradientBar}`} />
-              <h2 className={`text-sm font-bold uppercase tracking-[0.15em] ${section.accent}`}>
+              <div
+                className={`h-7 w-1.5 rounded-full bg-gradient-to-b ${section.gradientBar}`}
+              />
+              <h2
+                className={`text-sm font-bold uppercase tracking-[0.15em] ${section.accent}`}
+              >
                 {section.title}
               </h2>
               <div className="flex-1 h-px bg-gradient-to-r from-white/[0.06] to-transparent" />
             </div>
 
             {/* Cards Grid */}
-            <div className={`grid gap-4 ${
-              section.items.length <= 2
-                ? "grid-cols-1 sm:grid-cols-2"
-                : section.items.length <= 4
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            }`}>
+            <div
+              className={`grid gap-4 ${
+                section.items.length <= 2
+                  ? "grid-cols-1 sm:grid-cols-2"
+                  : section.items.length <= 4
+                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              }`}
+            >
               {section.items.map((card, cardIdx) => (
                 <CardComponent
                   key={card.name}
