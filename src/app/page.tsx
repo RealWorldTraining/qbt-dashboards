@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import {
@@ -305,40 +304,35 @@ function CardComponent({
   index: number
 }) {
   const Icon = card.icon
-  const [showPreview, setShowPreview] = useState(false)
-  const [previewPos, setPreviewPos] = useState<"above" | "below">("below")
-  const cardRef = useRef<HTMLAnchorElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const handleMouseEnter = useCallback(() => {
-    if (!card.preview) return
-    timeoutRef.current = setTimeout(() => {
-      if (cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect()
-        const spaceBelow = window.innerHeight - rect.bottom
-        setPreviewPos(spaceBelow < 320 ? "above" : "below")
-      }
-      setShowPreview(true)
-    }, 300)
-  }, [card.preview])
-
-  const handleMouseLeave = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    setShowPreview(false)
-  }, [])
 
   return (
     <Link
-      ref={cardRef}
       href={card.href}
-      className={`group relative flex flex-col rounded-2xl border backdrop-blur-sm bg-white/[0.04] p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-white/[0.09] hover:shadow-2xl ${section.borderColor} ${section.glowColor} card-enter`}
+      className={`group relative flex flex-col rounded-2xl border backdrop-blur-sm bg-white/[0.04] p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-white/[0.09] hover:shadow-2xl overflow-hidden ${section.borderColor} ${section.glowColor} card-enter`}
       style={{ animationDelay: `${index * 60}ms` }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
+      {/* Preview image — fills card on hover */}
+      {card.preview && (
+        <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <Image
+            src={card.preview}
+            alt={`${card.name} preview`}
+            fill
+            className="object-cover object-top"
+            sizes="400px"
+            unoptimized
+          />
+          {/* Bottom gradient so the card title remains readable */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className="absolute bottom-3 left-4 right-4">
+            <p className="text-sm font-semibold text-white drop-shadow-lg">{card.name}</p>
+          </div>
+        </div>
+      )}
+
       {/* Arrow indicator */}
-      <div className="absolute top-5 right-5 opacity-0 translate-x-[-4px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-        <ArrowUpRight className={`h-4 w-4 ${section.accent} opacity-60`} />
+      <div className="absolute top-5 right-5 opacity-0 translate-x-[-4px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 z-20">
+        <ArrowUpRight className={`h-4 w-4 ${card.preview ? 'text-white' : section.accent} opacity-60`} />
       </div>
 
       {/* Icon */}
@@ -379,32 +373,6 @@ function CardComponent({
               {tag}
             </span>
           ))}
-        </div>
-      )}
-
-      {/* Hover Preview */}
-      {card.preview && showPreview && (
-        <div
-          className={`absolute left-1/2 z-50 w-[380px] rounded-xl border border-white/[0.12] bg-[#141825] shadow-2xl shadow-black/60 overflow-hidden animate-preview-in pointer-events-none ${
-            previewPos === "above" ? "bottom-full mb-3" : "top-full mt-3"
-          }`}
-          style={{ transform: "translateX(-50%)" }}
-        >
-          <div className="relative w-full h-[220px]">
-            <Image
-              src={card.preview}
-              alt={`${card.name} preview`}
-              fill
-              className="object-cover object-top"
-              sizes="380px"
-              unoptimized
-            />
-          </div>
-          <div className="px-3 py-2 border-t border-white/[0.06]">
-            <p className="text-[11px] text-white/40 text-center">
-              {card.name}
-            </p>
-          </div>
         </div>
       )}
     </Link>
