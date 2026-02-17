@@ -106,54 +106,20 @@ export async function GET() {
       gscWeekly.set(weekStart, existing)
     })
 
-    // --- Google Ads: aggregate across devices, keyed by Sunday-based week ---
-    // The sheet has daily rolling windows × devices; group by Sunday week to align
+    // --- Google Ads: aggregate daily data across devices, keyed by Sunday-based week ---
+    // The sheet has daily rows × 3 devices (Desktop/Mobile/Tablet); sum all into weekly buckets
     const gadsRows = gadsRes.data.values || []
-    const gadsWeekly = new Map<string, { impressions: number; clicks: number; conversions: number; dates: Set<string> }>()
+    const gadsClean = new Map<string, { impressions: number; clicks: number; conversions: number }>()
     gadsRows.slice(1).forEach(row => {
-      const rawWeek = row[0]
-      if (!rawWeek) return
-      const sundayWeek = getWeekStartSunday(rawWeek)
-      const existing = gadsWeekly.get(sundayWeek) || { impressions: 0, clicks: 0, conversions: 0, dates: new Set<string>() }
-      existing.dates.add(rawWeek)
+      const rawDate = row[0]
+      if (!rawDate) return
+      const sundayWeek = getWeekStartSunday(rawDate)
+      const existing = gadsClean.get(sundayWeek) || { impressions: 0, clicks: 0, conversions: 0 }
       existing.impressions += parseNumber(row[4])
       existing.clicks += parseNumber(row[3])
       existing.conversions += parseNumber(row[9])
-      gadsWeekly.set(sundayWeek, existing)
+      gadsClean.set(sundayWeek, existing)
     })
-
-    // For Google Ads, if multiple raw dates map to same Sunday-week, each date had
-    // 3 device rows (Desktop/Mobile/Tablet) summed above. But if multiple DATES
-    // exist within the same week, the data might be overlapping rolling windows.
-    // To avoid double-counting, if >1 unique date maps to a week, pick only the
-    // entry closest to the Sunday start and re-aggregate just that date's rows.
-    const gadsClean = new Map<string, { impressions: number; clicks: number; conversions: number }>()
-    for (const [sundayWeek, data] of gadsWeekly.entries()) {
-      if (data.dates.size <= 1) {
-        // Single date in this week — safe to use as-is
-        gadsClean.set(sundayWeek, { impressions: data.impressions, clicks: data.clicks, conversions: data.conversions })
-      } else {
-        // Multiple dates in this week — pick the one closest to the Sunday start
-        const dates = Array.from(data.dates).sort()
-        const sundayMs = new Date(sundayWeek).getTime()
-        let bestDate = dates[0]
-        let bestDiff = Infinity
-        for (const d of dates) {
-          const diff = Math.abs(new Date(d).getTime() - sundayMs)
-          if (diff < bestDiff) { bestDiff = diff; bestDate = d }
-        }
-        // Re-aggregate only rows matching bestDate
-        const filtered = { impressions: 0, clicks: 0, conversions: 0 }
-        gadsRows.slice(1).forEach(row => {
-          if (row[0] === bestDate) {
-            filtered.impressions += parseNumber(row[4])
-            filtered.clicks += parseNumber(row[3])
-            filtered.conversions += parseNumber(row[9])
-          }
-        })
-        gadsClean.set(sundayWeek, filtered)
-      }
-    }
 
     // --- Bing Ads: already weekly, use Sunday-based key ---
     const bingRows = bingRes.data.values || []
