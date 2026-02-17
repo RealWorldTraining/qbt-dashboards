@@ -173,6 +173,14 @@ const sections: DashboardSection[] = [
         tags: ["TV", "Real-time"],
         preview: "/previews/data.png",
       },
+      {
+        name: "Marketing Dashboard",
+        description: "Traffic by channel, Google & Bing Ads",
+        href: "/ads",
+        icon: Activity,
+        tags: ["Traffic", "Ads", "ROI"],
+        preview: "/previews/ads.png",
+      },
     ],
   },
   {
@@ -183,14 +191,6 @@ const sections: DashboardSection[] = [
     borderColor: "border-white/[0.08] hover:border-slate-400/40",
     gradientBar: "from-slate-400 to-slate-600",
     items: [
-      {
-        name: "Marketing Dashboard",
-        description: "Traffic by channel, Google & Bing Ads",
-        href: "/ads",
-        icon: Activity,
-        tags: ["Traffic", "Ads", "ROI"],
-        preview: "/previews/ads.png",
-      },
       {
         name: "P&L Recap",
         description: "Monthly profit & loss reports",
