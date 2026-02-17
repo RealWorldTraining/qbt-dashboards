@@ -142,7 +142,7 @@ const sections: DashboardSection[] = [
     ],
   },
   {
-    title: "Mobile Optimized",
+    title: "TV / Mobile Optimized",
     accent: "text-amber-400",
     glowColor: "group-hover:shadow-amber-500/25",
     iconBg: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20",
@@ -150,11 +150,11 @@ const sections: DashboardSection[] = [
     gradientBar: "from-amber-400 to-amber-600",
     items: [
       {
-        name: "Phone Dashboard",
-        description: "Phone call metrics & performance",
+        name: "Sales (iPhone)",
+        description: "Sales report optimized for mobile",
         href: "/phone",
-        icon: Phone,
-        tags: ["Calls", "Mobile"],
+        icon: Smartphone,
+        tags: ["Sales", "Mobile"],
       },
       {
         name: "Sales Snapshot",
