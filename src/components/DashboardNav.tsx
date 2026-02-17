@@ -35,8 +35,14 @@ interface DashboardCategory {
 
 const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
   {
-    name: "Command Center",
+    name: "Home",
     href: "/",
+    icon: LayoutGrid,
+    description: "All dashboards & reports"
+  },
+  {
+    name: "Command Center",
+    href: "/dashboard",
     icon: LayoutGrid,
     description: "Overview dashboard - Sales, Traffic, Ads"
   },
@@ -44,8 +50,8 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
     name: "Revenue",
     icon: DollarSign,
     items: [
-      { name: "Sales", href: "/?tab=sales", icon: DollarSign, description: "Daily sales analysis" },
-      { name: "Subscriptions", href: "/?tab=subscriptions", icon: Repeat, description: "Subscription metrics & churn" },
+      { name: "Sales", href: "/dashboard?tab=sales", icon: DollarSign, description: "Daily sales analysis" },
+      { name: "Subscriptions", href: "/dashboard?tab=subscriptions", icon: Repeat, description: "Subscription metrics & churn" },
       { name: "Intuit Revenue", href: "/intuit-sales", icon: FileText, description: "Intuit revenue by category" },
     ]
   },
@@ -53,18 +59,18 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
     name: "Advertising",
     icon: Target,
     items: [
-      { name: "Google Ads", href: "/?tab=google-ads", icon: BarChart3, description: "Google Ads performance" },
-      { name: "Bing Ads", href: "/?tab=bing-ads", icon: Search, description: "Bing Ads performance" },
+      { name: "Google Ads", href: "/dashboard?tab=google-ads", icon: BarChart3, description: "Google Ads performance" },
+      { name: "Bing Ads", href: "/dashboard?tab=bing-ads", icon: Search, description: "Bing Ads performance" },
     ]
   },
   {
     name: "Organic & SEO",
     icon: Sprout,
     items: [
-      { name: "Traffic", href: "/?tab=traffic", icon: Users, description: "GA4 traffic by channel" },
-      { name: "Conversions", href: "/?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
-      { name: "Search Console", href: "/?tab=gsc", icon: Search, description: "Search rankings & clicks" },
-      { name: "Landing Pages", href: "/?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
+      { name: "Traffic", href: "/dashboard?tab=traffic", icon: Users, description: "GA4 traffic by channel" },
+      { name: "Conversions", href: "/dashboard?tab=conversions", icon: TrendingUp, description: "Conversion tracking" },
+      { name: "Search Console", href: "/dashboard?tab=gsc", icon: Search, description: "Search rankings & clicks" },
+      { name: "Landing Pages", href: "/dashboard?tab=landing-pages", icon: MapPin, description: "Page performance analysis" },
     ]
   },
 ]
@@ -89,7 +95,7 @@ export function DashboardNav({ theme = "dark" }: DashboardNavProps) {
 
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get("tab")
-    setFullPath(tab && pathname === "/" ? `/?tab=${tab}` : pathname)
+    setFullPath(tab && pathname === "/dashboard" ? `/dashboard?tab=${tab}` : pathname)
   }, [pathname])
 
   // Find current dashboard and determine which group it belongs to
