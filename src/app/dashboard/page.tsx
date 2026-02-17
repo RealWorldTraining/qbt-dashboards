@@ -3781,7 +3781,7 @@ function DashboardPageContent() {
         {activeTab === "traffic" && (
           <>
             {/* Traffic Source Toggle */}
-            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-14 z-[5] bg-[#F5F5F7] py-3 -mt-3">
               {([
                 { key: 'total' as TrafficSource, label: 'Total Traffic', color: '#0066CC' },
                 { key: 'organic' as TrafficSource, label: 'Organic', color: '#34C759' },
@@ -4462,7 +4462,7 @@ function DashboardPageContent() {
         {activeTab === "conversions" && (
           <>
             {/* View Toggle + Source Filter */}
-            <div className="flex items-center gap-4 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+            <div className="flex items-center gap-4 mb-6 sticky top-14 z-[5] bg-[#F5F5F7] py-3 -mt-3">
               {/* Counts vs Rate toggle */}
               <div className="flex bg-white rounded-lg border border-[#D2D2D7] p-0.5">
                 <button
@@ -5408,7 +5408,7 @@ function DashboardPageContent() {
         {activeTab === "google-ads" && (
           <>
             {/* Google Ads View + Metric Toggle */}
-            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-14 z-[5] bg-[#F5F5F7] py-3 -mt-3">
               {/* View mode pills */}
               {([
                 { key: 'summary' as const, label: 'Summary', color: '#1D1D1F' },
@@ -5743,7 +5743,7 @@ function DashboardPageContent() {
         {activeTab === "bing-ads" && (
           <>
             {/* Bing Ads View + Metric Toggle */}
-            <div className="flex flex-wrap gap-2 mb-6 sticky top-[108px] z-[5] bg-[#F5F5F7] py-3 -mt-3">
+            <div className="flex flex-wrap gap-2 mb-6 sticky top-14 z-[5] bg-[#F5F5F7] py-3 -mt-3">
               {/* View mode pills */}
               {([
                 { key: 'summary' as const, label: 'Summary', color: '#1D1D1F' },
