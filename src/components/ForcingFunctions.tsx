@@ -165,7 +165,7 @@ export function ForcingFunctions({ keywords, platform }: ForcingFunctionsProps) 
                     {icon} {title}
                   </span>
                   <span className="text-gray-500 text-xs">
-                    {openSections[key] ? '\u25BC' : '\u25B6' /* these are in JS expressions already */}
+                    {openSections[key] ? '\u25BC' : '\u25B6'}
                   </span>
                 </button>
                 {openSections[key] && (
