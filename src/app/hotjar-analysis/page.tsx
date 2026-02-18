@@ -20,7 +20,7 @@ export default function HotjarAnalysisPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
       {/* Header - Toned Down */}
       <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 shadow-2xl border-b border-slate-600">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-[1600px] mx-auto px-6 py-8">
           <h1 className="text-4xl font-extrabold mb-2 text-white">QBTraining.com Analysis</h1>
           <p className="text-slate-300 text-lg">Behavioral & Revenue Deep Dive • February 2026</p>
         </div>
@@ -28,20 +28,20 @@ export default function HotjarAnalysisPage() {
 
       {/* Navigation Pills */}
       <div className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-xl border-b border-gray-700 shadow-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
+          <div className="flex gap-3 overflow-x-auto pb-2 pr-6 scrollbar-hide">
             {sections.map((section, idx) => (
               <button
                 key={section.id}
                 onClick={() => setActiveSection(idx)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all flex-shrink-0 ${
                   activeSection === idx
                     ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg scale-105'
                     : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                 }`}
               >
                 <span>{section.icon}</span>
-                <span className="hidden sm:inline">{section.title}</span>
+                <span>{section.title}</span>
               </button>
             ))}
           </div>
@@ -49,7 +49,7 @@ export default function HotjarAnalysisPage() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-[1600px] mx-auto px-6 py-12">
         
         {/* Executive Summary */}
         {activeSection === 0 && (
@@ -345,15 +345,549 @@ export default function HotjarAnalysisPage() {
           </div>
         )}
 
-        {/* Other Sections Placeholders */}
-        {activeSection > 4 && (
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-12 border border-gray-700 shadow-2xl text-center">
-            <div className="text-6xl mb-6">{sections[activeSection].icon}</div>
-            <h2 className="text-3xl font-bold mb-4 text-blue-400">{sections[activeSection].title}</h2>
-            <p className="text-gray-400 text-lg mb-8">Full content for this section coming soon...</p>
-            <div className="inline-flex items-center gap-2 text-sm text-gray-500">
-              <ChevronRight className="w-4 h-4" />
-              <span>Navigate using the pills above to explore completed sections</span>
+        {/* Page Analysis */}
+        {activeSection === 5 && (
+          <div className="space-y-8 animate-fade-in">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+              <h2 className="text-3xl font-bold mb-6 text-blue-400">Page-by-Page Analysis</h2>
+              
+              {/* Revenue by Page */}
+              <h3 className="text-2xl font-bold text-white mb-4">Revenue by Page</h3>
+              <div className="overflow-x-auto mb-8">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                      <th className="p-4 font-bold text-blue-300">Page</th>
+                      <th className="p-4 font-bold text-blue-300">Desktop Revenue</th>
+                      <th className="p-4 font-bold text-blue-300">Mobile Revenue</th>
+                      <th className="p-4 font-bold text-blue-300">Total</th>
+                      <th className="p-4 font-bold text-blue-300">Desktop Conv %</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Homepage</td>
+                      <td className="p-4">$398,530</td>
+                      <td className="p-4">$55,956</td>
+                      <td className="p-4 text-green-400 font-bold">$454,486</td>
+                      <td className="p-4">0.86%</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">QB Certification</td>
+                      <td className="p-4">$287,410</td>
+                      <td className="p-4">$10,999</td>
+                      <td className="p-4 text-green-400 font-bold">$298,409</td>
+                      <td className="p-4">1.66%</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Plans & Pricing</td>
+                      <td className="p-4">$137,591</td>
+                      <td className="p-4">$33,798</td>
+                      <td className="p-4 text-green-400 font-bold">$171,389</td>
+                      <td className="p-4 text-green-400 font-bold">4.15%</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Live Classes</td>
+                      <td className="p-4">$155,589</td>
+                      <td className="p-4">$10,799</td>
+                      <td className="p-4 text-green-400 font-bold">$166,388</td>
+                      <td className="p-4">2.21%</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Self-Paced Courses</td>
+                      <td className="p-4">$113,121</td>
+                      <td className="p-4">$9,199</td>
+                      <td className="p-4 text-green-400 font-bold">$122,320</td>
+                      <td className="p-4">2.00%</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Certification Mobile</td>
+                      <td className="p-4">$5,500</td>
+                      <td className="p-4">$39,397</td>
+                      <td className="p-4 text-green-400 font-bold">$44,897</td>
+                      <td className="p-4">2.77%</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">QBO Certification</td>
+                      <td className="p-4">$21,849</td>
+                      <td className="p-4">$0</td>
+                      <td className="p-4 text-green-400 font-bold">$21,849</td>
+                      <td className="p-4">1.67%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Scroll Depth Leaderboard */}
+              <h3 className="text-2xl font-bold text-white mb-4 mt-12">Scroll Depth Leaderboard</h3>
+              <div className="overflow-x-auto mb-8">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                      <th className="p-4 font-bold text-blue-300">#</th>
+                      <th className="p-4 font-bold text-blue-300">Page</th>
+                      <th className="p-4 font-bold text-blue-300">Device</th>
+                      <th className="p-4 font-bold text-blue-300">Reach 50%</th>
+                      <th className="p-4 font-bold text-blue-300">Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">1</td>
+                      <td className="p-4">1-on-1 Help</td>
+                      <td className="p-4">Mobile</td>
+                      <td className="p-4 text-green-400 font-bold">69.4%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">2</td>
+                      <td className="p-4">Bookkeeping Cert</td>
+                      <td className="p-4">Mobile</td>
+                      <td className="p-4 text-green-400 font-bold">66.3%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">3</td>
+                      <td className="p-4">QB Certification</td>
+                      <td className="p-4">Mobile</td>
+                      <td className="p-4 text-green-400 font-bold">65.4%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">5</td>
+                      <td className="p-4">Plans & Pricing</td>
+                      <td className="p-4">Desktop</td>
+                      <td className="p-4 text-blue-400 font-bold">52.7%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-sm font-semibold">Good</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">16</td>
+                      <td className="p-4">Homepage</td>
+                      <td className="p-4">Mobile</td>
+                      <td className="p-4 text-red-400 font-bold">23.8%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-red-900/50 text-red-300 rounded-full text-sm font-semibold">Critical</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">17</td>
+                      <td className="p-4 font-bold">Homepage</td>
+                      <td className="p-4 font-bold">Desktop</td>
+                      <td className="p-4 text-red-500 font-bold">9.9%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-red-900/70 text-red-200 rounded-full text-sm font-semibold">Catastrophic</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* CTA Effectiveness */}
+              <h3 className="text-2xl font-bold text-white mb-4 mt-12">CTA Effectiveness Ranking</h3>
+              <div className="overflow-x-auto mb-8">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                      <th className="p-4 font-bold text-blue-300">#</th>
+                      <th className="p-4 font-bold text-blue-300">Page</th>
+                      <th className="p-4 font-bold text-blue-300">Device</th>
+                      <th className="p-4 font-bold text-blue-300">CTA Click Rate</th>
+                      <th className="p-4 font-bold text-blue-300">Grade</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">1</td>
+                      <td className="p-4">Live Classes</td>
+                      <td className="p-4">Mobile</td>
+                      <td className="p-4 text-green-400 font-bold">45.6%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">2</td>
+                      <td className="p-4">Desktop Cert</td>
+                      <td className="p-4">Mobile</td>
+                      <td className="p-4 text-green-400 font-bold">45.0%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">3</td>
+                      <td className="p-4">Homepage</td>
+                      <td className="p-4">Mobile</td>
+                      <td className="p-4 text-green-400 font-bold">43.3%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">7</td>
+                      <td className="p-4">Homepage</td>
+                      <td className="p-4">Desktop</td>
+                      <td className="p-4 text-blue-400 font-bold">21.8%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-sm font-semibold">Good</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">9</td>
+                      <td className="p-4 font-bold">Self-Paced</td>
+                      <td className="p-4 font-bold">Desktop</td>
+                      <td className="p-4 text-red-400 font-bold">4.6%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-red-900/50 text-red-300 rounded-full text-sm font-semibold">Critical</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Desktop vs Mobile Behavior */}
+              <h3 className="text-2xl font-bold text-white mb-4 mt-12">Desktop vs. Mobile Behavior</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                      <th className="p-4 font-bold text-blue-300">Behavior</th>
+                      <th className="p-4 font-bold text-blue-300">Desktop</th>
+                      <th className="p-4 font-bold text-blue-300">Mobile</th>
+                      <th className="p-4 font-bold text-blue-300">Implication</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Dead clicks</td>
+                      <td className="p-4 text-red-400 font-bold">18–39%</td>
+                      <td className="p-4 text-green-400">1–2%</td>
+                      <td className="p-4 text-sm">Desktop design has unclear affordances</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Sign In share</td>
+                      <td className="p-4">30.6%</td>
+                      <td className="p-4">3.6%</td>
+                      <td className="p-4 text-sm">Desktop gets more returning users</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">CTA engagement</td>
+                      <td className="p-4">5–25%</td>
+                      <td className="p-4 text-green-400">13–46%</td>
+                      <td className="p-4 text-sm">Mobile layout drives better engagement</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">FAQ engagement</td>
+                      <td className="p-4">2–25%</td>
+                      <td className="p-4 text-green-400">24–65%</td>
+                      <td className="p-4 text-sm">Accordions are mobile's primary pattern</td>
+                    </tr>
+                    <tr className="hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Scroll to 50%</td>
+                      <td className="p-4">10–53%</td>
+                      <td className="p-4 text-green-400">21–69%</td>
+                      <td className="p-4 text-sm">Mobile retains better on long pages</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Individual Page Deep-Dives */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Homepage */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-blue-400 mb-4">Homepage <span className="text-gray-500 text-base font-normal">/</span></h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Desktop Sessions</span>
+                    <span className="text-white font-semibold">71,419</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Revenue</span>
+                    <span className="text-green-400 font-bold">$454K</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Desktop Conv Rate</span>
+                    <span className="text-white font-semibold">0.86%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Scroll to 50% (Desktop)</span>
+                    <span className="text-red-400 font-bold">9.9%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Dead Clicks (Desktop)</span>
+                    <span className="text-red-400 font-bold">18.3%</span>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-sm text-gray-300">
+                  #1 money page ($454K revenue, 27% of purchases). 90% of desktop users never see bottom half.
+                </div>
+              </div>
+
+              {/* QB Certification */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-blue-400 mb-4">QuickBooks Certification</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Desktop Sessions</span>
+                    <span className="text-white font-semibold">23,747</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Revenue</span>
+                    <span className="text-green-400 font-bold">$298K</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Desktop Conv Rate</span>
+                    <span className="text-white font-semibold">1.66%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Dead Clicks (Desktop)</span>
+                    <span className="text-amber-400 font-bold">25.9%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">FAQ Engagement (Mobile)</span>
+                    <span className="text-green-400 font-bold">62.4%</span>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-sm text-gray-300">
+                  #2 revenue page. Tab navigation proven winner (4,239 clicks). High-intent buyers researching $699.95 credential.
+                </div>
+              </div>
+
+              {/* Plans & Pricing */}
+              <div className="bg-gradient-to-br from-green-900/40 to-gray-900 rounded-xl p-6 border border-green-700/50">
+                <h3 className="text-xl font-bold text-green-400 mb-4">Plans & Pricing ⭐</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Desktop Sessions</span>
+                    <span className="text-white font-semibold">4,530</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Revenue</span>
+                    <span className="text-green-400 font-bold">$171K</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Desktop Conv Rate</span>
+                    <span className="text-green-400 font-bold">4.15%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Scroll to 50% (Desktop)</span>
+                    <span className="text-green-400 font-bold">52.7%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Page Height</span>
+                    <span className="text-green-400 font-bold">3,869px</span>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-sm text-gray-300">
+                  <strong>THE MODEL PAGE.</strong> Highest conversion, shortest page, best scroll retention. Mobile gets MORE sessions (7,727 vs 4,530).
+                </div>
+              </div>
+
+              {/* Self-Paced Courses */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-blue-400 mb-4">Self-Paced Courses</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Desktop Sessions</span>
+                    <span className="text-white font-semibold">8,187</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Revenue</span>
+                    <span className="text-green-400 font-bold">$122K</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">CTA Click Rate (Desktop)</span>
+                    <span className="text-red-400 font-bold">4.6%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Dead Clicks (Desktop)</span>
+                    <span className="text-amber-400 font-bold">25.6%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-400">Page Height (Mobile)</span>
+                    <span className="text-red-400 font-bold">13,213px</span>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-sm text-gray-300">
+                  Conversion black hole. Course cards get 26.5% clicks but only 4.6% reach CTA. Longest page in dataset.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {activeSection === 6 && (
+          <div className="space-y-8 animate-fade-in">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+              <h2 className="text-3xl font-bold mb-6 text-blue-400">Recommendations</h2>
+              
+              {/* Revenue Opportunity */}
+              <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 text-center shadow-2xl mb-8">
+                <div className="text-5xl font-extrabold mb-3">+$450K – $720K</div>
+                <div className="text-lg font-semibold uppercase tracking-wide opacity-90">
+                  Estimated Annual Revenue Uplift
+                </div>
+              </div>
+
+              <h3 className="text-2xl font-bold text-white mb-4">Revenue Opportunity by Initiative</h3>
+              <div className="overflow-x-auto mb-12">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                      <th className="p-4 font-bold text-blue-300">Opportunity</th>
+                      <th className="p-4 font-bold text-blue-300">Current Revenue</th>
+                      <th className="p-4 font-bold text-blue-300">Estimated Uplift</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Fix desktop dead clicks</td>
+                      <td className="p-4">~$1.3M</td>
+                      <td className="p-4 text-green-400 font-bold">+$150K–$200K</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Fix Homepage scroll + shorten page</td>
+                      <td className="p-4">$398K desktop</td>
+                      <td className="p-4 text-green-400 font-bold">+$80K–$120K</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Add CTAs to Self-Paced course cards</td>
+                      <td className="p-4">$113K desktop</td>
+                      <td className="p-4 text-green-400 font-bold">+$50K–$80K</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Improve mobile research experience</td>
+                      <td className="p-4">Indirect</td>
+                      <td className="p-4 text-green-400 font-bold">+$80K–$150K</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Make Plans & Pricing table interactive</td>
+                      <td className="p-4">$137K desktop</td>
+                      <td className="p-4 text-green-400 font-bold">+$20K–$40K</td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Optimize /certification-mobile</td>
+                      <td className="p-4">$39K</td>
+                      <td className="p-4 text-green-400 font-bold">+$30K–$50K</td>
+                    </tr>
+                    <tr className="hover:bg-gray-800/50">
+                      <td className="p-4 font-semibold">Improve mobile checkout</td>
+                      <td className="p-4">~$180K mobile</td>
+                      <td className="p-4 text-green-400 font-bold">+$40K–$80K</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Page-Specific Punch List */}
+              <h3 className="text-2xl font-bold text-white mb-6 mt-12">Page-Specific Punch List</h3>
+              
+              <div className="space-y-6">
+                {/* Homepage */}
+                <div className="bg-gray-800/50 rounded-xl p-6 border border-blue-700/30">
+                  <h4 className="text-xl font-bold text-blue-300 mb-4">Homepage</h4>
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <div className="font-semibold text-white mb-1">HP-1: Consolidate from 9 Sections to 6</div>
+                      <div className="text-sm text-gray-400">Hero → Trust Bar → Offerings Grid → Interactive Comparison Table → FAQ → Final CTA. Cut separate pricing cards, testimonials, instructor section. Saves ~2,000–3,000px.</div>
+                    </div>
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <div className="font-semibold text-white mb-1">HP-2: Fix the First-Fold Experience</div>
+                      <div className="text-sm text-gray-400">40.2% desktop drop-off at 5–10% scroll must be investigated. First viewport should show: headline, value prop, CTA, and trust bar.</div>
+                    </div>
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <div className="font-semibold text-white mb-1">HP-3: Reduce Sign In Visual Weight</div>
+                      <div className="text-sm text-gray-400">"Start Learning": green, filled, prominent. "Sign In": text-only or outline, smaller. Must NOT look like equal-weight options.</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Plans & Pricing */}
+                <div className="bg-gray-800/50 rounded-xl p-6 border border-green-700/30">
+                  <h4 className="text-xl font-bold text-green-300 mb-4">Plans & Pricing</h4>
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <div className="font-semibold text-white mb-1">PP-1: Protect This Page</div>
+                      <div className="text-sm text-gray-400">4.15% desktop conversion — highest of any page. 3,869px — shortest page. This page WORKS. Do NOT add more content. Only make comparison table interactive.</div>
+                    </div>
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <div className="font-semibold text-white mb-1">PP-2: Enhance Mobile Plan Comparison</div>
+                      <div className="text-sm text-gray-400">7,727 mobile sessions but 0.62% conversion. Consider swipeable card comparison on mobile. Highlight differences between plans.</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* QuickBooks Certification */}
+                <div className="bg-gray-800/50 rounded-xl p-6 border border-purple-700/30">
+                  <h4 className="text-xl font-bold text-purple-300 mb-4">QuickBooks Certification</h4>
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-purple-500 pl-4">
+                      <div className="font-semibold text-white mb-1">QC-1: Optimize for the $699.95 Decision</div>
+                      <div className="text-sm text-gray-400">Lead with outcomes: "Get 3 Intuit Certifications. Average 20–30% salary increase." Keep "Learn → Practice → Pass" three-step breakdown prominent. Expand FAQ to 10–12 questions.</div>
+                    </div>
+                    <div className="border-l-4 border-purple-500 pl-4">
+                      <div className="font-semibold text-white mb-1">QC-2: Handle /certification-mobile Traffic</div>
+                      <div className="text-sm text-gray-400">301 redirect from /certification-mobile to /quickbooks-certification — 13,238 sessions at stake.</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Self-Paced Courses */}
+                <div className="bg-gray-800/50 rounded-xl p-6 border border-amber-700/30">
+                  <h4 className="text-xl font-bold text-amber-300 mb-4">Self-Paced Courses</h4>
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-amber-500 pl-4">
+                      <div className="font-semibold text-white mb-1">SC-1: "One Plan, All Courses" Messaging</div>
+                      <div className="text-sm text-gray-400">Headline: "46+ Self-Paced Courses — Included in Every Plan." Banner above grid: "One plan gives you access to all courses."</div>
+                    </div>
+                    <div className="border-l-4 border-amber-500 pl-4">
+                      <div className="font-semibold text-white mb-1">SC-2: Keep It Manageable</div>
+                      <div className="text-sm text-gray-400">Show 9–12 cards by default. Group by: Most Popular, Beginners, Industry-Specific, Certification Prep. Keep total height under 5,000px.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Strategy */}
+              <div className="mt-12 bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
+                <h3 className="text-2xl font-bold text-blue-300 mb-4">Mobile Strategy</h3>
+                <p className="text-gray-300 mb-4 leading-relaxed">
+                  <strong>Core principle:</strong> Mobile is where people discover and evaluate. Every mobile design decision should ask: "Does this help someone research a $700 purchase?"
+                </p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <div className="font-semibold text-blue-300 mb-2">M-1: Optimize for Research</div>
+                    <div className="text-sm text-gray-400">Swipeable plan cards, prominent reviews, FAQ near top, "View Plans" over "Buy Now"</div>
+                  </div>
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <div className="font-semibold text-blue-300 mb-2">M-2: Sticky Bottom CTA Bar</div>
+                    <div className="text-sm text-gray-400">"Plans from $599.95 — View Pricing" fixed at bottom</div>
+                  </div>
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <div className="font-semibold text-blue-300 mb-2">M-3: Touch Target Sizing</div>
+                    <div className="text-sm text-gray-400">All tappable elements ≥ 44x44px (Apple HIG)</div>
+                  </div>
+                  <div className="bg-gray-900/50 rounded-lg p-4">
+                    <div className="font-semibold text-blue-300 mb-2">M-4: Fast Load</div>
+                    <div className="text-sm text-gray-400">LCP &lt; 2.5s • FID &lt; 100ms • CLS &lt; 0.1 • Lazy-load images</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Design Principles */}
+              <div className="mt-12">
+                <h3 className="text-2xl font-bold text-white mb-6">Design Principles (From the Data)</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    "Desktop is the purchase channel — protect it. 88% of revenue.",
+                    "Mobile is the research channel — optimize for it. Make comparison easy.",
+                    "Short pages convert. 4,000px max. The data is unambiguous.",
+                    "Every browseable item needs a CTA. At $682 AOV, every missed click = potential $700 loss.",
+                    "Make it obvious what's clickable. Fix the 20–39% dead click epidemic.",
+                    "Accordion/FAQ is the #1 engagement pattern. Use it everywhere.",
+                    "The comparison table is the most important element. Make it interactive.",
+                    "Trust signals everywhere. 4.7 stars, 1,581+ reviews, Intuit partnership.",
+                    "Sign In is a utility, not navigation.",
+                    "Instructor visibility matters. 1,083 clicks on instructor modals."
+                  ].map((principle, idx) => (
+                    <div key={idx} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">{idx + 1}</div>
+                        <div className="text-sm text-gray-300 leading-relaxed">{principle}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
