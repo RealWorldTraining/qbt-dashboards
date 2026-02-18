@@ -944,6 +944,30 @@ export default function HotjarAnalysisPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Interactive Screenshot with Overlays */}
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-4">Visual Analysis</h3>
+                      <PageScreenshotWithOverlays
+                        imagePath="/screenshots/qb-certification-full.png"
+                        pageHeight={7000}
+                        scrollZones={[
+                          { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 5, height: 30, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '65.4%' },
+                          { top: 35, height: 15, color: 'rgba(239, 68, 68, 0.2)', label: 'reach this', percentage: '35.8%' }
+                        ]}
+                        deadClickHotspots={[
+                          { x: 50, y: 20, label: 'Tab navigation', percentage: '25.9%' },
+                          { x: 35, y: 50, label: 'FAQ accordion text', percentage: '16.2%' },
+                          { x: 65, y: 35, label: 'Certification details', percentage: '12%' }
+                        ]}
+                        ctaMarkers={[
+                          { x: 50, y: 15, label: 'Get Certified CTA', percentage: '25.3%' },
+                          { x: 40, y: 60, label: 'FAQ engagement', percentage: '62.4%' },
+                          { x: 60, y: 25, label: 'Tab clicks', percentage: '17.9%' }
+                        ]}
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -1007,6 +1031,30 @@ export default function HotjarAnalysisPage() {
                           <p className="text-gray-400 text-base">7,727 mobile sessions but 0.62% conversion. Consider swipeable card comparison on mobile. Highlight differences between plans.</p>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Interactive Screenshot with Overlays */}
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-4">Visual Analysis</h3>
+                      <PageScreenshotWithOverlays
+                        imagePath="/screenshots/plans-pricing-full.png"
+                        pageHeight={3869}
+                        scrollZones={[
+                          { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 10, height: 40, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '52.7%' },
+                          { top: 50, height: 50, color: 'rgba(234, 179, 8, 0.2)', label: 'reach bottom', percentage: '30%' }
+                        ]}
+                        deadClickHotspots={[
+                          { x: 50, y: 35, label: 'Comparison table text', percentage: '36.5%' },
+                          { x: 30, y: 25, label: 'Plan card details', percentage: '15%' },
+                          { x: 70, y: 40, label: 'Feature list', percentage: '10%' }
+                        ]}
+                        ctaMarkers={[
+                          { x: 35, y: 55, label: 'Learner Plan CTA', percentage: '16.7%' },
+                          { x: 50, y: 55, label: 'Certification CTA', percentage: '16.7%' },
+                          { x: 65, y: 55, label: 'Team Plan CTA', percentage: '16.7%' }
+                        ]}
+                      />
                     </div>
                   </div>
                 </>
@@ -1081,6 +1129,30 @@ export default function HotjarAnalysisPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Interactive Screenshot with Overlays */}
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-4">Visual Analysis</h3>
+                      <PageScreenshotWithOverlays
+                        imagePath="/screenshots/live-classes-full.png"
+                        pageHeight={6500}
+                        scrollZones={[
+                          { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 5, height: 33, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '50.8%' },
+                          { top: 38, height: 12, color: 'rgba(239, 68, 68, 0.2)', label: 'reach this', percentage: '37.7%' }
+                        ]}
+                        deadClickHotspots={[
+                          { x: 50, y: 25, label: 'Instructor modals', percentage: '18%' },
+                          { x: 35, y: 40, label: 'Class schedule', percentage: '12%' },
+                          { x: 65, y: 35, label: 'Format toggle', percentage: '8%' }
+                        ]}
+                        ctaMarkers={[
+                          { x: 50, y: 15, label: 'Enroll Now', percentage: '23.4%' },
+                          { x: 40, y: 30, label: 'Instructor profiles', percentage: '18.5%' },
+                          { x: 60, y: 45, label: 'Schedule CTA', percentage: '15.2%' }
+                        ]}
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -1152,6 +1224,32 @@ export default function HotjarAnalysisPage() {
                           <div className="font-semibold text-white mb-2">SC-2: Keep It Manageable</div>
                           <p className="text-gray-400 text-base">Show 9–12 cards by default. Group by: Most Popular, Beginners, Industry-Specific, Certification Prep. Keep total height under 5,000px.</p>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Interactive Screenshot with Overlays */}
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-4">Visual Analysis</h3>
+                      <PageScreenshotWithOverlays
+                        imagePath="/screenshots/self-paced-full.png"
+                        pageHeight={13213}
+                        scrollZones={[
+                          { top: 0, height: 3, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 3, height: 18, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '21.4%' },
+                          { top: 21, height: 79, color: 'rgba(239, 68, 68, 0.3)', label: 'ever reach', percentage: '<5%' }
+                        ]}
+                        deadClickHotspots={[
+                          { x: 50, y: 30, label: 'Course cards (no CTA)', percentage: '26.5%' },
+                          { x: 30, y: 50, label: '"Load More" button', percentage: '25.6%' },
+                          { x: 70, y: 40, label: 'Course details', percentage: '15%' }
+                        ]}
+                        ctaMarkers={[
+                          { x: 50, y: 5, label: 'Top CTA (rarely seen)', percentage: '4.6%' },
+                          { x: 35, y: 85, label: 'Bottom CTA (never reached)', percentage: '<1%' }
+                        ]}
+                      />
+                      <div className="mt-4 bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r text-gray-300">
+                        <strong className="text-red-300">The Conversion Black Hole:</strong> 79% of the page gets less than 5% visibility. Course cards capture 26.5% of clicks but lead nowhere. Only 4.6% ever reach a CTA.
                       </div>
                     </div>
                   </div>
