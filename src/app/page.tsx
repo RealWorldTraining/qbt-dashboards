@@ -22,6 +22,7 @@ import {
   ArrowUpRight,
   Zap,
   Smartphone,
+  Archive,
 } from "lucide-react"
 
 interface DashboardCard {
@@ -260,6 +261,13 @@ const sections: DashboardSection[] = [
         preview: "/previews/live-help.png",
       },
       {
+        name: "Live Help Archive",
+        description: "Trainer performance & historical data",
+        href: "/live-help-archive",
+        icon: Archive,
+        tags: ["History", "Trainers"],
+      },
+      {
         name: "Age Analysis",
         description: "Google Ads age demographic breakdown",
         href: "/age-analysis",
@@ -382,7 +390,7 @@ export default function HomePage() {
               <Zap className="h-5.5 w-5.5 text-white" />
             </div>
             <h1 className="text-4xl font-extrabold text-white tracking-tight uppercase">
-              Command Center
+              RWT Command Center
             </h1>
           </div>
           <p className="text-white/30 text-sm ml-[60px]">
