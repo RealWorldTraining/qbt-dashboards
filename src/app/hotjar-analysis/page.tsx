@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronRight, TrendingUp, DollarSign, AlertTriangle, CheckCircle, Users, MousePointer, Smartphone, Monitor, HelpCircle } from 'lucide-react';
+import PageScreenshotWithOverlays from '@/components/PageScreenshotWithOverlays';
 
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
   return (
@@ -843,6 +844,32 @@ export default function HotjarAnalysisPage() {
                           <p className="text-gray-400 text-base">"Start Learning": green, filled, prominent. "Sign In": text-only or outline, smaller. Must NOT look like equal-weight options.</p>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Interactive Screenshot with Overlays */}
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-4">Visual Analysis</h3>
+                      <PageScreenshotWithOverlays
+                        imagePath="/screenshots/homepage-full.png"
+                        pageHeight={8000}
+                        scrollZones={[
+                          { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 5, height: 5, color: 'rgba(34, 197, 94, 0.15)', label: 'reach here', percentage: '90%' },
+                          { top: 10, height: 10, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll to here', percentage: '50%' },
+                          { top: 20, height: 30, color: 'rgba(239, 68, 68, 0.2)', label: 'see this', percentage: '9.9%' },
+                          { top: 50, height: 50, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach bottom', percentage: '<5%' }
+                        ]}
+                        deadClickHotspots={[
+                          { x: 30, y: 15, label: 'Sign In button area', percentage: '30.6%' },
+                          { x: 50, y: 35, label: 'Pricing table text', percentage: '18.3%' },
+                          { x: 65, y: 55, label: 'Section background', percentage: '12%' }
+                        ]}
+                        ctaMarkers={[
+                          { x: 50, y: 12, label: 'View Pricing CTA', percentage: '21.8%' },
+                          { x: 30, y: 40, label: 'Explore Classes', percentage: '15.2%' },
+                          { x: 70, y: 45, label: 'Get Certified', percentage: '12.6%' }
+                        ]}
+                      />
                     </div>
                   </div>
                 </>
