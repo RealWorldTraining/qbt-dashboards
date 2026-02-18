@@ -385,15 +385,12 @@ export default function HomePage() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <header className="mb-16 header-enter">
-          <div className="flex items-center gap-4 mb-1">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 shadow-lg shadow-cyan-500/25">
-              <Zap className="h-5.5 w-5.5 text-white" />
-            </div>
+          <div className="mb-1">
             <h1 className="text-4xl font-extrabold text-white tracking-tight uppercase">
               RWT Command Center
             </h1>
           </div>
-          <p className="text-white/30 text-sm ml-[60px]">
+          <p className="text-white/30 text-sm">
             QuickBooks Training · Analytics & Dashboards
           </p>
         </header>
