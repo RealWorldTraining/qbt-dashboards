@@ -41,6 +41,7 @@ interface DashboardSection {
   iconBg: string
   borderColor: string
   gradientBar: string
+  cardGradient: string
   items: DashboardCard[]
 }
 
@@ -48,10 +49,11 @@ const sections: DashboardSection[] = [
   {
     title: "Revenue",
     accent: "text-emerald-400",
-    glowColor: "group-hover:shadow-emerald-500/25",
-    iconBg: "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/20",
-    borderColor: "border-white/[0.08] hover:border-emerald-400/50",
+    glowColor: "group-hover:shadow-emerald-500/20",
+    iconBg: "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30",
+    borderColor: "border-emerald-500/[0.12] hover:border-emerald-400/50",
     gradientBar: "from-emerald-400 to-emerald-600",
+    cardGradient: "from-emerald-500/[0.06] via-transparent to-transparent",
     items: [
       {
         name: "Sales",
@@ -74,10 +76,11 @@ const sections: DashboardSection[] = [
   {
     title: "Advertising",
     accent: "text-blue-400",
-    glowColor: "group-hover:shadow-blue-500/25",
-    iconBg: "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/20",
-    borderColor: "border-white/[0.08] hover:border-blue-400/50",
+    glowColor: "group-hover:shadow-blue-500/20",
+    iconBg: "bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30",
+    borderColor: "border-blue-500/[0.12] hover:border-blue-400/50",
     gradientBar: "from-blue-400 to-blue-600",
+    cardGradient: "from-blue-500/[0.06] via-transparent to-transparent",
     items: [
       {
         name: "Google Ads",
@@ -102,10 +105,11 @@ const sections: DashboardSection[] = [
   {
     title: "Organic & SEO",
     accent: "text-violet-400",
-    glowColor: "group-hover:shadow-violet-500/25",
-    iconBg: "bg-violet-500/15 text-violet-400 ring-1 ring-violet-500/20",
-    borderColor: "border-white/[0.08] hover:border-violet-400/50",
+    glowColor: "group-hover:shadow-violet-500/20",
+    iconBg: "bg-violet-500/15 text-violet-400 ring-1 ring-violet-500/30",
+    borderColor: "border-violet-500/[0.12] hover:border-violet-400/50",
     gradientBar: "from-violet-400 to-violet-600",
+    cardGradient: "from-violet-500/[0.06] via-transparent to-transparent",
     items: [
       {
         name: "Traffic",
@@ -160,10 +164,11 @@ const sections: DashboardSection[] = [
   {
     title: "TV / Mobile Optimized",
     accent: "text-amber-400",
-    glowColor: "group-hover:shadow-amber-500/25",
-    iconBg: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/20",
-    borderColor: "border-white/[0.08] hover:border-amber-400/50",
+    glowColor: "group-hover:shadow-amber-500/20",
+    iconBg: "bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/30",
+    borderColor: "border-amber-500/[0.12] hover:border-amber-400/50",
     gradientBar: "from-amber-400 to-amber-600",
+    cardGradient: "from-amber-500/[0.06] via-transparent to-transparent",
     items: [
       {
         name: "Sales (iPhone)",
@@ -198,6 +203,7 @@ const sections: DashboardSection[] = [
     iconBg: "bg-slate-500/15 text-slate-400 ring-1 ring-slate-500/20",
     borderColor: "border-white/[0.08] hover:border-slate-400/40",
     gradientBar: "from-slate-400 to-slate-600",
+    cardGradient: "from-slate-500/[0.04] via-transparent to-transparent",
     items: [
       {
         name: "P&L Recap",
@@ -279,9 +285,12 @@ function CardComponent({
   return (
     <Link
       href={card.href}
-      className={`group relative flex flex-col rounded-2xl border backdrop-blur-sm bg-white/[0.04] p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:bg-white/[0.09] hover:shadow-2xl overflow-hidden ${section.borderColor} ${section.glowColor} card-enter`}
+      className={`group relative flex flex-col rounded-2xl border bg-gradient-to-br ${section.cardGradient} backdrop-blur-sm p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-2xl overflow-hidden ${section.borderColor} ${section.glowColor} card-enter`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
+      {/* Subtle top accent line */}
+      <div className={`absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r ${section.gradientBar} opacity-30 group-hover:opacity-60 transition-opacity`} />
+
       {/* Preview image — fills card on hover */}
       {card.preview && (
         <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
@@ -293,8 +302,7 @@ function CardComponent({
             sizes="400px"
             unoptimized
           />
-          {/* Bottom gradient so the card title remains readable */}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
           <div className="absolute bottom-3 left-4 right-4">
             <p className="text-sm font-semibold text-white drop-shadow-lg">{card.name}</p>
           </div>
@@ -308,16 +316,16 @@ function CardComponent({
 
       {/* Icon */}
       <div
-        className={`flex h-12 w-12 items-center justify-center rounded-xl ${section.iconBg} mb-4 transition-transform duration-300 group-hover:scale-110`}
+        className={`flex h-11 w-11 items-center justify-center rounded-xl ${section.iconBg} mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}
       >
-        <Icon className="h-6 w-6" />
+        <Icon className="h-5 w-5" />
       </div>
 
       {/* Content */}
-      <h3 className="text-base font-semibold text-white/90 mb-1.5 group-hover:text-white transition-colors">
+      <h3 className={`text-[15px] font-bold text-white/90 mb-1 group-hover:text-white transition-colors tracking-tight`}>
         {card.name}
       </h3>
-      <p className="text-[13px] text-white/40 leading-relaxed mb-4 flex-1">
+      <p className="text-[13px] text-white/35 leading-relaxed mb-4 flex-1">
         {card.description}
       </p>
 
@@ -327,7 +335,7 @@ function CardComponent({
           {card.subtabs.map((tab) => (
             <span
               key={tab}
-              className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-white/[0.1] bg-white/[0.04] text-white/55 group-hover:border-white/[0.15] group-hover:text-white/70 transition-colors"
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-md border border-white/[0.08] bg-white/[0.03] text-white/50 group-hover:border-white/[0.18] group-hover:text-white/75 group-hover:bg-white/[0.06] transition-all`}
             >
               {tab}
             </span>
@@ -337,10 +345,10 @@ function CardComponent({
 
       {/* Tags */}
       {card.tags && (
-        <div className="flex items-center gap-1.5 mt-auto">
+        <div className="flex items-center gap-1.5 mt-auto pt-3 border-t border-white/[0.04]">
           {card.tags.map((tag, i) => (
-            <span key={tag} className="text-[11px] text-white/25">
-              {i > 0 && <span className="mr-1.5">·</span>}
+            <span key={tag} className={`text-[11px] font-medium ${i === 0 ? 'text-white/30' : 'text-white/20'}`}>
+              {i > 0 && <span className="mr-1.5 text-white/15">·</span>}
               {tag}
             </span>
           ))}
