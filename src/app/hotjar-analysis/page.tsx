@@ -134,19 +134,19 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Learner</td>
                       <td className="p-4 text-green-400 font-bold">$599.95</td>
                       <td className="p-4 line-through text-gray-500">$899.95</td>
-                      <td className="p-4 text-sm">Training only, 1 user. 30 days free 1-on-1 help, then $50/mo</td>
+                      <td className="p-4 text-base">Training only, 1 user. 30 days free 1-on-1 help, then $50/mo</td>
                     </tr>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4 font-semibold">Certification</td>
                       <td className="p-4 text-green-400 font-bold">$699.95</td>
                       <td className="p-4 line-through text-gray-500">$999.95</td>
-                      <td className="p-4 text-sm">Training + Certification, 1 user. 30 days free 1-on-1 help, then $50/mo</td>
+                      <td className="p-4 text-base">Training + Certification, 1 user. 30 days free 1-on-1 help, then $50/mo</td>
                     </tr>
                     <tr className="hover:bg-gray-800/50">
                       <td className="p-4 font-semibold">Team</td>
                       <td className="p-4 text-green-400 font-bold">$999.95</td>
                       <td className="p-4 line-through text-gray-500">$1,799.95</td>
-                      <td className="p-4 text-sm">Training + Certification, 2-5 users. 30 days free 1-on-1 help, then $90/mo</td>
+                      <td className="p-4 text-base">Training + Certification, 2-5 users. 30 days free 1-on-1 help, then $90/mo</td>
                     </tr>
                   </tbody>
                 </table>
@@ -230,31 +230,31 @@ export default function HotjarAnalysisPage() {
                 <div className="bg-red-900/20 border-l-4 border-red-500 p-6 rounded-r-xl">
                   <h3 className="text-xl font-bold text-red-300 mb-3">1. The Homepage Is Hemorrhaging Visitors</h3>
                   <p className="text-gray-300 mb-3">Only 8% of desktop users reach the halfway point. The page is 9.34kb tall. There is a catastrophic 40.2% drop-off between 5–10% of the page. At 80%+ AOV, each percentage point of improvement represents hundreds of potential purchases per quarter.</p>
-                  <div className="text-sm text-gray-400 mt-2">Impact: <span className="text-red-400 font-semibold">CRITICAL</span> • Affects all traffic sources</div>
+                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-red-400 font-semibold">CRITICAL</span> • Affects all traffic sources</div>
                 </div>
 
                 <div className="bg-amber-900/20 border-l-4 border-amber-500 p-6 rounded-r-xl">
                   <h3 className="text-xl font-bold text-amber-300 mb-3">2. The Homepage Function Confuses Visitors</h3>
                   <p className="text-gray-300 mb-3">20–39% of ALL desktop clicks hit non-interactive elements. People click on body text, comparison table cells, section backgrounds, and data areas expecting interactivity. This is the purchase channel — the device generating 88% of revenue — and up to 4 in 10 clicks are wasted.</p>
-                  <div className="text-sm text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Desktop-specific issue</div>
+                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Desktop-specific issue</div>
                 </div>
 
                 <div className="bg-amber-900/20 border-l-4 border-amber-500 p-6 rounded-r-xl">
                   <h3 className="text-xl font-bold text-amber-300 mb-3">3. Pages Are Too Long High</h3>
                   <p className="text-gray-300 mb-3">The correlation is unambiguous: shorter pages retain better and convert better for a $700 product. Plans & Pricing (9.34px): 0.86% conv. Certification (13.21%px): 0.85% conv. Self-Paced (6.44px): 0.96% conv.</p>
-                  <div className="text-sm text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Affects conversion rates</div>
+                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Affects conversion rates</div>
                 </div>
 
                 <div className="bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
                   <h3 className="text-xl font-bold text-blue-300 mb-3">4. Sign In Dominates the Homepage High</h3>
                   <p className="text-gray-300 mb-3">The homepage functions more as a login portal than a landing page. After removing Sign In and clicks, only ~400 desktop clicks per quarter remain for CTAs. For first-time visitors, Sign In is a landing page. After removing account engagement, the page does not convert.</p>
-                  <div className="text-sm text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Crowds out CTA engagement</div>
+                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Crowds out CTA engagement</div>
                 </div>
 
                 <div className="bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
                   <h3 className="text-xl font-bold text-blue-300 mb-3">5. Self-Paced Courses: Conversion Black Hole High</h3>
                   <p className="text-gray-300 mb-3">28.5% of clicks go to course cards, but only 4.6% ever reach a CTA. People browse thinking they're buying individual courses, not understanding the plan model. "Load More" button gets 3.87% of clicks but no one sees a CTA. Conversion Black Hole: 98% of visitors who click any course card never reach a purchase path.</p>
-                  <div className="text-sm text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Specific to Self-Paced page</div>
+                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Specific to Self-Paced page</div>
                 </div>
               </div>
             </div>
@@ -548,31 +548,31 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Dead clicks</td>
                       <td className="p-4 text-red-400 font-bold">18–39%</td>
                       <td className="p-4 text-green-400">1–2%</td>
-                      <td className="p-4 text-sm">Desktop design has unclear affordances</td>
+                      <td className="p-4 text-base">Desktop design has unclear affordances</td>
                     </tr>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4 font-semibold">Sign In share</td>
                       <td className="p-4">30.6%</td>
                       <td className="p-4">3.6%</td>
-                      <td className="p-4 text-sm">Desktop gets more returning users</td>
+                      <td className="p-4 text-base">Desktop gets more returning users</td>
                     </tr>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4 font-semibold">CTA engagement</td>
                       <td className="p-4">5–25%</td>
                       <td className="p-4 text-green-400">13–46%</td>
-                      <td className="p-4 text-sm">Mobile layout drives better engagement</td>
+                      <td className="p-4 text-base">Mobile layout drives better engagement</td>
                     </tr>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4 font-semibold">FAQ engagement</td>
                       <td className="p-4">2–25%</td>
                       <td className="p-4 text-green-400">24–65%</td>
-                      <td className="p-4 text-sm">Accordions are mobile's primary pattern</td>
+                      <td className="p-4 text-base">Accordions are mobile's primary pattern</td>
                     </tr>
                     <tr className="hover:bg-gray-800/50">
                       <td className="p-4 font-semibold">Scroll to 50%</td>
                       <td className="p-4">10–53%</td>
                       <td className="p-4 text-green-400">21–69%</td>
-                      <td className="p-4 text-sm">Mobile retains better on long pages</td>
+                      <td className="p-4 text-base">Mobile retains better on long pages</td>
                     </tr>
                   </tbody>
                 </table>
@@ -585,28 +585,28 @@ export default function HotjarAnalysisPage() {
               <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
                 <h3 className="text-xl font-bold text-blue-400 mb-4">Homepage <span className="text-gray-500 text-base font-normal">/</span></h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Desktop Sessions</span>
                     <span className="text-white font-semibold">71,419</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Revenue</span>
                     <span className="text-green-400 font-bold">$454K</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Desktop Conv Rate</span>
                     <span className="text-white font-semibold">0.86%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Scroll to 50% (Desktop)</span>
                     <span className="text-red-400 font-bold">9.9%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Dead Clicks (Desktop)</span>
                     <span className="text-red-400 font-bold">18.3%</span>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-sm text-gray-300">
+                <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-base text-gray-300">
                   #1 money page ($454K revenue, 27% of purchases). 90% of desktop users never see bottom half.
                 </div>
               </div>
@@ -615,28 +615,28 @@ export default function HotjarAnalysisPage() {
               <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
                 <h3 className="text-xl font-bold text-blue-400 mb-4">QuickBooks Certification</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Desktop Sessions</span>
                     <span className="text-white font-semibold">23,747</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Revenue</span>
                     <span className="text-green-400 font-bold">$298K</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Desktop Conv Rate</span>
                     <span className="text-white font-semibold">1.66%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Dead Clicks (Desktop)</span>
                     <span className="text-amber-400 font-bold">25.9%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">FAQ Engagement (Mobile)</span>
                     <span className="text-green-400 font-bold">62.4%</span>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-sm text-gray-300">
+                <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-base text-gray-300">
                   #2 revenue page. Tab navigation proven winner (4,239 clicks). High-intent buyers researching $699.95 credential.
                 </div>
               </div>
@@ -645,28 +645,28 @@ export default function HotjarAnalysisPage() {
               <div className="bg-gradient-to-br from-green-900/40 to-gray-900 rounded-xl p-6 border border-green-700/50">
                 <h3 className="text-xl font-bold text-green-400 mb-4">Plans & Pricing ⭐</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Desktop Sessions</span>
                     <span className="text-white font-semibold">4,530</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Revenue</span>
                     <span className="text-green-400 font-bold">$171K</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Desktop Conv Rate</span>
                     <span className="text-green-400 font-bold">4.15%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Scroll to 50% (Desktop)</span>
                     <span className="text-green-400 font-bold">52.7%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Page Height</span>
                     <span className="text-green-400 font-bold">3,869px</span>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-sm text-gray-300">
+                <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-base text-gray-300">
                   <strong>THE MODEL PAGE.</strong> Highest conversion, shortest page, best scroll retention. Mobile gets MORE sessions (7,727 vs 4,530).
                 </div>
               </div>
@@ -675,28 +675,28 @@ export default function HotjarAnalysisPage() {
               <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
                 <h3 className="text-xl font-bold text-blue-400 mb-4">Self-Paced Courses</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Desktop Sessions</span>
                     <span className="text-white font-semibold">8,187</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Revenue</span>
                     <span className="text-green-400 font-bold">$122K</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">CTA Click Rate (Desktop)</span>
                     <span className="text-red-400 font-bold">4.6%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Dead Clicks (Desktop)</span>
                     <span className="text-amber-400 font-bold">25.6%</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-base">
                     <span className="text-gray-400">Page Height (Mobile)</span>
                     <span className="text-red-400 font-bold">13,213px</span>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-sm text-gray-300">
+                <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-base text-gray-300">
                   Conversion black hole. Course cards get 26.5% clicks but only 4.6% reach CTA. Longest page in dataset.
                 </div>
               </div>
@@ -778,15 +778,15 @@ export default function HotjarAnalysisPage() {
                   <div className="space-y-4">
                     <div className="border-l-4 border-blue-500 pl-4">
                       <div className="font-semibold text-white mb-1">HP-1: Consolidate from 9 Sections to 6</div>
-                      <div className="text-sm text-gray-400">Hero → Trust Bar → Offerings Grid → Interactive Comparison Table → FAQ → Final CTA. Cut separate pricing cards, testimonials, instructor section. Saves ~2,000–3,000px.</div>
+                      <div className="text-base text-gray-400">Hero → Trust Bar → Offerings Grid → Interactive Comparison Table → FAQ → Final CTA. Cut separate pricing cards, testimonials, instructor section. Saves ~2,000–3,000px.</div>
                     </div>
                     <div className="border-l-4 border-blue-500 pl-4">
                       <div className="font-semibold text-white mb-1">HP-2: Fix the First-Fold Experience</div>
-                      <div className="text-sm text-gray-400">40.2% desktop drop-off at 5–10% scroll must be investigated. First viewport should show: headline, value prop, CTA, and trust bar.</div>
+                      <div className="text-base text-gray-400">40.2% desktop drop-off at 5–10% scroll must be investigated. First viewport should show: headline, value prop, CTA, and trust bar.</div>
                     </div>
                     <div className="border-l-4 border-blue-500 pl-4">
                       <div className="font-semibold text-white mb-1">HP-3: Reduce Sign In Visual Weight</div>
-                      <div className="text-sm text-gray-400">"Start Learning": green, filled, prominent. "Sign In": text-only or outline, smaller. Must NOT look like equal-weight options.</div>
+                      <div className="text-base text-gray-400">"Start Learning": green, filled, prominent. "Sign In": text-only or outline, smaller. Must NOT look like equal-weight options.</div>
                     </div>
                   </div>
                 </div>
@@ -797,11 +797,11 @@ export default function HotjarAnalysisPage() {
                   <div className="space-y-4">
                     <div className="border-l-4 border-green-500 pl-4">
                       <div className="font-semibold text-white mb-1">PP-1: Protect This Page</div>
-                      <div className="text-sm text-gray-400">4.15% desktop conversion — highest of any page. 3,869px — shortest page. This page WORKS. Do NOT add more content. Only make comparison table interactive.</div>
+                      <div className="text-base text-gray-400">4.15% desktop conversion — highest of any page. 3,869px — shortest page. This page WORKS. Do NOT add more content. Only make comparison table interactive.</div>
                     </div>
                     <div className="border-l-4 border-green-500 pl-4">
                       <div className="font-semibold text-white mb-1">PP-2: Enhance Mobile Plan Comparison</div>
-                      <div className="text-sm text-gray-400">7,727 mobile sessions but 0.62% conversion. Consider swipeable card comparison on mobile. Highlight differences between plans.</div>
+                      <div className="text-base text-gray-400">7,727 mobile sessions but 0.62% conversion. Consider swipeable card comparison on mobile. Highlight differences between plans.</div>
                     </div>
                   </div>
                 </div>
@@ -812,11 +812,11 @@ export default function HotjarAnalysisPage() {
                   <div className="space-y-4">
                     <div className="border-l-4 border-purple-500 pl-4">
                       <div className="font-semibold text-white mb-1">QC-1: Optimize for the $699.95 Decision</div>
-                      <div className="text-sm text-gray-400">Lead with outcomes: "Get 3 Intuit Certifications. Average 20–30% salary increase." Keep "Learn → Practice → Pass" three-step breakdown prominent. Expand FAQ to 10–12 questions.</div>
+                      <div className="text-base text-gray-400">Lead with outcomes: "Get 3 Intuit Certifications. Average 20–30% salary increase." Keep "Learn → Practice → Pass" three-step breakdown prominent. Expand FAQ to 10–12 questions.</div>
                     </div>
                     <div className="border-l-4 border-purple-500 pl-4">
                       <div className="font-semibold text-white mb-1">QC-2: Handle /certification-mobile Traffic</div>
-                      <div className="text-sm text-gray-400">301 redirect from /certification-mobile to /quickbooks-certification — 13,238 sessions at stake.</div>
+                      <div className="text-base text-gray-400">301 redirect from /certification-mobile to /quickbooks-certification — 13,238 sessions at stake.</div>
                     </div>
                   </div>
                 </div>
@@ -827,11 +827,11 @@ export default function HotjarAnalysisPage() {
                   <div className="space-y-4">
                     <div className="border-l-4 border-amber-500 pl-4">
                       <div className="font-semibold text-white mb-1">SC-1: "One Plan, All Courses" Messaging</div>
-                      <div className="text-sm text-gray-400">Headline: "46+ Self-Paced Courses — Included in Every Plan." Banner above grid: "One plan gives you access to all courses."</div>
+                      <div className="text-base text-gray-400">Headline: "46+ Self-Paced Courses — Included in Every Plan." Banner above grid: "One plan gives you access to all courses."</div>
                     </div>
                     <div className="border-l-4 border-amber-500 pl-4">
                       <div className="font-semibold text-white mb-1">SC-2: Keep It Manageable</div>
-                      <div className="text-sm text-gray-400">Show 9–12 cards by default. Group by: Most Popular, Beginners, Industry-Specific, Certification Prep. Keep total height under 5,000px.</div>
+                      <div className="text-base text-gray-400">Show 9–12 cards by default. Group by: Most Popular, Beginners, Industry-Specific, Certification Prep. Keep total height under 5,000px.</div>
                     </div>
                   </div>
                 </div>
@@ -846,19 +846,19 @@ export default function HotjarAnalysisPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="bg-gray-900/50 rounded-lg p-4">
                     <div className="font-semibold text-blue-300 mb-2">M-1: Optimize for Research</div>
-                    <div className="text-sm text-gray-400">Swipeable plan cards, prominent reviews, FAQ near top, "View Plans" over "Buy Now"</div>
+                    <div className="text-base text-gray-400">Swipeable plan cards, prominent reviews, FAQ near top, "View Plans" over "Buy Now"</div>
                   </div>
                   <div className="bg-gray-900/50 rounded-lg p-4">
                     <div className="font-semibold text-blue-300 mb-2">M-2: Sticky Bottom CTA Bar</div>
-                    <div className="text-sm text-gray-400">"Plans from $599.95 — View Pricing" fixed at bottom</div>
+                    <div className="text-base text-gray-400">"Plans from $599.95 — View Pricing" fixed at bottom</div>
                   </div>
                   <div className="bg-gray-900/50 rounded-lg p-4">
                     <div className="font-semibold text-blue-300 mb-2">M-3: Touch Target Sizing</div>
-                    <div className="text-sm text-gray-400">All tappable elements ≥ 44x44px (Apple HIG)</div>
+                    <div className="text-base text-gray-400">All tappable elements ≥ 44x44px (Apple HIG)</div>
                   </div>
                   <div className="bg-gray-900/50 rounded-lg p-4">
                     <div className="font-semibold text-blue-300 mb-2">M-4: Fast Load</div>
-                    <div className="text-sm text-gray-400">LCP &lt; 2.5s • FID &lt; 100ms • CLS &lt; 0.1 • Lazy-load images</div>
+                    <div className="text-base text-gray-400">LCP &lt; 2.5s • FID &lt; 100ms • CLS &lt; 0.1 • Lazy-load images</div>
                   </div>
                 </div>
               </div>
@@ -882,7 +882,7 @@ export default function HotjarAnalysisPage() {
                     <div key={idx} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">{idx + 1}</div>
-                        <div className="text-sm text-gray-300 leading-relaxed">{principle}</div>
+                        <div className="text-base text-gray-300 leading-relaxed">{principle}</div>
                       </div>
                     </div>
                   ))}
