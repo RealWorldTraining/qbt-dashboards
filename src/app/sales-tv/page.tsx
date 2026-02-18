@@ -241,9 +241,9 @@ export default function SalesTVPage() {
           </p>
         </div>
 
-        {/* KPI Cards - 2x2 grid */}
+        {/* KPI Cards - single row */}
         {metrics && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             {/* Today */}
             {(() => {
               const now = new Date()
