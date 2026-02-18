@@ -2506,13 +2506,13 @@ function DashboardPageContent() {
               {hourlyComparison && extendedWeeklyTrends && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                   {/* Actual Sales Per Hour — line chart */}
-                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <Card className="bg-[#1D1D1F] border-[#2D2D2F] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-emerald-600" />
+                      <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-emerald-400" />
                         Sales Pace (Cumulative)
                       </CardTitle>
-                      <CardDescription className="text-sm text-[#6E6E73]">Cumulative sales pace — Today vs 1 week ago vs 1 year ago</CardDescription>
+                      <CardDescription className="text-sm text-white/50">Cumulative sales pace — Today vs 1 week ago vs 1 year ago</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
@@ -2530,19 +2530,20 @@ function DashboardPageContent() {
                                 '1Y Ago': y1?.hourly_sales[hour] ?? null,
                               }))
                             })()}
-                            margin={{ top: 15, right: 20, left: 0, bottom: 5 }}
+                            margin={{ top: 25, right: 20, left: 0, bottom: 5 }}
                           >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
-                            <XAxis dataKey="hour" tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} axisLine={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
+                            <XAxis dataKey="hour" tick={{ fontSize: 11, fill: '#ffffff80' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
+                            <YAxis tick={{ fontSize: 11, fill: '#ffffff80' }} tickLine={false} axisLine={false} />
                             <Tooltip
-                              contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 13 }}
-                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 13 }}
+                              contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', fontSize: 13, color: '#fff' }}
+                              labelStyle={{ color: '#ffffff', fontWeight: 600, fontSize: 13 }}
+                              itemStyle={{ color: '#ffffffcc' }}
                             />
-                            <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 12 }} />
-                            <Line type="monotone" dataKey="Today" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 4 }} activeDot={{ r: 6 }} name="Today" />
-                            <Line type="monotone" dataKey="1W Ago" stroke="#6366F1" strokeWidth={2} dot={{ fill: '#6366F1', r: 3 }} name="1W Ago" />
-                            <Line type="monotone" dataKey="1Y Ago" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#F59E0B', r: 3 }} name="1Y Ago" />
+                            <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 12, color: '#ffffffcc' }} />
+                            <Line type="monotone" dataKey="Today" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 4, stroke: '#1D1D1F', strokeWidth: 2 }} activeDot={{ r: 6 }} name="Today" label={{ position: 'top', fontSize: 10, fill: '#34D399', fontWeight: 600, offset: 8 }} />
+                            <Line type="monotone" dataKey="1W Ago" stroke="#818CF8" strokeWidth={2} dot={{ fill: '#818CF8', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="1W Ago" label={{ position: 'top', fontSize: 9, fill: '#818CF8', offset: 8 }} />
+                            <Line type="monotone" dataKey="1Y Ago" stroke="#FBBF24" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#FBBF24', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="1Y Ago" label={{ position: 'bottom', fontSize: 9, fill: '#FBBF24', offset: 8 }} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       </div>
@@ -2550,13 +2551,13 @@ function DashboardPageContent() {
                   </Card>
 
                   {/* Weekly Trends (Direct QTY) — line chart */}
-                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                  <Card className="bg-[#1D1D1F] border-[#2D2D2F] shadow-sm">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-[#0066CC]" />
+                      <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-blue-400" />
                         Weekly Trends (Direct QTY)
                       </CardTitle>
-                      <CardDescription className="text-sm text-[#6E6E73]">Current week vs last week vs same week last year</CardDescription>
+                      <CardDescription className="text-sm text-white/50">Current week vs last week vs same week last year</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
@@ -2577,19 +2578,20 @@ function DashboardPageContent() {
                                 'Same Wk LY': sameWeekLY?.daily_cumulative[day] ?? null,
                               }))
                             })()}
-                            margin={{ top: 15, right: 20, left: 0, bottom: 5 }}
+                            margin={{ top: 25, right: 20, left: 0, bottom: 5 }}
                           >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
-                            <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} axisLine={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
+                            <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#ffffff80' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
+                            <YAxis tick={{ fontSize: 11, fill: '#ffffff80' }} tickLine={false} axisLine={false} />
                             <Tooltip
-                              contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 13 }}
-                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 13 }}
+                              contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', fontSize: 13, color: '#fff' }}
+                              labelStyle={{ color: '#ffffff', fontWeight: 600, fontSize: 13 }}
+                              itemStyle={{ color: '#ffffffcc' }}
                             />
-                            <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 12 }} />
-                            <Line type="monotone" dataKey="This Week" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 4 }} activeDot={{ r: 6 }} name="This Week" />
-                            <Line type="monotone" dataKey="Last Week" stroke="#6366F1" strokeWidth={2} dot={{ fill: '#6366F1', r: 3 }} name="Last Week" />
-                            <Line type="monotone" dataKey="Same Wk LY" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#F59E0B', r: 3 }} name="Same Wk LY" />
+                            <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 12, color: '#ffffffcc' }} />
+                            <Line type="monotone" dataKey="This Week" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 4, stroke: '#1D1D1F', strokeWidth: 2 }} activeDot={{ r: 6 }} name="This Week" label={{ position: 'top', fontSize: 10, fill: '#34D399', fontWeight: 600, offset: 8 }} />
+                            <Line type="monotone" dataKey="Last Week" stroke="#818CF8" strokeWidth={2} dot={{ fill: '#818CF8', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="Last Week" label={{ position: 'top', fontSize: 9, fill: '#818CF8', offset: 8 }} />
+                            <Line type="monotone" dataKey="Same Wk LY" stroke="#FBBF24" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#FBBF24', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="Same Wk LY" label={{ position: 'bottom', fontSize: 9, fill: '#FBBF24', offset: 8 }} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       </div>
