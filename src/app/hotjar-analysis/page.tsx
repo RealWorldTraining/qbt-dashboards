@@ -1497,8 +1497,8 @@ export default function HotjarAnalysisPage() {
 
               {/* Design Principles */}
               <div className="mt-12">
-                <h3 className="text-2xl font-bold text-white mb-6">Design Principles (From the Data)</h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <h3 className="text-4xl font-extrabold text-white mb-8">Design Principles (From the Data)</h3>
+                <div className="grid md:grid-cols-2 gap-6">
                   {[
                     "Desktop is the purchase channel — protect it. 88% of revenue.",
                     "Mobile is the research channel — optimize for it. Make comparison easy.",
@@ -1511,10 +1511,10 @@ export default function HotjarAnalysisPage() {
                     "Sign In is a utility, not navigation.",
                     "Instructor visibility matters. 1,083 clicks on instructor modals."
                   ].map((principle, idx) => (
-                    <div key={idx} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">{idx + 1}</div>
-                        <div className="text-base text-gray-300 leading-relaxed">{principle}</div>
+                    <div key={idx} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border-2 border-blue-700/50 hover:border-blue-500 hover:shadow-xl transition-all">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-500 rounded-full flex items-center justify-center font-extrabold text-xl shadow-lg">{idx + 1}</div>
+                        <div className="text-lg text-gray-100 leading-relaxed font-medium">{principle}</div>
                       </div>
                     </div>
                   ))}
