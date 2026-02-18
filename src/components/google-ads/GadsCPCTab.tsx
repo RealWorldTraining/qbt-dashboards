@@ -175,6 +175,8 @@ export function GadsCPCTab() {
                   <tr className="border-b border-gray-800">
                     <th className="text-left text-cyan-400 font-medium py-2 pr-3">Keyword</th>
                     <th className="text-center text-cyan-400 font-medium py-2 px-3">Action</th>
+                    <th className="text-right text-cyan-400 font-medium py-2 px-3">Current</th>
+                    <th className="text-right text-cyan-400 font-medium py-2 px-3">Suggested</th>
                     <th className="text-right text-cyan-400 font-medium py-2 px-3">Conv</th>
                     <th className="text-right text-cyan-400 font-medium py-2 px-3">Impr</th>
                     <th className="text-right text-cyan-400 font-medium py-2 px-3">Clicks</th>
@@ -200,6 +202,8 @@ export function GadsCPCTab() {
                           <div className="text-gray-500 text-xs">{r.device}</div>
                         </td>
                         <td className={`text-center font-bold py-2 px-3 ${actionColor}`}>{actionLabel}</td>
+                        <td className="text-right text-gray-300 py-2 px-3">${r.currentMaxCPC.toFixed(2)}</td>
+                        <td className="text-right text-white font-medium py-2 px-3">${r.suggestedMaxCPC.toFixed(2)}</td>
                         <td className="text-right text-gray-300 py-2 px-3">{Math.round(r.conversions)}</td>
                         <td className="text-right text-gray-300 py-2 px-3">{r.impressions.toLocaleString()}</td>
                         <td className="text-right text-gray-300 py-2 px-3">{r.clicks.toLocaleString()}</td>

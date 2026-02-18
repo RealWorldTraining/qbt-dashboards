@@ -170,6 +170,8 @@ export function BingCPCTab() {
                   <tr className="border-b border-gray-800">
                     <th className="text-left text-cyan-400 font-medium py-2 pr-3">Keyword</th>
                     <th className="text-center text-cyan-400 font-medium py-2 px-3">Action</th>
+                    <th className="text-right text-cyan-400 font-medium py-2 px-3">Current</th>
+                    <th className="text-right text-cyan-400 font-medium py-2 px-3">Suggested</th>
                     <th className="text-center text-cyan-400 font-medium py-2 px-3">Impr Share</th>
                     <th className="text-center text-cyan-400 font-medium py-2 px-3">Top %</th>
                     <th className="text-center text-cyan-400 font-medium py-2 px-3">Abs Top %</th>
@@ -182,6 +184,8 @@ export function BingCPCTab() {
                       <tr key={`${r.keyword}-${idx}`} className={idx < actionKeywords.length - 1 ? 'border-b border-gray-800/50' : ''}>
                         <td className="text-white font-medium py-2 pr-3 whitespace-nowrap">{r.keyword}</td>
                         <td className={`text-center font-bold py-2 px-3 ${actionColor}`}>{r.action === 'RAISE_WITH_CPA_CONCERN' ? 'RAISE*' : r.action}</td>
+                        <td className="text-right text-gray-300 py-2 px-3">${r.currentMaxCPC.toFixed(2)}</td>
+                        <td className="text-right text-white font-medium py-2 px-3">${r.suggestedMaxCPC.toFixed(2)}</td>
                         <td className="text-center py-2 px-3">
                           <span className="font-bold" style={{ color: classColors[r.searchImprClass] }}>
                             {r.searchImprShare.toFixed(1)}%
