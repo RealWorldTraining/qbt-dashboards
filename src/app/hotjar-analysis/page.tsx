@@ -117,7 +117,7 @@ export default function HotjarAnalysisPage() {
                 <div className="flex items-center justify-between mb-4">
                   <AlertTriangle className="w-8 h-8 text-red-400" />
                 </div>
-                <Tooltip text="Measured via Hotjar click maps. Desktop users click on non-interactive elements (body text, table cells, section backgrounds) expecting action. Range: Homepage 18.3%, Plans & Pricing 36.5%, Bookkeeping Cert 38.8%. Industry best practice: <10%.">
+                <Tooltip text={`Measured via Hotjar click maps. Desktop users click on non-interactive elements (body text, table cells, section backgrounds) expecting action. Range: Homepage 18.3%, Plans & Pricing 36.5%, Bookkeeping Cert 38.8%. Industry best practice: <10%.`}>
                   <div className="text-4xl font-extrabold text-red-400 mb-2">20–39%</div>
                 </Tooltip>
                 <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">Desktop Dead Clicks</div>
@@ -127,7 +127,7 @@ export default function HotjarAnalysisPage() {
                 <div className="flex items-center justify-between mb-4">
                   <CheckCircle className="w-8 h-8 text-green-400" />
                 </div>
-                <Tooltip text="Plans & Pricing page: 4,530 desktop sessions, 188 purchases, 4.15% conversion rate. Highest of any page. Contributing factors: shortest page (3,869px), clearest value prop, 52.7% scroll to 50%, single focused decision point.">
+                <Tooltip text={`Plans & Pricing page: 4,530 desktop sessions, 188 purchases, 4.15% conversion rate. Highest of any page. Contributing factors: shortest page (3,869px), clearest value prop, 52.7% scroll to 50%, single focused decision point.`}>
                   <div className="text-4xl font-extrabold text-green-400 mb-2">4.15%</div>
                 </Tooltip>
                 <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">Best Conv. Rate</div>
@@ -136,7 +136,7 @@ export default function HotjarAnalysisPage() {
 
             {/* Big Number Callout */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl p-12 text-center shadow-2xl">
-              <Tooltip text="Sum of 7 initiatives: Fix desktop dead clicks ($150K-$200K) + Fix Homepage scroll ($80K-$120K) + Add CTAs to Self-Paced ($50K-$80K) + Improve mobile research ($80K-$150K) + Interactive pricing table ($20K-$40K) + Optimize /certification-mobile ($30K-$50K) + Improve mobile checkout ($40K-$80K). Conservative estimates account for cross-device dynamics.">
+              <Tooltip text={`Sum of 7 initiatives: Fix desktop dead clicks ($150K-$200K) + Fix Homepage scroll ($80K-$120K) + Add CTAs to Self-Paced ($50K-$80K) + Improve mobile research ($80K-$150K) + Interactive pricing table ($20K-$40K) + Optimize /certification-mobile ($30K-$50K) + Improve mobile checkout ($40K-$80K). Conservative estimates account for cross-device dynamics.`}>
                 <div className="text-6xl font-extrabold mb-4">+$450K – $720K</div>
               </Tooltip>
               <div className="text-xl font-semibold uppercase tracking-widest opacity-90">
@@ -1189,7 +1189,7 @@ export default function HotjarAnalysisPage() {
               
               {/* Revenue Opportunity */}
               <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 text-center shadow-2xl mb-8">
-                <Tooltip text="Sum of 7 initiatives: Fix desktop dead clicks ($150K-$200K) + Fix Homepage scroll ($80K-$120K) + Add CTAs to Self-Paced ($50K-$80K) + Improve mobile research ($80K-$150K) + Interactive pricing table ($20K-$40K) + Optimize /certification-mobile ($30K-$50K) + Improve mobile checkout ($40K-$80K). Conservative estimates account for cross-device dynamics.">
+                <Tooltip text={`Sum of 7 initiatives: Fix desktop dead clicks ($150K-$200K) + Fix Homepage scroll ($80K-$120K) + Add CTAs to Self-Paced ($50K-$80K) + Improve mobile research ($80K-$150K) + Interactive pricing table ($20K-$40K) + Optimize /certification-mobile ($30K-$50K) + Improve mobile checkout ($40K-$80K). Conservative estimates account for cross-device dynamics.`}>
                   <div className="text-5xl font-extrabold mb-3">+$450K – $720K</div>
                 </Tooltip>
                 <div className="text-lg font-semibold uppercase tracking-wide opacity-90">
@@ -1212,7 +1212,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Fix desktop dead clicks</td>
                       <td className="p-4">~$1.3M</td>
                       <td className="p-4">
-                        <Tooltip text="Desktop generates $1.3M with 20-39% dead click rates. Industry best practice: <10% dead clicks. Conservative 10-15% improvement in click-to-CTA rate at $682 AOV = $130K-$195K annual uplift. Estimate: $150K-$200K.">
+                        <Tooltip text={`Desktop generates $1.3M with 20-39% dead click rates. Industry best practice: <10% dead clicks. Conservative 10-15% improvement in click-to-CTA rate at $682 AOV = $130K-$195K annual uplift. Estimate: $150K-$200K.`}>
                           <span className="text-green-400 font-bold">+$150K–$200K</span>
                         </Tooltip>
                       </td>
@@ -1221,7 +1221,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Fix Homepage scroll + shorten page</td>
                       <td className="p-4">$398K desktop</td>
                       <td className="p-4">
-                        <Tooltip text="Homepage: $398K desktop revenue, 9.9% scroll to 50%. Industry benchmark: 30-40%. Conservative 15-20% improvement in scroll retention (reaching 25-30%) combined with page consolidation (9 sections → 6) at $682 AOV = $80K-$120K annual uplift.">
+                        <Tooltip text={`Homepage: $398K desktop revenue, 9.9% scroll to 50%. Industry benchmark: 30-40%. Conservative 15-20% improvement in scroll retention (reaching 25-30%) combined with page consolidation (9 sections → 6) at $682 AOV = $80K-$120K annual uplift.`}>
                           <span className="text-green-400 font-bold">+$80K–$120K</span>
                         </Tooltip>
                       </td>
@@ -1230,7 +1230,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Add CTAs to Self-Paced course cards</td>
                       <td className="p-4">$113K desktop</td>
                       <td className="p-4">
-                        <Tooltip text="Self-Paced: $113K desktop revenue, 4.6% CTA click rate (worst on site). Course cards get 26.5% of clicks but 0% convert. Adding 'View Plans' CTAs to each card, targeting 15-20% CTA rate (industry standard) = $50K-$80K annual uplift.">
+                        <Tooltip text={`Self-Paced: $113K desktop revenue, 4.6% CTA click rate (worst on site). Course cards get 26.5% of clicks but 0% convert. Adding 'View Plans' CTAs to each card, targeting 15-20% CTA rate (industry standard) = $50K-$80K annual uplift.`}>
                           <span className="text-green-400 font-bold">+$50K–$80K</span>
                         </Tooltip>
                       </td>
@@ -1239,7 +1239,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Improve mobile research experience</td>
                       <td className="p-4">Indirect</td>
                       <td className="p-4">
-                        <Tooltip text="Mobile serves as research channel for $700 decision. 43.3% mobile CTA engagement shows strong intent. Improving mobile experience (swipeable plan cards, sticky bottom CTA, FAQ prominence) increases desktop return visits by 10-15%, resulting in $80K-$150K desktop conversions.">
+                        <Tooltip text={`Mobile serves as research channel for $700 decision. 43.3% mobile CTA engagement shows strong intent. Improving mobile experience (swipeable plan cards, sticky bottom CTA, FAQ prominence) increases desktop return visits by 10-15%, resulting in $80K-$150K desktop conversions.`}>
                           <span className="text-green-400 font-bold">+$80K–$150K</span>
                         </Tooltip>
                       </td>
@@ -1248,7 +1248,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Make Plans & Pricing table interactive</td>
                       <td className="p-4">$137K desktop</td>
                       <td className="p-4">
-                        <Tooltip text="Plans & Pricing: $137K desktop revenue, 36.5% dead clicks (1,513 on table text). Making table interactive (expandable rows, inline testimonials) reduces friction. 2-3% conversion improvement on highest-converting page (4.15%) = $20K-$40K annual uplift.">
+                        <Tooltip text={`Plans & Pricing: $137K desktop revenue, 36.5% dead clicks (1,513 on table text). Making table interactive (expandable rows, inline testimonials) reduces friction. 2-3% conversion improvement on highest-converting page (4.15%) = $20K-$40K annual uplift.`}>
                           <span className="text-green-400 font-bold">+$20K–$40K</span>
                         </Tooltip>
                       </td>
@@ -1257,7 +1257,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Optimize /certification-mobile</td>
                       <td className="p-4">$39K</td>
                       <td className="p-4">
-                        <Tooltip text="/certification-mobile: 13,238 sessions, $39K revenue (0.42% conv), no Hotjar tracking. 301 redirect to main page + proper mobile optimization could increase conversion to 0.8-1.0% (matching mobile benchmarks) = $30K-$50K annual uplift.">
+                        <Tooltip text={`/certification-mobile: 13,238 sessions, $39K revenue (0.42% conv), no Hotjar tracking. 301 redirect to main page + proper mobile optimization could increase conversion to 0.8-1.0% (matching mobile benchmarks) = $30K-$50K annual uplift.`}>
                           <span className="text-green-400 font-bold">+$30K–$50K</span>
                         </Tooltip>
                       </td>
@@ -1266,7 +1266,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Improve mobile checkout</td>
                       <td className="p-4">~$180K mobile</td>
                       <td className="p-4">
-                        <Tooltip text="Mobile: $180K revenue, 0.30-0.62% conversion. Improving mobile checkout flow (autofill, fewer steps, trust signals) could increase conversion by 20-40%, resulting in $40K-$80K additional mobile revenue.">
+                        <Tooltip text={`Mobile: $180K revenue, 0.30-0.62% conversion. Improving mobile checkout flow (autofill, fewer steps, trust signals) could increase conversion by 20-40%, resulting in $40K-$80K additional mobile revenue.`}>
                           <span className="text-green-400 font-bold">+$40K–$80K</span>
                         </Tooltip>
                       </td>
