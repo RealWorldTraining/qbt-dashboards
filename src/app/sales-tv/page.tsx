@@ -376,7 +376,7 @@ export default function SalesTVPage() {
               <CardDescription className="text-sm text-white/50">Today vs 1 week ago vs 1 year ago</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[280px]">
+              <div className="h-[520px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart
                     data={(() => {
@@ -423,7 +423,7 @@ export default function SalesTVPage() {
               <CardDescription className="text-sm text-white/50">Current week vs last week vs same week last year</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[280px]">
+              <div className="h-[520px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart
                     data={(() => {
