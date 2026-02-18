@@ -285,15 +285,15 @@ function CardComponent({
   return (
     <Link
       href={card.href}
-      className={`group relative flex flex-col rounded-2xl border bg-gradient-to-br ${section.cardGradient} backdrop-blur-sm p-6 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-2xl overflow-hidden ${section.borderColor} ${section.glowColor} card-enter`}
+      className={`group relative rounded-xl border bg-[#141926] hover:bg-[#1a2036] p-5 transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl overflow-hidden cursor-pointer ${section.borderColor} ${section.glowColor} card-enter`}
       style={{ animationDelay: `${index * 60}ms` }}
     >
-      {/* Subtle top accent line */}
-      <div className={`absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r ${section.gradientBar} opacity-30 group-hover:opacity-60 transition-opacity`} />
+      {/* Left accent bar */}
+      <div className={`absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-gradient-to-b ${section.gradientBar} opacity-40 group-hover:opacity-80 transition-opacity`} />
 
       {/* Preview image — fills card on hover */}
       {card.preview && (
-        <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl overflow-hidden">
           <Image
             src={card.preview}
             alt={`${card.name} preview`}
@@ -304,38 +304,36 @@ function CardComponent({
           />
           <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
           <div className="absolute bottom-3 left-4 right-4">
-            <p className="text-sm font-semibold text-white drop-shadow-lg">{card.name}</p>
+            <p className="text-sm font-bold text-white drop-shadow-lg">{card.name}</p>
           </div>
         </div>
       )}
 
-      {/* Arrow indicator */}
-      <div className="absolute top-5 right-5 opacity-0 translate-x-[-4px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 z-20">
-        <ArrowUpRight className={`h-4 w-4 ${card.preview ? 'text-white' : section.accent} opacity-60`} />
+      {/* Header row: Icon + Title + Arrow */}
+      <div className="flex items-center gap-3 mb-2.5">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${section.iconBg} transition-all duration-200 group-hover:scale-105`}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <h3 className="text-lg font-bold text-white group-hover:text-white transition-colors tracking-tight flex-1">
+          {card.name}
+        </h3>
+        <ArrowUpRight className={`h-4 w-4 shrink-0 ${section.accent} opacity-0 group-hover:opacity-60 translate-x-[-4px] group-hover:translate-x-0 transition-all duration-200`} />
       </div>
 
-      {/* Icon */}
-      <div
-        className={`flex h-11 w-11 items-center justify-center rounded-xl ${section.iconBg} mb-5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-
-      {/* Content */}
-      <h3 className={`text-[15px] font-bold text-white/90 mb-1 group-hover:text-white transition-colors tracking-tight`}>
-        {card.name}
-      </h3>
-      <p className="text-[13px] text-white/35 leading-relaxed mb-4 flex-1">
+      {/* Description */}
+      <p className="text-[13px] text-white/40 leading-relaxed ml-[52px] mb-3">
         {card.description}
       </p>
 
       {/* Sub-tabs */}
       {card.subtabs && (
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="flex flex-wrap gap-1.5 ml-[52px] mb-2">
           {card.subtabs.map((tab) => (
             <span
               key={tab}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-md border border-white/[0.08] bg-white/[0.03] text-white/50 group-hover:border-white/[0.18] group-hover:text-white/75 group-hover:bg-white/[0.06] transition-all`}
+              className="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-white/[0.06] text-white/50 border border-white/[0.08] group-hover:bg-white/[0.1] group-hover:text-white/70 group-hover:border-white/[0.15] transition-all"
             >
               {tab}
             </span>
@@ -344,11 +342,11 @@ function CardComponent({
       )}
 
       {/* Tags */}
-      {card.tags && (
-        <div className="flex items-center gap-1.5 mt-auto pt-3 border-t border-white/[0.04]">
+      {card.tags && !card.subtabs && (
+        <div className="flex items-center gap-2 ml-[52px]">
           {card.tags.map((tag, i) => (
-            <span key={tag} className={`text-[11px] font-medium ${i === 0 ? 'text-white/30' : 'text-white/20'}`}>
-              {i > 0 && <span className="mr-1.5 text-white/15">·</span>}
+            <span key={tag} className="text-[11px] font-medium text-white/25">
+              {i > 0 && <span className="mr-2 text-white/10">·</span>}
               {tag}
             </span>
           ))}
