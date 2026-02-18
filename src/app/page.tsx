@@ -171,6 +171,13 @@ const sections: DashboardSection[] = [
     cardGradient: "from-amber-500/[0.06] via-transparent to-transparent",
     items: [
       {
+        name: "Sales (TV)",
+        description: "Full sales dashboard for 1080x1920 portrait TV",
+        href: "/sales-tv",
+        icon: Monitor,
+        tags: ["Sales", "TV", "Portrait"],
+      },
+      {
         name: "Sales (iPhone)",
         description: "Sales report optimized for mobile",
         href: "/phone",
