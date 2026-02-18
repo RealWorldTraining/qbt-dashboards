@@ -254,6 +254,13 @@ const sections: DashboardSection[] = [
         tags: ["Demographics"],
         preview: "/previews/age-analysis.png",
       },
+      {
+        name: "Health Check",
+        description: "System health monitoring and status",
+        href: "/health",
+        icon: Activity,
+        tags: ["System", "Status"],
+      },
     ],
   },
 ]

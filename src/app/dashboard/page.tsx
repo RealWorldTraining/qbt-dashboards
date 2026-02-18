@@ -2588,6 +2588,91 @@ function DashboardPageContent() {
                 </Card>
               )}
 
+              {/* New: Remaining Sales Per Hour (countdown) */}
+              {hourlyComparison && (
+                <Card className="bg-white border-[#D2D2D7] shadow-sm mt-6">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-orange-600" />
+                      Remaining Sales Per Hour
+                    </CardTitle>
+                    <CardDescription className="text-sm text-[#6E6E73]">Sales remaining after each hour (countdown to EOD)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto rounded-xl">
+                      <table className="w-full text-lg bg-[#1D1D1F]">
+                        <thead>
+                          <tr className="border-b border-[#3D3D3F]">
+                            <th className="text-left py-3 px-3 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[120px]">
+                              Period
+                            </th>
+                            {hourlyComparison.hours.map((hour) => (
+                              <th key={hour} className="text-center py-3 px-1 font-semibold text-white whitespace-nowrap">
+                                {hour.replace('am', 'a').replace('pm', 'p')}
+                              </th>
+                            ))}
+                            <th className="text-center py-3 px-3 font-bold text-white bg-orange-700 whitespace-nowrap">
+                              EOD
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            const hours = hourlyComparison.hours
+                            const getRemainingValue = (period: typeof hourlyComparison.periods[0], hour: string) => {
+                              const cumulativeAtHour = period.hourly_sales[hour]
+                              const eod = period.end_of_day
+                              if (cumulativeAtHour === null || eod === null) return null
+                              return eod - cumulativeAtHour
+                            }
+
+                            return hourlyComparison.periods.map((period) => {
+                              const isToday = period.period_label === "Today"
+                              const isShaded = period.period_label === "1 Year Ago" || period.period_label === "-1Y" || period.period_label.includes("Avg")
+                              const cellBg = isToday ? "bg-[#1A3A52]" : isShaded ? "bg-[#2D2D2F]" : "bg-[#1D1D1F]"
+                              // Row-based max for heatmap intensity
+                              const rowValues = hours.map((hour) => getRemainingValue(period, hour)).filter((v): v is number => v !== null)
+                              const rowMax = Math.max(...rowValues, 1)
+
+                              return (
+                                <tr key={period.period_label} className="border-b border-white/5">
+                                  <td className={`py-3 px-3 sticky left-0 ${cellBg}`}>
+                                    <div className="font-semibold text-white">{abbreviatePeriodLabel(period.period_label)}</div>
+                                    {period.period_date && (
+                                      <div className="text-xs text-white/40">{period.period_date}</div>
+                                    )}
+                                  </td>
+                                  {hours.map((hour) => {
+                                    const value = getRemainingValue(period, hour)
+                                    const pct = value ? value / rowMax : 0
+                                    // Orange/amber gradient: higher remaining = more intense orange
+                                    const bg = value === null
+                                      ? '#1D1D1F'
+                                      : `hsl(30, ${50 + pct * 40}%, ${50 - pct * 30}%)`
+                                    return (
+                                      <td
+                                        key={hour}
+                                        style={{ backgroundColor: bg }}
+                                        className={`text-center py-3 px-1 ${value === null ? "text-white/20" : "text-white font-semibold"}`}
+                                      >
+                                        {value === null ? "-" : value}
+                                      </td>
+                                    )
+                                  })}
+                                  <td className={`text-center py-3 px-3 font-bold bg-[#2D2D2F] ${period.end_of_day === null ? "text-white/20" : "text-white"}`}>
+                                    {period.end_of_day === null ? "-" : 0}
+                                  </td>
+                                </tr>
+                              )
+                            })
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               </div>
 
             {/* Weekly Trends Heatmap - Direct QTY (cumulative, column-based) */}
