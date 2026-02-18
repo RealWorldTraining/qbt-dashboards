@@ -43,20 +43,26 @@ function simpleHash(str: string): string {
   return Math.abs(hash).toString(36)
 }
 
-function renderMarkdown(text: string): string {
+function renderMarkdown(text: string, accentColor: string): string {
   return text
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*<\/li>)/g, '<ul class="list-disc pl-5 space-y-1">$1</ul>')
+    .replace(/^### (.+)$/gm, `<h3 style="color: ${accentColor}; font-size: 1.1rem; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.5rem;">$1</h3>`)
+    .replace(/^## (.+)$/gm, `<h2 style="color: ${accentColor}; font-size: 1.3rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem;">$1</h2>`)
+    .replace(/\*\*Verdict: (REJECT|WEAK JUSTIFICATION)[^*]*\*\*/g, '<strong style="color: #EF4444;">$&</strong>')
+    .replace(/\*\*Verdict: QUESTIONABLE[^*]*\*\*/g, '<strong style="color: #F59E0B;">$&</strong>')
+    .replace(/\*\*Verdict: (APPROVE|JUSTIFIED|STRONG)[^*]*\*\*/g, '<strong style="color: #10B981;">$&</strong>')
+    .replace(/\*\*Summary:?\*\*/g, `<strong style="color: ${accentColor};">Summary:</strong>`)
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="color: #e2e8f0;">$1</strong>')
+    .replace(/^- (.+)$/gm, '<li style="margin-bottom: 0.35rem;">$1</li>')
+    .replace(/(<li[\s\S]*?<\/li>)/g, '<ul style="list-style-type: disc; padding-left: 1.25rem; margin: 0.5rem 0;">$1</ul>')
     .replace(/(<\/ul>\s*<ul[^>]*>)/g, '')
-    .replace(/\n\n/g, '<br/><br/>')
+    .replace(/\n\n/g, '<div style="margin-top: 0.75rem;"></div>')
     .replace(/\n/g, '<br/>')
 }
 
 const sections = [
-  { key: 'adversarial' as const, icon: '\u2694\uFE0F', title: 'Adversarial Interrogation' },
-  { key: 'uncertainty' as const, icon: '\uD83D\uDCCA', title: 'Uncertainty Quantification' },
-  { key: 'edgeCases' as const, icon: '\uD83D\uDD0D', title: 'Edge Case Hunter' },
+  { key: 'adversarial' as const, icon: '\u2694\uFE0F', title: 'Adversarial Interrogation', color: '#F87171', borderColor: 'border-red-800' },
+  { key: 'uncertainty' as const, icon: '\uD83D\uDCCA', title: 'Uncertainty Quantification', color: '#60A5FA', borderColor: 'border-blue-800' },
+  { key: 'edgeCases' as const, icon: '\uD83D\uDD0D', title: 'Edge Case Hunter', color: '#FBBF24', borderColor: 'border-yellow-800' },
 ]
 
 export function ForcingFunctions({ keywords, platform }: ForcingFunctionsProps) {
@@ -116,7 +122,7 @@ export function ForcingFunctions({ keywords, platform }: ForcingFunctionsProps) 
     <div className="mb-5">
       <div className="bg-[#1a1a1a] rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-gray-300 text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
+          <h3 className="text-white text-xl font-bold tracking-wide flex items-center gap-2">
             <span>{'\uD83C\uDFAF'}</span> Forcing Functions Analysis
           </h3>
           <div className="flex items-center gap-3">
@@ -155,23 +161,24 @@ export function ForcingFunctions({ keywords, platform }: ForcingFunctionsProps) 
 
         {result && !loading && (
           <div className="space-y-3">
-            {sections.map(({ key, icon, title }) => (
-              <div key={key} className="border border-gray-800 rounded-lg overflow-hidden">
+            {sections.map(({ key, icon, title, color, borderColor }) => (
+              <div key={key} className={`border ${borderColor} rounded-lg overflow-hidden`}>
                 <button
                   onClick={() => toggleSection(key)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-black/30 hover:bg-black/50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-black/40 hover:bg-black/60 transition-colors"
                 >
-                  <span className="text-gray-200 text-sm font-medium">
+                  <span className="text-lg font-semibold" style={{ color }}>
                     {icon} {title}
                   </span>
-                  <span className="text-gray-500 text-xs">
+                  <span className="text-gray-500">
                     {openSections[key] ? '\u25BC' : '\u25B6'}
                   </span>
                 </button>
                 {openSections[key] && (
                   <div
-                    className="px-4 py-3 text-gray-300 text-sm leading-relaxed prose-invert"
-                    dangerouslySetInnerHTML={{ __html: renderMarkdown(result[key]) }}
+                    className="px-5 py-4 text-gray-300 text-sm leading-relaxed"
+                    style={{ borderTop: `1px solid ${color}33` }}
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(result[key], color) }}
                   />
                 )}
               </div>
