@@ -263,33 +263,33 @@ export default function HotjarAnalysisPage() {
               
               <div className="space-y-6">
                 <div className="bg-red-900/20 border-l-4 border-red-500 p-6 rounded-r-xl">
-                  <h3 className="text-xl font-bold text-red-300 mb-3">1. The Homepage Is Hemorrhaging Visitors</h3>
-                  <p className="text-gray-300 mb-3">Only 8% of desktop users reach the halfway point. The page is 9.34kb tall. There is a catastrophic 40.2% drop-off between 5–10% of the page. At 80%+ AOV, each percentage point of improvement represents hundreds of potential purchases per quarter.</p>
-                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-red-400 font-semibold">CRITICAL</span> • Affects all traffic sources</div>
+                  <h3 className="text-2xl font-bold text-red-300 mb-3">1. The Homepage Is Hemorrhaging Visitors</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">Only 8% of desktop users reach the halfway point. The page is 9.34kb tall. There is a catastrophic 40.2% drop-off between 5–10% of the page. At 80%+ AOV, each percentage point of improvement represents hundreds of potential purchases per quarter.</p>
+                  <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-red-400 font-semibold">CRITICAL</span> • Affects all traffic sources</div>
                 </div>
 
                 <div className="bg-amber-900/20 border-l-4 border-amber-500 p-6 rounded-r-xl">
-                  <h3 className="text-xl font-bold text-amber-300 mb-3">2. The Homepage Function Confuses Visitors</h3>
-                  <p className="text-gray-300 mb-3">20–39% of ALL desktop clicks hit non-interactive elements. People click on body text, comparison table cells, section backgrounds, and data areas expecting interactivity. This is the purchase channel — the device generating 88% of revenue — and up to 4 in 10 clicks are wasted.</p>
-                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Desktop-specific issue</div>
+                  <h3 className="text-2xl font-bold text-amber-300 mb-3">2. The Homepage Function Confuses Visitors</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">20–39% of ALL desktop clicks hit non-interactive elements. People click on body text, comparison table cells, section backgrounds, and data areas expecting interactivity. This is the purchase channel — the device generating 88% of revenue — and up to 4 in 10 clicks are wasted.</p>
+                  <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Desktop-specific issue</div>
                 </div>
 
                 <div className="bg-amber-900/20 border-l-4 border-amber-500 p-6 rounded-r-xl">
-                  <h3 className="text-xl font-bold text-amber-300 mb-3">3. Pages Are Too Long High</h3>
-                  <p className="text-gray-300 mb-3">The correlation is unambiguous: shorter pages retain better and convert better for a $700 product. Plans & Pricing (9.34px): 0.86% conv. Certification (13.21%px): 0.85% conv. Self-Paced (6.44px): 0.96% conv.</p>
-                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Affects conversion rates</div>
+                  <h3 className="text-2xl font-bold text-amber-300 mb-3">3. Pages Are Too Long High</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">The correlation is unambiguous: shorter pages retain better and convert better for a $700 product. Plans & Pricing (9.34px): 0.86% conv. Certification (13.21%px): 0.85% conv. Self-Paced (6.44px): 0.96% conv.</p>
+                  <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Affects conversion rates</div>
                 </div>
 
                 <div className="bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
-                  <h3 className="text-xl font-bold text-blue-300 mb-3">4. Sign In Dominates the Homepage High</h3>
-                  <p className="text-gray-300 mb-3">The homepage functions more as a login portal than a landing page. After removing Sign In and clicks, only ~400 desktop clicks per quarter remain for CTAs. For first-time visitors, Sign In is a landing page. After removing account engagement, the page does not convert.</p>
-                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Crowds out CTA engagement</div>
+                  <h3 className="text-2xl font-bold text-blue-300 mb-3">4. Sign In Dominates the Homepage High</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">The homepage functions more as a login portal than a landing page. After removing Sign In and clicks, only ~400 desktop clicks per quarter remain for CTAs. For first-time visitors, Sign In is a landing page. After removing account engagement, the page does not convert.</p>
+                  <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Crowds out CTA engagement</div>
                 </div>
 
                 <div className="bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
-                  <h3 className="text-xl font-bold text-blue-300 mb-3">5. Self-Paced Courses: Conversion Black Hole High</h3>
-                  <p className="text-gray-300 mb-3">28.5% of clicks go to course cards, but only 4.6% ever reach a CTA. People browse thinking they're buying individual courses, not understanding the plan model. "Load More" button gets 3.87% of clicks but no one sees a CTA. Conversion Black Hole: 98% of visitors who click any course card never reach a purchase path.</p>
-                  <div className="text-base text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Specific to Self-Paced page</div>
+                  <h3 className="text-2xl font-bold text-blue-300 mb-3">5. Self-Paced Courses: Conversion Black Hole High</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">28.5% of clicks go to course cards, but only 4.6% ever reach a CTA. People browse thinking they're buying individual courses, not understanding the plan model. "Load More" button gets 3.87% of clicks but no one sees a CTA. Conversion Black Hole: 98% of visitors who click any course card never reach a purchase path.</p>
+                  <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Specific to Self-Paced page</div>
                 </div>
               </div>
             </div>
