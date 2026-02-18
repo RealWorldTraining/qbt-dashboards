@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>QBTraining.com — Behavioral &amp; Revenue Analysis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1a1a2e;
+    line-height: 1.7;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px;
+    background: #fff;
+  }
+
+  /* Cover / Title Block */
+  .cover {
+    text-align: center;
+    padding: 60px 20px 50px;
+    margin-bottom: 48px;
+    border-bottom: 3px solid #1a1a2e;
+  }
+  .cover h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: #1a1a2e;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .cover .subtitle {
+    font-size: 20px;
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 24px;
+  }
+  .cover .meta {
+    font-size: 13px;
+    color: #718096;
+    line-height: 2;
+  }
+
+  /* Section Headers */
+  h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-top: 56px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #e53e3e;
+  }
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-top: 40px;
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #e53e3e;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+
+  p { margin-bottom: 14px; font-size: 15px; }
+
+  /* Highlight boxes */
+  .callout {
+    background: #f7fafc;
+    border-left: 4px solid #e53e3e;
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .callout.green {
+    border-left-color: #38a169;
+    background: #f0fff4;
+  }
+  .callout.blue {
+    border-left-color: #3182ce;
+    background: #ebf8ff;
+  }
+  .callout.amber {
+    border-left-color: #d69e2e;
+    background: #fffff0;
+  }
+  .callout p { margin-bottom: 0; }
+
+  .big-number {
+    text-align: center;
+    padding: 32px 20px;
+    margin: 24px 0;
+    background: linear-gradient(135deg, #1a1a2e, #2d3748);
+    color: #fff;
+    border-radius: 12px;
+  }
+  .big-number .number {
+    font-size: 48px;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .big-number .label {
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .stat-card {
+    background: #f7fafc;
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+  }
+  .stat-card .value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a1a2e;
+    display: block;
+  }
+  .stat-card .label {
+    font-size: 12px;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    display: block;
+  }
+  .stat-card.red .value { color: #e53e3e; }
+  .stat-card.green .value { color: #38a169; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 14px;
+  }
+  th {
+    background: #1a1a2e;
+    color: #fff;
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  th:first-child { border-radius: 6px 0 0 0; }
+  th:last-child { border-radius: 0 6px 0 0; }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f7fafc; }
+  tr:hover td { background: #edf2f7; }
+  td.highlight { font-weight: 700; color: #e53e3e; }
+  td.green { font-weight: 700; color: #38a169; }
+  td.bold { font-weight: 700; }
+
+  /* Journey diagram */
+  .journey {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 28px 0;
+    flex-wrap: wrap;
+  }
+  .journey-step {
+    background: #f7fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: center;
+    flex: 1;
+    min-width: 200px;
+  }
+  .journey-step .step-num {
+    display: inline-block;
+    background: #e53e3e;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .journey-step .step-title {
+    font-weight: 700;
+    font-size: 15px;
+    color: #1a1a2e;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .journey-step .step-desc {
+    font-size: 13px;
+    color: #718096;
+  }
+  .journey-arrow {
+    font-size: 24px;
+    color: #cbd5e0;
+    padding: 0 8px;
+  }
+
+  /* Priority badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge.critical { background: #fed7d7; color: #c53030; }
+  .badge.high { background: #feebc8; color: #c05621; }
+  .badge.medium { background: #bee3f8; color: #2b6cb0; }
+  .badge.low { background: #c6f6d5; color: #276749; }
+
+  /* Grade indicators */
+  .grade {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .grade.excellent { background: #c6f6d5; color: #276749; }
+  .grade.good { background: #bee3f8; color: #2b6cb0; }
+  .grade.weak { background: #feebc8; color: #c05621; }
+  .grade.critical { background: #fed7d7; color: #c53030; }
+  .grade.catastrophic { background: #c53030; color: #fff; }
+
+  /* Recommendation cards */
+  .rec-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    background: #fff;
+  }
+  .rec-card .rec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .rec-card .rec-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .rec-card .rec-meta {
+    font-size: 12px;
+    color: #718096;
+    margin-bottom: 12px;
+  }
+  .rec-card ul {
+    margin: 8px 0 0 20px;
+    font-size: 14px;
+  }
+  .rec-card li { margin-bottom: 6px; }
+
+  /* Roadmap timeline */
+  .roadmap-phase {
+    margin: 24px 0;
+    padding-left: 24px;
+    border-left: 3px solid #e2e8f0;
+    position: relative;
+  }
+  .roadmap-phase::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid #e53e3e;
+    background: #fff;
+  }
+  .roadmap-phase.launch::before { border-color: #38a169; }
+  .roadmap-phase.post::before { border-color: #3182ce; }
+  .roadmap-phase .phase-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #e53e3e;
+    margin-bottom: 6px;
+  }
+  .roadmap-phase.launch .phase-label { color: #38a169; }
+  .roadmap-phase.post .phase-label { color: #3182ce; }
+
+  ul, ol { margin: 10px 0 16px 24px; font-size: 15px; }
+  li { margin-bottom: 6px; }
+
+  strong { font-weight: 700; }
+
+  blockquote {
+    border-left: 4px solid #e53e3e;
+    padding: 12px 20px;
+    margin: 16px 0;
+    background: #f7fafc;
+    font-style: italic;
+    color: #4a5568;
+    border-radius: 0 8px 8px 0;
+  }
+
+  code {
+    background: #edf2f7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  hr {
+    border: none;
+    height: 1px;
+    background: #e2e8f0;
+    margin: 40px 0;
+  }
+
+  .toc {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px 32px;
+    margin: 24px 0 40px;
+  }
+  .toc h2 { margin-top: 0; border-bottom: none; }
+  .toc ol { margin: 12px 0 0 20px; }
+  .toc li { margin-bottom: 6px; font-size: 14px; }
+  .toc a { color: #3182ce; text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  .page-break { page-break-before: always; }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 2px solid #e2e8f0;
+    text-align: center;
+    font-size: 13px;
+    color: #a0aec0;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1 style="font-size:36px; border:none; margin-top:0; padding-bottom:0;">QBTraining.com</h1>
+  <div class="subtitle">Behavioral &amp; Revenue Analysis</div>
+  <p style="font-size:16px; color:#4a5568; margin-bottom:32px;">Complete Data-Driven Website Redesign Report</p>
+  <div class="meta">
+    <strong>Prepared:</strong> February 2026<br>
+    <strong>Data Sources:</strong> Hotjar Heatmaps (3 months, 250K+ interactions) &bull; GA4 (Nov 2025 &ndash; Feb 2026)<br>
+    <strong>Scope:</strong> 319,718 sessions &bull; $1,736,101 revenue &bull; 21 page/device combinations
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h2 style="font-size:18px; color:#1a1a2e;">Table of Contents</h2>
+  <ol>
+    <li><a href="#exec-summary">Executive Summary</a></li>
+    <li><a href="#business-context">Business Context &amp; Pricing</a></li>
+    <li><a href="#buyer-journey">The Cross-Device Buyer Journey</a></li>
+    <li><a href="#five-problems">Five Systemic Problems</a></li>
+    <li><a href="#performance">Site Performance Dashboard</a></li>
+    <li><a href="#page-analysis">Page-by-Page Analysis</a></li>
+    <li><a href="#whats-right">What the New Site Gets Right</a></li>
+    <li><a href="#site-wide">Site-Wide Recommendations</a></li>
+    <li><a href="#page-punch">Page-Specific Punch List</a></li>
+    <li><a href="#mobile">Mobile Strategy</a></li>
+    <li><a href="#revenue">Revenue Opportunity</a></li>
+    <li><a href="#roadmap">Implementation Roadmap</a></li>
+    <li><a href="#redirects">Migration Redirects</a></li>
+    <li><a href="#measurement">Measurement Plan</a></li>
+  </ol>
+</div>
+
+<!-- ================================================================== -->
+<!-- EXECUTIVE SUMMARY -->
+<!-- ================================================================== -->
+<h1 id="exec-summary">Executive Summary</h1>
+
+<p>QBTraining.com generated <strong>$1.7 million in revenue</strong> from 2,544 purchases across 319,718 sessions between November 2025 and February 2026. The average order value is <strong>$682</strong>, confirming the Certification Plan ($699.95) as the likely best-seller.</p>
+
+<p>Analysis of 250,000+ Hotjar interactions and GA4 data reveals a site with enormous untapped potential. <strong>Desktop generates 88% of revenue ($1.3M)</strong> but suffers from 20&ndash;39% dead click rates. Meanwhile, mobile serves as the research channel with excellent engagement but low direct conversion &mdash; expected behavior for a $700 product.</p>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="value">$1.7M</span>
+    <span class="label">Total Revenue</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">$682</span>
+    <span class="label">Avg Order Value</span>
+  </div>
+  <div class="stat-card red">
+    <span class="value">20&ndash;39%</span>
+    <span class="label">Desktop Dead Clicks</span>
+  </div>
+  <div class="stat-card green">
+    <span class="value">4.15%</span>
+    <span class="label">Best Conv. Rate</span>
+  </div>
+</div>
+
+<div class="big-number">
+  <span class="number">+$450K &ndash; $720K</span>
+  <span class="label">Estimated Annual Revenue Uplift from Recommendations</span>
+</div>
+
+<!-- ================================================================== -->
+<!-- BUSINESS CONTEXT -->
+<!-- ================================================================== -->
+<h1 id="business-context">Business Context &amp; Pricing</h1>
+
+<h2>Pricing Structure</h2>
+
+<table>
+  <tr><th>Plan</th><th>Price</th><th>Was</th><th>Includes</th></tr>
+  <tr><td class="bold">Learner</td><td>$599.95</td><td>$899.95</td><td>Training only, 1 user. 30 days free 1-on-1 help, then $50/mo</td></tr>
+  <tr><td class="bold">Certification</td><td>$699.95</td><td>$999.95</td><td>Training + Certification, 1 user. 30 days free 1-on-1 help, then $50/mo</td></tr>
+  <tr><td class="bold">Team</td><td>$999.95</td><td>$1,799.95</td><td>Training + Certification, 2&ndash;5 users. 30 days free 1-on-1 help, then $90/mo</td></tr>
+</table>
+
+<p>All plans include lifetime access to live 2-day classes, 100+ self-paced courses, and live 1-on-1 help.</p>
+
+<h2>Why This Price Point Shapes Everything</h2>
+
+<div class="callout amber">
+  <p><strong>At $600&ndash;$1,000 per plan:</strong> Nobody impulse-buys on their phone. Visitors make multiple visits before purchasing. Trust is non-negotiable. The comparison table is the most important element on the site. FAQ engagement is massive because people have lots of questions before committing $700.</p>
+</div>
+
+<!-- ================================================================== -->
+<!-- BUYER JOURNEY -->
+<!-- ================================================================== -->
+<h1 id="buyer-journey">The Cross-Device Buyer Journey</h1>
+
+<p>The data reveals a clear, predictable purchasing pattern for this high-ticket product:</p>
+
+<div class="journey">
+  <div class="journey-step">
+    <span class="step-num">1</span>
+    <span class="step-title">Discover on Mobile</span>
+    <span class="step-desc">Google search &rarr; landing page &rarr; browse, read, evaluate</span>
+  </div>
+  <div class="journey-arrow">&rarr;</div>
+  <div class="journey-step">
+    <span class="step-num">2</span>
+    <span class="step-title">Return on Desktop</span>
+    <span class="step-desc">Types URL directly &rarr; compares plans &rarr; final decision</span>
+  </div>
+  <div class="journey-arrow">&rarr;</div>
+  <div class="journey-step">
+    <span class="step-num">3</span>
+    <span class="step-title">Purchase on Desktop</span>
+    <span class="step-desc">Signs In or enrolls &rarr; completes $600&ndash;$1,000 purchase</span>
+  </div>
+</div>
+
+<h2>Evidence from the Data</h2>
+
+<table>
+  <tr><th>Signal</th><th>Data Point</th></tr>
+  <tr><td>Returning users dominate desktop</td><td><code>/login</code> = 20,364 sessions &bull; <code>/dashboard</code> = 28,551 sessions</td></tr>
+  <tr><td>Desktop homepage = login portal</td><td>30.6% of desktop homepage clicks are Sign In</td></tr>
+  <tr><td>Mobile engages, desktop converts</td><td>Mobile CTA rate 43.3% vs. 0.43% conversion</td></tr>
+  <tr><td>Direct traffic converts highest</td><td>People remember the URL from mobile research</td></tr>
+  <tr><td>Mobile scrolls deeper everywhere</td><td>63&ndash;69% reach midpoint (mobile) vs. 10&ndash;53% (desktop)</td></tr>
+</table>
+
+<div class="callout green">
+  <p><strong>Key insight:</strong> Low mobile conversion is partially expected behavior, not purely a UX problem. Improving the mobile research experience drives more desktop return visits and purchases.</p>
+</div>
+
+<!-- ================================================================== -->
+<!-- FIVE PROBLEMS -->
+<!-- ================================================================== -->
+<h1 id="five-problems">Five Systemic Problems the Data Revealed</h1>
+
+<div class="rec-card" style="border-color: #e53e3e;">
+  <div class="rec-header">
+    <span class="rec-title">1. The Homepage Is Hemorrhaging Visitors</span>
+    <span class="badge critical">Critical</span>
+  </div>
+  <p>Only <strong>9.9% of desktop users reach the halfway point</strong> of the homepage. The page is 9,346px tall. There is a catastrophic 40.2% drop-off between 5&ndash;10% of the page. At $682 AOV, each percentage point of improvement represents hundreds of potential purchases per quarter.</p>
+</div>
+
+<div class="rec-card" style="border-color: #e53e3e;">
+  <div class="rec-header">
+    <span class="rec-title">2. Desktop Dead Clicks Are Epidemic</span>
+    <span class="badge critical">Critical</span>
+  </div>
+  <p><strong>20&ndash;39% of ALL desktop clicks hit non-interactive elements.</strong> People click on body text, comparison table cells, section backgrounds, and card areas expecting interactivity. This is the purchase channel &mdash; the device generating 88% of revenue &mdash; and up to 4 in 10 clicks are wasted.</p>
+  <table>
+    <tr><th>Page</th><th>Desktop Dead Click Rate</th></tr>
+    <tr><td>Bookkeeping Certification</td><td class="highlight">38.8%</td></tr>
+    <tr><td>QBO Certification</td><td class="highlight">38.0%</td></tr>
+    <tr><td>Plans &amp; Pricing</td><td class="highlight">36.5%</td></tr>
+    <tr><td>QuickBooks Certification</td><td>25.9%</td></tr>
+    <tr><td>Self-Paced Courses</td><td>25.6%</td></tr>
+    <tr><td>Learn QuickBooks</td><td>22.8%</td></tr>
+    <tr><td>Live Classes</td><td>22.5%</td></tr>
+    <tr><td>Homepage</td><td>18.3%</td></tr>
+  </table>
+  <p style="font-size:13px; color:#718096;">Mobile dead clicks are consistently 1&ndash;2%. The problem is desktop-specific.</p>
+</div>
+
+<div class="rec-card" style="border-color: #d69e2e;">
+  <div class="rec-header">
+    <span class="rec-title">3. Pages Are Too Long</span>
+    <span class="badge high">High</span>
+  </div>
+  <table>
+    <tr><th>Page</th><th>Height</th><th>Desktop Scroll to 50%</th><th>Desktop Conv Rate</th></tr>
+    <tr><td>Plans &amp; Pricing</td><td>3,869px</td><td class="green">52.7%</td><td class="green">4.15%</td></tr>
+    <tr><td>Homepage</td><td>9,346px</td><td class="highlight">9.9%</td><td>0.86%</td></tr>
+    <tr><td>Self-Paced (mobile)</td><td>13,213px</td><td class="highlight">21.4%</td><td>0.30%</td></tr>
+  </table>
+  <p>The correlation is unambiguous: shorter pages retain better and convert better for a $700 product.</p>
+</div>
+
+<div class="rec-card" style="border-color: #d69e2e;">
+  <div class="rec-header">
+    <span class="rec-title">4. Sign In Dominates the Homepage</span>
+    <span class="badge high">High</span>
+  </div>
+  <p><strong>30.6% of all desktop homepage clicks are Sign In.</strong> The homepage functions more as a login portal than a landing page. After removing Sign In and dead clicks, only ~46% of desktop clicks are productive prospect engagement.</p>
+</div>
+
+<div class="rec-card" style="border-color: #d69e2e;">
+  <div class="rec-header">
+    <span class="rec-title">5. Self-Paced Courses: Conversion Black Hole</span>
+    <span class="badge high">High</span>
+  </div>
+  <p><strong>26.5% of clicks go to course cards, but only 4.6% ever reach a CTA.</strong> People browse thinking they&rsquo;re buying individual courses, not understanding the plan model. The "Load More" button gets 1,154 clicks from people treating it like a course catalog.</p>
+</div>
+
+<!-- ================================================================== -->
+<!-- PERFORMANCE DASHBOARD -->
+<!-- ================================================================== -->
+<h1 id="performance" class="page-break">Site Performance Dashboard</h1>
+
+<h2>Revenue by Page</h2>
+
+<table>
+  <tr><th>Page</th><th>Desktop Revenue</th><th>Mobile Revenue</th><th>Total</th><th>Desktop Conv %</th></tr>
+  <tr><td class="bold">Homepage</td><td>$398,530</td><td>$55,956</td><td class="bold">$454,486</td><td>0.86%</td></tr>
+  <tr><td class="bold">QB Certification</td><td>$287,410</td><td>$10,999</td><td class="bold">$298,409</td><td>1.66%</td></tr>
+  <tr><td class="bold">Plans &amp; Pricing</td><td>$137,591</td><td>$33,798</td><td class="bold">$171,389</td><td class="green">4.15%</td></tr>
+  <tr><td class="bold">Live Classes</td><td>$155,589</td><td>$10,799</td><td class="bold">$166,388</td><td>2.21%</td></tr>
+  <tr><td class="bold">Self-Paced Courses</td><td>$113,121</td><td>$9,199</td><td class="bold">$122,320</td><td>2.00%</td></tr>
+  <tr><td>Certification Mobile</td><td>$5,500</td><td>$39,397</td><td class="bold">$44,897</td><td>2.77%</td></tr>
+  <tr><td>QBO Certification</td><td>$21,849</td><td>$0</td><td class="bold">$21,849</td><td>1.67%</td></tr>
+  <tr><td>Bookkeeping Cert</td><td>$13,099</td><td>~$1,400</td><td class="bold">~$14,499</td><td>1.22%</td></tr>
+  <tr><td>Learn QuickBooks</td><td>$9,799</td><td>~$600</td><td class="bold">~$10,399</td><td>0.88%</td></tr>
+</table>
+
+<h2>Scroll Depth Leaderboard</h2>
+
+<table>
+  <tr><th>#</th><th>Page</th><th>Device</th><th>Reach 50%</th><th>Grade</th></tr>
+  <tr><td>1</td><td>1-on-1 Help</td><td>Mobile</td><td>69.4%</td><td><span class="grade excellent">Excellent</span></td></tr>
+  <tr><td>2</td><td>Bookkeeping Cert</td><td>Mobile</td><td>66.3%</td><td><span class="grade excellent">Excellent</span></td></tr>
+  <tr><td>3</td><td>QB Certification</td><td>Mobile</td><td>65.4%</td><td><span class="grade excellent">Excellent</span></td></tr>
+  <tr><td>4</td><td>QBO Certification</td><td>Mobile</td><td>63.8%</td><td><span class="grade excellent">Excellent</span></td></tr>
+  <tr><td>5</td><td>Plans &amp; Pricing</td><td>Desktop</td><td>52.7%</td><td><span class="grade good">Good</span></td></tr>
+  <tr><td>6</td><td>Live Classes</td><td>Mobile</td><td>50.8%</td><td><span class="grade good">Good</span></td></tr>
+  <tr><td>7</td><td>Plans &amp; Pricing</td><td>Mobile</td><td>48.3%</td><td><span class="grade good">Good</span></td></tr>
+  <tr><td>8</td><td>Bookkeeping Cert</td><td>Desktop</td><td>45.2%</td><td><span class="grade good">Good</span></td></tr>
+  <tr><td>9</td><td>QBO Cert</td><td>Desktop</td><td>42.3%</td><td><span class="grade good">Good</span></td></tr>
+  <tr><td>10</td><td>Learn QuickBooks</td><td>Mobile</td><td>41.1%</td><td><span class="grade weak">Borderline</span></td></tr>
+  <tr><td>11</td><td>Learn QuickBooks</td><td>Desktop</td><td>38.6%</td><td><span class="grade weak">Weak</span></td></tr>
+  <tr><td>12</td><td>Live Classes</td><td>Desktop</td><td>37.7%</td><td><span class="grade weak">Weak</span></td></tr>
+  <tr><td>13</td><td>QB Certification</td><td>Desktop</td><td>35.8%</td><td><span class="grade weak">Weak</span></td></tr>
+  <tr><td>14</td><td>Self-Paced</td><td>Mobile</td><td>21.4%</td><td><span class="grade critical">Critical</span></td></tr>
+  <tr><td>15</td><td>Self-Paced</td><td>Desktop</td><td>20.6%</td><td><span class="grade critical">Critical</span></td></tr>
+  <tr><td>16</td><td>Homepage</td><td>Mobile</td><td>23.8%</td><td><span class="grade critical">Critical</span></td></tr>
+  <tr><td>17</td><td><strong>Homepage</strong></td><td><strong>Desktop</strong></td><td><strong>9.9%</strong></td><td><span class="grade catastrophic">Catastrophic</span></td></tr>
+</table>
+
+<h2>CTA Effectiveness Ranking</h2>
+
+<table>
+  <tr><th>#</th><th>Page</th><th>Device</th><th>CTA Click Rate</th><th>Grade</th></tr>
+  <tr><td>1</td><td>Live Classes</td><td>Mobile</td><td>45.6%</td><td><span class="grade excellent">Excellent</span></td></tr>
+  <tr><td>2</td><td>Desktop Cert</td><td>Mobile</td><td>45.0%</td><td><span class="grade excellent">Excellent</span></td></tr>
+  <tr><td>3</td><td>Homepage</td><td>Mobile</td><td>43.3%</td><td><span class="grade excellent">Excellent</span></td></tr>
+  <tr><td>4</td><td>Desktop Cert</td><td>Desktop</td><td>28.4%</td><td><span class="grade good">Very Good</span></td></tr>
+  <tr><td>5</td><td>QB Certification</td><td>Desktop</td><td>25.3%</td><td><span class="grade good">Very Good</span></td></tr>
+  <tr><td>6</td><td>Live Classes</td><td>Desktop</td><td>23.4%</td><td><span class="grade good">Good</span></td></tr>
+  <tr><td>7</td><td>Homepage</td><td>Desktop</td><td>21.8%</td><td><span class="grade good">Good</span></td></tr>
+  <tr><td>8</td><td>Plans &amp; Pricing</td><td>Desktop</td><td>16.7%</td><td><span class="grade weak">Adequate</span></td></tr>
+  <tr><td>9</td><td><strong>Self-Paced</strong></td><td><strong>Desktop</strong></td><td><strong>4.6%</strong></td><td><span class="grade critical">Critical</span></td></tr>
+</table>
+
+<h2>Desktop vs. Mobile Behavior</h2>
+
+<table>
+  <tr><th>Behavior</th><th>Desktop</th><th>Mobile</th><th>Implication</th></tr>
+  <tr><td>Dead clicks</td><td class="highlight">18&ndash;39%</td><td class="green">1&ndash;2%</td><td>Desktop design has unclear affordances</td></tr>
+  <tr><td>Sign In share</td><td>30.6%</td><td>3.6%</td><td>Desktop gets more returning users</td></tr>
+  <tr><td>CTA engagement</td><td>5&ndash;25%</td><td class="green">13&ndash;46%</td><td>Mobile layout drives better engagement</td></tr>
+  <tr><td>FAQ engagement</td><td>2&ndash;25%</td><td class="green">24&ndash;65%</td><td>Accordions are mobile&rsquo;s primary pattern</td></tr>
+  <tr><td>Scroll to 50%</td><td>10&ndash;53%</td><td class="green">21&ndash;69%</td><td>Mobile retains better on long pages</td></tr>
+</table>
+
+<!-- ================================================================== -->
+<!-- PAGE-BY-PAGE ANALYSIS -->
+<!-- ================================================================== -->
+<h1 id="page-analysis" class="page-break">Page-by-Page Analysis</h1>
+
+<h2>Homepage <span style="font-weight:400; color:#718096;">/</span></h2>
+
+<table>
+  <tr><th>Metric</th><th>Desktop</th><th>Mobile</th></tr>
+  <tr><td>Sessions</td><td>71,419</td><td>19,405</td></tr>
+  <tr><td>Revenue</td><td class="bold">$398,530</td><td>$55,956</td></tr>
+  <tr><td>Conversion Rate</td><td>0.86%</td><td>0.43%</td></tr>
+  <tr><td>Avg Engagement</td><td>1m 50s</td><td>1m 08s</td></tr>
+  <tr><td>Scroll to 50%</td><td class="highlight">9.9%</td><td>23.8%</td></tr>
+  <tr><td>Dead Clicks</td><td class="highlight">18.3%</td><td class="green">1.2%</td></tr>
+  <tr><td>CTA Click Rate</td><td>21.8%</td><td class="green">43.3%</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>The site&rsquo;s money page &mdash; $454K in revenue, 27% of all purchases.</strong> But 90% of desktop users never see the bottom half. The 40.2% drop-off between 5&ndash;10% scroll depth represents hundreds of potential $682 purchases lost monthly. Mobile engagement is actually excellent (43.3% CTA clicks).</p>
+</div>
+
+<h2>QuickBooks Certification <span style="font-weight:400; color:#718096;">/quickbooks-certification</span></h2>
+
+<table>
+  <tr><th>Metric</th><th>Desktop</th><th>Mobile</th></tr>
+  <tr><td>Sessions</td><td>23,747</td><td>5,820</td></tr>
+  <tr><td>Revenue</td><td class="bold">$287,410</td><td>$10,999</td></tr>
+  <tr><td>Conversion Rate</td><td>1.66%</td><td>0.26%</td></tr>
+  <tr><td>Scroll to 50%</td><td>35.8%</td><td class="green">65.4%</td></tr>
+  <tr><td>Dead Clicks</td><td>25.9%</td><td class="green">1.6%</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>#2 revenue page at $298K.</strong> Tab navigation is a proven winner (4,239 tab clicks). FAQ engagement is massive: 16.2% desktop, 62.4% mobile. High-intent buyers researching a $699.95 credential.</p>
+</div>
+
+<h2>Plans &amp; Pricing <span style="font-weight:400; color:#718096;">/plans-and-pricing</span></h2>
+
+<table>
+  <tr><th>Metric</th><th>Desktop</th><th>Mobile</th></tr>
+  <tr><td>Sessions</td><td>4,530</td><td>7,727</td></tr>
+  <tr><td>Revenue</td><td class="bold">$137,591</td><td>$33,798</td></tr>
+  <tr><td>Conversion Rate</td><td class="green"><strong>4.15%</strong></td><td>0.62%</td></tr>
+  <tr><td>Scroll to 50%</td><td class="green"><strong>52.7%</strong></td><td>48.3%</td></tr>
+  <tr><td>Dead Clicks</td><td class="highlight">36.5%</td><td class="green">1.8%</td></tr>
+</table>
+
+<div class="callout green">
+  <p><strong>THE MODEL PAGE.</strong> Highest conversion (4.15%), shortest page (3,869px), best desktop scroll retention (52.7%). But 36.5% dead clicks &mdash; mostly on the comparison table (1,513 clicks on table text) &mdash; means there&rsquo;s significant upside. Mobile gets MORE sessions than desktop (7,727 vs 4,530) &mdash; these are plan researchers.</p>
+</div>
+
+<h2>Live Classes <span style="font-weight:400; color:#718096;">/quickbooks-classes</span></h2>
+
+<table>
+  <tr><th>Metric</th><th>Desktop</th><th>Mobile</th></tr>
+  <tr><td>Sessions</td><td>10,025</td><td>5,146</td></tr>
+  <tr><td>Revenue</td><td class="bold">$155,589</td><td>$10,799</td></tr>
+  <tr><td>Conversion Rate</td><td>2.21%</td><td>0.31%</td></tr>
+  <tr><td>Avg Engagement</td><td><strong>2m 26s</strong></td><td>1m 12s</td></tr>
+  <tr><td>CTA Click Rate</td><td>23.4%</td><td class="green">45.6%</td></tr>
+</table>
+
+<div class="callout">
+  <p><strong>Highest engagement time and #3 converter.</strong> Instructor modals get 1,083 total clicks. Mobile has 45.6% CTA click rate &mdash; the clearest cross-device journey signal.</p>
+</div>
+
+<h2>Self-Paced Courses <span style="font-weight:400; color:#718096;">/quickbooks-courses</span></h2>
+
+<table>
+  <tr><th>Metric</th><th>Desktop</th><th>Mobile</th></tr>
+  <tr><td>Sessions</td><td>8,187</td><td>4,315</td></tr>
+  <tr><td>Revenue</td><td class="bold">$113,121</td><td>$9,199</td></tr>
+  <tr><td>Conversion Rate</td><td>2.00%</td><td>0.30%</td></tr>
+  <tr><td>CTA Click Rate</td><td class="highlight"><strong>4.6%</strong></td><td>14.3%</td></tr>
+  <tr><td>Dead Clicks</td><td>25.6%</td><td class="green">1.0%</td></tr>
+</table>
+
+<div class="callout" style="border-left-color: #e53e3e;">
+  <p><strong>The conversion black hole.</strong> Course cards get 26.5% of clicks (7,996) but only 4.6% reach any CTA &mdash; worst of any page. People browse thinking they&rsquo;re buying individual courses. Mobile page is 13,213px &mdash; longest in the dataset.</p>
+</div>
+
+<h2>Notable Secondary Pages</h2>
+
+<table>
+  <tr><th>Page</th><th>Key Finding</th><th>Action</th></tr>
+  <tr><td><strong>Certification Mobile</strong></td><td>13,238 sessions, 0.42% mobile conv, no Hotjar data</td><td>301 redirect + add Hotjar tracking</td></tr>
+  <tr><td><strong>QBO Certification</strong></td><td class="highlight">Zero mobile conversions from 905 sessions</td><td>Investigate technical issue</td></tr>
+  <tr><td><strong>Bookkeeping Cert</strong></td><td>38.8% desktop dead clicks (worst), 66.3% mobile scroll</td><td>Fix desktop affordances</td></tr>
+  <tr><td><strong>Learn QuickBooks</strong></td><td>Low traffic (1,942), top click goes to Self-Paced</td><td>Redesign as routing page</td></tr>
+</table>
+
+<!-- ================================================================== -->
+<!-- WHAT'S RIGHT -->
+<!-- ================================================================== -->
+<h1 id="whats-right" class="page-break">What the New Site Already Gets Right</h1>
+
+<div class="callout green">
+  <p><strong>Do NOT undo these.</strong> They directly address problems found in the data.</p>
+</div>
+
+<table>
+  <tr><th>Decision</th><th>Data That Supports It</th></tr>
+  <tr><td class="bold">Sign In as header utility</td><td>30.6% of homepage desktop clicks were Sign In &mdash; now separated from prospect flow</td></tr>
+  <tr><td class="bold">Pricing cards on every page</td><td>People had to navigate to Plans &amp; Pricing to see costs for a $700 decision</td></tr>
+  <tr><td class="bold">FAQ/accordion on every page</td><td>Mobile FAQ engagement was 24&ndash;65% of all taps &mdash; #1 engagement pattern</td></tr>
+  <tr><td class="bold">Trust bar on every page</td><td>Non-negotiable at $700: &ldquo;Intuit 25 years / 1M+ people / 30-day guarantee&rdquo;</td></tr>
+  <tr><td class="bold">Single funnel &rarr; /plans-and-pricing</td><td>Clean funnel. Every CTA points to one place.</td></tr>
+  <tr><td class="bold">&ldquo;Us vs. Competitors&rdquo; tables</td><td>Differentiates at the decision point against DIY/YouTube</td></tr>
+  <tr><td class="bold">Self-Paced Courses with filters</td><td>Old page was 13,213px of infinite scroll with 4.6% CTA rate</td></tr>
+  <tr><td class="bold">Instructor spotlights</td><td>1,083 clicks on instructor modals &mdash; people want to know who teaches</td></tr>
+  <tr><td class="bold">Countdown timer + strikethrough pricing</td><td>Promo banner got 2&ndash;7% clicks consistently</td></tr>
+  <tr><td class="bold">&ldquo;Start Learning&rdquo; green CTA in header</td><td>Persistent, always-visible conversion button</td></tr>
+  <tr><td class="bold">Schema.org markup</td><td>SEO foundation for high-intent search traffic</td></tr>
+</table>
+
+<!-- ================================================================== -->
+<!-- SITE-WIDE RECOMMENDATIONS -->
+<!-- ================================================================== -->
+<h1 id="site-wide">Site-Wide Recommendations</h1>
+
+<div class="rec-card" style="border-color: #e53e3e;">
+  <div class="rec-header">
+    <span class="rec-title">SW-1: Make the Comparison Table Interactive</span>
+    <span class="badge critical">Priority #1</span>
+  </div>
+  <div class="rec-meta">Effort: Medium &bull; Impact: Highest</div>
+  <p>1,513 clicks (7.3% of Plans &amp; Pricing clicks) hit comparison table text. At $682 AOV, this is the single most important decision-making element on the site.</p>
+  <ul>
+    <li>Make each feature row expandable with 2&ndash;3 sentence descriptions</li>
+    <li>Add hover states on desktop (row highlights, cursor: pointer)</li>
+    <li>On mobile: tap to expand/collapse with smooth animation</li>
+    <li>Add &ldquo;What&rsquo;s this?&rdquo; icon next to each feature name</li>
+  </ul>
+</div>
+
+<div class="rec-card" style="border-color: #e53e3e;">
+  <div class="rec-header">
+    <span class="rec-title">SW-2: Fix Desktop Hover States &amp; Click Affordances</span>
+    <span class="badge critical">Priority #2</span>
+  </div>
+  <div class="rec-meta">Effort: Low&ndash;Medium &bull; Impact: High</div>
+  <p>20&ndash;39% of ALL desktop clicks hit non-interactive elements.</p>
+  <table>
+    <tr><th>Element Type</th><th>CSS Treatment</th></tr>
+    <tr><td>Interactive elements</td><td><code>cursor: pointer</code> + hover transition</td></tr>
+    <tr><td>Non-interactive text</td><td><code>cursor: default</code>, no hover changes</td></tr>
+    <tr><td>Cards</td><td><code>hover:box-shadow</code> or <code>hover:transform(translateY)</code></td></tr>
+    <tr><td>Table rows</td><td><code>hover:background-color</code> highlight</td></tr>
+    <tr><td>Buttons</td><td><code>hover:background-color</code> darken + slight scale</td></tr>
+  </table>
+</div>
+
+<div class="rec-card" style="border-color: #d69e2e;">
+  <div class="rec-header">
+    <span class="rec-title">SW-3: Add Aggregate Star Rating + Review Count</span>
+    <span class="badge high">Priority #3</span>
+  </div>
+  <div class="rec-meta">Effort: Low &bull; Impact: Medium&ndash;High</div>
+  <p>Add to the trust bar: &ldquo;4.7 stars from 1,581+ reviews.&rdquo; Include Schema.org AggregateRating markup for rich snippets. Display on every page.</p>
+</div>
+
+<div class="rec-card" style="border-color: #d69e2e;">
+  <div class="rec-header">
+    <span class="rec-title">SW-4: Add Cross-Device Journey Bridges</span>
+    <span class="badge high">Priority #4</span>
+  </div>
+  <div class="rec-meta">Effort: Medium &bull; Impact: Medium&ndash;High</div>
+  <p><strong>MVP:</strong> &ldquo;Email me this comparison&rdquo; button on Plans &amp; Pricing. Captures leads AND bridges devices.</p>
+  <p><strong>Full version:</strong> &ldquo;Continue on your computer&rdquo; prompt, URL reinforcement near mobile CTAs, SMS self-link on decision pages.</p>
+</div>
+
+<div class="rec-card" style="border-color: #3182ce;">
+  <div class="rec-header">
+    <span class="rec-title">SW-5: Shorten All Pages to ~4,000&ndash;5,000px</span>
+    <span class="badge medium">Priority #5</span>
+  </div>
+  <div class="rec-meta">Effort: Medium &bull; Impact: High</div>
+  <table>
+    <tr><th>Page</th><th>Target Length</th></tr>
+    <tr><td>Homepage</td><td>~4,500px</td></tr>
+    <tr><td>Plans &amp; Pricing</td><td>~4,000px (already there)</td></tr>
+    <tr><td>Each Certification page</td><td>~4,000px</td></tr>
+    <tr><td>Live Classes</td><td>~4,500px</td></tr>
+    <tr><td>Self-Paced Courses</td><td>~5,000px</td></tr>
+    <tr><td>Learn QuickBooks</td><td>~3,000px</td></tr>
+    <tr><td>1-on-1 Help</td><td>~3,500px</td></tr>
+  </table>
+</div>
+
+<div class="rec-card" style="border-color: #3182ce;">
+  <div class="rec-header">
+    <span class="rec-title">SW-6: Course Card CTA + &ldquo;One Plan&rdquo; Messaging</span>
+    <span class="badge medium">Priority #6</span>
+  </div>
+  <div class="rec-meta">Effort: Low &bull; Impact: Medium</div>
+  <p>Each course card: &ldquo;Included in All Plans&rdquo; + &ldquo;Enroll &mdash; Starting at $599.95.&rdquo; Top of Self-Paced page: &ldquo;One Plan. 46+ Courses. Starting at $599.95.&rdquo;</p>
+</div>
+
+<!-- ================================================================== -->
+<!-- PAGE-SPECIFIC PUNCH LIST -->
+<!-- ================================================================== -->
+<h1 id="page-punch" class="page-break">Page-Specific Punch List</h1>
+
+<h2>Homepage</h2>
+
+<h3>HP-1: Consolidate from 9 Sections to 6</h3>
+
+<table>
+  <tr><th>#</th><th>Section</th><th>Notes</th></tr>
+  <tr><td>1</td><td class="bold">Hero</td><td>Headline + 3 bullets + &ldquo;Start Learning&rdquo; CTA. Video as thumbnail, not prominent.</td></tr>
+  <tr><td>2</td><td class="bold">Trust Bar</td><td>Keep as-is + add aggregate star rating</td></tr>
+  <tr><td>3</td><td class="bold">Offerings Grid</td><td>3-card layout: Classes &amp; Courses / Certification / 1-on-1 Help</td></tr>
+  <tr><td>4</td><td class="bold">Interactive Comparison Table</td><td>MERGE pricing cards into the table. Prices at top, expandable rows, &ldquo;Enroll Now&rdquo; at bottom. Integrate 1&ndash;2 testimonials inline.</td></tr>
+  <tr><td>5</td><td class="bold">FAQ Accordion</td><td>5&ndash;7 most-asked questions (23.9% of mobile clicks go here)</td></tr>
+  <tr><td>6</td><td class="bold">Final CTA</td><td>Dark-background &ldquo;Ready to Master QuickBooks?&rdquo;</td></tr>
+</table>
+
+<p><strong>Cut:</strong> Separate pricing cards, separate testimonials, separate instructor section. <strong>Saves ~2,000&ndash;3,000px.</strong></p>
+
+<h3>HP-2: Fix the First-Fold Experience</h3>
+<p>The 40.2% desktop drop-off at 5&ndash;10% scroll must be investigated. On a 1920x1080 monitor, the first viewport should show: headline, value prop, CTA, and trust bar.</p>
+
+<h3>HP-3: Reduce Sign In Visual Weight</h3>
+<p>&ldquo;Start Learning&rdquo;: green, filled, prominent. &ldquo;Sign In&rdquo;: text-only or outline, smaller. They must NOT look like equal-weight options.</p>
+
+<hr>
+
+<h2>Plans &amp; Pricing</h2>
+
+<h3>PP-1: Protect This Page</h3>
+<p>4.15% desktop conversion &mdash; highest of any page. 3,869px &mdash; shortest page. <strong>This page WORKS.</strong> Do NOT add more content. Only make the comparison table interactive.</p>
+
+<h3>PP-2: Enhance Mobile Plan Comparison</h3>
+<p>7,727 mobile sessions but 0.62% conversion. Consider swipeable card comparison on mobile. Highlight differences between plans.</p>
+
+<hr>
+
+<h2>QuickBooks Certification</h2>
+
+<h3>QC-1: Optimize for the $699.95 Decision</h3>
+<ul>
+  <li>Lead with outcomes: &ldquo;Get 3 Intuit Certifications. Average 20&ndash;30% salary increase.&rdquo;</li>
+  <li>Keep the &ldquo;Learn &rarr; Practice &rarr; Pass&rdquo; three-step breakdown prominent</li>
+  <li>Expand FAQ to 10&ndash;12 questions</li>
+</ul>
+
+<h3>QC-2: Handle /certification-mobile Traffic</h3>
+<p>301 redirect from <code>/certification-mobile</code> to <code>/quickbooks-certification</code> &mdash; 13,238 sessions at stake.</p>
+
+<hr>
+
+<h2>Live Classes</h2>
+
+<h3>LC-1: Surface the Schedule Prominently</h3>
+<p>Class schedule above the fold. Instructor names linked to profiles. Keep One-Hour vs Two-Day format toggle.</p>
+
+<h3>LC-2: Instructor Trust Signals</h3>
+<p>Photo + name + &ldquo;X,000+ students trained&rdquo; shown inline (not behind modal). Add short bio + student review per instructor.</p>
+
+<hr>
+
+<h2>Self-Paced Courses</h2>
+
+<h3>SC-1: &ldquo;One Plan, All Courses&rdquo; Messaging</h3>
+<p>Headline: &ldquo;46+ Self-Paced Courses &mdash; Included in Every Plan.&rdquo; Banner above grid: &ldquo;One plan gives you access to all courses.&rdquo;</p>
+
+<h3>SC-2: Keep It Manageable</h3>
+<p>Show 9&ndash;12 cards by default. Group by: Most Popular, Beginners, Industry-Specific, Certification Prep. Keep total height under 5,000px.</p>
+
+<hr>
+
+<h2>Learn QuickBooks</h2>
+<h3>LQ-1: Redesign as Routing Page (~3,000px)</h3>
+<p>Three clear pathways: &ldquo;Learn at my own pace&rdquo; &rarr; Self-Paced | &ldquo;Live class&rdquo; &rarr; Live Classes | &ldquo;Get certified&rdquo; &rarr; Certifications. Below: &ldquo;Not sure? All three are included in every plan.&rdquo;</p>
+
+<hr>
+
+<h2>1-on-1 Help</h2>
+<h3>OH-1: Position as Plan Add-On</h3>
+<p>Lead with &ldquo;Included FREE for 30 days with every plan.&rdquo; Show what a session looks like. Keep the comparison table.</p>
+
+<hr>
+
+<h2>Individual Cert Pages (QBO, Desktop, Bookkeeping)</h2>
+<h3>IC-1: Consistent Template, Unique Value Props</h3>
+<p>Hero &rarr; Cert Path &rarr; What You'll Learn &rarr; Pricing &rarr; FAQ. Under 4,000px. 8&ndash;10 FAQs each.</p>
+
+<!-- ================================================================== -->
+<!-- MOBILE STRATEGY -->
+<!-- ================================================================== -->
+<h1 id="mobile" class="page-break">Mobile Strategy</h1>
+
+<div class="callout blue">
+  <p><strong>Core principle:</strong> Mobile is where people discover and evaluate. Every mobile design decision should ask: &ldquo;Does this help someone research a $700 purchase?&rdquo;</p>
+</div>
+
+<table>
+  <tr><th>Item</th><th>Recommendation</th></tr>
+  <tr><td class="bold">M-1: Optimize for Research</td><td>Swipeable plan cards, prominent reviews, FAQ near top, &ldquo;View Plans&rdquo; over &ldquo;Buy Now&rdquo;</td></tr>
+  <tr><td class="bold">M-2: Sticky Bottom CTA Bar</td><td>&ldquo;Plans from $599.95 &mdash; View Pricing&rdquo; fixed at bottom</td></tr>
+  <tr><td class="bold">M-3: Touch Target Sizing</td><td>All tappable elements &ge; 44x44px (Apple HIG)</td></tr>
+  <tr><td class="bold">M-4: Fast Load</td><td>LCP &lt; 2.5s &bull; FID &lt; 100ms &bull; CLS &lt; 0.1 &bull; Lazy-load images &bull; Video thumbnail first</td></tr>
+</table>
+
+<!-- ================================================================== -->
+<!-- REVENUE OPPORTUNITY -->
+<!-- ================================================================== -->
+<h1 id="revenue">Revenue Opportunity</h1>
+
+<h2>Estimated Annual Uplift by Initiative</h2>
+
+<table>
+  <tr><th>Opportunity</th><th>Current Revenue</th><th>Estimated Uplift</th></tr>
+  <tr><td class="bold">Fix desktop dead clicks (purchase channel UX)</td><td>~$1.3M</td><td class="green"><strong>+$150K&ndash;$200K</strong></td></tr>
+  <tr><td class="bold">Fix Homepage scroll + shorten page</td><td>$398K desktop</td><td class="green"><strong>+$80K&ndash;$120K</strong></td></tr>
+  <tr><td class="bold">Add CTAs to Self-Paced course cards</td><td>$113K desktop</td><td class="green"><strong>+$50K&ndash;$80K</strong></td></tr>
+  <tr><td class="bold">Improve mobile research experience</td><td>Indirect</td><td class="green"><strong>+$80K&ndash;$150K</strong></td></tr>
+  <tr><td class="bold">Make Plans &amp; Pricing table interactive</td><td>$137K desktop</td><td class="green"><strong>+$20K&ndash;$40K</strong></td></tr>
+  <tr><td class="bold">Optimize /certification-mobile</td><td>$39K</td><td class="green"><strong>+$30K&ndash;$50K</strong></td></tr>
+  <tr><td class="bold">Improve mobile checkout</td><td>~$180K mobile</td><td class="green"><strong>+$40K&ndash;$80K</strong></td></tr>
+  <tr style="background:#f0fff4;"><td class="bold" style="font-size:16px;">Total Estimated Annual Uplift</td><td></td><td class="green" style="font-size:18px;"><strong>+$450K&ndash;$720K</strong></td></tr>
+</table>
+
+<p style="font-size:13px; color:#718096; font-style:italic;">Estimates are conservative and account for cross-device dynamics. Revenue from &ldquo;mobile improvement&rdquo; partially shows up as desktop conversions.</p>
+
+<!-- ================================================================== -->
+<!-- IMPLEMENTATION ROADMAP -->
+<!-- ================================================================== -->
+<h1 id="roadmap" class="page-break">Implementation Roadmap</h1>
+
+<div class="roadmap-phase">
+  <div class="phase-label">Before Launch</div>
+  <table>
+    <tr><th>#</th><th>Item</th><th>Effort</th><th>Impact</th></tr>
+    <tr><td>1</td><td class="bold">SW-1: Interactive comparison table</td><td>Medium</td><td>Highest &mdash; the $700 decision tool</td></tr>
+    <tr><td>2</td><td class="bold">HP-1: Consolidate homepage to 6 sections</td><td>Medium</td><td>High &mdash; $454K revenue page</td></tr>
+    <tr><td>3</td><td class="bold">SW-2: Desktop hover states / affordances audit</td><td>Low&ndash;Med</td><td>High &mdash; fixes 20&ndash;39% wasted clicks</td></tr>
+    <tr><td>4</td><td class="bold">SW-3: Aggregate star rating site-wide</td><td>Low</td><td>Medium&ndash;High &mdash; trust signal</td></tr>
+    <tr><td>5</td><td class="bold">HP-2: First-fold optimization</td><td>Low</td><td>High &mdash; fixes 40% desktop drop-off</td></tr>
+    <tr><td>6</td><td class="bold">SC-1: &ldquo;One Plan, All Courses&rdquo; messaging</td><td>Low</td><td>Medium &mdash; reframes browsing</td></tr>
+    <tr><td>7</td><td class="bold">SW-5: Page length audit (all &le;5,000px)</td><td>Medium</td><td>Medium &mdash; proven conversion correlation</td></tr>
+  </table>
+</div>
+
+<div class="roadmap-phase launch">
+  <div class="phase-label">At Migration</div>
+  <table>
+    <tr><th>#</th><th>Item</th><th>Effort</th><th>Impact</th></tr>
+    <tr><td>8</td><td class="bold">QC-2: /certification-mobile redirect</td><td>Low</td><td>Medium &mdash; preserves 13K sessions</td></tr>
+    <tr><td>9</td><td class="bold">All URL redirects</td><td>Medium</td><td>SEO preservation</td></tr>
+  </table>
+</div>
+
+<div class="roadmap-phase post">
+  <div class="phase-label">Post-Launch v1</div>
+  <table>
+    <tr><th>#</th><th>Item</th><th>Effort</th><th>Impact</th></tr>
+    <tr><td>10</td><td class="bold">SW-4: Cross-device journey bridges</td><td>Medium</td><td>Captures mobile researchers</td></tr>
+    <tr><td>11</td><td class="bold">PP-2: Mobile plan comparison (swipeable)</td><td>Medium</td><td>7,727 mobile sessions</td></tr>
+    <tr><td>12</td><td class="bold">LQ-1: Learn QuickBooks as routing page</td><td>Low&ndash;Med</td><td>First-visit page improvement</td></tr>
+    <tr><td>13</td><td class="bold">M-2: Sticky mobile CTA bar</td><td>Low</td><td>Persistent conversion path</td></tr>
+  </table>
+</div>
+
+<!-- ================================================================== -->
+<!-- REDIRECTS -->
+<!-- ================================================================== -->
+<h1 id="redirects">Migration Redirects</h1>
+
+<table>
+  <tr><th>Old URL</th><th>New URL</th><th>Traffic</th></tr>
+  <tr><td><code>/certification-mobile</code></td><td><code>/quickbooks-certification</code></td><td class="bold">13,238 sessions</td></tr>
+  <tr><td><code>/login</code></td><td><code>/login</code></td><td class="bold">20,364 sessions</td></tr>
+  <tr><td><code>/dashboard</code></td><td><code>/course-dashboard</code></td><td class="bold">28,551 sessions</td></tr>
+  <tr><td><code>/live-quickbooks</code></td><td><code>/quickbooks-classes</code></td><td>Low</td></tr>
+  <tr><td><code>/certifications-2</code></td><td><code>/quickbooks-certification</code></td><td>Unknown</td></tr>
+  <tr><td><code>/quickbooks-certification-online</code></td><td><code>/quickbooks-online-certification</code></td><td>Check</td></tr>
+  <tr><td><code>/quickbooks-certification-exam</code></td><td><code>/quickbooks-certification</code></td><td>Check</td></tr>
+  <tr><td>All 45+ city pages</td><td>Corresponding new URLs or <code>/quickbooks-classes</code></td><td>SEO critical</td></tr>
+</table>
+
+<div class="callout amber">
+  <p><strong>Critical:</strong> The 45+ city-specific class pages are significant for local SEO. They must either exist on the new site or have 301 redirects.</p>
+</div>
+
+<!-- ================================================================== -->
+<!-- MEASUREMENT PLAN -->
+<!-- ================================================================== -->
+<h1 id="measurement" class="page-break">Measurement Plan</h1>
+
+<h2>Post-Launch KPIs</h2>
+
+<table>
+  <tr><th>Metric</th><th>Baseline (Old Site)</th><th>Target</th><th>How to Measure</th></tr>
+  <tr><td class="bold">Homepage desktop scroll to 50%</td><td class="highlight">9.9%</td><td class="green">&gt;30%</td><td>Hotjar scroll map</td></tr>
+  <tr><td class="bold">Desktop dead click rate (site-wide)</td><td class="highlight">20&ndash;39%</td><td class="green">&lt;10%</td><td>Hotjar click map</td></tr>
+  <tr><td class="bold">Plans &amp; Pricing conversion rate</td><td>4.15% desktop</td><td class="green">&gt;5% desktop</td><td>GA4</td></tr>
+  <tr><td class="bold">Homepage conversion rate</td><td>0.86% desktop</td><td class="green">&gt;1.5% desktop</td><td>GA4</td></tr>
+  <tr><td class="bold">Self-Paced CTA click rate</td><td class="highlight">4.6% desktop</td><td class="green">&gt;15% desktop</td><td>Hotjar click map</td></tr>
+  <tr><td class="bold">Mobile &rarr; desktop return rate</td><td>Unknown</td><td>Establish baseline</td><td>GA4 cross-device</td></tr>
+  <tr><td class="bold">Comparison table engagement</td><td>7.3% dead clicks</td><td>Interactive clicks tracked</td><td>Hotjar + events</td></tr>
+  <tr><td class="bold">Average page length</td><td>~7,000px</td><td class="green">&lt;5,000px</td><td>Manual audit</td></tr>
+</table>
+
+<hr>
+
+<h2>Design Principles (From the Data)</h2>
+
+<table>
+  <tr><th>#</th><th>Principle</th></tr>
+  <tr><td>1</td><td><strong>Desktop is the purchase channel &mdash; protect it.</strong> 88% of revenue.</td></tr>
+  <tr><td>2</td><td><strong>Mobile is the research channel &mdash; optimize for it.</strong> Make comparison easy, add &ldquo;email me this.&rdquo;</td></tr>
+  <tr><td>3</td><td><strong>Short pages convert.</strong> 4,000px max. The data is unambiguous.</td></tr>
+  <tr><td>4</td><td><strong>Every browseable item needs a CTA.</strong> At $682 AOV, every missed click = potential $700 loss.</td></tr>
+  <tr><td>5</td><td><strong>Make it obvious what&rsquo;s clickable.</strong> Fix the 20&ndash;39% dead click epidemic.</td></tr>
+  <tr><td>6</td><td><strong>Accordion/FAQ is the #1 engagement pattern.</strong> Use it everywhere.</td></tr>
+  <tr><td>7</td><td><strong>The comparison table is the most important element.</strong> Make it interactive and information-rich.</td></tr>
+  <tr><td>8</td><td><strong>Trust signals everywhere.</strong> 4.7 stars, 1,581+ reviews, Intuit partnership.</td></tr>
+  <tr><td>9</td><td><strong>Sign In is a utility, not navigation.</strong></td></tr>
+  <tr><td>10</td><td><strong>Instructor visibility matters.</strong> 1,083 clicks on instructor modals.</td></tr>
+</table>
+
+<div class="footer">
+  <p>This report is based on analysis of 250,000+ Hotjar interactions across 21 page/device combinations and 319,718 GA4 sessions generating $1,736,101 in revenue. Every recommendation is data-backed.</p>
+</div>
+
+</body>
+</html>
