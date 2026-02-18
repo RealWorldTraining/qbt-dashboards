@@ -2502,102 +2502,132 @@ function DashboardPageContent() {
                     </CardContent>
                   </Card>
 
-              {/* Charts: Actual Sales Per Hour + Weekly Trends side by side */}
+              {/* Side-by-side: Actual Sales Per Hour + Weekly Trends (Direct QTY) */}
               {hourlyComparison && extendedWeeklyTrends && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                  {/* Actual Sales Per Hour Chart */}
+                  {/* Actual Sales Per Hour heatmap */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
                         <TrendingUp className="h-5 w-5 text-emerald-600" />
                         Actual Sales Per Hour
                       </CardTitle>
-                      <CardDescription className="text-sm text-[#6E6E73]">Today vs prior same-weekday periods</CardDescription>
+                      <CardDescription className="text-sm text-[#6E6E73]">Individual hourly sales (non-cumulative)</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="h-[320px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <ComposedChart
-                            data={(() => {
-                              return hourlyComparison.hours.map(hour => {
-                                const today = hourlyComparison.periods[0]
-                                const w1 = hourlyComparison.periods[1]
-                                const w2 = hourlyComparison.periods[2]
-                                const l4w = hourlyComparison.periods.find(p => p.period_label.includes('L4W'))
-                                const todayCum = today?.hourly_sales[hour]
-                                const w1Cum = w1?.hourly_sales[hour]
-                                const w2Cum = w2?.hourly_sales[hour]
-                                const l4wCum = l4w?.hourly_sales[hour]
-                                // Compute individual (non-cumulative) values
-                                const hourIdx = hourlyComparison.hours.indexOf(hour)
-                                const prevHour = hourIdx > 0 ? hourlyComparison.hours[hourIdx - 1] : null
-                                const getIndiv = (period: HourlyPeriodData | undefined) => {
-                                  if (!period) return null
-                                  const cur = period.hourly_sales[hour]
-                                  if (cur === null || cur === undefined) return null
-                                  if (!prevHour) return cur
-                                  const prev = period.hourly_sales[prevHour]
-                                  return prev !== null && prev !== undefined ? cur - prev : cur
-                                }
-                                return {
-                                  hour: hour.replace('am', 'a').replace('pm', 'p'),
-                                  today: getIndiv(today),
-                                  '1W Ago': getIndiv(w1),
-                                  '2W Ago': getIndiv(w2),
-                                  'L4W Avg': getIndiv(l4w),
-                                }
+                      <div className="overflow-x-auto rounded-xl">
+                        <table className="w-full text-sm bg-[#1D1D1F]">
+                          <thead>
+                            <tr className="border-b border-[#3D3D3F]">
+                              <th className="text-left py-2 px-2 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[90px]">Period</th>
+                              {hourlyComparison.hours.map((hour) => (
+                                <th key={hour} className="text-center py-2 px-0.5 font-semibold text-white whitespace-nowrap text-xs">
+                                  {hour.replace('am', 'a').replace('pm', 'p')}
+                                </th>
+                              ))}
+                              <th className="text-center py-2 px-2 font-bold text-white bg-emerald-700 whitespace-nowrap text-xs">EOD</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(() => {
+                              const hours = hourlyComparison.hours
+                              const getIndividualValue = (period: typeof hourlyComparison.periods[0], hourIdx: number) => {
+                                const currentVal = period.hourly_sales[hours[hourIdx]]
+                                if (currentVal === null) return null
+                                if (hourIdx === 0) return currentVal
+                                const prevVal = period.hourly_sales[hours[hourIdx - 1]]
+                                if (prevVal === null) return currentVal
+                                return currentVal - prevVal
+                              }
+                              return hourlyComparison.periods.map((period) => {
+                                const isToday = period.period_label === "Today"
+                                const isShaded = period.period_label === "1 Year Ago" || period.period_label === "-1Y" || period.period_label.includes("Avg")
+                                const cellBg = isToday ? "bg-[#1A3A52]" : isShaded ? "bg-[#2D2D2F]" : "bg-[#1D1D1F]"
+                                const rowValues = hours.map((_, hIdx) => getIndividualValue(period, hIdx)).filter((v): v is number => v !== null)
+                                const rowMax = Math.max(...rowValues, 1)
+                                return (
+                                  <tr key={period.period_label} className="border-b border-white/5">
+                                    <td className={`py-2 px-2 sticky left-0 ${cellBg}`}>
+                                      <div className="font-semibold text-white text-xs">{abbreviatePeriodLabel(period.period_label)}</div>
+                                      {period.period_date && <div className="text-[10px] text-white/40">{period.period_date}</div>}
+                                    </td>
+                                    {hours.map((hour, hIdx) => {
+                                      const value = getIndividualValue(period, hIdx)
+                                      const pct = value ? value / rowMax : 0
+                                      const bg = value === null ? '#1D1D1F' : `hsl(155, ${40 + pct * 40}%, ${45 - pct * 25}%)`
+                                      return (
+                                        <td key={hour} style={{ backgroundColor: bg }} className={`text-center py-2 px-0.5 text-xs ${value === null ? "text-white/20" : "text-white font-semibold"}`}>
+                                          {value === null ? "-" : value}
+                                        </td>
+                                      )
+                                    })}
+                                    <td className={`text-center py-2 px-2 font-bold bg-[#2D2D2F] text-xs ${period.end_of_day === null ? "text-white/20" : "text-white"}`}>
+                                      {period.end_of_day === null ? "-" : period.end_of_day}
+                                    </td>
+                                  </tr>
+                                )
                               })
                             })()}
-                            margin={{ top: 15, right: 15, left: 0, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
-                            <XAxis dataKey="hour" tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} axisLine={false} />
-                            <Tooltip
-                              contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 13 }}
-                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 13 }}
-                            />
-                            <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 12 }} />
-                            <Bar dataKey="today" fill="#34D399" radius={[3, 3, 0, 0]} name="Today" />
-                            <Line dataKey="1W Ago" stroke="#6366F1" strokeWidth={2} dot={false} name="1W Ago" />
-                            <Line dataKey="L4W Avg" stroke="#F59E0B" strokeWidth={2} strokeDasharray="4 4" dot={false} name="L4W Avg" />
-                          </ComposedChart>
-                        </ResponsiveContainer>
+                          </tbody>
+                        </table>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Weekly Trends (Direct QTY) Chart */}
+                  {/* Weekly Trends (Direct QTY) heatmap */}
                   <Card className="bg-white border-[#D2D2D7] shadow-sm">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
                         <Calendar className="h-5 w-5 text-[#0066CC]" />
                         Weekly Trends (Direct QTY)
                       </CardTitle>
-                      <CardDescription className="text-sm text-[#6E6E73]">Weekly cumulative direct sales</CardDescription>
+                      <CardDescription className="text-sm text-[#6E6E73]">Cumulative daily sales by week</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="h-[320px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <ComposedChart
-                            data={extendedWeeklyTrends.direct_qty.slice(0, 8).reverse().map(week => ({
-                              week: week.week_label === 'Current Week' ? 'This Wk' : week.week_label,
-                              total: week.week_total,
-                            }))}
-                            margin={{ top: 15, right: 15, left: 0, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
-                            <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} axisLine={false} />
-                            <Tooltip
-                              contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 13 }}
-                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 13 }}
-                              formatter={(value: number | undefined) => [value != null ? value.toLocaleString() : '-', 'Direct QTY']}
-                            />
-                            <Bar dataKey="total" fill="#6366F1" radius={[4, 4, 0, 0]} name="Direct QTY" />
-                            <Line dataKey="total" stroke="#1D1D1F" strokeWidth={2} dot={{ fill: '#1D1D1F', r: 3 }} name="Trend" />
-                          </ComposedChart>
-                        </ResponsiveContainer>
+                      <div className="overflow-x-auto rounded-xl">
+                        <table className="w-full text-sm bg-[#1D1D1F]">
+                          <thead>
+                            <tr className="border-b border-[#3D3D3F]">
+                              <th className="text-left py-2 px-2 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[90px]">Week</th>
+                              {extendedWeeklyTrends.days.map((day) => (
+                                <th key={day} className="text-center py-2 px-1 font-semibold text-white whitespace-nowrap text-xs">{day}</th>
+                              ))}
+                              <th className="text-center py-2 px-2 font-bold text-white bg-[#0066CC] whitespace-nowrap text-xs">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(() => {
+                              const days = extendedWeeklyTrends.days
+                              return extendedWeeklyTrends.direct_qty.map((week, idx) => {
+                                const isCurrentWeek = week.week_label === "Current Week"
+                                const cellBg = isCurrentWeek ? "bg-[#1A3A52]" : "bg-[#1D1D1F]"
+                                const rowValues = days.map(day => week.daily_cumulative[day]).filter((v): v is number => typeof v === 'number')
+                                const rowMax = Math.max(...rowValues, 1)
+                                return (
+                                  <tr key={idx} className="border-b border-white/5">
+                                    <td className={`py-2 px-2 sticky left-0 ${cellBg}`}>
+                                      <div className="font-semibold text-white text-xs">{week.week_label}</div>
+                                      <div className="text-[10px] text-white/40">{week.week_start}</div>
+                                    </td>
+                                    {days.map(day => {
+                                      const value = week.daily_cumulative[day]
+                                      const pct = value ? value / rowMax : 0
+                                      const bg = value === null || value === undefined ? '#1D1D1F' : `hsl(220, ${20 + pct * 70}%, ${18 + pct * 17}%)`
+                                      return (
+                                        <td key={day} style={{ backgroundColor: bg }} className={`text-center py-2 px-1 text-xs ${value === null ? "text-white/20" : "text-white font-semibold"}`}>
+                                          {value ?? '-'}
+                                        </td>
+                                      )
+                                    })}
+                                    <td className={`text-center py-2 px-2 font-bold bg-[#2D2D2F] text-xs ${week.week_total === null ? "text-white/20" : "text-white"}`}>
+                                      {week.week_total ?? '-'}
+                                    </td>
+                                  </tr>
+                                )
+                              })
+                            })()}
+                          </tbody>
+                        </table>
                       </div>
                     </CardContent>
                   </Card>
