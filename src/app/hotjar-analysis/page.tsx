@@ -321,9 +321,9 @@ export default function HotjarAnalysisPage() {
                   <div className="text-3xl font-extrabold text-green-400 mb-2">88%</div>
                   <div className="text-gray-400">of revenue ($1.3M)</div>
                   <div className="mt-4 space-y-2">
-                    <div className="text-sm text-gray-300">• Purchase device</div>
-                    <div className="text-sm text-gray-300">• High dead click rates (20-39%)</div>
-                    <div className="text-sm text-gray-300">• Returning users dominant</div>
+                    <div className="text-base text-gray-300">• Purchase device</div>
+                    <div className="text-base text-gray-300">• High dead click rates (20-39%)</div>
+                    <div className="text-base text-gray-300">• Returning users dominant</div>
                   </div>
                 </div>
 
@@ -335,9 +335,9 @@ export default function HotjarAnalysisPage() {
                   <div className="text-3xl font-extrabold text-blue-400 mb-2">12%</div>
                   <div className="text-gray-400">of revenue</div>
                   <div className="mt-4 space-y-2">
-                    <div className="text-sm text-gray-300">• Research channel</div>
-                    <div className="text-sm text-gray-300">• High engagement (43% CTR)</div>
-                    <div className="text-sm text-gray-300">• Low direct conversion (0.43%)</div>
+                    <div className="text-base text-gray-300">• Research channel</div>
+                    <div className="text-base text-gray-300">• High engagement (43% CTR)</div>
+                    <div className="text-base text-gray-300">• Low direct conversion (0.43%)</div>
                   </div>
                 </div>
               </div>
