@@ -391,20 +391,20 @@ export default function SalesTVPage() {
                         '1Y Ago': y1?.hourly_sales[hour] ?? null,
                       }))
                     })()}
-                    margin={{ top: 25, right: 20, left: 0, bottom: 5 }}
+                    margin={{ top: 30, right: 25, left: 5, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                    <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#ffffff80' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
-                    <YAxis tick={{ fontSize: 10, fill: '#ffffff80' }} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="hour" tick={{ fontSize: 20, fill: '#ffffff80' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
+                    <YAxis tick={{ fontSize: 20, fill: '#ffffff80' }} tickLine={false} axisLine={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', fontSize: 13, color: '#fff' }}
-                      labelStyle={{ color: '#ffffff', fontWeight: 600, fontSize: 13 }}
-                      itemStyle={{ color: '#ffffffcc' }}
+                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', fontSize: 22, color: '#fff' }}
+                      labelStyle={{ color: '#ffffff', fontWeight: 600, fontSize: 22 }}
+                      itemStyle={{ color: '#ffffffcc', fontSize: 20 }}
                     />
-                    <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 11, color: '#ffffffcc' }} />
-                    <Line type="monotone" dataKey="Today" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} activeDot={{ r: 5 }} name="Today" label={{ position: 'top', fontSize: 9, fill: '#34D399', fontWeight: 600, offset: 6 }} />
-                    <Line type="monotone" dataKey="1W Ago" stroke="#818CF8" strokeWidth={2} dot={{ fill: '#818CF8', r: 2, stroke: '#1D1D1F', strokeWidth: 2 }} name="1W Ago" label={{ position: 'top', fontSize: 8, fill: '#818CF8', offset: 6 }} />
-                    <Line type="monotone" dataKey="1Y Ago" stroke="#FBBF24" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#FBBF24', r: 2, stroke: '#1D1D1F', strokeWidth: 2 }} name="1Y Ago" label={{ position: 'bottom', fontSize: 8, fill: '#FBBF24', offset: 6 }} />
+                    <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 20, color: '#ffffffcc' }} />
+                    <Line type="monotone" dataKey="Today" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 4, stroke: '#1D1D1F', strokeWidth: 2 }} activeDot={{ r: 6 }} name="Today" label={{ position: 'top', fontSize: 18, fill: '#34D399', fontWeight: 600, offset: 8 }} />
+                    <Line type="monotone" dataKey="1W Ago" stroke="#818CF8" strokeWidth={2} dot={{ fill: '#818CF8', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="1W Ago" label={{ position: 'top', fontSize: 16, fill: '#818CF8', offset: 8 }} />
+                    <Line type="monotone" dataKey="1Y Ago" stroke="#FBBF24" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#FBBF24', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="1Y Ago" label={{ position: 'bottom', fontSize: 16, fill: '#FBBF24', offset: 8 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -440,20 +440,20 @@ export default function SalesTVPage() {
                         'Same Wk LY': sameWeekLY?.daily_cumulative[day] ?? null,
                       }))
                     })()}
-                    margin={{ top: 25, right: 20, left: 0, bottom: 5 }}
+                    margin={{ top: 30, right: 25, left: 5, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                    <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#ffffff80' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
-                    <YAxis tick={{ fontSize: 11, fill: '#ffffff80' }} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 22, fill: '#ffffff80' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
+                    <YAxis tick={{ fontSize: 20, fill: '#ffffff80' }} tickLine={false} axisLine={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', fontSize: 13, color: '#fff' }}
-                      labelStyle={{ color: '#ffffff', fontWeight: 600, fontSize: 13 }}
-                      itemStyle={{ color: '#ffffffcc' }}
+                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)', fontSize: 22, color: '#fff' }}
+                      labelStyle={{ color: '#ffffff', fontWeight: 600, fontSize: 22 }}
+                      itemStyle={{ color: '#ffffffcc', fontSize: 20 }}
                     />
-                    <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 11, color: '#ffffffcc' }} />
-                    <Line type="monotone" dataKey="This Week" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 4, stroke: '#1D1D1F', strokeWidth: 2 }} activeDot={{ r: 6 }} name="This Week" label={{ position: 'top', fontSize: 10, fill: '#34D399', fontWeight: 600, offset: 8 }} />
-                    <Line type="monotone" dataKey="Last Week" stroke="#818CF8" strokeWidth={2} dot={{ fill: '#818CF8', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="Last Week" label={{ position: 'top', fontSize: 9, fill: '#818CF8', offset: 8 }} />
-                    <Line type="monotone" dataKey="Same Wk LY" stroke="#FBBF24" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#FBBF24', r: 3, stroke: '#1D1D1F', strokeWidth: 2 }} name="Same Wk LY" label={{ position: 'bottom', fontSize: 9, fill: '#FBBF24', offset: 8 }} />
+                    <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 20, color: '#ffffffcc' }} />
+                    <Line type="monotone" dataKey="This Week" stroke="#34D399" strokeWidth={3} dot={{ fill: '#34D399', r: 5, stroke: '#1D1D1F', strokeWidth: 2 }} activeDot={{ r: 7 }} name="This Week" label={{ position: 'top', fontSize: 20, fill: '#34D399', fontWeight: 600, offset: 10 }} />
+                    <Line type="monotone" dataKey="Last Week" stroke="#818CF8" strokeWidth={2} dot={{ fill: '#818CF8', r: 4, stroke: '#1D1D1F', strokeWidth: 2 }} name="Last Week" label={{ position: 'top', fontSize: 18, fill: '#818CF8', offset: 10 }} />
+                    <Line type="monotone" dataKey="Same Wk LY" stroke="#FBBF24" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#FBBF24', r: 4, stroke: '#1D1D1F', strokeWidth: 2 }} name="Same Wk LY" label={{ position: 'bottom', fontSize: 18, fill: '#FBBF24', offset: 10 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -927,19 +927,19 @@ export default function SalesTVPage() {
             <CardContent>
               <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={weeklyQtyYoY.data} margin={{ top: 15, right: 20, left: 0, bottom: 5 }}>
+                  <ComposedChart data={weeklyQtyYoY.data} margin={{ top: 20, right: 25, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                    <XAxis dataKey="week_label" tick={{ fontSize: 10, fill: '#ffffff60' }} tickLine={false} interval={3} axisLine={{ stroke: '#ffffff15' }} />
-                    <YAxis tick={{ fontSize: 10, fill: '#ffffff60' }} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="week_label" tick={{ fontSize: 20, fill: '#ffffff60' }} tickLine={false} interval={3} axisLine={{ stroke: '#ffffff15' }} />
+                    <YAxis tick={{ fontSize: 20, fill: '#ffffff60' }} tickLine={false} axisLine={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 12, color: '#fff' }}
-                      labelStyle={{ color: '#fff', fontWeight: 600 }}
+                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 22, color: '#fff' }}
+                      labelStyle={{ color: '#fff', fontWeight: 600, fontSize: 22 }}
                       formatter={(value, name) => { if (value === null) return ['-', String(name)]; const y = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [Number(value).toLocaleString(), y] }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 11, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
-                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 2 }} connectNulls name="y2024" />
-                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 2 }} connectNulls name="y2025" />
-                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 3 }} connectNulls name="y2026" />
+                    <Legend wrapperStyle={{ fontSize: 20, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
+                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 3 }} connectNulls name="y2024" />
+                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 3 }} connectNulls name="y2025" />
+                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 4 }} connectNulls name="y2026" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -959,19 +959,19 @@ export default function SalesTVPage() {
             <CardContent>
               <div className="h-[350px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={monthlyQtyYoY.data} margin={{ top: 15, right: 20, left: 0, bottom: 5 }}>
+                  <ComposedChart data={monthlyQtyYoY.data} margin={{ top: 20, right: 25, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                    <XAxis dataKey="month_label" tick={{ fontSize: 11, fill: '#ffffff60' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
-                    <YAxis tick={{ fontSize: 10, fill: '#ffffff60' }} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="month_label" tick={{ fontSize: 22, fill: '#ffffff60' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
+                    <YAxis tick={{ fontSize: 20, fill: '#ffffff60' }} tickLine={false} axisLine={false} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 12, color: '#fff' }}
-                      labelStyle={{ color: '#fff', fontWeight: 600 }}
+                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 22, color: '#fff' }}
+                      labelStyle={{ color: '#fff', fontWeight: 600, fontSize: 22 }}
                       formatter={(value, name) => { if (value === null) return ['-', String(name)]; const y = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [Number(value).toLocaleString(), y] }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 11, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
-                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 3 }} connectNulls name="y2024" />
-                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 3 }} connectNulls name="y2025" />
-                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 4 }} connectNulls name="y2026" />
+                    <Legend wrapperStyle={{ fontSize: 20, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
+                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 4 }} connectNulls name="y2024" />
+                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 4 }} connectNulls name="y2025" />
+                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 5 }} connectNulls name="y2026" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -1001,20 +1001,20 @@ export default function SalesTVPage() {
                         return { week_label: d.week_label, y2024: d.y2024 !== null ? cum2024 : null, y2025: d.y2025 !== null ? cum2025 : null, y2026: d.y2026 !== null ? cum2026 : null }
                       })
                     })()}
-                    margin={{ top: 15, right: 20, left: 10, bottom: 5 }}
+                    margin={{ top: 20, right: 25, left: 15, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                    <XAxis dataKey="week_label" tick={{ fontSize: 10, fill: '#ffffff60' }} tickLine={false} interval={3} axisLine={{ stroke: '#ffffff15' }} />
-                    <YAxis tick={{ fontSize: 10, fill: '#ffffff60' }} tickLine={false} axisLine={false} tickFormatter={v => v.toLocaleString()} />
+                    <XAxis dataKey="week_label" tick={{ fontSize: 20, fill: '#ffffff60' }} tickLine={false} interval={3} axisLine={{ stroke: '#ffffff15' }} />
+                    <YAxis tick={{ fontSize: 20, fill: '#ffffff60' }} tickLine={false} axisLine={false} tickFormatter={v => v.toLocaleString()} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 12, color: '#fff' }}
-                      labelStyle={{ color: '#fff', fontWeight: 600 }}
+                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 22, color: '#fff' }}
+                      labelStyle={{ color: '#fff', fontWeight: 600, fontSize: 22 }}
                       formatter={(value, name) => { if (value === null) return ['-', String(name)]; const y = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [Number(value).toLocaleString(), y] }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 11, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
-                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 2 }} connectNulls name="y2024" />
-                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 2 }} connectNulls name="y2025" />
-                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 3 }} connectNulls name="y2026" />
+                    <Legend wrapperStyle={{ fontSize: 20, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
+                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 3 }} connectNulls name="y2024" />
+                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 3 }} connectNulls name="y2025" />
+                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 4 }} connectNulls name="y2026" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -1023,15 +1023,15 @@ export default function SalesTVPage() {
         )}
 
         {monthlyQtyYoY && (
-          <Card className="bg-[#1D1D1F] border-[#2D2D2F]">
+          <Card className="bg-[#1D1D1F] border-[#2D2D2F] min-h-[500px]">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-[#34C759]" />
                 Cumulative Direct Qty by Month
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-[350px]">
+            <CardContent className="h-[calc(100%-60px)]">
+              <div className="h-full min-h-[440px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart
                     data={(() => {
@@ -1043,20 +1043,20 @@ export default function SalesTVPage() {
                         return { month_label: d.month_label, y2024: d.y2024 !== null ? cum2024 : null, y2025: d.y2025 !== null ? cum2025 : null, y2026: d.y2026 !== null ? cum2026 : null }
                       })
                     })()}
-                    margin={{ top: 15, right: 20, left: 10, bottom: 5 }}
+                    margin={{ top: 20, right: 25, left: 15, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                    <XAxis dataKey="month_label" tick={{ fontSize: 11, fill: '#ffffff60' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
-                    <YAxis tick={{ fontSize: 10, fill: '#ffffff60' }} tickLine={false} axisLine={false} tickFormatter={v => v.toLocaleString()} />
+                    <XAxis dataKey="month_label" tick={{ fontSize: 22, fill: '#ffffff60' }} tickLine={false} axisLine={{ stroke: '#ffffff15' }} />
+                    <YAxis tick={{ fontSize: 20, fill: '#ffffff60' }} tickLine={false} axisLine={false} tickFormatter={v => v.toLocaleString()} />
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 12, color: '#fff' }}
-                      labelStyle={{ color: '#fff', fontWeight: 600 }}
+                      contentStyle={{ backgroundColor: '#2D2D2F', border: '1px solid #3D3D3F', borderRadius: '8px', fontSize: 22, color: '#fff' }}
+                      labelStyle={{ color: '#fff', fontWeight: 600, fontSize: 22 }}
                       formatter={(value, name) => { if (value === null) return ['-', String(name)]; const y = name === 'y2024' ? '2024' : name === 'y2025' ? '2025' : '2026'; return [Number(value).toLocaleString(), y] }}
                     />
-                    <Legend wrapperStyle={{ fontSize: 11, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
-                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 3 }} connectNulls name="y2024" />
-                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 3 }} connectNulls name="y2025" />
-                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 4 }} connectNulls name="y2026" />
+                    <Legend wrapperStyle={{ fontSize: 20, color: '#ffffffcc' }} formatter={(v: string) => v === 'y2024' ? '2024' : v === 'y2025' ? '2025' : '2026'} />
+                    <Line type="monotone" dataKey="y2024" stroke="#8E8E93" strokeWidth={2} dot={{ fill: '#8E8E93', r: 4 }} connectNulls name="y2024" />
+                    <Line type="monotone" dataKey="y2025" stroke="#0099FF" strokeWidth={2} dot={{ fill: '#0099FF', r: 4 }} connectNulls name="y2025" />
+                    <Line type="monotone" dataKey="y2026" stroke="#34C759" strokeWidth={3} dot={{ fill: '#34C759', r: 5 }} connectNulls name="y2026" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
