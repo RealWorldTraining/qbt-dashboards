@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { ForcingFunctions } from "../ForcingFunctions"
 
 interface BingCPCRecommendation {
   analysisDate: string
@@ -205,6 +206,9 @@ export function BingCPCTab() {
           </div>
         </div>
       )}
+
+      {/* Forcing Functions Analysis */}
+      <ForcingFunctions keywords={actionKeywords} platform="bing" />
 
       {/* Filter Bar */}
       <div className="mb-3 flex items-center gap-3">

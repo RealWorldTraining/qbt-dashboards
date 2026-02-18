@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { ForcingFunctions } from "../ForcingFunctions"
 
 interface CPCRecommendation {
   analysisDate: string
@@ -239,6 +240,9 @@ export function GadsCPCTab() {
           </div>
         </div>
       )}
+
+      {/* Forcing Functions Analysis */}
+      <ForcingFunctions keywords={actionKeywords} platform="google" />
 
       {/* Filter Bar */}
       <div className="mb-3 flex items-center gap-3">
