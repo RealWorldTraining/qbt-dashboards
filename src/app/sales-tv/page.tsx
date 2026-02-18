@@ -231,7 +231,7 @@ export default function SalesTVPage() {
   return (
     <div className="min-h-screen bg-[#0B0F1A] text-white">
       {/* TV-optimized layout: 1080x1920 portrait */}
-      <div className="w-full max-w-[1080px] mx-auto px-4 py-6 space-y-6">
+      <div className="w-full max-w-[1080px] mx-auto px-4 py-3 space-y-3">
 
         {/* Header */}
         <div className="text-center">
@@ -309,24 +309,24 @@ export default function SalesTVPage() {
         {/* Hourly Sales Comparison Heatmap */}
         {hourlyComparison && (
           <Card className="bg-[#1D1D1F] border-[#2D2D2F]">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-1 pt-3">
               <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-[#0099FF]" />
                 Hourly Sales Comparison
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pb-3">
               <div className="overflow-x-auto rounded-xl">
                 <table className="w-full text-base bg-[#1D1D1F]">
                   <thead>
                     <tr className="border-b border-[#3D3D3F]">
-                      <th className="text-left py-2 px-2 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[90px]">Period</th>
+                      <th className="text-left py-1 px-2 font-bold text-white sticky left-0 bg-[#1D1D1F] min-w-[90px]">Period</th>
                       {hourlyComparison.hours.map((hour) => (
-                        <th key={hour} className="text-center py-2 px-0.5 font-semibold text-white whitespace-nowrap text-xs">
+                        <th key={hour} className="text-center py-1 px-0.5 font-semibold text-white whitespace-nowrap text-xs">
                           {hour.replace('am', 'a').replace('pm', 'p')}
                         </th>
                       ))}
-                      <th className="text-center py-2 px-2 font-bold text-white bg-[#0066CC] whitespace-nowrap text-xs">EOD</th>
+                      <th className="text-center py-1 px-2 font-bold text-white bg-[#0066CC] whitespace-nowrap text-xs">EOD</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -338,21 +338,21 @@ export default function SalesTVPage() {
                       const rowMax = Math.max(...rowValues, 1)
                       return (
                         <tr key={period.period_label} className="border-b border-white/5">
-                          <td className={`py-2 px-2 sticky left-0 ${cellBg}`}>
-                            <div className="font-semibold text-white text-sm">{abbreviatePeriodLabel(period.period_label)}</div>
-                            {period.period_date && <div className="text-[10px] text-white/40">{period.period_date}</div>}
+                          <td className={`py-1 px-2 sticky left-0 ${cellBg}`}>
+                            <div className="font-semibold text-white text-sm leading-tight">{abbreviatePeriodLabel(period.period_label)}</div>
+                            {period.period_date && <div className="text-[10px] text-white/40 leading-tight">{period.period_date}</div>}
                           </td>
                           {hourlyComparison.hours.map((hour) => {
                             const value = period.hourly_sales[hour]
                             const pct = value ? value / rowMax : 0
                             const bg = value === null ? '#1D1D1F' : `hsl(220, ${20 + pct * 70}%, ${18 + pct * 17}%)`
                             return (
-                              <td key={hour} style={{ backgroundColor: bg }} className={`text-center py-2 px-0.5 text-sm ${value === null ? "text-white/20" : "text-white font-semibold"}`}>
+                              <td key={hour} style={{ backgroundColor: bg }} className={`text-center py-1 px-0.5 text-sm ${value === null ? "text-white/20" : "text-white font-semibold"}`}>
                                 {value === null ? "-" : value}
                               </td>
                             )
                           })}
-                          <td className={`text-center py-2 px-2 font-bold bg-[#2D2D2F] text-sm ${period.end_of_day === null ? "text-white/20" : "text-white"}`}>
+                          <td className={`text-center py-1 px-2 font-bold bg-[#2D2D2F] text-sm ${period.end_of_day === null ? "text-white/20" : "text-white"}`}>
                             {period.end_of_day === null ? "-" : period.end_of_day}
                           </td>
                         </tr>
@@ -368,15 +368,15 @@ export default function SalesTVPage() {
         {/* Sales Pace (Cumulative) Line Chart */}
         {hourlyComparison && (
           <Card className="bg-[#1D1D1F] border-[#2D2D2F]">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-1 pt-3">
               <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-emerald-400" />
                 Sales Pace (Cumulative)
+                <span className="text-xs font-normal text-white/40 ml-1">Today vs 1W vs 1Y</span>
               </CardTitle>
-              <CardDescription className="text-sm text-white/50">Today vs 1 week ago vs 1 year ago</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[520px]">
+              <div className="h-[380px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart
                     data={(() => {
@@ -415,15 +415,15 @@ export default function SalesTVPage() {
         {/* Weekly Trends (Direct QTY) Line Chart */}
         {extendedWeeklyTrends && (
           <Card className="bg-[#1D1D1F] border-[#2D2D2F]">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-1 pt-3">
               <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-blue-400" />
                 Weekly Trends (Direct QTY)
+                <span className="text-xs font-normal text-white/40 ml-1">This wk vs last vs LY</span>
               </CardTitle>
-              <CardDescription className="text-sm text-white/50">Current week vs last week vs same week last year</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[520px]">
+              <div className="h-[380px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart
                     data={(() => {
