@@ -2502,6 +2502,108 @@ function DashboardPageContent() {
                     </CardContent>
                   </Card>
 
+              {/* Charts: Actual Sales Per Hour + Weekly Trends side by side */}
+              {hourlyComparison && extendedWeeklyTrends && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                  {/* Actual Sales Per Hour Chart */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-emerald-600" />
+                        Actual Sales Per Hour
+                      </CardTitle>
+                      <CardDescription className="text-sm text-[#6E6E73]">Today vs prior same-weekday periods</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[320px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart
+                            data={(() => {
+                              return hourlyComparison.hours.map(hour => {
+                                const today = hourlyComparison.periods[0]
+                                const w1 = hourlyComparison.periods[1]
+                                const w2 = hourlyComparison.periods[2]
+                                const l4w = hourlyComparison.periods.find(p => p.period_label.includes('L4W'))
+                                const todayCum = today?.hourly_sales[hour]
+                                const w1Cum = w1?.hourly_sales[hour]
+                                const w2Cum = w2?.hourly_sales[hour]
+                                const l4wCum = l4w?.hourly_sales[hour]
+                                // Compute individual (non-cumulative) values
+                                const hourIdx = hourlyComparison.hours.indexOf(hour)
+                                const prevHour = hourIdx > 0 ? hourlyComparison.hours[hourIdx - 1] : null
+                                const getIndiv = (period: HourlyPeriodData | undefined) => {
+                                  if (!period) return null
+                                  const cur = period.hourly_sales[hour]
+                                  if (cur === null || cur === undefined) return null
+                                  if (!prevHour) return cur
+                                  const prev = period.hourly_sales[prevHour]
+                                  return prev !== null && prev !== undefined ? cur - prev : cur
+                                }
+                                return {
+                                  hour: hour.replace('am', 'a').replace('pm', 'p'),
+                                  today: getIndiv(today),
+                                  '1W Ago': getIndiv(w1),
+                                  '2W Ago': getIndiv(w2),
+                                  'L4W Avg': getIndiv(l4w),
+                                }
+                              })
+                            })()}
+                            margin={{ top: 15, right: 15, left: 0, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                            <XAxis dataKey="hour" tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} />
+                            <YAxis tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} axisLine={false} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 13 }}
+                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 13 }}
+                            />
+                            <Legend wrapperStyle={{ paddingTop: '8px', fontSize: 12 }} />
+                            <Bar dataKey="today" fill="#34D399" radius={[3, 3, 0, 0]} name="Today" />
+                            <Line dataKey="1W Ago" stroke="#6366F1" strokeWidth={2} dot={false} name="1W Ago" />
+                            <Line dataKey="L4W Avg" stroke="#F59E0B" strokeWidth={2} strokeDasharray="4 4" dot={false} name="L4W Avg" />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Weekly Trends (Direct QTY) Chart */}
+                  <Card className="bg-white border-[#D2D2D7] shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-[#0066CC]" />
+                        Weekly Trends (Direct QTY)
+                      </CardTitle>
+                      <CardDescription className="text-sm text-[#6E6E73]">Weekly cumulative direct sales</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[320px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart
+                            data={extendedWeeklyTrends.direct_qty.slice(0, 8).reverse().map(week => ({
+                              week: week.week_label === 'Current Week' ? 'This Wk' : week.week_label,
+                              total: week.week_total,
+                            }))}
+                            margin={{ top: 15, right: 15, left: 0, bottom: 5 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                            <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} />
+                            <YAxis tick={{ fontSize: 11, fill: '#6E6E73' }} tickLine={false} axisLine={false} />
+                            <Tooltip
+                              contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D2D2D7', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', fontSize: 13 }}
+                              labelStyle={{ color: '#1D1D1F', fontWeight: 600, fontSize: 13 }}
+                              formatter={(value: number | undefined) => [value != null ? value.toLocaleString() : '-', 'Direct QTY']}
+                            />
+                            <Bar dataKey="total" fill="#6366F1" radius={[4, 4, 0, 0]} name="Direct QTY" />
+                            <Line dataKey="total" stroke="#1D1D1F" strokeWidth={2} dot={{ fill: '#1D1D1F', r: 3 }} name="Trend" />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
               {/* New: Actual Sales Per Hour (non-cumulative) */}
               {hourlyComparison && (
                 <Card className="bg-white border-[#D2D2D7] shadow-sm mt-6">
