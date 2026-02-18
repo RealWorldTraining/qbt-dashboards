@@ -117,7 +117,7 @@ export function ForcingFunctions({ keywords, platform }: ForcingFunctionsProps) 
       <div className="bg-[#1a1a1a] rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-gray-300 text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
-            <span>\uD83C\uDFAF</span> Forcing Functions Analysis
+            <span>{'\uD83C\uDFAF'}</span> Forcing Functions Analysis
           </h3>
           <div className="flex items-center gap-3">
             {result && (
@@ -142,9 +142,9 @@ export function ForcingFunctions({ keywords, platform }: ForcingFunctionsProps) 
           <div className="py-8 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-600 border-t-cyan-500 mb-4"></div>
             <div className="space-y-2 text-sm text-gray-400">
-              <p>\u2694\uFE0F Running Adversarial Interrogation...</p>
-              <p>\uD83D\uDCCA Running Uncertainty Quantification...</p>
-              <p>\uD83D\uDD0D Running Edge Case Hunter...</p>
+              <p>{'\u2694\uFE0F'} Running Adversarial Interrogation...</p>
+              <p>{'\uD83D\uDCCA'} Running Uncertainty Quantification...</p>
+              <p>{'\uD83D\uDD0D'} Running Edge Case Hunter...</p>
             </div>
           </div>
         )}
@@ -165,7 +165,7 @@ export function ForcingFunctions({ keywords, platform }: ForcingFunctionsProps) 
                     {icon} {title}
                   </span>
                   <span className="text-gray-500 text-xs">
-                    {openSections[key] ? '\u25BC' : '\u25B6'}
+                    {openSections[key] ? '\u25BC' : '\u25B6' /* these are in JS expressions already */}
                   </span>
                 </button>
                 {openSections[key] && (
