@@ -8,12 +8,12 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
   return (
     <div className="group relative inline-flex items-center">
       {children}
-      <HelpCircle className="w-4 h-4 ml-2 text-gray-500 cursor-help" />
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-        <div className="bg-gray-900 text-gray-200 text-sm rounded-lg p-4 shadow-2xl border border-gray-700 max-w-md whitespace-normal">
+      <HelpCircle className="w-4 h-4 ml-2 text-gray-400 hover:text-blue-400 cursor-help transition-colors" />
+      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 hidden group-hover:block z-[9999] pointer-events-none">
+        <div className="bg-gray-900 text-gray-100 text-base rounded-lg p-4 shadow-2xl border-2 border-blue-500/50 max-w-md whitespace-normal leading-relaxed">
           {text}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
-            <div className="border-8 border-transparent border-t-gray-900"></div>
+          <div className="absolute right-full top-1/2 -translate-y-1/2 mr-[-2px]">
+            <div className="border-8 border-transparent border-r-gray-900"></div>
           </div>
         </div>
       </div>
