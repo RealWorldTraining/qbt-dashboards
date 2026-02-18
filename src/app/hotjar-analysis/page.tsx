@@ -636,10 +636,9 @@ export default function HotjarAnalysisPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
 
-            {/* Individual Page Deep-Dives */}
-            <div className="grid md:grid-cols-2 gap-6">
+              {/* Individual Page Deep-Dives */}
+              <div className="grid md:grid-cols-2 gap-6">
               {/* Homepage */}
               <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
                 <h3 className="text-xl font-bold text-blue-400 mb-4">Homepage <span className="text-gray-500 text-base font-normal">/</span></h3>
@@ -759,6 +758,7 @@ export default function HotjarAnalysisPage() {
                   Conversion black hole. Course cards get 26.5% clicks but only 4.6% reach CTA. Longest page in dataset.
                 </div>
               </div>
+            </div>
                 </>
               )}
 
