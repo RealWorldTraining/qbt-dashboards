@@ -2510,9 +2510,9 @@ function DashboardPageContent() {
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg font-semibold text-[#1D1D1F] flex items-center gap-2">
                         <TrendingUp className="h-5 w-5 text-emerald-600" />
-                        Actual Sales Per Hour
+                        Sales Pace (Cumulative)
                       </CardTitle>
-                      <CardDescription className="text-sm text-[#6E6E73]">Today vs 1 week ago vs 1 year ago (non-cumulative)</CardDescription>
+                      <CardDescription className="text-sm text-[#6E6E73]">Cumulative sales pace — Today vs 1 week ago vs 1 year ago</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px]">
@@ -2523,19 +2523,11 @@ function DashboardPageContent() {
                               const today = hourlyComparison.periods.find(p => p.period_label === "Today")
                               const w1 = hourlyComparison.periods.find(p => p.period_label === "1 Week Ago" || p.period_label === "-1W")
                               const y1 = hourlyComparison.periods.find(p => p.period_label === "1 Year Ago" || p.period_label === "-1Y")
-                              const getIndiv = (period: HourlyPeriodData | undefined, hourIdx: number) => {
-                                if (!period) return null
-                                const cur = period.hourly_sales[hours[hourIdx]]
-                                if (cur === null || cur === undefined) return null
-                                if (hourIdx === 0) return cur
-                                const prev = period.hourly_sales[hours[hourIdx - 1]]
-                                return prev !== null && prev !== undefined ? cur - prev : cur
-                              }
-                              return hours.map((hour, hIdx) => ({
+                              return hours.map((hour) => ({
                                 hour: hour.replace('am', 'a').replace('pm', 'p'),
-                                Today: getIndiv(today, hIdx),
-                                '1W Ago': getIndiv(w1, hIdx),
-                                '1Y Ago': getIndiv(y1, hIdx),
+                                Today: today?.hourly_sales[hour] ?? null,
+                                '1W Ago': w1?.hourly_sales[hour] ?? null,
+                                '1Y Ago': y1?.hourly_sales[hour] ?? null,
                               }))
                             })()}
                             margin={{ top: 15, right: 20, left: 0, bottom: 5 }}
