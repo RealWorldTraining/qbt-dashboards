@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import TasksBoard from './components/TasksBoard';
+import MemoryViewer from './components/MemoryViewer';
+import CalendarView from './components/CalendarView';
+import N8nStatus from './components/N8nStatus';
+import GoogleAdsQuickView from './components/GoogleAdsQuickView';
+import ContentPipeline from './components/ContentPipeline';
 
 export default function MissionControlPage() {
   const [activeTab, setActiveTab] = useState<'tasks' | 'memory' | 'calendar' | 'n8n' | 'ads' | 'content'>('tasks');
@@ -57,53 +62,6 @@ export default function MissionControlPage() {
         {activeTab === 'ads' && <GoogleAdsQuickView />}
         {activeTab === 'content' && <ContentPipeline />}
       </main>
-    </div>
-  );
-}
-
-// Placeholder components (will build these next)
-
-function MemoryViewer() {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-4">🧠 Memory Viewer</h2>
-      <p className="text-gray-600">Memory search and logs coming soon...</p>
-    </div>
-  );
-}
-
-function CalendarView() {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-4">📅 Calendar / Cron Jobs</h2>
-      <p className="text-gray-600">Scheduled tasks coming soon...</p>
-    </div>
-  );
-}
-
-function N8nStatus() {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-4">🔄 n8n Workflow Status</h2>
-      <p className="text-gray-600">Workflow monitoring coming soon...</p>
-    </div>
-  );
-}
-
-function GoogleAdsQuickView() {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-4">📊 Google Ads Quick View</h2>
-      <p className="text-gray-600">Ads metrics coming soon...</p>
-    </div>
-  );
-}
-
-function ContentPipeline() {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-4">🎬 Content Pipeline</h2>
-      <p className="text-gray-600">Content workflow coming soon...</p>
     </div>
   );
 }
