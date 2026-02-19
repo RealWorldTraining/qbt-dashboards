@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { ChevronRight, TrendingUp, DollarSign, AlertTriangle, CheckCircle, Users, MousePointer, Smartphone, Monitor, HelpCircle } from 'lucide-react';
 import PageScreenshotWithOverlays from '@/components/PageScreenshotWithOverlays';
 import MetricTooltip, { MetricValue } from './components/MetricTooltip';
@@ -1657,6 +1658,31 @@ export default function HotjarAnalysisPage() {
                     <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">3 Gaps Remaining</div>
                   </div>
 
+                  {/* Side-by-Side Screenshot Comparison */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <h3 className="text-xl font-bold text-white mb-4">Visual Comparison: Old Site vs. New Site</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          <span className="text-red-400 font-semibold text-sm">Old Homepage</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-red-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/homepage-full.png" alt="Old homepage" width={1440} height={9346} className="w-full h-auto" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-green-400 font-semibold text-sm">New Homepage</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-green-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/new-homepage-full.png" alt="New homepage" width={1440} height={9000} className="w-full h-auto" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
                     <h3 className="text-xl font-bold text-green-400 mb-4">What the New Homepage Gets Right</h3>
                     <div className="space-y-3">
@@ -1747,6 +1773,31 @@ export default function HotjarAnalysisPage() {
                     <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
                   </div>
 
+                  {/* Side-by-Side Screenshot Comparison */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <h3 className="text-xl font-bold text-white mb-4">Visual Comparison: Old Site vs. New Site</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          <span className="text-red-400 font-semibold text-sm">Old Plans &amp; Pricing</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-red-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/plans-pricing-full.png" alt="Old plans and pricing" width={1440} height={3869} className="w-full h-auto" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-green-400 font-semibold text-sm">New Plans &amp; Pricing</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-green-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/new-plans-pricing-full.png" alt="New plans and pricing" width={1440} height={4000} className="w-full h-auto" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
                     <div className="flex items-center gap-3 mb-4">
                       <span className="text-3xl">⭐</span>
@@ -1824,6 +1875,31 @@ export default function HotjarAnalysisPage() {
                     <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
                   </div>
 
+                  {/* Side-by-Side Screenshot Comparison */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <h3 className="text-xl font-bold text-white mb-4">Visual Comparison: Old Site vs. New Site</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          <span className="text-red-400 font-semibold text-sm">Old QB Certification</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-red-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/qb-certification-full.png" alt="Old QB certification page" width={1440} height={8000} className="w-full h-auto" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-green-400 font-semibold text-sm">New QB Certification</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-green-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/new-qb-certification-full.png" alt="New QB certification page" width={1440} height={8000} className="w-full h-auto" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
                     <h3 className="text-xl font-bold text-green-400 mb-4">What the New Certification Page Gets Right</h3>
                     <div className="space-y-3">
@@ -1896,6 +1972,31 @@ export default function HotjarAnalysisPage() {
                     <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
                   </div>
 
+                  {/* Side-by-Side Screenshot Comparison */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <h3 className="text-xl font-bold text-white mb-4">Visual Comparison: Old Site vs. New Site</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          <span className="text-red-400 font-semibold text-sm">Old Live Classes</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-red-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/live-classes-full.png" alt="Old live classes page" width={1440} height={8000} className="w-full h-auto" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-green-400 font-semibold text-sm">New Live Classes</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-green-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/new-live-classes-full.png" alt="New live classes page" width={1440} height={8000} className="w-full h-auto" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
                     <h3 className="text-xl font-bold text-green-400 mb-4">What the New Live Classes Page Gets Right</h3>
                     <div className="space-y-3">
@@ -1965,6 +2066,31 @@ export default function HotjarAnalysisPage() {
                   <div className="flex items-center gap-4 mb-2">
                     <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-full font-bold text-sm">2 Major Issues Fixed</div>
                     <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
+                  </div>
+
+                  {/* Side-by-Side Screenshot Comparison */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <h3 className="text-xl font-bold text-white mb-4">Visual Comparison: Old Site vs. New Site</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          <span className="text-red-400 font-semibold text-sm">Old Self-Paced Courses</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-red-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/self-paced-full.png" alt="Old self-paced courses page" width={1440} height={13213} className="w-full h-auto" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-green-400 font-semibold text-sm">New Self-Paced Courses</span>
+                        </div>
+                        <div className="rounded-lg overflow-hidden border border-green-800/30 bg-gray-900 max-h-[600px] overflow-y-auto">
+                          <Image src="/screenshots/new-self-paced-full.png" alt="New self-paced courses page" width={1440} height={13000} className="w-full h-auto" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="bg-red-900/20 rounded-xl p-6 border border-red-700/30 mb-4">
