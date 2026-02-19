@@ -1,24 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { ChevronRight, TrendingUp, DollarSign, AlertTriangle, CheckCircle, Users, MousePointer, Smartphone, Monitor, HelpCircle } from 'lucide-react';
 import PageScreenshotWithOverlays from '@/components/PageScreenshotWithOverlays';
 import MetricTooltip, { MetricValue } from './components/MetricTooltip';
 
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
+  const [show, setShow] = useState(false);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const iconRef = useRef<HTMLDivElement>(null);
+
+  const handleEnter = () => {
+    if (iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      setPos({ x: rect.right + 12, y: rect.top + rect.height / 2 });
+    }
+    setShow(true);
+  };
+
   return (
-    <div className="group relative inline-flex items-center">
+    <div className="relative inline-flex items-center">
       {children}
-      <HelpCircle className="w-4 h-4 ml-2 text-gray-400 hover:text-blue-400 cursor-help transition-colors" />
-      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 hidden group-hover:block z-[9999] pointer-events-none">
-        <div className="bg-gray-900 text-gray-100 text-base rounded-lg p-4 shadow-2xl border-2 border-blue-500/50 max-w-md whitespace-normal leading-relaxed">
-          {text}
-          <div className="absolute right-full top-1/2 -translate-y-1/2 mr-[-2px]">
-            <div className="border-8 border-transparent border-r-gray-900"></div>
+      <div ref={iconRef} onMouseEnter={handleEnter} onMouseLeave={() => setShow(false)}>
+        <HelpCircle className="w-4 h-4 ml-2 text-gray-400 hover:text-blue-400 cursor-help transition-colors" />
+      </div>
+      {show && (
+        <div
+          className="fixed z-[9999] pointer-events-none"
+          style={{ left: pos.x, top: pos.y, transform: 'translateY(-50%)' }}
+        >
+          <div className="bg-gray-900 text-gray-100 text-base rounded-lg p-4 shadow-2xl border-2 border-blue-500/50 max-w-md whitespace-normal leading-relaxed">
+            {text}
+            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-[-2px]">
+              <div className="border-8 border-transparent border-r-gray-900"></div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -2230,7 +2249,7 @@ export default function HotjarAnalysisPage() {
               </div>
 
               <h3 className="text-2xl font-bold text-white mb-4">Revenue Opportunity by Initiative</h3>
-              <div className="overflow-x-auto mb-12">
+              <div className="mb-12">
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
