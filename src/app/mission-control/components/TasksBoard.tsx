@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type TaskStatus = 'backlog' | 'in_progress' | 'blocked' | 'done';
 type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -8,47 +8,13 @@ type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 interface Task {
   id: number;
   title: string;
-  description?: string;
+  description?: string | null;
   status: TaskStatus;
   priority: TaskPriority;
-  assignedTo?: string;
+  assignedTo?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
-
-// Mock data (will replace with real database once connected)
-const mockTasks: Task[] = [
-  {
-    id: 1,
-    title: 'Build Mission Control Tasks Board',
-    description: 'Create Kanban board for task tracking',
-    status: 'in_progress',
-    priority: 'high',
-    assignedTo: 'claude',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 2,
-    title: 'Set up Neon database',
-    description: 'Configure Postgres database for Mission Control',
-    status: 'done',
-    priority: 'high',
-    assignedTo: 'aaron',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 3,
-    title: 'Build Memory Viewer component',
-    description: 'Searchable log of memories and decisions',
-    status: 'backlog',
-    priority: 'medium',
-    assignedTo: 'claude',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
 
 const columns: { status: TaskStatus; label: string; emoji: string }[] = [
   { status: 'backlog', label: 'Backlog', emoji: '📋' },
@@ -65,12 +31,93 @@ const priorityColors = {
 };
 
 export default function TasksBoard() {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [usingMockData, setUsingMockData] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    priority: 'medium' as TaskPriority,
+    assignedTo: 'claude',
+  });
+
+  // Fetch tasks on mount
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch('/api/mission-control/tasks');
+      const data = await response.json();
+      
+      if (data.mockData) {
+        setUsingMockData(true);
+      } else {
+        setTasks(data.tasks || []);
+        setUsingMockData(false);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      setUsingMockData(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim()) return;
+
+    try {
+      const response = await fetch('/api/mission-control/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          status: 'backlog',
+        }),
+      });
+
+      if (response.ok) {
+        await fetchTasks();
+        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'claude' });
+        setShowNewTaskForm(false);
+      }
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
+  };
+
+  const updateTaskStatus = async (taskId: number, newStatus: TaskStatus) => {
+    try {
+      const response = await fetch('/api/mission-control/tasks', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: taskId, status: newStatus }),
+      });
+
+      if (response.ok) {
+        await fetchTasks();
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
 
   const getTasksByStatus = (status: TaskStatus) => {
     return tasks.filter(task => task.status === status);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-600">Loading tasks...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -94,25 +141,38 @@ export default function TasksBoard() {
       {showNewTaskForm && (
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <h3 className="font-semibold mb-3">Create New Task</h3>
-          <form className="space-y-3">
+          <form onSubmit={createTask} className="space-y-3">
             <input
               type="text"
               placeholder="Task title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             />
             <textarea
               placeholder="Description (optional)"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="flex gap-3">
-              <select className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="medium">Medium Priority</option>
+              <select 
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value as TaskPriority })}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
                 <option value="high">High Priority</option>
                 <option value="urgent">Urgent</option>
               </select>
-              <select className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select 
+                value={formData.assignedTo}
+                onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 <option value="claude">Assigned to: Claude</option>
                 <option value="aaron">Assigned to: Aaron</option>
               </select>
@@ -156,13 +216,29 @@ export default function TasksBoard() {
               {getTasksByStatus(column.status).map(task => (
                 <div
                   key={task.id}
-                  className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                  className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
                 >
-                  {/* Priority Badge */}
+                  {/* Priority Badge + Status Controls */}
                   <div className="flex items-start justify-between mb-2">
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${priorityColors[task.priority]}`}>
                       {task.priority}
                     </span>
+                    
+                    {/* Quick status change buttons (shown on hover) */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                      {columns.map(col => 
+                        col.status !== task.status && (
+                          <button
+                            key={col.status}
+                            onClick={() => updateTaskStatus(task.id, col.status)}
+                            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                            title={`Move to ${col.label}`}
+                          >
+                            {col.emoji}
+                          </button>
+                        )
+                      )}
+                    </div>
                   </div>
 
                   {/* Task Title */}
@@ -198,11 +274,13 @@ export default function TasksBoard() {
       </div>
 
       {/* Database Status */}
-      <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p className="text-sm text-yellow-800">
-          ⚠️ <strong>Using mock data.</strong> Once DATABASE_URL is available, tasks will persist to Neon Postgres.
-        </p>
-      </div>
+      {usingMockData && (
+        <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            ⚠️ <strong>Using mock data.</strong> Database connection unavailable.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
