@@ -66,10 +66,10 @@ export default function MetricTooltip({ metric, value, children, position = 'top
   };
 
   const arrowClasses = {
-    top: 'top-full left-1/2 -translate-x-1/2 border-t-gray-900 border-l-transparent border-r-transparent border-b-transparent',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-gray-900 border-l-transparent border-r-transparent border-t-transparent',
-    left: 'left-full top-1/2 -translate-y-1/2 border-l-gray-900 border-t-transparent border-b-transparent border-r-transparent',
-    right: 'right-full top-1/2 -translate-y-1/2 border-r-gray-900 border-t-transparent border-b-transparent border-l-transparent',
+    top: 'top-full left-1/2 -translate-x-1/2 -mt-[1px] border-t-blue-500 border-l-transparent border-r-transparent border-b-transparent',
+    bottom: 'bottom-full left-1/2 -translate-x-1/2 -mb-[1px] border-b-blue-500 border-l-transparent border-r-transparent border-t-transparent',
+    left: 'left-full top-1/2 -translate-y-1/2 -ml-[1px] border-l-blue-500 border-t-transparent border-b-transparent border-r-transparent',
+    right: 'right-full top-1/2 -translate-y-1/2 -mr-[1px] border-r-blue-500 border-t-transparent border-b-transparent border-l-transparent',
   };
 
   return (
@@ -81,13 +81,13 @@ export default function MetricTooltip({ metric, value, children, position = 'top
         </div>
       )}
       
-      <div className={`absolute ${positionClasses[position]} hidden group-hover:block z-[9999] pointer-events-none animate-fade-in`}>
-        <div className="bg-gray-900 text-gray-100 rounded-lg p-4 shadow-2xl border-2 border-blue-500/50 min-w-[320px] max-w-md">
-          <div className="font-bold text-blue-300 mb-2">{metricData.title}</div>
-          <div className="text-sm mb-3 leading-relaxed">{metricData.definition}</div>
+      <div className={`absolute ${positionClasses[position]} hidden group-hover:block z-[99999] pointer-events-none animate-fade-in`}>
+        <div className="bg-gray-950 text-gray-100 rounded-xl p-5 shadow-2xl border-2 border-blue-500 min-w-[340px] max-w-md backdrop-blur-sm">
+          <div className="font-bold text-blue-400 mb-3 text-lg">{metricData.title}</div>
+          <div className="text-sm mb-3 leading-relaxed text-gray-200">{metricData.definition}</div>
           {metricData.context && (
-            <div className="text-xs text-gray-400 border-t border-gray-700 pt-2 mt-2">
-              <span className="text-blue-400 font-semibold">Context:</span> {metricData.context}
+            <div className="text-sm text-gray-300 border-t border-gray-700 pt-3 mt-3 bg-gray-900/50 -mx-5 -mb-5 px-5 py-3 rounded-b-xl">
+              <span className="text-blue-400 font-semibold">📊 Context:</span> {metricData.context}
             </div>
           )}
           {value && (
@@ -96,7 +96,20 @@ export default function MetricTooltip({ metric, value, children, position = 'top
             </div>
           )}
         </div>
-        <div className={`absolute ${arrowClasses[position]} border-8`}></div>
+        {/* Arrow with border effect */}
+        <div className={`absolute ${arrowClasses[position]} border-[10px]`}></div>
+        {position === 'top' && (
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[9px] border-[9px] border-transparent border-t-gray-950"></div>
+        )}
+        {position === 'bottom' && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-[9px] border-[9px] border-transparent border-b-gray-950"></div>
+        )}
+        {position === 'left' && (
+          <div className="absolute left-full top-1/2 -translate-y-1/2 -ml-[9px] border-[9px] border-transparent border-l-gray-950"></div>
+        )}
+        {position === 'right' && (
+          <div className="absolute right-full top-1/2 -translate-y-1/2 -mr-[9px] border-[9px] border-transparent border-r-gray-950"></div>
+        )}
       </div>
     </div>
   );
@@ -108,11 +121,14 @@ export function MetricValue({ value, context, children }: { value?: string | num
   return (
     <div className="group relative inline-block cursor-help">
       <span className="group-hover:text-blue-400 transition-colors">{displayValue}</span>
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none animate-fade-in">
-        <div className="bg-gray-900 text-gray-100 text-xs rounded-lg p-3 shadow-2xl border border-blue-500/50 whitespace-nowrap max-w-xs">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover:block z-[99999] pointer-events-none animate-fade-in">
+        <div className="bg-gray-950 text-gray-100 text-sm rounded-xl p-4 shadow-2xl border-2 border-blue-500 max-w-sm whitespace-normal leading-relaxed backdrop-blur-sm">
           {context}
         </div>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px]">
+          <div className="border-[10px] border-transparent border-t-blue-500"></div>
+          <div className="absolute top-[-20px] left-1/2 -translate-x-1/2 border-[9px] border-transparent border-t-gray-950"></div>
+        </div>
       </div>
     </div>
   );
