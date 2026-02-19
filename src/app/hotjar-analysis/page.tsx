@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChevronRight, TrendingUp, DollarSign, AlertTriangle, CheckCircle, Users, MousePointer, Smartphone, Monitor, HelpCircle } from 'lucide-react';
 import PageScreenshotWithOverlays from '@/components/PageScreenshotWithOverlays';
+import MetricTooltip, { MetricValue } from './components/MetricTooltip';
 
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
   return (
@@ -118,20 +119,34 @@ export default function HotjarAnalysisPage() {
                 <div className="flex items-center justify-between mb-4">
                   <AlertTriangle className="w-8 h-8 text-red-400" />
                 </div>
-                <Tooltip text={`Measured via Hotjar click maps. Desktop users click on non-interactive elements (body text, table cells, section backgrounds) expecting action. Range: Homepage 18.3%, Plans & Pricing 36.5%, Bookkeeping Cert 38.8%. Industry best practice: <10%.`}>
+                <MetricValue 
+                  value="20–39%" 
+                  context="Range: Homepage 18.3%, Plans & Pricing 36.5%, Bookkeeping Cert 38.8%. Industry best practice: <10%"
+                >
                   <div className="text-4xl font-extrabold text-red-400 mb-2">20–39%</div>
-                </Tooltip>
-                <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">Desktop Dead Clicks</div>
+                </MetricValue>
+                <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">
+                  <MetricTooltip metric="dead-clicks">
+                    <span>Desktop Dead Clicks</span>
+                  </MetricTooltip>
+                </div>
               </div>
 
               <div className="bg-gradient-to-br from-green-900/40 to-gray-900 rounded-xl p-6 border border-green-700/50 hover:scale-105 transition-transform">
                 <div className="flex items-center justify-between mb-4">
                   <CheckCircle className="w-8 h-8 text-green-400" />
                 </div>
-                <Tooltip text={`Plans & Pricing page: 4,530 desktop sessions, 188 purchases, 4.15% conversion rate. Highest of any page. Contributing factors: shortest page (3,869px), clearest value prop, 52.7% scroll to 50%, single focused decision point.`}>
+                <MetricValue 
+                  value="4.15%" 
+                  context="Plans & Pricing: 4,530 desktop sessions → 188 purchases. Shortest page (3,869px), best scroll (52.7%), focused decision"
+                >
                   <div className="text-4xl font-extrabold text-green-400 mb-2">4.15%</div>
-                </Tooltip>
-                <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">Best Conv. Rate</div>
+                </MetricValue>
+                <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">
+                  <MetricTooltip metric="conversion-rate">
+                    <span>Best Conv. Rate</span>
+                  </MetricTooltip>
+                </div>
               </div>
             </div>
 
