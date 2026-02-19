@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // Master account - access to EVERYTHING
-const MASTER_USER = process.env.MASTER_USER || 'admin'
-const MASTER_PASSWORD = process.env.MASTER_PASSWORD || 'qbtraining2026'
+const MASTER_USER = 'Belize'
+const MASTER_PASSWORD = 'HKTS'
 
 // Recap-only account - access to /recap ONLY
-const RECAP_USER = process.env.RECAP_USER || 'david'
-const RECAP_PASSWORD = process.env.RECAP_PASSWORD || 'recap2026'
+const RECAP_USER = 'ADMIN'
+const RECAP_PASSWORD = 'qbtraining2026'
 
 // Routes accessible by recap-only account
 const RECAP_ROUTES = ['/recap']
