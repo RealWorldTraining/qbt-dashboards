@@ -2353,112 +2353,185 @@ export default function HotjarAnalysisPage() {
                 </table>
               </div>
 
-              {/* Page-Specific Punch List */}
+              {/* Page-Specific Punch List — Desktop vs Mobile */}
               <h3 className="text-2xl font-bold text-white mb-6 mt-12">Page-Specific Punch List</h3>
-              
-              <div className="space-y-6">
-                {/* Homepage */}
-                <div className="bg-gray-800/50 rounded-xl p-6 border border-blue-700/30">
-                  <h4 className="text-xl font-bold text-blue-300 mb-4">Homepage</h4>
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-blue-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">HP-1: Consolidate from 9 Sections to 6 <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">Hero → Trust Bar → Offerings Grid → Interactive Comparison Table → FAQ → Final CTA. Cut separate pricing cards, testimonials, instructor section. Saves ~2,000–3,000px.</div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* DESKTOP COLUMN */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Monitor className="w-5 h-5 text-blue-400" />
+                    <h4 className="text-xl font-bold text-blue-400">Desktop</h4>
+                    <span className="text-sm text-gray-400">88% of revenue ($1.3M)</span>
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-blue-700/30">
+                    <div className="text-sm font-bold text-blue-300 mb-3">Homepage</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-blue-500 pl-3">
+                        <div className="font-semibold text-white text-sm">HP-1: Consolidate 9 Sections to 6</div>
+                        <div className="text-sm text-gray-400">Cut to ~4,500px. Only 9.9% reach midpoint at current 9,346px.</div>
+                      </div>
+                      <div className="border-l-4 border-blue-500 pl-3">
+                        <div className="font-semibold text-white text-sm">HP-2: Fix the First-Fold Experience</div>
+                        <div className="text-sm text-gray-400">40.2% drop-off at 5–10% scroll. Headline + value prop + CTA + trust bar in first viewport.</div>
+                      </div>
+                      <div className="border-l-4 border-blue-500 pl-3">
+                        <div className="font-semibold text-white text-sm">HP-3: Reduce Sign In Visual Weight</div>
+                        <div className="text-sm text-gray-400">&quot;Start Learning&quot;: green, filled, prominent. &quot;Sign In&quot;: text-only, smaller.</div>
+                      </div>
                     </div>
-                    <div className="border-l-4 border-blue-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">HP-2: Fix the First-Fold Experience <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span></div>
-                      <div className="text-base text-gray-400">40.2% desktop drop-off at 5–10% scroll must be investigated. First viewport should show: headline, value prop, CTA, and trust bar.</div>
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-green-700/30">
+                    <div className="text-sm font-bold text-green-300 mb-3">Plans &amp; Pricing</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-green-500 pl-3">
+                        <div className="font-semibold text-white text-sm">PP-1: Make Comparison Table Interactive</div>
+                        <div className="text-sm text-gray-400">36.5% dead click rate — 1,513 clicks on static table text. Expandable rows with feature descriptions.</div>
+                      </div>
+                      <div className="border-l-4 border-green-500 pl-3">
+                        <div className="font-semibold text-white text-sm">PP-2: Fix Desktop Hover States</div>
+                        <div className="text-sm text-gray-400">20–39% of desktop clicks hit non-interactive elements. cursor:pointer + transitions on all clickable elements.</div>
+                      </div>
                     </div>
-                    <div className="border-l-4 border-blue-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">HP-3: Reduce Sign In Visual Weight <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">&quot;Start Learning&quot;: green, filled, prominent. &quot;Sign In&quot;: text-only or outline, smaller. Must NOT look like equal-weight options.</div>
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-purple-700/30">
+                    <div className="text-sm font-bold text-purple-300 mb-3">QB Certification</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-purple-500 pl-3">
+                        <div className="font-semibold text-white text-sm">QC-1: Lead with Outcomes</div>
+                        <div className="text-sm text-gray-400">&quot;Get 3 Intuit Certifications. 20–30% salary increase.&quot; Expand FAQ to 10–12 questions.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-cyan-700/30">
+                    <div className="text-sm font-bold text-cyan-300 mb-3">Live Classes</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-cyan-500 pl-3">
+                        <div className="font-semibold text-white text-sm">LC-1: Schedule Above the Fold</div>
+                        <div className="text-sm text-gray-400">2m 26s avg engagement (highest). Next class dates + instructor names in first viewport.</div>
+                      </div>
+                      <div className="border-l-4 border-cyan-500 pl-3">
+                        <div className="font-semibold text-white text-sm">LC-2: Instructor Trust Signals</div>
+                        <div className="text-sm text-gray-400">Add bios, stats, student reviews. &quot;X,000+ students trained&quot; — keep inline, not behind modals.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-amber-700/30">
+                    <div className="text-sm font-bold text-amber-300 mb-3">Self-Paced Courses</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-amber-500 pl-3">
+                        <div className="font-semibold text-white text-sm">SC-1: &quot;One Plan, All Courses&quot; Messaging</div>
+                        <div className="text-sm text-gray-400">Banner: &quot;One Plan. 46+ Courses. Starting at $599.95.&quot; Each card: &quot;Included in All Plans&quot; + CTA.</div>
+                      </div>
+                      <div className="border-l-4 border-amber-500 pl-3">
+                        <div className="font-semibold text-white text-sm">SC-2: Limit to 9–12 Cards</div>
+                        <div className="text-sm text-gray-400">Group by use case. &quot;Show More&quot; for the rest. Keep total height under 5,000px.</div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Plans & Pricing */}
-                <div className="bg-gray-800/50 rounded-xl p-6 border border-green-700/30">
-                  <h4 className="text-xl font-bold text-green-300 mb-4">Plans & Pricing</h4>
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-green-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">PP-1: Make Comparison Table Interactive <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">36.5% dead click rate on comparison table — 1,513 clicks. Expandable rows with feature descriptions. 4.15% desktop conversion — protect this page. Do NOT add more content.</div>
-                    </div>
-                    <div className="border-l-4 border-green-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">PP-2: Enhance Mobile Plan Comparison <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">7,727 mobile sessions but 0.62% conversion (6.7x lower than desktop). Swipeable card comparison on mobile. Highlight differences between plans.</div>
-                    </div>
+                {/* MOBILE COLUMN */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Smartphone className="w-5 h-5 text-purple-400" />
+                    <h4 className="text-xl font-bold text-purple-400">Mobile</h4>
+                    <span className="text-sm text-gray-400">Research channel (12% revenue)</span>
                   </div>
-                </div>
 
-                {/* QuickBooks Certification */}
-                <div className="bg-gray-800/50 rounded-xl p-6 border border-purple-700/30">
-                  <h4 className="text-xl font-bold text-purple-300 mb-4">QuickBooks Certification</h4>
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-purple-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">QC-1: Optimize for the $699.95 Decision <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">Lead with outcomes: &quot;Get 3 Intuit Certifications. Average 20–30% salary increase.&quot; Keep &quot;Learn → Practice → Pass&quot; three-step breakdown prominent. Expand FAQ to 10–12 questions.</div>
-                    </div>
-                    <div className="border-l-4 border-purple-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">QC-2: Handle /certification-mobile Traffic <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">301 redirect from /certification-mobile to /quickbooks-certification — 13,238 sessions at stake.</div>
+                  {/* Site-Wide Mobile */}
+                  <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/30">
+                    <div className="text-sm font-bold text-purple-300 mb-1">Site-Wide Mobile Strategy</div>
+                    <div className="text-xs text-gray-400 mb-3 italic">Mobile = research for a $700 decision. Optimize for comparison, not checkout.</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-purple-500 pl-3">
+                        <div className="font-semibold text-white text-sm">M-1: Sticky Bottom CTA Bar</div>
+                        <div className="text-sm text-gray-400">&quot;Plans from $599.95 — View Pricing&quot; fixed at bottom of every page.</div>
+                      </div>
+                      <div className="border-l-4 border-purple-500 pl-3">
+                        <div className="font-semibold text-white text-sm">M-2: Touch Target Sizing</div>
+                        <div className="text-sm text-gray-400">All tappable elements &#8805; 44x44px (Apple HIG). FAQ accordions, CTAs, nav links.</div>
+                      </div>
+                      <div className="border-l-4 border-purple-500 pl-3">
+                        <div className="font-semibold text-white text-sm">M-3: Cross-Device Bridge</div>
+                        <div className="text-sm text-gray-400">&quot;Email me this comparison&quot; button. Captures lead + sends desktop link.</div>
+                      </div>
+                      <div className="border-l-4 border-purple-500 pl-3">
+                        <div className="font-semibold text-white text-sm">M-4: Fast Load</div>
+                        <div className="text-sm text-gray-400">LCP &lt; 2.5s &#8226; FID &lt; 100ms &#8226; CLS &lt; 0.1 &#8226; Lazy-load images.</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Live Classes */}
-                <div className="bg-gray-800/50 rounded-xl p-6 border border-cyan-700/30">
-                  <h4 className="text-xl font-bold text-cyan-300 mb-4">Live Classes</h4>
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-cyan-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">LC-1: Surface Schedule Above the Fold <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">2m 26s avg engagement — highest of any page. People are here FOR the schedule. Next class dates + instructor names should be visible in the first viewport.</div>
-                    </div>
-                    <div className="border-l-4 border-cyan-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">LC-2: Enhance Instructor Trust Signals <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">Add bios, stats, and student reviews per instructor. &quot;X,000+ students trained, Y+ years teaching&quot; + 1–2 sentence bio. Keep visible inline, not behind modals.</div>
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-blue-700/30">
+                    <div className="text-sm font-bold text-blue-300 mb-3">Homepage</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-blue-500 pl-3">
+                        <div className="font-semibold text-white text-sm">HP-M1: FAQ Near Top</div>
+                        <div className="text-sm text-gray-400">23.9% of mobile taps went to FAQ content. Surface it higher on mobile layout.</div>
+                      </div>
+                      <div className="border-l-4 border-blue-500 pl-3">
+                        <div className="font-semibold text-white text-sm">HP-M2: Reduce Sign In Visual Weight</div>
+                        <div className="text-sm text-gray-400">30.6% of old clicks were Sign In. Minimize it — prospects need &quot;Start Learning&quot; prominent.</div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Self-Paced Courses */}
-                <div className="bg-gray-800/50 rounded-xl p-6 border border-amber-700/30">
-                  <h4 className="text-xl font-bold text-amber-300 mb-4">Self-Paced Courses</h4>
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-amber-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">SC-1: &quot;One Plan, All Courses&quot; Messaging <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">Headline: &quot;46+ Self-Paced Courses — Included in Every Plan.&quot; Banner above grid: &quot;One plan gives you access to all courses.&quot;</div>
-                    </div>
-                    <div className="border-l-4 border-amber-500 pl-4">
-                      <div className="font-semibold text-white mb-1 flex items-center gap-2">SC-2: Keep It Manageable <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
-                      <div className="text-base text-gray-400">Show 9–12 cards by default. Group by: Most Popular, Beginners, Industry-Specific, Certification Prep. Keep total height under 5,000px.</div>
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-green-700/30">
+                    <div className="text-sm font-bold text-green-300 mb-3">Plans &amp; Pricing</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-green-500 pl-3">
+                        <div className="font-semibold text-white text-sm">PP-M1: Swipeable Plan Cards</div>
+                        <div className="text-sm text-gray-400">7,727 mobile sessions, 0.62% conversion (6.7x lower than desktop). Swipe between plans.</div>
+                      </div>
+                      <div className="border-l-4 border-green-500 pl-3">
+                        <div className="font-semibold text-white text-sm">PP-M2: Interactive Comparison Table</div>
+                        <div className="text-sm text-gray-400">Expandable feature rows on tap. 36.5% dead click rate — people expect interaction.</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Mobile Strategy */}
-              <div className="mt-12 bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
-                <h3 className="text-2xl font-bold text-blue-300 mb-4">Mobile Strategy</h3>
-                <p className="text-gray-300 mb-4 leading-relaxed">
-                  <strong>Core principle:</strong> Mobile is where people discover and evaluate. Every mobile design decision should ask: "Does this help someone research a $700 purchase?"
-                </p>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-gray-900/50 rounded-lg p-4">
-                    <div className="font-semibold text-blue-300 mb-2">M-1: Optimize for Research</div>
-                    <div className="text-base text-gray-400">Swipeable plan cards, prominent reviews, FAQ near top, "View Plans" over "Buy Now"</div>
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-purple-700/30">
+                    <div className="text-sm font-bold text-purple-300 mb-3">QB Certification</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-purple-500 pl-3">
+                        <div className="font-semibold text-white text-sm">QC-M1: 301 Redirect /certification-mobile</div>
+                        <div className="text-sm text-gray-400">13,238 sessions to a URL that won&apos;t exist. Redirect to /quickbooks-certification.</div>
+                      </div>
+                      <div className="border-l-4 border-purple-500 pl-3">
+                        <div className="font-semibold text-white text-sm">QC-M2: Expand FAQ to 10–12 Questions</div>
+                        <div className="text-sm text-gray-400">62.4% of mobile taps went to FAQ on cert page — highest of any page.</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-gray-900/50 rounded-lg p-4">
-                    <div className="font-semibold text-blue-300 mb-2">M-2: Sticky Bottom CTA Bar</div>
-                    <div className="text-base text-gray-400">"Plans from $599.95 — View Pricing" fixed at bottom</div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-cyan-700/30">
+                    <div className="text-sm font-bold text-cyan-300 mb-3">Live Classes</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-cyan-500 pl-3">
+                        <div className="font-semibold text-white text-sm">LC-M1: Schedule in First Viewport</div>
+                        <div className="text-sm text-gray-400">65.2% of mobile taps went to FAQ. Schedule + FAQ should dominate the mobile layout.</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-gray-900/50 rounded-lg p-4">
-                    <div className="font-semibold text-blue-300 mb-2">M-3: Touch Target Sizing</div>
-                    <div className="text-base text-gray-400">All tappable elements ≥ 44x44px (Apple HIG)</div>
-                  </div>
-                  <div className="bg-gray-900/50 rounded-lg p-4">
-                    <div className="font-semibold text-blue-300 mb-2">M-4: Fast Load</div>
-                    <div className="text-base text-gray-400">LCP &lt; 2.5s • FID &lt; 100ms • CLS &lt; 0.1 • Lazy-load images</div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-amber-700/30">
+                    <div className="text-sm font-bold text-amber-300 mb-3">Self-Paced Courses</div>
+                    <div className="space-y-3">
+                      <div className="border-l-4 border-amber-500 pl-3">
+                        <div className="font-semibold text-white text-sm">SC-M1: Mobile Checkout Flow</div>
+                        <div className="text-sm text-gray-400">$180K mobile revenue, 0.30–0.62% conversion. Autofill, fewer steps, trust signals.</div>
+                      </div>
+                      <div className="border-l-4 border-amber-500 pl-3">
+                        <div className="font-semibold text-white text-sm">SC-M2: &quot;Included in All Plans&quot; on Every Card</div>
+                        <div className="text-sm text-gray-400">26.5% of clicks went to cards with zero CTAs. Each card needs CTA + plan messaging.</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
