@@ -57,9 +57,9 @@ export default function MissionControlPage() {
       </header>
 
       {/* Content */}
-      <main className="py-8 w-full">
-        <div className={`animate-preview-in mx-auto w-full ${
-          activeTab === 'tasks' ? 'max-w-[1400px] px-6' : 'max-w-7xl px-4 sm:px-6 lg:px-8'
+      <main className="py-8 flex justify-center px-4 sm:px-6 lg:px-8">
+        <div className={`animate-preview-in w-full ${
+          activeTab === 'tasks' ? 'max-w-[1600px]' : 'max-w-7xl'
         }`}>
           {activeTab === 'tasks' && <TasksBoard />}
           {activeTab === 'memory' && <MemoryViewer />}
