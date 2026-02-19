@@ -24,16 +24,44 @@ function parseNumber(val: string): number {
   return parseFloat(cleaned) || 0
 }
 
+function getGoogleCredentials() {
+  // Try base64-encoded JSON blob first
+  const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
+  if (credsJson) {
+    return JSON.parse(Buffer.from(credsJson, 'base64').toString('utf-8'))
+  }
+
+  // Fall back to individual env vars
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY || ''
+  if (!clientEmail || !privateKey) return null
+
+  privateKey = privateKey.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  if (privateKey.includes('\\n')) {
+    privateKey = privateKey.replace(/\\n/g, '\n')
+  }
+  if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----\n`
+  }
+
+  return {
+    type: 'service_account',
+    project_id: process.env.GOOGLE_PROJECT_ID,
+    private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+    private_key: privateKey,
+    client_email: clientEmail,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+    token_uri: 'https://oauth2.googleapis.com/token',
+  }
+}
+
 export async function GET() {
   try {
-    const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
-    if (!credsJson) {
-      return NextResponse.json({ error: 'Missing credentials' }, { status: 500 })
+    const credentials = getGoogleCredentials()
+    if (!credentials) {
+      return NextResponse.json({ error: 'Missing Google credentials' }, { status: 500 })
     }
-
-    const credentials = JSON.parse(
-      Buffer.from(credsJson, 'base64').toString('utf-8')
-    )
 
     const auth = new google.auth.GoogleAuth({
       credentials,
