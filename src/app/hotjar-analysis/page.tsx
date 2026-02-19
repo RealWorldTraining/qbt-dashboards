@@ -903,6 +903,20 @@ export default function HotjarAnalysisPage() {
                           ],
                           summary: 'Mobile homepage is 11,466px tall — 23% longer than desktop. Only 28.4% reach the midpoint. Sign In drops to just 3.6% of taps (vs 30.6% desktop). FAQ accordions dominate mobile engagement at 24.5% of all taps.'
                         }}
+                        overlayDescriptions={{
+                          scrollDepth: {
+                            desktop: 'Homepage desktop is 9,346px tall — the longest page on the site. Only 9.9% of visitors reach the halfway point. The bottom 50% of content is virtually invisible. Every section below the fold needs to earn its place.',
+                            mobile: 'Mobile homepage is even longer at 11,466px. Only 28.4% scroll to the midpoint — better than desktop\'s 9.9% because mobile users are accustomed to vertical scrolling. But 70%+ of content is still unseen.'
+                          },
+                          deadClicks: {
+                            desktop: 'Desktop dead click rate: 18.3%. The #1 dead click target is the Sign In button area (30.6% of all clicks) — returning students dominate the page. Pricing table text and section backgrounds also attract frustrated clicks.',
+                            mobile: 'Mobile dead clicks drop to just 1.6% — a 91% reduction from desktop. The linear, tap-friendly mobile layout eliminates most clickability confusion. Banner text is the only notable dead click area.'
+                          },
+                          ctaPerformance: {
+                            desktop: 'Desktop CTA click rate: ~21.8% for the primary "View Pricing" button. Secondary CTAs (Explore Classes, Get Certified) pull 12–15% each. Sign In absorbs 30.6% of clicks, starving prospect-facing CTAs of attention.',
+                            mobile: 'Mobile CTA tap rate: 27.1% for "Start Learning" — significantly higher than desktop. The linear scroll layout naturally guides users through CTAs. FAQ accordions capture 24.5% of taps, showing active research behavior.'
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -1018,6 +1032,20 @@ export default function HotjarAnalysisPage() {
                           ],
                           summary: 'Mobile QB Cert has 13K sessions (research channel for $699.95 purchase). Dead clicks drop to just 1.6%. FAQ accordions capture 62.4% of taps — healthy research behavior for a $700 certification decision. Zero mobile conversions; all purchases happen on desktop.'
                         }}
+                        overlayDescriptions={{
+                          scrollDepth: {
+                            desktop: 'QB Certification desktop page: 65.4% scroll past the hero section, 35.8% reach the FAQ zone. The tab navigation near the top captures attention early, but the certification requirements section below the fold loses people.',
+                            mobile: 'Mobile QB Cert retains slightly better: 70% scroll past the hero, 40% reach the FAQ section. The linear mobile layout makes the content flow more naturally. Below 58% mark, visibility drops to <15%.'
+                          },
+                          deadClicks: {
+                            desktop: 'Desktop dead click rate: 25.9%. Tab navigation elements and certification detail text attract frustrated clicks — users expect these to be interactive links. FAQ accordion text also gets clicked where only the header is active.',
+                            mobile: 'Mobile dead clicks collapse to 1.6%. The tap-friendly accordion pattern works beautifully on mobile. Users instinctively tap FAQ headers rather than body text, nearly eliminating dead click frustration.'
+                          },
+                          ctaPerformance: {
+                            desktop: 'Desktop CTA rate: 25.3% for "Get Certified" — strong for a $699.95 product. FAQ engagement captures 62.4% of interactions. Tab clicks get 17.9%. The high FAQ rate shows people have questions before committing to a $700 certification.',
+                            mobile: 'Mobile CTA rate: 27.6% for "Enroll Now". FAQ accordions dominate at 62.4% of all taps — the highest intentional engagement pattern. This is research behavior for a $700 purchase that converts on desktop later.'
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -1123,6 +1151,20 @@ export default function HotjarAnalysisPage() {
                             { x: 50, y: 55, label: 'FAQ accordions', percentage: '18.4%' }
                           ],
                           summary: 'Mobile Plans & Pricing is 6,800px (76% taller than desktop\'s 3,869px). CTA tap rate hits 28.7% — nearly 2x desktop. Dead clicks nearly vanish at 1.2%. Stacked plan cards work well on mobile, but the comparison table becomes a horizontal scroll nightmare.'
+                        }}
+                        overlayDescriptions={{
+                          scrollDepth: {
+                            desktop: 'Plans & Pricing is the shortest page at 3,869px — and the best-converting. 52.7% reach the midpoint (best of any page). ~30% see the bottom. Shorter pages retain dramatically better for a $682 AOV product.',
+                            mobile: 'Mobile Plans & Pricing expands to 6,800px (76% taller) due to stacked plan cards. 65% scroll past the first plan, 35% reach the comparison section, but <15% see the FAQ at the bottom.'
+                          },
+                          deadClicks: {
+                            desktop: 'Desktop dead click rate: 36.5% — the worst of any page. The comparison table text is the #1 offender — users click feature rows expecting toggle or detail expansion. Plan card detail text and feature lists also attract frustrated clicks.',
+                            mobile: 'Mobile dead clicks plummet to 1.2% — a 97% reduction. Stacked plan cards with clear tap targets work well. The comparison table (which causes 36.5% desktop dead clicks) is either hidden or scrollable on mobile.'
+                          },
+                          ctaPerformance: {
+                            desktop: 'Desktop CTA rate: 16.7% evenly split across Learner Plan, Certification Plan, and Team Plan CTAs. This even distribution suggests users are comparing — good for a pricing page. The 4.15% conversion rate is the best of any page.',
+                            mobile: 'Mobile CTA tap rate: 28.7% — nearly 2x desktop. The linear card stack naturally puts CTAs in the thumb zone. "Compare plans" gets 22.1%, FAQ accordions 18.4%. Mobile is the research channel that feeds desktop conversion.'
+                          }
                         }}
                       />
                     </div>
@@ -1239,6 +1281,20 @@ export default function HotjarAnalysisPage() {
                           ],
                           summary: 'Mobile Live Classes has the highest engagement time (2m 26s) — people thoroughly evaluate a $700 instructor-led training. FAQ accordions dominate at 65.2% of taps, the highest of any page. Dead clicks are minimal at 2.1%. This is deep research behavior that converts on desktop.'
                         }}
+                        overlayDescriptions={{
+                          scrollDepth: {
+                            desktop: 'Live Classes desktop: 50.8% scroll past the instructor section, 37.7% reach the schedule area. The highest engagement time of any page (2m 26s) means people are reading deeply, even if they don\'t scroll far. Instructor profiles anchor attention.',
+                            mobile: 'Mobile Live Classes: 60% scroll past the hero, 35% reach the schedule. The linear layout helps retention. With 2m 26s avg engagement, mobile users are thoroughly researching before switching to desktop to enroll.'
+                          },
+                          deadClicks: {
+                            desktop: 'Desktop dead click rate: 18%. Instructor modal/photo areas generate the most dead clicks — users click expecting bios to expand. Class schedule text and format toggle also attract frustrated clicks.',
+                            mobile: 'Mobile dead clicks: just 2.1%, almost entirely on instructor photos. The tap-to-expand expectation is natural on mobile. Otherwise, the linear layout with clear tap targets nearly eliminates dead click frustration.'
+                          },
+                          ctaPerformance: {
+                            desktop: 'Desktop CTA rate: 23.4% for "Enroll Now" — strong for a $700 live training. Instructor profiles pull 18.5% engagement, schedule CTAs 15.2%. The instructor trust signal is a major conversion driver.',
+                            mobile: 'Mobile CTA rate: 26.1% for "Enroll Now". FAQ accordions dominate at 65.2% — the highest of any page. Mobile users have the most questions about live classes (schedule, format, instructor). This deep research feeds desktop conversion.'
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -1351,6 +1407,20 @@ export default function HotjarAnalysisPage() {
                             { x: 50, y: 95, label: 'Bottom CTA', percentage: '<1%' }
                           ],
                           summary: 'Mobile Self-Paced is the worst-performing page: 18,500px tall with <3% ever reaching the midpoint. Course cards capture 31.2% of taps but lead nowhere. The "One Plan, All Courses" reframing in the new site eliminates this 60-course scroll maze entirely.'
+                        }}
+                        overlayDescriptions={{
+                          scrollDepth: {
+                            desktop: 'Self-Paced desktop is 13,213px tall — a scroll maze of 60+ individual course cards. Only 21.4% reach the midpoint, <5% see the bottom. 79% of the page content is essentially invisible. This is the strongest case for the "One Plan, All Courses" redesign.',
+                            mobile: 'Mobile Self-Paced is the worst page at 18,500px. Less than 3% ever reach the midpoint. The endless course card scroll creates a "scroll fatigue" effect where users give up. The new site\'s plan-based approach eliminates this entirely.'
+                          },
+                          deadClicks: {
+                            desktop: 'Desktop dead click rate: 26.5% on course cards and 25.6% on the "Load More" button. Users click course cards expecting a detail page or enrollment — but they go nowhere. The cards are visual dead ends.',
+                            mobile: 'Mobile dead clicks: 31.2% on course cards — actually worse than desktop. Users instinctively tap cards expecting them to expand or navigate. The "Load More" button gets 18.7% of taps. Almost half of all mobile interaction is wasted on non-functional elements.'
+                          },
+                          ctaPerformance: {
+                            desktop: 'Desktop CTA rate: just 4.6% for the top CTA, <1% for the bottom CTA (which nobody reaches). The 60 course cards drown out the actual conversion elements. This page has the worst CTA engagement of any page on the site.',
+                            mobile: 'Mobile CTA rate: 6.1% for the top CTA, <1% for the bottom. Marginally better than desktop but still critically low. With 31.2% of taps wasted on non-clickable course cards, the page actively fights against conversion.'
+                          }
                         }}
                       />
                       <div className="mt-4 bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r text-gray-300">

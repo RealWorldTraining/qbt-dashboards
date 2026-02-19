@@ -27,6 +27,12 @@ interface DeviceConfig {
   summary?: string;
 }
 
+interface OverlayDescriptions {
+  scrollDepth: { desktop: string; mobile: string };
+  deadClicks: { desktop: string; mobile: string };
+  ctaPerformance: { desktop: string; mobile: string };
+}
+
 interface PageScreenshotProps {
   imagePath: string;
   pageHeight: number;
@@ -34,6 +40,25 @@ interface PageScreenshotProps {
   deadClickHotspots: Hotspot[];
   ctaMarkers: Hotspot[];
   mobileConfig?: DeviceConfig;
+  overlayDescriptions?: OverlayDescriptions;
+}
+
+function OverlayTooltip({ text, children }: { text?: string; children: React.ReactNode }) {
+  if (!text) return <>{children}</>;
+  return (
+    <div className="group/ot relative">
+      {children}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover/ot:block z-[99999] pointer-events-none">
+        <div className="bg-gray-950 text-gray-100 rounded-xl p-4 shadow-2xl border-2 border-blue-500 min-w-[300px] max-w-sm backdrop-blur-sm">
+          <div className="text-sm leading-relaxed">{text}</div>
+        </div>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px]">
+          <div className="border-[10px] border-transparent border-t-blue-500"></div>
+          <div className="absolute top-[-20px] left-1/2 -translate-x-1/2 border-[9px] border-transparent border-t-gray-950"></div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function PageScreenshotWithOverlays({
@@ -43,6 +68,7 @@ export default function PageScreenshotWithOverlays({
   deadClickHotspots,
   ctaMarkers,
   mobileConfig,
+  overlayDescriptions,
 }: PageScreenshotProps) {
   const [activeDevice, setActiveDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [showScrollDepth, setShowScrollDepth] = useState(true);
@@ -95,36 +121,42 @@ export default function PageScreenshotWithOverlays({
 
         {/* Overlay Toggles */}
         <div className="flex gap-3 flex-wrap">
-          <button
-            onClick={() => setShowScrollDepth(!showScrollDepth)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              showScrollDepth
-                ? 'bg-gradient-to-r from-green-600 to-blue-600 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            {showScrollDepth ? '✓' : '○'} Scroll Depth Zones
-          </button>
-          <button
-            onClick={() => setShowDeadClicks(!showDeadClicks)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              showDeadClicks
-                ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            {showDeadClicks ? '✓' : '○'} Dead Click Hotspots
-          </button>
-          <button
-            onClick={() => setShowCTAs(!showCTAs)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              showCTAs
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            {showCTAs ? '✓' : '○'} CTA Performance
-          </button>
+          <OverlayTooltip text={overlayDescriptions ? (isMobile ? overlayDescriptions.scrollDepth.mobile : overlayDescriptions.scrollDepth.desktop) : undefined}>
+            <button
+              onClick={() => setShowScrollDepth(!showScrollDepth)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                showScrollDepth
+                  ? 'bg-gradient-to-r from-green-600 to-blue-600 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {showScrollDepth ? '✓' : '○'} Scroll Depth Zones
+            </button>
+          </OverlayTooltip>
+          <OverlayTooltip text={overlayDescriptions ? (isMobile ? overlayDescriptions.deadClicks.mobile : overlayDescriptions.deadClicks.desktop) : undefined}>
+            <button
+              onClick={() => setShowDeadClicks(!showDeadClicks)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                showDeadClicks
+                  ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {showDeadClicks ? '✓' : '○'} Dead Click Hotspots
+            </button>
+          </OverlayTooltip>
+          <OverlayTooltip text={overlayDescriptions ? (isMobile ? overlayDescriptions.ctaPerformance.mobile : overlayDescriptions.ctaPerformance.desktop) : undefined}>
+            <button
+              onClick={() => setShowCTAs(!showCTAs)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                showCTAs
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {showCTAs ? '✓' : '○'} CTA Performance
+            </button>
+          </OverlayTooltip>
         </div>
       </div>
 
