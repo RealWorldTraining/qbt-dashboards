@@ -933,9 +933,9 @@ export default function HotjarAnalysisPage() {
                           { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<5%' }
                         ]}
                         deadClickHotspots={[
-                          { x: 30, y: 15, label: 'Sign In button area', percentage: '30.6%' },
                           { x: 50, y: 35, label: 'Pricing table text', percentage: '18.3%' },
-                          { x: 65, y: 55, label: 'Section background', percentage: '12%' }
+                          { x: 65, y: 55, label: 'Section background', percentage: '12%' },
+                          { x: 40, y: 25, label: 'Hero image/text', percentage: '8.4%' }
                         ]}
                         ctaMarkers={[
                           { x: 50, y: 12, label: 'View Pricing CTA', percentage: '21.8%' },
@@ -968,11 +968,11 @@ export default function HotjarAnalysisPage() {
                             mobile: 'Mobile homepage is even longer at 11,466px. Only 28.4% scroll to the midpoint — better than desktop\'s 9.9% because mobile users are accustomed to vertical scrolling. But 70%+ of content is still unseen.'
                           },
                           deadClicks: {
-                            desktop: 'Desktop dead click rate: 18.3%. The #1 dead click target is the Sign In button area (30.6% of all clicks) — returning students dominate the page. Pricing table text and section backgrounds also attract frustrated clicks.',
+                            desktop: 'Desktop dead click rate: 18.3%. Note: 30.6% of all homepage clicks are Sign In from returning customers (not dead clicks — that\'s real intent). Actual dead click targets: pricing table text and section backgrounds attract frustrated clicks from prospects.',
                             mobile: 'Mobile dead clicks drop to just 1.6% — a 91% reduction from desktop. The linear, tap-friendly mobile layout eliminates most clickability confusion. Banner text is the only notable dead click area.'
                           },
                           ctaPerformance: {
-                            desktop: 'Desktop CTA click rate: ~21.8% for the primary "View Pricing" button. Secondary CTAs (Explore Classes, Get Certified) pull 12–15% each. Sign In absorbs 30.6% of clicks, starving prospect-facing CTAs of attention.',
+                            desktop: 'Desktop CTA click rate: ~21.8% for the primary "View Pricing" button. Secondary CTAs (Explore Classes, Get Certified) pull 12–15% each. 30.6% of clicks are returning customers signing in — the homepage serves two audiences (prospects + existing students).',
                             mobile: 'Mobile CTA tap rate: 27.1% for "Start Learning" — significantly higher than desktop. The linear scroll layout naturally guides users through CTAs. FAQ accordions capture 24.5% of taps, showing active research behavior.'
                           }
                         }}
@@ -1605,7 +1605,7 @@ export default function HotjarAnalysisPage() {
                     <p className="text-gray-400 mb-4">These design decisions directly address problems found in the Hotjar + GA4 data. Do NOT undo them.</p>
                     <div className="grid md:grid-cols-2 gap-4">
                       {[
-                        { decision: 'Sign In as header utility', data: 'Old site: 30.6% of homepage clicks were Sign In, crowding out prospect CTAs', icon: '✅' },
+                        { decision: 'Sign In as header utility', data: 'Old site: 30.6% of homepage clicks were returning customers signing in. Header utility position serves them instantly while clarifying the page for prospects', icon: '✅' },
                         { decision: 'Pricing cards on every page', data: 'Old site: users had to navigate to Plans & Pricing to see costs for a $700 decision', icon: '✅' },
                         { decision: 'FAQ accordion on every page', data: 'Mobile FAQ engagement: 24–65% of all taps. #1 content engagement pattern', icon: '✅' },
                         { decision: 'Trust bar on every page', data: '"Intuit 25 years / 1M+ people / 30-day guarantee" — non-negotiable at $700 AOV', icon: '✅' },
@@ -1747,7 +1747,7 @@ export default function HotjarAnalysisPage() {
                     <h3 className="text-xl font-bold text-green-400 mb-4">What the New Homepage Gets Right</h3>
                     <div className="space-y-3">
                       {[
-                        { fix: 'Sign In moved to header utility', data: 'Frees up 30.6% of clicks that were going to Sign In. Prospect CTAs can now compete.', metric: '30.6% → ~3%' },
+                        { fix: 'Sign In moved to header utility', data: '30.6% of old homepage clicks were returning customers signing in — they need easy access. Moving Sign In to the standard top-right utility position serves them instantly while giving prospect CTAs more visual prominence.', metric: 'Prominent → Utility nav' },
                         { fix: 'Trust bar immediately visible', data: '"Intuit 25 years / 1M+ / 30-day guarantee" visible without scrolling. Critical for $700 purchase.', metric: 'Below fold → Above fold' },
                         { fix: 'FAQ accordion section', data: 'Captures the 23.9% of mobile clicks that went to FAQ content on the old site.', metric: '0 FAQ → 7+ questions' },
                         { fix: '"Start Learning" persistent CTA', data: 'Green button always visible in header. No more hunting for the conversion path.', metric: 'Hidden → Always visible' },
@@ -2490,8 +2490,8 @@ export default function HotjarAnalysisPage() {
                         <div className="text-sm text-gray-400">23.9% of mobile taps went to FAQ content. Surface it higher on mobile layout.</div>
                       </div>
                       <div className="border-l-4 border-blue-500 pl-3">
-                        <div className="font-semibold text-white text-sm">HP-M2: Reduce Sign In Visual Weight</div>
-                        <div className="text-sm text-gray-400">30.6% of old clicks were Sign In. Minimize it — prospects need &quot;Start Learning&quot; prominent.</div>
+                        <div className="font-semibold text-white text-sm">HP-M2: Clear Visual Hierarchy for Sign In vs Start Learning</div>
+                        <div className="text-sm text-gray-400">30.6% of old homepage clicks were returning students signing in. Keep Sign In easily findable in header utility, but ensure &quot;Start Learning&quot; is the visually dominant CTA for prospects.</div>
                       </div>
                     </div>
                   </div>
