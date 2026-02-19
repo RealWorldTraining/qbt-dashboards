@@ -57,8 +57,8 @@ export default function MissionControlPage() {
       </header>
 
       {/* Content */}
-      <main className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${
-        activeTab === 'tasks' ? 'max-w-[1600px]' : 'max-w-7xl'
+      <main className={`px-4 sm:px-6 lg:px-8 py-8 ${
+        activeTab !== 'tasks' ? 'max-w-7xl mx-auto' : ''
       }`}>
         <div className="animate-preview-in">
           {activeTab === 'tasks' && <TasksBoard />}
