@@ -18,6 +18,35 @@ interface AssetRow {
   cost: number
 }
 
+// Map Google Ads enum values to readable labels
+const FIELD_TYPE_MAP: Record<string, string> = {
+  '1': 'HEADLINE',
+  '2': 'DESCRIPTION',
+  '3': 'DESCRIPTION',
+  '4': 'SITELINK',
+  '5': 'CALLOUT',
+  '6': 'STRUCTURED_SNIPPET',
+  '7': 'HEADLINE',
+  'HEADLINE': 'HEADLINE',
+  'DESCRIPTION': 'DESCRIPTION',
+  'LONG_HEADLINE': 'HEADLINE',
+}
+
+const PERFORMANCE_LABEL_MAP: Record<string, string> = {
+  '1': 'LEARNING',
+  '2': 'LOW',
+  '3': 'GOOD',
+  '4': 'BEST',
+  '5': 'LEARNING',
+  '6': 'LOW',
+  '7': 'UNSPECIFIED',
+  'LEARNING': 'LEARNING',
+  'LOW': 'LOW',
+  'GOOD': 'GOOD',
+  'BEST': 'BEST',
+  'UNSPECIFIED': 'UNSPECIFIED',
+}
+
 function parseNumber(val: string): number {
   if (!val) return 0
   const cleaned = val.replace(/[$,%]/g, '')
@@ -96,8 +125,8 @@ export async function GET() {
     const assets: AssetRow[] = rows.slice(1).map(row => ({
       assetText: row[0] || '',
       assetType: row[1] || '',
-      fieldType: row[2] || '',
-      performanceLabel: row[3] || '',
+      fieldType: FIELD_TYPE_MAP[row[2]] || row[2] || 'UNKNOWN',
+      performanceLabel: PERFORMANCE_LABEL_MAP[row[3]] || row[3] || 'UNSPECIFIED',
       campaign: row[4] || '',
       adGroup: row[5] || '',
       impressions: parseNumber(row[6]),
