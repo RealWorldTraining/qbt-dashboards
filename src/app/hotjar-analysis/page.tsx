@@ -8,13 +8,33 @@ import MetricTooltip, { MetricValue } from './components/MetricTooltip';
 
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
   const [show, setShow] = useState(false);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [style, setStyle] = useState<React.CSSProperties>({});
+  const [arrowSide, setArrowSide] = useState<'left' | 'right' | 'bottom'>('left');
   const iconRef = useRef<HTMLDivElement>(null);
+  const tooltipWidth = 380;
 
   const handleEnter = () => {
     if (iconRef.current) {
       const rect = iconRef.current.getBoundingClientRect();
-      setPos({ x: rect.right + 12, y: rect.top + rect.height / 2 });
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const spaceRight = vw - rect.right;
+      const spaceLeft = rect.left;
+
+      if (spaceRight > tooltipWidth + 20) {
+        // Position to the right
+        setStyle({ left: rect.right + 12, top: rect.top + rect.height / 2, transform: 'translateY(-50%)' });
+        setArrowSide('left');
+      } else if (spaceLeft > tooltipWidth + 20) {
+        // Position to the left
+        setStyle({ left: rect.left - tooltipWidth - 12, top: rect.top + rect.height / 2, transform: 'translateY(-50%)' });
+        setArrowSide('right');
+      } else {
+        // Position above, centered on icon
+        const leftPos = Math.max(12, Math.min(rect.left + rect.width / 2 - tooltipWidth / 2, vw - tooltipWidth - 12));
+        setStyle({ left: leftPos, bottom: vh - rect.top + 8, transform: 'none' });
+        setArrowSide('bottom');
+      }
     }
     setShow(true);
   };
@@ -28,13 +48,20 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
       {show && (
         <div
           className="fixed z-[9999] pointer-events-none"
-          style={{ left: pos.x, top: pos.y, transform: 'translateY(-50%)' }}
+          style={style}
         >
-          <div className="bg-gray-900 text-gray-100 text-base rounded-lg p-4 shadow-2xl border-2 border-blue-500/50 max-w-md whitespace-normal leading-relaxed">
+          <div className="bg-gray-900 text-gray-100 text-sm rounded-lg p-4 shadow-2xl border-2 border-blue-500/50 whitespace-normal leading-relaxed" style={{ width: tooltipWidth }}>
             {text}
-            <div className="absolute right-full top-1/2 -translate-y-1/2 mr-[-2px]">
-              <div className="border-8 border-transparent border-r-gray-900"></div>
-            </div>
+            {arrowSide === 'left' && (
+              <div className="absolute right-full top-1/2 -translate-y-1/2 mr-[-2px]">
+                <div className="border-8 border-transparent border-r-gray-900"></div>
+              </div>
+            )}
+            {arrowSide === 'right' && (
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-[-2px]">
+                <div className="border-8 border-transparent border-l-gray-900"></div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2335,16 +2362,16 @@ export default function HotjarAnalysisPage() {
                   <h4 className="text-xl font-bold text-blue-300 mb-4">Homepage</h4>
                   <div className="space-y-4">
                     <div className="border-l-4 border-blue-500 pl-4">
-                      <div className="font-semibold text-white mb-1">HP-1: Consolidate from 9 Sections to 6</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">HP-1: Consolidate from 9 Sections to 6 <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
                       <div className="text-base text-gray-400">Hero → Trust Bar → Offerings Grid → Interactive Comparison Table → FAQ → Final CTA. Cut separate pricing cards, testimonials, instructor section. Saves ~2,000–3,000px.</div>
                     </div>
                     <div className="border-l-4 border-blue-500 pl-4">
-                      <div className="font-semibold text-white mb-1">HP-2: Fix the First-Fold Experience</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">HP-2: Fix the First-Fold Experience <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span></div>
                       <div className="text-base text-gray-400">40.2% desktop drop-off at 5–10% scroll must be investigated. First viewport should show: headline, value prop, CTA, and trust bar.</div>
                     </div>
                     <div className="border-l-4 border-blue-500 pl-4">
-                      <div className="font-semibold text-white mb-1">HP-3: Reduce Sign In Visual Weight</div>
-                      <div className="text-base text-gray-400">"Start Learning": green, filled, prominent. "Sign In": text-only or outline, smaller. Must NOT look like equal-weight options.</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">HP-3: Reduce Sign In Visual Weight <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
+                      <div className="text-base text-gray-400">&quot;Start Learning&quot;: green, filled, prominent. &quot;Sign In&quot;: text-only or outline, smaller. Must NOT look like equal-weight options.</div>
                     </div>
                   </div>
                 </div>
@@ -2354,12 +2381,12 @@ export default function HotjarAnalysisPage() {
                   <h4 className="text-xl font-bold text-green-300 mb-4">Plans & Pricing</h4>
                   <div className="space-y-4">
                     <div className="border-l-4 border-green-500 pl-4">
-                      <div className="font-semibold text-white mb-1">PP-1: Protect This Page</div>
-                      <div className="text-base text-gray-400">4.15% desktop conversion — highest of any page. 3,869px — shortest page. This page WORKS. Do NOT add more content. Only make comparison table interactive.</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">PP-1: Make Comparison Table Interactive <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
+                      <div className="text-base text-gray-400">36.5% dead click rate on comparison table — 1,513 clicks. Expandable rows with feature descriptions. 4.15% desktop conversion — protect this page. Do NOT add more content.</div>
                     </div>
                     <div className="border-l-4 border-green-500 pl-4">
-                      <div className="font-semibold text-white mb-1">PP-2: Enhance Mobile Plan Comparison</div>
-                      <div className="text-base text-gray-400">7,727 mobile sessions but 0.62% conversion. Consider swipeable card comparison on mobile. Highlight differences between plans.</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">PP-2: Enhance Mobile Plan Comparison <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
+                      <div className="text-base text-gray-400">7,727 mobile sessions but 0.62% conversion (6.7x lower than desktop). Swipeable card comparison on mobile. Highlight differences between plans.</div>
                     </div>
                   </div>
                 </div>
@@ -2369,12 +2396,27 @@ export default function HotjarAnalysisPage() {
                   <h4 className="text-xl font-bold text-purple-300 mb-4">QuickBooks Certification</h4>
                   <div className="space-y-4">
                     <div className="border-l-4 border-purple-500 pl-4">
-                      <div className="font-semibold text-white mb-1">QC-1: Optimize for the $699.95 Decision</div>
-                      <div className="text-base text-gray-400">Lead with outcomes: "Get 3 Intuit Certifications. Average 20–30% salary increase." Keep "Learn → Practice → Pass" three-step breakdown prominent. Expand FAQ to 10–12 questions.</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">QC-1: Optimize for the $699.95 Decision <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
+                      <div className="text-base text-gray-400">Lead with outcomes: &quot;Get 3 Intuit Certifications. Average 20–30% salary increase.&quot; Keep &quot;Learn → Practice → Pass&quot; three-step breakdown prominent. Expand FAQ to 10–12 questions.</div>
                     </div>
                     <div className="border-l-4 border-purple-500 pl-4">
-                      <div className="font-semibold text-white mb-1">QC-2: Handle /certification-mobile Traffic</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">QC-2: Handle /certification-mobile Traffic <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
                       <div className="text-base text-gray-400">301 redirect from /certification-mobile to /quickbooks-certification — 13,238 sessions at stake.</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Live Classes */}
+                <div className="bg-gray-800/50 rounded-xl p-6 border border-cyan-700/30">
+                  <h4 className="text-xl font-bold text-cyan-300 mb-4">Live Classes</h4>
+                  <div className="space-y-4">
+                    <div className="border-l-4 border-cyan-500 pl-4">
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">LC-1: Surface Schedule Above the Fold <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
+                      <div className="text-base text-gray-400">2m 26s avg engagement — highest of any page. People are here FOR the schedule. Next class dates + instructor names should be visible in the first viewport.</div>
+                    </div>
+                    <div className="border-l-4 border-cyan-500 pl-4">
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">LC-2: Enhance Instructor Trust Signals <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
+                      <div className="text-base text-gray-400">Add bios, stats, and student reviews per instructor. &quot;X,000+ students trained, Y+ years teaching&quot; + 1–2 sentence bio. Keep visible inline, not behind modals.</div>
                     </div>
                   </div>
                 </div>
@@ -2384,11 +2426,11 @@ export default function HotjarAnalysisPage() {
                   <h4 className="text-xl font-bold text-amber-300 mb-4">Self-Paced Courses</h4>
                   <div className="space-y-4">
                     <div className="border-l-4 border-amber-500 pl-4">
-                      <div className="font-semibold text-white mb-1">SC-1: "One Plan, All Courses" Messaging</div>
-                      <div className="text-base text-gray-400">Headline: "46+ Self-Paced Courses — Included in Every Plan." Banner above grid: "One plan gives you access to all courses."</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">SC-1: &quot;One Plan, All Courses&quot; Messaging <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
+                      <div className="text-base text-gray-400">Headline: &quot;46+ Self-Paced Courses — Included in Every Plan.&quot; Banner above grid: &quot;One plan gives you access to all courses.&quot;</div>
                     </div>
                     <div className="border-l-4 border-amber-500 pl-4">
-                      <div className="font-semibold text-white mb-1">SC-2: Keep It Manageable</div>
+                      <div className="font-semibold text-white mb-1 flex items-center gap-2">SC-2: Keep It Manageable <span className="text-xs bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full">Desktop</span> <span className="text-xs bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full">Mobile</span></div>
                       <div className="text-base text-gray-400">Show 9–12 cards by default. Group by: Most Popular, Beginners, Industry-Specific, Certification Prep. Keep total height under 5,000px.</div>
                     </div>
                   </div>
