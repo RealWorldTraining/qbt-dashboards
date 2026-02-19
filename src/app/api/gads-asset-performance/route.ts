@@ -25,8 +25,8 @@ function parseNumber(val: string): number {
 }
 
 function getGoogleCredentials() {
-  // Try base64-encoded JSON blob first
-  const credsJson = process.env.GOOGLE_SHEETS_CREDENTIALS
+  // Try base64-encoded JSON blobs first
+  const credsJson = process.env.SHEETS_READER_CREDENTIALS || process.env.GOOGLE_SHEETS_CREDENTIALS
   if (credsJson) {
     return JSON.parse(Buffer.from(credsJson, 'base64').toString('utf-8'))
   }
@@ -63,6 +63,7 @@ export async function GET() {
       return NextResponse.json({
         error: 'Missing Google credentials',
         debug: {
+          hasSheetsReaderCreds: !!process.env.SHEETS_READER_CREDENTIALS,
           hasSheetsCreds: !!process.env.GOOGLE_SHEETS_CREDENTIALS,
           hasClientEmail: !!process.env.GOOGLE_CLIENT_EMAIL,
           hasPrivateKey: !!process.env.GOOGLE_PRIVATE_KEY,
