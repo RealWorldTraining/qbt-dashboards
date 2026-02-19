@@ -11,13 +11,21 @@
     "test": "vitest",
     "test:data": "vitest run tests/data-validation.test.ts",
     "test:visual": "playwright test",
-    "health": "curl -s https://qbtraining.ai/api/health | jq"
+    "health": "curl -s https://qbtraining.ai/api/health | jq",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "@radix-ui/react-slot": "^1.2.4",
+    "@vercel/postgres": "^0.10.0",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.3.1",
+    "drizzle-kit": "^0.31.9",
+    "drizzle-orm": "^0.45.1",
     "googleapis": "^171.0.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.6",
