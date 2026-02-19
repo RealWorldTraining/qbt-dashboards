@@ -924,13 +924,13 @@ export default function HotjarAnalysisPage() {
                       <h3 className="text-2xl font-bold text-white mb-4">Visual Analysis</h3>
                       <PageScreenshotWithOverlays
                         imagePath="/screenshots/homepage-full.png"
-                        pageHeight={8000}
+                        pageHeight={9346}
                         scrollZones={[
-                          { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                          { top: 5, height: 5, color: 'rgba(34, 197, 94, 0.15)', label: 'reach here', percentage: '90%' },
-                          { top: 10, height: 10, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll to here', percentage: '50%' },
-                          { top: 20, height: 30, color: 'rgba(239, 68, 68, 0.2)', label: 'see this', percentage: '9.9%' },
-                          { top: 50, height: 50, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach bottom', percentage: '<5%' }
+                          { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 10, height: 20, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~60%' },
+                          { top: 30, height: 20, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '~25%' },
+                          { top: 50, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach midpoint', percentage: '9.9%' },
+                          { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<5%' }
                         ]}
                         deadClickHotspots={[
                           { x: 30, y: 15, label: 'Sign In button area', percentage: '30.6%' },
@@ -945,10 +945,11 @@ export default function HotjarAnalysisPage() {
                         mobileConfig={{
                           pageHeight: 11466,
                           scrollZones: [
-                            { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                            { top: 5, height: 10, color: 'rgba(34, 197, 94, 0.15)', label: 'reach here', percentage: '75%' },
-                            { top: 15, height: 15, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '28.4%' },
-                            { top: 30, height: 70, color: 'rgba(239, 68, 68, 0.3)', label: 'ever reach', percentage: '<5%' }
+                            { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 10, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~55%' },
+                            { top: 25, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '~30%' },
+                            { top: 50, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach midpoint', percentage: '23.8%' },
+                            { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<5%' }
                           ],
                           deadClickHotspots: [
                             { x: 50, y: 25, label: 'FAQ accordions', percentage: '24.5%' },
@@ -1058,9 +1059,11 @@ export default function HotjarAnalysisPage() {
                         imagePath="/screenshots/qb-certification-full.png"
                         pageHeight={7000}
                         scrollZones={[
-                          { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                          { top: 5, height: 30, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '65.4%' },
-                          { top: 35, height: 15, color: 'rgba(239, 68, 68, 0.2)', label: 'reach this', percentage: '35.8%' }
+                          { top: 0, height: 15, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 15, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~65%' },
+                          { top: 30, height: 20, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '~45%' },
+                          { top: 50, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach midpoint', percentage: '35.8%' },
+                          { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<15%' }
                         ]}
                         deadClickHotspots={[
                           { x: 50, y: 20, label: 'Tab navigation', percentage: '25.9%' },
@@ -1075,10 +1078,11 @@ export default function HotjarAnalysisPage() {
                         mobileConfig={{
                           pageHeight: 8500,
                           scrollZones: [
-                            { top: 0, height: 8, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                            { top: 8, height: 30, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '70%' },
-                            { top: 38, height: 20, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '40%' },
-                            { top: 58, height: 42, color: 'rgba(239, 68, 68, 0.2)', label: 'see this', percentage: '<15%' }
+                            { top: 0, height: 15, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 15, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~80%' },
+                            { top: 30, height: 20, color: 'rgba(234, 179, 8, 0.15)', label: 'reach here', percentage: '~70%' },
+                            { top: 50, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach midpoint', percentage: '65.4%' },
+                            { top: 75, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'ever reach', percentage: '<15%' }
                           ],
                           deadClickHotspots: [
                             { x: 50, y: 30, label: 'Body text taps', percentage: '1.6%' }
@@ -1178,9 +1182,11 @@ export default function HotjarAnalysisPage() {
                         imagePath="/screenshots/plans-pricing-full.png"
                         pageHeight={3869}
                         scrollZones={[
-                          { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                          { top: 10, height: 40, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '52.7%' },
-                          { top: 50, height: 50, color: 'rgba(234, 179, 8, 0.2)', label: 'reach bottom', percentage: '30%' }
+                          { top: 0, height: 15, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 15, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~75%' },
+                          { top: 30, height: 20, color: 'rgba(234, 179, 8, 0.15)', label: 'reach here', percentage: '~55%' },
+                          { top: 50, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach midpoint', percentage: '52.7%' },
+                          { top: 75, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach bottom', percentage: '~30%' }
                         ]}
                         deadClickHotspots={[
                           { x: 50, y: 35, label: 'Comparison table text', percentage: '36.5%' },
@@ -1195,10 +1201,11 @@ export default function HotjarAnalysisPage() {
                         mobileConfig={{
                           pageHeight: 6800,
                           scrollZones: [
-                            { top: 0, height: 8, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                            { top: 8, height: 25, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '65%' },
-                            { top: 33, height: 30, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '35%' },
-                            { top: 63, height: 37, color: 'rgba(239, 68, 68, 0.2)', label: 'see bottom', percentage: '<15%' }
+                            { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 10, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~65%' },
+                            { top: 25, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '~40%' },
+                            { top: 50, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach midpoint', percentage: '~35%' },
+                            { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'see bottom', percentage: '<15%' }
                           ],
                           deadClickHotspots: [
                             { x: 50, y: 40, label: 'Plan feature text', percentage: '1.2%' }
@@ -1307,9 +1314,11 @@ export default function HotjarAnalysisPage() {
                         imagePath="/screenshots/live-classes-full.png"
                         pageHeight={6500}
                         scrollZones={[
-                          { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                          { top: 5, height: 33, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '50.8%' },
-                          { top: 38, height: 12, color: 'rgba(239, 68, 68, 0.2)', label: 'reach this', percentage: '37.7%' }
+                          { top: 0, height: 15, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 15, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~75%' },
+                          { top: 30, height: 20, color: 'rgba(234, 179, 8, 0.15)', label: 'reach here', percentage: '~55%' },
+                          { top: 50, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach midpoint', percentage: '50.8%' },
+                          { top: 75, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'ever reach', percentage: '~20%' }
                         ]}
                         deadClickHotspots={[
                           { x: 50, y: 25, label: 'Instructor modals', percentage: '18%' },
@@ -1324,10 +1333,11 @@ export default function HotjarAnalysisPage() {
                         mobileConfig={{
                           pageHeight: 9200,
                           scrollZones: [
-                            { top: 0, height: 6, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                            { top: 6, height: 25, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '60%' },
-                            { top: 31, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '35%' },
-                            { top: 56, height: 44, color: 'rgba(239, 68, 68, 0.2)', label: 'see this', percentage: '<10%' }
+                            { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 10, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~60%' },
+                            { top: 25, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '~40%' },
+                            { top: 50, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach midpoint', percentage: '~35%' },
+                            { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<10%' }
                           ],
                           deadClickHotspots: [
                             { x: 50, y: 20, label: 'Instructor photo taps', percentage: '2.1%' }
@@ -1436,9 +1446,11 @@ export default function HotjarAnalysisPage() {
                         imagePath="/screenshots/self-paced-full.png"
                         pageHeight={13213}
                         scrollZones={[
-                          { top: 0, height: 3, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                          { top: 3, height: 18, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '21.4%' },
-                          { top: 21, height: 79, color: 'rgba(239, 68, 68, 0.3)', label: 'ever reach', percentage: '<5%' }
+                          { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                          { top: 10, height: 15, color: 'rgba(34, 197, 94, 0.12)', label: 'scroll here', percentage: '~50%' },
+                          { top: 25, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '~25%' },
+                          { top: 50, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach midpoint', percentage: '21.4%' },
+                          { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<5%' }
                         ]}
                         deadClickHotspots={[
                           { x: 50, y: 30, label: 'Course cards (no CTA)', percentage: '26.5%' },
@@ -1452,9 +1464,11 @@ export default function HotjarAnalysisPage() {
                         mobileConfig={{
                           pageHeight: 18500,
                           scrollZones: [
-                            { top: 0, height: 3, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
-                            { top: 3, height: 10, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '15%' },
-                            { top: 13, height: 87, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<3%' }
+                            { top: 0, height: 10, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 10, height: 15, color: 'rgba(234, 179, 8, 0.15)', label: 'scroll here', percentage: '~20%' },
+                            { top: 25, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '~8%' },
+                            { top: 50, height: 25, color: 'rgba(239, 68, 68, 0.2)', label: 'reach midpoint', percentage: '<3%' },
+                            { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<1%' }
                           ],
                           deadClickHotspots: [
                             { x: 50, y: 15, label: 'Course card taps', percentage: '31.2%' },
