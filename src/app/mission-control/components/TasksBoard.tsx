@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 type TaskStatus = 'backlog' | 'in_progress' | 'blocked' | 'done';
 type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -12,6 +12,7 @@ interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   assignedTo?: string | null;
+  dueDate?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,17 +31,33 @@ const priorityColors = {
   urgent: 'bg-red-600 text-red-100',
 };
 
+const priorityBorders: Record<TaskPriority, string> = {
+  low: 'border-l-gray-600',
+  medium: 'border-l-blue-500',
+  high: 'border-l-orange-500',
+  urgent: 'border-l-red-500',
+};
+
+const assignees = [
+  { value: 'professor', label: '👤 Professor' },
+  { value: 'claude', label: '🤖 Claude' },
+  { value: 'aaron', label: '👨‍💼 Aaron' },
+];
+
 export default function TasksBoard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [usingMockData, setUsingMockData] = useState(false);
+  const [priorityFilter, setPriorityFilter] = useState<TaskPriority | null>(null);
+  const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 'medium' as TaskPriority,
     assignedTo: 'professor',
+    dueDate: '',
   });
 
   useEffect(() => {
@@ -51,7 +68,7 @@ export default function TasksBoard() {
     try {
       const response = await fetch('/api/mission-control/tasks');
       const data = await response.json();
-      
+
       if (data.mockData) {
         setUsingMockData(true);
       } else {
@@ -68,7 +85,7 @@ export default function TasksBoard() {
 
   const createTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) return;
 
     try {
@@ -78,12 +95,13 @@ export default function TasksBoard() {
         body: JSON.stringify({
           ...formData,
           status: 'backlog',
+          dueDate: formData.dueDate || null,
         }),
       });
 
       if (response.ok) {
         await fetchTasks();
-        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor' });
+        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor', dueDate: '' });
         setShowNewTaskForm(false);
       }
     } catch (error) {
@@ -93,7 +111,7 @@ export default function TasksBoard() {
 
   const updateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingTask || !formData.title.trim()) return;
 
     try {
@@ -106,13 +124,14 @@ export default function TasksBoard() {
           description: formData.description,
           priority: formData.priority,
           assignedTo: formData.assignedTo,
+          dueDate: formData.dueDate || null,
         }),
       });
 
       if (response.ok) {
         await fetchTasks();
         setEditingTask(null);
-        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor' });
+        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor', dueDate: '' });
       }
     } catch (error) {
       console.error('Error updating task:', error);
@@ -158,17 +177,42 @@ export default function TasksBoard() {
       description: task.description || '',
       priority: task.priority,
       assignedTo: task.assignedTo || 'professor',
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
     });
     setShowNewTaskForm(false);
   };
 
   const cancelEditing = () => {
     setEditingTask(null);
-    setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor' });
+    setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor', dueDate: '' });
   };
 
-  const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter(task => task.status === status);
+  const getFilteredTasksByStatus = (status: TaskStatus) => {
+    return filteredTasks.filter(task => task.status === status);
+  };
+
+  const filteredTasks = useMemo(() => {
+    let filtered = [...tasks];
+    if (priorityFilter) {
+      filtered = filtered.filter(t => t.priority === priorityFilter);
+    }
+    if (assigneeFilter) {
+      filtered = filtered.filter(t => t.assignedTo === assigneeFilter);
+    }
+    return filtered;
+  }, [tasks, priorityFilter, assigneeFilter]);
+
+  const getDueDateInfo = (dueDate: Date | null | undefined) => {
+    if (!dueDate) return null;
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffMs = due.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { label: `${Math.abs(diffDays)}d overdue`, color: 'text-red-400 bg-red-600/20' };
+    if (diffDays === 0) return { label: 'Due today', color: 'text-yellow-400 bg-yellow-600/20' };
+    if (diffDays <= 7) return { label: `${diffDays}d left`, color: 'text-cyan-400 bg-cyan-600/20' };
+    return { label: `${diffDays}d left`, color: 'text-gray-400 bg-gray-800' };
   };
 
   if (loading) {
@@ -202,6 +246,54 @@ export default function TasksBoard() {
         </button>
       </div>
 
+      {/* Filter Bar */}
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500 uppercase tracking-wider">Priority:</span>
+          <div className="flex gap-1">
+            {(['low', 'medium', 'high', 'urgent'] as TaskPriority[]).map(p => (
+              <button
+                key={p}
+                onClick={() => setPriorityFilter(priorityFilter === p ? null : p)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                  priorityFilter === p
+                    ? priorityColors[p] + ' ring-1 ring-current'
+                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500 uppercase tracking-wider">Assignee:</span>
+          <div className="flex gap-1">
+            {assignees.map(a => (
+              <button
+                key={a.value}
+                onClick={() => setAssigneeFilter(assigneeFilter === a.value ? null : a.value)}
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                  assigneeFilter === a.value
+                    ? 'bg-cyan-600/20 text-cyan-400 ring-1 ring-cyan-500'
+                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {(priorityFilter || assigneeFilter) && (
+          <button
+            onClick={() => { setPriorityFilter(null); setAssigneeFilter(null); }}
+            className="text-xs px-3 py-1.5 bg-gray-800 text-gray-400 rounded-full hover:text-white"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
       {/* New/Edit Task Form */}
       {(showNewTaskForm || editingTask) && (
         <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-6 shadow-xl">
@@ -225,8 +317,8 @@ export default function TasksBoard() {
               rows={3}
               className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white placeholder-gray-500"
             />
-            <div className="grid grid-cols-2 gap-4">
-              <select 
+            <div className="grid grid-cols-3 gap-4">
+              <select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value as TaskPriority })}
                 className="px-4 py-3 bg-[#0a0a0a] border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
@@ -236,15 +328,22 @@ export default function TasksBoard() {
                 <option value="high">High Priority</option>
                 <option value="urgent">Urgent</option>
               </select>
-              <select 
+              <select
                 value={formData.assignedTo}
                 onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
                 className="px-4 py-3 bg-[#0a0a0a] border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
               >
-                <option value="professor">👤 Professor</option>
-                <option value="claude">🤖 Claude</option>
-                <option value="aaron">👨‍💼 Aaron</option>
+                {assignees.map(a => (
+                  <option key={a.value} value={a.value}>{a.label}</option>
+                ))}
               </select>
+              <input
+                type="date"
+                value={formData.dueDate}
+                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                className="px-4 py-3 bg-[#0a0a0a] border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+                title="Due date"
+              />
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button
@@ -281,23 +380,23 @@ export default function TasksBoard() {
                   {column.label}
                 </h3>
                 <span className="text-sm text-gray-400 bg-[#0a0a0a] px-3 py-1 rounded-full font-medium">
-                  {getTasksByStatus(column.status).length}
+                  {getFilteredTasksByStatus(column.status).length}
                 </span>
               </div>
 
               {/* Tasks */}
               <div className="space-y-3">
-                {getTasksByStatus(column.status).map(task => (
+                {getFilteredTasksByStatus(column.status).map(task => (
                   <div
                     key={task.id}
-                    className="bg-[#0a0a0a] rounded-lg p-4 border border-gray-800 hover:border-gray-700 hover:shadow-lg transition-all group"
+                    className={`bg-[#0a0a0a] rounded-lg p-4 border border-gray-800 border-l-4 ${priorityBorders[task.priority]} hover:border-gray-700 hover:shadow-lg transition-all group`}
                   >
                     {/* Priority Badge + Actions */}
                     <div className="flex items-start justify-between mb-3">
                       <span className={`text-xs px-3 py-1 rounded-full font-medium ${priorityColors[task.priority]}`}>
                         {task.priority}
                       </span>
-                      
+
                       {/* Action buttons */}
                       <div className="flex gap-1">
                         <button
@@ -329,6 +428,16 @@ export default function TasksBoard() {
                       </p>
                     )}
 
+                    {/* Due Date */}
+                    {task.dueDate && (() => {
+                      const info = getDueDateInfo(task.dueDate);
+                      return info ? (
+                        <div className={`text-xs px-2 py-1 rounded-full inline-block mb-2 ${info.color}`}>
+                          📅 {info.label}
+                        </div>
+                      ) : null;
+                    })()}
+
                     {/* Assigned To */}
                     {task.assignedTo && (
                       <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
@@ -339,7 +448,7 @@ export default function TasksBoard() {
 
                     {/* Quick status change buttons */}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1.5 flex-wrap pt-2 border-t border-gray-800">
-                      {columns.map(col => 
+                      {columns.map(col =>
                         col.status !== task.status && (
                           <button
                             key={col.status}
@@ -355,7 +464,7 @@ export default function TasksBoard() {
                   </div>
                 ))}
 
-                {getTasksByStatus(column.status).length === 0 && (
+                {getFilteredTasksByStatus(column.status).length === 0 && (
                   <p className="text-sm text-gray-500 text-center py-12">
                     No tasks
                   </p>

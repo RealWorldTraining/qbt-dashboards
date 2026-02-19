@@ -38,11 +38,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, description, status, priority, assignedTo } = body;
+    const { title, description, status, priority, assignedTo, dueDate } = body;
 
     if (!title) {
-      return NextResponse.json({ 
-        error: 'Title is required' 
+      return NextResponse.json({
+        error: 'Title is required'
       }, { status: 400 });
     }
 
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
       status: status || 'backlog',
       priority: priority || 'medium',
       assignedTo: assignedTo || null,
+      dueDate: dueDate ? new Date(dueDate) : null,
     }).returning();
 
     return NextResponse.json({ 
@@ -81,6 +82,10 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ 
         error: 'Task ID is required' 
       }, { status: 400 });
+    }
+
+    if (updates.dueDate) {
+      updates.dueDate = new Date(updates.dueDate);
     }
 
     const updatedTask = await db.update(tasks)

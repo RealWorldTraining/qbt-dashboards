@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, serial, varchar, json } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, serial, varchar, json, boolean } from 'drizzle-orm/pg-core';
 
 // Tasks Board
 export const tasks = pgTable('tasks', {
@@ -8,6 +8,7 @@ export const tasks = pgTable('tasks', {
   status: varchar('status', { length: 50 }).notNull().default('backlog'), // backlog, in_progress, blocked, done
   priority: varchar('priority', { length: 20 }).notNull().default('medium'), // low, medium, high, urgent
   assignedTo: varchar('assigned_to', { length: 100 }), // 'aaron' or 'claude'
+  dueDate: timestamp('due_date'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -18,6 +19,8 @@ export const memories = pgTable('memories', {
   title: varchar('title', { length: 500 }).notNull(),
   content: text('content').notNull(),
   tags: json('tags').$type<string[]>(), // Array of tag strings
+  pinned: boolean('pinned').notNull().default(false),
+  category: varchar('category', { length: 50 }), // decision, context, reference, insight, bug
   date: timestamp('date').notNull().defaultNow(),
   conversationRef: text('conversation_ref'), // Discord message ID or session reference
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -33,6 +36,7 @@ export const cronJobs = pgTable('cron_jobs', {
   lastRun: timestamp('last_run'),
   nextRun: timestamp('next_run'),
   status: varchar('status', { length: 20 }).notNull().default('active'), // active, paused, error
+  n8nWorkflowId: varchar('n8n_workflow_id', { length: 100 }),
   errorMessage: text('error_message'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -53,6 +57,22 @@ export const contentPipeline = pgTable('content_pipeline', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+// Team Members
+export const teamMembers = pgTable('team_members', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 200 }).notNull(),
+  role: varchar('role', { length: 200 }),
+  type: varchar('type', { length: 50 }).notNull().default('human'), // human, ai_main, ai_desktop, ai_subagent
+  status: varchar('status', { length: 20 }).notNull().default('active'), // active, idle, offline
+  avatar: varchar('avatar', { length: 50 }), // emoji or icon key
+  description: text('description'),
+  responsibilities: json('responsibilities').$type<string[]>(),
+  currentWork: text('current_work'),
+  lastActive: timestamp('last_active'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // Type exports for TypeScript
 export type Task = typeof tasks.$inferSelect;
 export type NewTask = typeof tasks.$inferInsert;
@@ -65,3 +85,6 @@ export type NewCronJob = typeof cronJobs.$inferInsert;
 
 export type ContentItem = typeof contentPipeline.$inferSelect;
 export type NewContentItem = typeof contentPipeline.$inferInsert;
+
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type NewTeamMember = typeof teamMembers.$inferInsert;

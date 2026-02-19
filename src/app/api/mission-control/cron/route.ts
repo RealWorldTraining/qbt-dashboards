@@ -94,13 +94,44 @@ export async function PATCH(request: Request) {
       }, { status: 404 });
     }
 
-    return NextResponse.json({ 
-      job: updatedJob[0] 
+    return NextResponse.json({
+      job: updatedJob[0]
     });
   } catch (error) {
     console.error('Error updating cron job:', error);
-    return NextResponse.json({ 
-      error: 'Failed to update cron job' 
+    return NextResponse.json({
+      error: 'Failed to update cron job'
+    }, { status: 500 });
+  }
+}
+
+// DELETE /api/mission-control/cron - Delete cron job
+export async function DELETE(request: Request) {
+  try {
+    if (!isConnected || !db) {
+      return NextResponse.json({
+        error: 'Database not connected'
+      }, { status: 503 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({
+        error: 'Job ID is required'
+      }, { status: 400 });
+    }
+
+    await db.delete(cronJobs).where(eq(cronJobs.id, parseInt(id)));
+
+    return NextResponse.json({
+      success: true
+    });
+  } catch (error) {
+    console.error('Error deleting cron job:', error);
+    return NextResponse.json({
+      error: 'Failed to delete cron job'
     }, { status: 500 });
   }
 }

@@ -7,9 +7,11 @@ import CalendarView from './components/CalendarView';
 import N8nStatus from './components/N8nStatus';
 import GoogleAdsQuickView from './components/GoogleAdsQuickView';
 import ContentPipeline from './components/ContentPipeline';
+import TeamView from './components/TeamView';
+import OfficeView from './components/OfficeView';
 
 export default function MissionControlPage() {
-  const [activeTab, setActiveTab] = useState<'tasks' | 'memory' | 'calendar' | 'n8n' | 'ads' | 'content'>('tasks');
+  const [activeTab, setActiveTab] = useState<'tasks' | 'memory' | 'calendar' | 'n8n' | 'ads' | 'content' | 'team' | 'office'>('tasks');
 
   const tabs = [
     { id: 'tasks' as const, label: 'Tasks Board', icon: '📋' },
@@ -18,6 +20,8 @@ export default function MissionControlPage() {
     { id: 'n8n' as const, label: 'n8n Workflows', icon: '🔄' },
     { id: 'ads' as const, label: 'Google Ads', icon: '📊' },
     { id: 'content' as const, label: 'Content Pipeline', icon: '🎬' },
+    { id: 'team' as const, label: 'Team', icon: '👥' },
+    { id: 'office' as const, label: 'The Office', icon: '🏢' },
   ];
 
   return (
@@ -32,7 +36,7 @@ export default function MissionControlPage() {
             </h1>
             <p className="text-gray-400 mt-2">Professor's Command Center</p>
           </div>
-          
+
           {/* Tabs */}
           <nav className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
             {tabs.map((tab) => (
@@ -65,6 +69,8 @@ export default function MissionControlPage() {
           {activeTab === 'n8n' && <N8nStatus />}
           {activeTab === 'ads' && <GoogleAdsQuickView />}
           {activeTab === 'content' && <ContentPipeline />}
+          {activeTab === 'team' && <TeamView />}
+          {activeTab === 'office' && <OfficeView />}
         </div>
       </main>
     </div>
