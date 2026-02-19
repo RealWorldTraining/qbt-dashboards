@@ -269,7 +269,7 @@ export default function TasksBoard() {
       )}
 
       {/* Kanban Board */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+      <div className="grid gap-6 w-full" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         {columns.map(column => (
           <div key={column.status} className="bg-[#1a1a1a] rounded-lg overflow-hidden shadow-xl">
             {/* Column Header with accent color */}
