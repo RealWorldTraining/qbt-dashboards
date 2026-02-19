@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import TasksBoard from './components/TasksBoard';
 
 export default function MissionControlPage() {
   const [activeTab, setActiveTab] = useState<'tasks' | 'memory' | 'calendar' | 'n8n' | 'ads' | 'content'>('tasks');
@@ -61,14 +62,6 @@ export default function MissionControlPage() {
 }
 
 // Placeholder components (will build these next)
-function TasksBoard() {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-4">📋 Tasks Board</h2>
-      <p className="text-gray-600">Kanban board coming soon...</p>
-    </div>
-  );
-}
 
 function MemoryViewer() {
   return (

@@ -2,9 +2,18 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import * as schema from './schema';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL must be set in environment variables');
-}
+// Check if DATABASE_URL exists - gracefully handle missing connection
+export const getDatabaseConnection = () => {
+  const dbUrl = process.env.DATABASE_URL || process.env.STORAGE_URL || process.env.POSTGRES_URL;
+  
+  if (!dbUrl) {
+    console.warn('⚠️ No DATABASE_URL found - Mission Control will use mock data. Add DATABASE_URL to enable persistence.');
+    return null;
+  }
+  
+  const sql = neon(dbUrl);
+  return drizzle(sql, { schema });
+};
 
-const sql = neon(process.env.DATABASE_URL);
-export const db = drizzle(sql, { schema });
+export const db = getDatabaseConnection();
+export const isConnected = db !== null;
