@@ -25,6 +25,7 @@ function Tooltip({ children, text }: { children: React.ReactNode; text: string }
 export default function HotjarAnalysisPage() {
   const [activeSection, setActiveSection] = useState(0);
   const [activePageAnalysis, setActivePageAnalysis] = useState(0);
+  const [activeDesignFix, setActiveDesignFix] = useState(0);
 
   const sections = [
     { id: 'exec-summary', title: 'Executive Summary', icon: '📊' },
@@ -33,7 +34,17 @@ export default function HotjarAnalysisPage() {
     { id: 'problems', title: 'Five Problems', icon: '⚠️' },
     { id: 'performance', title: 'Performance', icon: '📈' },
     { id: 'page-analysis', title: 'Page Analysis', icon: '🔍' },
+    { id: 'design-fixes', title: 'Design Fixes', icon: '🔧' },
     { id: 'recommendations', title: 'Recommendations', icon: '💡' },
+  ];
+
+  const designFixPages = [
+    { id: 'site-wide', title: 'Site-Wide', icon: '🌐' },
+    { id: 'homepage', title: 'Homepage', icon: '🏠' },
+    { id: 'plans-pricing', title: 'Plans & Pricing', icon: '💳' },
+    { id: 'qb-cert', title: 'QB Certification', icon: '🎓' },
+    { id: 'live-classes', title: 'Live Classes', icon: '📺' },
+    { id: 'self-paced', title: 'Self-Paced', icon: '📚' },
   ];
 
   const pageAnalysisPages = [
@@ -1481,8 +1492,603 @@ export default function HotjarAnalysisPage() {
           </div>
         )}
 
-        {/* Recommendations */}
+        {/* Design Fixes - New Site vs Old */}
         {activeSection === 6 && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Header */}
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+              <h2 className="text-3xl font-bold mb-2 text-blue-400">Design Fixes: New Site vs. Hotjar Findings</h2>
+              <p className="text-gray-400 text-lg mb-6">How QBTraining.com addresses the behavioral problems found in the data</p>
+
+              {/* Overall Scorecard */}
+              <div className="grid grid-cols-3 gap-6 mb-8">
+                <div className="bg-green-900/30 rounded-xl p-6 border border-green-700/50 text-center">
+                  <div className="text-5xl font-black text-green-400 mb-2">11</div>
+                  <div className="text-green-300 font-semibold text-lg">Issues Addressed</div>
+                  <div className="text-gray-400 text-sm mt-1">By the new site design</div>
+                </div>
+                <div className="bg-amber-900/30 rounded-xl p-6 border border-amber-700/50 text-center">
+                  <div className="text-5xl font-black text-amber-400 mb-2">6</div>
+                  <div className="text-amber-300 font-semibold text-lg">Site-Wide Changes</div>
+                  <div className="text-gray-400 text-sm mt-1">Still needed before launch</div>
+                </div>
+                <div className="bg-blue-900/30 rounded-xl p-6 border border-blue-700/50 text-center">
+                  <div className="text-5xl font-black text-blue-400 mb-2">13</div>
+                  <div className="text-blue-300 font-semibold text-lg">Page-Level Fixes</div>
+                  <div className="text-gray-400 text-sm mt-1">Across 5 key pages</div>
+                </div>
+              </div>
+
+              {/* Sub-tabs */}
+              <div className="flex gap-2 flex-wrap mb-6">
+                {designFixPages.map((page, idx) => (
+                  <button
+                    key={page.id}
+                    onClick={() => setActiveDesignFix(idx)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      activeDesignFix === idx
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {page.icon} {page.title}
+                  </button>
+                ))}
+              </div>
+
+              {/* Site-Wide Changes */}
+              {activeDesignFix === 0 && (
+                <div className="space-y-6">
+                  <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
+                    <h3 className="text-2xl font-bold text-green-400 mb-4">What the New Site Already Gets Right</h3>
+                    <p className="text-gray-400 mb-4">These design decisions directly address problems found in the Hotjar + GA4 data. Do NOT undo them.</p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {[
+                        { decision: 'Sign In as header utility', data: 'Old site: 30.6% of homepage clicks were Sign In, crowding out prospect CTAs', icon: '✅' },
+                        { decision: 'Pricing cards on every page', data: 'Old site: users had to navigate to Plans & Pricing to see costs for a $700 decision', icon: '✅' },
+                        { decision: 'FAQ accordion on every page', data: 'Mobile FAQ engagement: 24–65% of all taps. #1 content engagement pattern', icon: '✅' },
+                        { decision: 'Trust bar on every page', data: '"Intuit 25 years / 1M+ people / 30-day guarantee" — non-negotiable at $700 AOV', icon: '✅' },
+                        { decision: 'Single funnel → /plans-and-pricing', data: 'Clean conversion path. Every CTA points to one place. No confusion.', icon: '✅' },
+                        { decision: '"Us vs. Competitors" comparison tables', data: 'Differentiates at the decision point for a $700 purchase against DIY/YouTube', icon: '✅' },
+                        { decision: 'Self-Paced Courses with filters', data: 'Old page was 13,213px infinite scroll with 4.6% CTA rate. Filters fix the core problem.', icon: '✅' },
+                        { decision: 'Instructor spotlights visible', data: '1,083 clicks on instructor modals in old data. People want to know who teaches $700 courses.', icon: '✅' },
+                        { decision: 'Countdown timer + strikethrough pricing', data: 'Urgency mechanics on high-ticket item. Promo banner got 2–7% clicks on old site.', icon: '✅' },
+                        { decision: '"Start Learning" green CTA in header', data: 'Persistent, always-visible conversion button. Always one click away from pricing.', icon: '✅' },
+                        { decision: 'Schema.org markup (FAQ, Course, Product)', data: 'SEO foundation for high-intent search traffic that drives $1.7M in revenue.', icon: '✅' },
+                      ].map((item, idx) => (
+                        <div key={idx} className="bg-green-950/50 rounded-lg p-4 border border-green-800/30">
+                          <div className="flex items-start gap-3">
+                            <span className="text-xl mt-0.5">{item.icon}</span>
+                            <div>
+                              <div className="font-semibold text-green-300">{item.decision}</div>
+                              <div className="text-sm text-gray-400 mt-1">{item.data}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-900/20 rounded-xl p-6 border border-amber-700/30">
+                    <h3 className="text-2xl font-bold text-amber-400 mb-4">Site-Wide Changes Still Needed</h3>
+                    <p className="text-gray-400 mb-4">These changes apply across the entire new site, not to specific pages.</p>
+                    <div className="space-y-4">
+                      {[
+                        {
+                          id: 'SW-1', title: 'Make the Comparison Table Interactive', priority: '#1', effort: 'Medium', impact: 'Highest',
+                          problem: '1,513 clicks (7.3%) hit comparison table text on old site — people trying to interact with static content.',
+                          fix: 'Make each feature row expandable on click/tap. Add hover states on desktop. Add "What\'s this?" icon for discoverability.',
+                          before: 'Static checkmark matrix — users click text expecting expansion, nothing happens',
+                          after: 'Click any feature row to see a 2–3 sentence description. Hover highlight on desktop. Smooth expand/collapse on mobile.'
+                        },
+                        {
+                          id: 'SW-2', title: 'Fix Desktop Hover States & Click Affordances', priority: '#2', effort: 'Low-Med', impact: 'High',
+                          problem: '20–39% of ALL desktop clicks hit non-interactive elements. This CSS/design language problem will carry over.',
+                          fix: 'Audit every page: cursor:pointer + transitions on interactive elements. cursor:default on non-interactive text. Card hover lift effects.',
+                          before: 'Cards, table rows, and text all look the same on hover — users can\'t tell what\'s clickable',
+                          after: 'Interactive elements have clear hover states (lift, color change, pointer cursor). Non-interactive text stays static.'
+                        },
+                        {
+                          id: 'SW-3', title: 'Add Aggregate Star Rating + Review Count', priority: '#3', effort: 'Low', impact: 'Med-High',
+                          problem: 'New site has 4 individual testimonials but no aggregate rating. "4.7 from 1,581+ reviews" is a stronger trust signal.',
+                          fix: 'Add to trust bar: "★★★★★ 4.7 from 1,581+ reviews". Include Schema.org AggregateRating for rich search snippets.',
+                          before: '4 individual quote testimonials — no aggregate social proof number',
+                          after: '"★★★★★ 4.7 from 1,581+ reviews" in the trust bar on every page + rich snippets in search results'
+                        },
+                        {
+                          id: 'SW-4', title: 'Add Cross-Device Journey Bridges', priority: '#4', effort: 'Medium', impact: 'Med-High',
+                          problem: 'Mobile = research ($180K, 12%). Desktop = purchase ($1.3M, 88%). No features to facilitate the handoff.',
+                          fix: '"Email me this comparison" button on Plans & Pricing. Captures email AND sends desktop link. Creates a lead.',
+                          before: 'Mobile researcher has to remember URL and manually return on desktop',
+                          after: '"Email me this comparison" captures the lead, sends a desktop link, and bridges the cross-device journey'
+                        },
+                        {
+                          id: 'SW-5', title: 'Shorten All Pages to ~4,000–5,000px', priority: '#5', effort: 'Medium', impact: 'High',
+                          problem: 'Plans & Pricing at 3,869px converts at 4.15% (best). Homepage at 9,346px loses 90% by halfway. Shorter = better.',
+                          fix: 'Homepage target: ~4,500px. Each cert page: ~4,000px. Self-Paced: ~5,000px. Cut sections that repeat or fill space.',
+                          before: 'Homepage: 9,346px (9.9% reach midpoint). Self-Paced: 13,213px (21.4% reach midpoint)',
+                          after: 'Target: all pages under 5,000px. Plans & Pricing (3,869px, 4.15% conversion) is the model.'
+                        },
+                        {
+                          id: 'SW-6', title: 'Course Card CTA + "One Plan" Messaging', priority: '#6', effort: 'Low', impact: 'Medium',
+                          problem: '26.5% of old site clicks went to course cards but only 4.6% reached a CTA. Users thought they were buying individual courses.',
+                          fix: 'Each course card: "Included in All Plans" text + "Enroll" button. Page banner: "One Plan. 46+ Courses. Starting at $599.95."',
+                          before: 'Course cards are visual dead ends — 26.5% of clicks captured but lead nowhere',
+                          after: 'Every card has "Included in All Plans" + CTA. Users understand the plan model immediately.'
+                        },
+                      ].map((item) => (
+                        <div key={item.id} className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">{item.id}</span>
+                            <h4 className="text-xl font-bold text-white">{item.title}</h4>
+                            <span className="ml-auto text-sm bg-gray-700 px-2 py-0.5 rounded text-gray-300">Priority {item.priority}</span>
+                          </div>
+                          <p className="text-gray-400 text-sm mb-4">{item.problem}</p>
+
+                          {/* Before / After */}
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                              <div className="text-red-400 font-semibold text-sm mb-2 flex items-center gap-2">
+                                <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                                Old Site (Problem)
+                              </div>
+                              <p className="text-gray-300 text-sm">{item.before}</p>
+                            </div>
+                            <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                              <div className="text-green-400 font-semibold text-sm mb-2 flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                New Site (Fix)
+                              </div>
+                              <p className="text-gray-300 text-sm">{item.after}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Homepage Design Fixes */}
+              {activeDesignFix === 1 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-full font-bold text-sm">5 of 8 Issues Addressed</div>
+                    <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">3 Gaps Remaining</div>
+                  </div>
+
+                  <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
+                    <h3 className="text-xl font-bold text-green-400 mb-4">What the New Homepage Gets Right</h3>
+                    <div className="space-y-3">
+                      {[
+                        { fix: 'Sign In moved to header utility', data: 'Frees up 30.6% of clicks that were going to Sign In. Prospect CTAs can now compete.', metric: '30.6% → ~3%' },
+                        { fix: 'Trust bar immediately visible', data: '"Intuit 25 years / 1M+ / 30-day guarantee" visible without scrolling. Critical for $700 purchase.', metric: 'Below fold → Above fold' },
+                        { fix: 'FAQ accordion section', data: 'Captures the 23.9% of mobile clicks that went to FAQ content on the old site.', metric: '0 FAQ → 7+ questions' },
+                        { fix: '"Start Learning" persistent CTA', data: 'Green button always visible in header. No more hunting for the conversion path.', metric: 'Hidden → Always visible' },
+                        { fix: 'Pricing cards on the homepage', data: 'Users no longer need to navigate away to see plan costs. Price transparency for a $700 decision.', metric: 'No pricing → 3 plan cards' },
+                      ].map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 bg-green-950/30 rounded-lg p-4 border border-green-800/20">
+                          <span className="text-green-500 text-xl mt-0.5">✓</span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <span className="font-semibold text-green-300">{item.fix}</span>
+                              <span className="ml-auto text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded-full whitespace-nowrap">{item.metric}</span>
+                            </div>
+                            <p className="text-sm text-gray-400 mt-1">{item.data}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-900/20 rounded-xl p-6 border border-amber-700/30">
+                    <h3 className="text-xl font-bold text-amber-400 mb-4">What Still Needs Work</h3>
+                    <div className="space-y-4">
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">HP-1</span>
+                          <h4 className="font-bold text-white">Consolidate from 9 Sections to 6</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">Current: 9 sections, ~9,000px+</div>
+                            <p className="text-gray-400 text-sm">Hero → Trust Bar → Offerings Grid → Pricing Cards → Testimonials → Comparison Table → FAQ → Instructors → Final CTA. Only 9.9% of desktop users see the midpoint.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Target: 6 sections, ~4,500px</div>
+                            <p className="text-gray-400 text-sm">Hero → Trust Bar → Offerings Grid → Interactive Comparison Table (merge pricing + testimonials) → FAQ → Final CTA. Cut ~3,000px. Get to &gt;30% midpoint scroll.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">HP-2</span>
+                          <h4 className="font-bold text-white">Fix the First-Fold Experience</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">Problem: 40.2% desktop drop-off at 5–10% scroll</div>
+                            <p className="text-gray-400 text-sm">Something at or just below the initial viewport caused a mass exodus. The first ~900px must be compelling and complete.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Fix: Headline + value prop + CTA + trust bar in first viewport</div>
+                            <p className="text-gray-400 text-sm">On a 1920x1080 monitor, the first viewport should show: headline, 3 bullet value prop, "Start Learning" CTA, and the trust bar. Zero dead space.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">HP-3</span>
+                          <h4 className="font-bold text-white">Reduce Sign In Visual Weight</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">Risk: Sign In and Start Learning look equal</div>
+                            <p className="text-gray-400 text-sm">If both buttons have similar visual weight, returning students and prospects see two equal options. Sign In captured 30.6% of old site clicks.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Fix: Clear visual hierarchy</div>
+                            <p className="text-gray-400 text-sm">"Start Learning": green, filled, prominent. "Sign In": text-only or outline, smaller, right-aligned. A returning student knows where Sign In is.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Plans & Pricing Design Fixes */}
+              {activeDesignFix === 2 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-full font-bold text-sm">Best Converting Page — Protect It</div>
+                    <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
+                  </div>
+
+                  <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-3xl">⭐</span>
+                      <div>
+                        <h3 className="text-xl font-bold text-green-400">The Model Page: 4.15% Desktop Conversion</h3>
+                        <p className="text-gray-400">3,869px — shortest page. Highest conversion. The data proves shorter = better.</p>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/20 text-center">
+                        <div className="text-3xl font-black text-green-400">4.15%</div>
+                        <div className="text-sm text-gray-400 mt-1">Desktop conversion rate</div>
+                      </div>
+                      <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/20 text-center">
+                        <div className="text-3xl font-black text-green-400">3,869px</div>
+                        <div className="text-sm text-gray-400 mt-1">Page height (shortest)</div>
+                      </div>
+                      <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/20 text-center">
+                        <div className="text-3xl font-black text-green-400">52.7%</div>
+                        <div className="text-sm text-gray-400 mt-1">Reach midpoint (best)</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-900/20 rounded-xl p-6 border border-amber-700/30">
+                    <h3 className="text-xl font-bold text-amber-400 mb-4">Two Key Enhancements</h3>
+                    <div className="space-y-4">
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">PP-1</span>
+                          <h4 className="font-bold text-white">Make the Comparison Table Interactive</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">36.5% dead click rate on comparison table</div>
+                            <p className="text-gray-400 text-sm">1,513 clicks hit the comparison table text — users clicking feature rows expecting detail expansion. The #1 dead click source on the entire site.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Expandable rows with feature descriptions</div>
+                            <p className="text-gray-400 text-sm">Click any feature row → 2–3 sentence description. "QuickBooks FAST-Track" → "2-day intensive classes, 45+ US cities, unlimited retakes." Hover highlight on desktop, smooth animation on mobile.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">PP-2</span>
+                          <h4 className="font-bold text-white">Enhance Mobile Plan Comparison</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">7,727 mobile sessions, 0.62% conversion</div>
+                            <p className="text-gray-400 text-sm">More mobile sessions than desktop (7,727 vs 4,530) but conversion is 6.7x lower. Cramming 3 plan columns into a mobile viewport is the problem.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Swipeable card comparison for mobile</div>
+                            <p className="text-gray-400 text-sm">Swipe between Learner / Certification / Team plans. Highlight what each plan adds. "Most Popular" badge on Certification. Easy to read without zooming.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r">
+                    <strong className="text-blue-300">Key Principle:</strong> <span className="text-gray-300">Do NOT make this page longer. Do NOT add more content. The only changes should improve interactivity and mobile readability of what already exists.</span>
+                  </div>
+                </div>
+              )}
+
+              {/* QB Certification Design Fixes */}
+              {activeDesignFix === 3 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-full font-bold text-sm">4 Issues Addressed</div>
+                    <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
+                  </div>
+
+                  <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
+                    <h3 className="text-xl font-bold text-green-400 mb-4">What the New Certification Page Gets Right</h3>
+                    <div className="space-y-3">
+                      {[
+                        { fix: '"Learn → Practice → Pass" three-step path', data: 'Clear progression for a $699.95 decision. Users understand the 13hr learn + 6hr practice + 1hr exam journey.', metric: 'Unclear path → 3-step visual' },
+                        { fix: '"Us vs. Competitors" comparison table', data: 'Differentiates against DIY/YouTube/other providers at the exact decision point for a $700 certification.', metric: 'No comparison → Side-by-side' },
+                        { fix: 'FAQ accordion section', data: '62.4% of mobile taps went to FAQ content on the old cert page — the highest of any page.', metric: '0 FAQ → 7+ questions' },
+                        { fix: 'Pricing cards visible on page', data: 'No more navigating away to find out the Certification Plan is $699.95. Price is visible in context.', metric: 'Hidden pricing → Visible' },
+                      ].map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 bg-green-950/30 rounded-lg p-4 border border-green-800/20">
+                          <span className="text-green-500 text-xl mt-0.5">✓</span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <span className="font-semibold text-green-300">{item.fix}</span>
+                              <span className="ml-auto text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded-full whitespace-nowrap">{item.metric}</span>
+                            </div>
+                            <p className="text-sm text-gray-400 mt-1">{item.data}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-900/20 rounded-xl p-6 border border-amber-700/30">
+                    <h3 className="text-xl font-bold text-amber-400 mb-4">What Still Needs Work</h3>
+                    <div className="space-y-4">
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">QC-1</span>
+                          <h4 className="font-bold text-white">Lead with Outcomes, Not Features</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">Feature-led messaging</div>
+                            <p className="text-gray-400 text-sm">Page leads with what the certification includes. But for a $700 purchase, buyers need to see the ROI first — what they GET from being certified.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Outcome-led: "3 Certifications. 20–30% salary increase."</div>
+                            <p className="text-gray-400 text-sm">Lead with results. Expand FAQ to 10–12 questions (currently 7) — at $700, people have lots of questions. Cover exam format, retake policy, employer recognition.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">QC-2</span>
+                          <h4 className="font-bold text-white">Handle /certification-mobile Redirect</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">13,238 sessions to a URL that won't exist</div>
+                            <p className="text-gray-400 text-sm">The old site has /certification-mobile with 13K sessions. The new site doesn't have this URL. Without a redirect, this traffic hits a 404.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">301 redirect at migration</div>
+                            <p className="text-gray-400 text-sm">/certification-mobile → /quickbooks-certification. Low effort, preserves 13K sessions. Add Hotjar tracking post-launch to monitor merged traffic behavior.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Live Classes Design Fixes */}
+              {activeDesignFix === 4 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-full font-bold text-sm">3 Issues Addressed</div>
+                    <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
+                  </div>
+
+                  <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
+                    <h3 className="text-xl font-bold text-green-400 mb-4">What the New Live Classes Page Gets Right</h3>
+                    <div className="space-y-3">
+                      {[
+                        { fix: 'Instructor spotlights visible on page', data: '1,083 clicks on instructor modals in old data. People want to know who teaches their $700 course. New site shows them inline.', metric: 'Modal-only → Inline profiles' },
+                        { fix: 'FAQ accordion section', data: '65.2% of mobile taps went to FAQ — highest of any page. People have the most questions about live class format/schedule.', metric: '0 FAQ → Dedicated section' },
+                        { fix: 'Class schedule with dates', data: 'Users spent 2m 26s avg engagement — highest of any page. The schedule is the #1 content they came to see.', metric: 'Hard to find → Prominent' },
+                      ].map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 bg-green-950/30 rounded-lg p-4 border border-green-800/20">
+                          <span className="text-green-500 text-xl mt-0.5">✓</span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <span className="font-semibold text-green-300">{item.fix}</span>
+                              <span className="ml-auto text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded-full whitespace-nowrap">{item.metric}</span>
+                            </div>
+                            <p className="text-sm text-gray-400 mt-1">{item.data}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-900/20 rounded-xl p-6 border border-amber-700/30">
+                    <h3 className="text-xl font-bold text-amber-400 mb-4">What Still Needs Work</h3>
+                    <div className="space-y-4">
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">LC-1</span>
+                          <h4 className="font-bold text-white">Surface Schedule Above the Fold</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">Schedule may be below the fold</div>
+                            <p className="text-gray-400 text-sm">With 2m 26s engagement (highest of any page), people are here FOR the schedule. If it requires scrolling to find, that's friction for a $600–$700 decision.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Schedule immediately below hero or in hero</div>
+                            <p className="text-gray-400 text-sm">Next class dates + instructor names should be visible in the first viewport. Link instructor names to their spotlights. Keep One-Hour vs Two-Day format toggle.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">LC-2</span>
+                          <h4 className="font-bold text-white">Enhance Instructor Trust Signals</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">Photos + names only</div>
+                            <p className="text-gray-400 text-sm">Instructor profiles show photo and name, but for a $700 training, people need more credibility signals before committing.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Add bios, stats, and student reviews</div>
+                            <p className="text-gray-400 text-sm">"X,000+ students trained, Y+ years teaching" + 1–2 sentence bio + a student review per instructor. Keep visible inline, not behind modals.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Self-Paced Design Fixes */}
+              {activeDesignFix === 5 && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="bg-green-600/20 text-green-400 px-4 py-2 rounded-full font-bold text-sm">2 Major Issues Fixed</div>
+                    <div className="bg-amber-600/20 text-amber-400 px-4 py-2 rounded-full font-bold text-sm">2 Enhancements Needed</div>
+                  </div>
+
+                  <div className="bg-red-900/20 rounded-xl p-6 border border-red-700/30 mb-4">
+                    <h3 className="text-xl font-bold text-red-400 mb-2">The Old Site's Worst Page</h3>
+                    <div className="grid grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-black text-red-400">13,213px</div>
+                        <div className="text-xs text-gray-400">Page height</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-black text-red-400">4.6%</div>
+                        <div className="text-xs text-gray-400">CTA click rate</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-black text-red-400">26.5%</div>
+                        <div className="text-xs text-gray-400">Dead click rate</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-black text-red-400">21.4%</div>
+                        <div className="text-xs text-gray-400">Reach midpoint</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-900/20 rounded-xl p-6 border border-green-700/30">
+                    <h3 className="text-xl font-bold text-green-400 mb-4">What the New Self-Paced Page Fixes</h3>
+                    <div className="space-y-3">
+                      {[
+                        { fix: 'Course filter system replaces infinite scroll', data: 'Old page was 60+ cards in a single scroll. Filters let users find relevant courses without scrolling 13,213px of content.', metric: '13,213px → ~5,000px' },
+                        { fix: '"View Course" links on cards', data: 'Old cards had zero CTAs — 26.5% of clicks were wasted. New cards have clickable links that go somewhere.', metric: '0% → CTA on every card' },
+                      ].map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 bg-green-950/30 rounded-lg p-4 border border-green-800/20">
+                          <span className="text-green-500 text-xl mt-0.5">✓</span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <span className="font-semibold text-green-300">{item.fix}</span>
+                              <span className="ml-auto text-xs bg-green-900/50 text-green-300 px-2 py-0.5 rounded-full whitespace-nowrap">{item.metric}</span>
+                            </div>
+                            <p className="text-sm text-gray-400 mt-1">{item.data}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-900/20 rounded-xl p-6 border border-amber-700/30">
+                    <h3 className="text-xl font-bold text-amber-400 mb-4">What Still Needs Work</h3>
+                    <div className="space-y-4">
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">SC-1</span>
+                          <h4 className="font-bold text-white">"One Plan, All Courses" Messaging</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">Users still think they're buying individual courses</div>
+                            <p className="text-gray-400 text-sm">The "View Course" links may create confusion. Users browse 46+ courses thinking they pick one, not understanding that one plan includes everything.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Banner: "One Plan. 46+ Courses. Starting at $599.95."</div>
+                            <p className="text-gray-400 text-sm">Each card: "Included in All Plans" text + enroll CTA. Page headline: "46+ Self-Paced Courses — Included in Every Plan." Reframe browsing as a value preview.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800/50 rounded-lg p-5 border border-gray-700">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="bg-amber-600 text-white px-2 py-0.5 rounded text-sm font-bold">SC-2</span>
+                          <h4 className="font-bold text-white">Keep Page Height Under 5,000px</h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-4 mt-3">
+                          <div className="bg-red-950/30 rounded-lg p-4 border border-red-800/30">
+                            <div className="text-red-400 font-semibold text-sm mb-2">46 cards can still overwhelm</div>
+                            <p className="text-gray-400 text-sm">Even with filters, if all 46 cards render at once, the page could approach 10,000px+ again. The filter system helps but needs guardrails.</p>
+                          </div>
+                          <div className="bg-green-950/30 rounded-lg p-4 border border-green-800/30">
+                            <div className="text-green-400 font-semibold text-sm mb-2">Show 9–12 cards by default</div>
+                            <p className="text-gray-400 text-sm">3 rows of 3–4 cards. Group by use case: "Most Popular," "For Beginners," "Industry-Specific." "Show More" for the rest. Keep total height under 5,000px.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Measurement Plan */}
+              <div className="mt-8 bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-white mb-4">Measurement Plan: Before → After Targets</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-700">
+                        <th className="text-left py-3 text-gray-400">Metric</th>
+                        <th className="text-center py-3 text-red-400">Old Site (Baseline)</th>
+                        <th className="text-center py-3 text-green-400">Target</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { metric: 'Homepage desktop scroll to 50%', baseline: '9.9%', target: '>30%' },
+                        { metric: 'Desktop dead click rate (site-wide)', baseline: '20–39%', target: '<10%' },
+                        { metric: 'Plans & Pricing conversion', baseline: '4.15%', target: '>5%' },
+                        { metric: 'Homepage conversion', baseline: '0.86%', target: '>1.5%' },
+                        { metric: 'Self-Paced CTA click rate', baseline: '4.6%', target: '>15%' },
+                        { metric: 'Comparison table engagement', baseline: '7.3% dead clicks', target: 'Interactive clicks measured' },
+                        { metric: 'Average page height', baseline: '~7,000px', target: '<5,000px' },
+                      ].map((row, idx) => (
+                        <tr key={idx} className="border-b border-gray-800">
+                          <td className="py-3 text-gray-300">{row.metric}</td>
+                          <td className="py-3 text-center text-red-300">{row.baseline}</td>
+                          <td className="py-3 text-center text-green-300 font-semibold">{row.target}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {activeSection === 7 && (
           <div className="space-y-8 animate-fade-in">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
               <h2 className="text-3xl font-bold mb-6 text-blue-400">Recommendations</h2>
