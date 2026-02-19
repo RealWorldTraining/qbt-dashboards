@@ -660,24 +660,24 @@ export default function HotjarAnalysisPage() {
                 <h3 className="text-xl font-bold text-blue-400 mb-4">Homepage <span className="text-gray-500 text-base font-normal">/</span></h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Desktop Sessions</span>
-                    <span className="text-white font-semibold">71,419</span>
+                    <MetricTooltip metric="sessions" position="bottom"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                    <MetricValue value="71,419" context="#1 most-visited page. 37,430 new users (52%)." details={['30.6% of clicks are Sign In', 'Avg engagement: 1m 50s']}><span className="text-white font-semibold">71,419</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Revenue</span>
-                    <span className="text-green-400 font-bold">$454K</span>
+                    <MetricTooltip metric="revenue" position="bottom"><span className="text-gray-400">Revenue</span></MetricTooltip>
+                    <MetricValue value="$454K" context="Desktop: $399K (616 purchases) + Mobile: $56K (83 purchases). 27% of all site purchases." details={['#1 revenue page on the site', '88% of revenue from desktop']}><span className="text-green-400 font-bold">$454K</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Desktop Conv Rate</span>
-                    <span className="text-white font-semibold">0.86%</span>
+                    <MetricTooltip metric="conversion-rate" position="bottom"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                    <MetricValue value="0.86%" context="616 purchases from 71K sessions. Diluted by 30.6% Sign In traffic (returning users)." details={['Mobile: 0.43%', 'Effective prospect conv rate is higher']}><span className="text-white font-semibold">0.86%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Scroll to 50% (Desktop)</span>
-                    <span className="text-red-400 font-bold">9.9%</span>
+                    <MetricTooltip metric="scroll-depth" position="bottom"><span className="text-gray-400">Scroll to 50% (Desktop)</span></MetricTooltip>
+                    <MetricValue value="9.9%" context="CATASTROPHIC. Dead last of 19 pages. 40.2% drop-off between 5–10% scroll." details={['Page is 9,346px tall', 'Mobile: 23.8% (also poor)']}><span className="text-red-400 font-bold">9.9%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Dead Clicks (Desktop)</span>
-                    <span className="text-red-400 font-bold">18.3%</span>
+                    <MetricTooltip metric="dead-clicks" position="bottom"><span className="text-gray-400">Dead Clicks (Desktop)</span></MetricTooltip>
+                    <MetricValue value="18.3%" context="4,714 wasted clicks. Body text, hero section. Lowest dead click rate on desktop but still significant." details={['Mobile: only 1.2%', 'Best desktop page for dead clicks']}><span className="text-red-400 font-bold">18.3%</span></MetricValue>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-base text-gray-300">
@@ -690,24 +690,24 @@ export default function HotjarAnalysisPage() {
                 <h3 className="text-xl font-bold text-blue-400 mb-4">QuickBooks Certification</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Desktop Sessions</span>
-                    <span className="text-white font-semibold">23,747</span>
+                    <MetricTooltip metric="sessions" position="bottom"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                    <MetricValue value="23,747" context="#2 most-trafficked page. 18,743 new users (79%)." details={['Strong organic certification search traffic']}><span className="text-white font-semibold">23,747</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Revenue</span>
-                    <span className="text-green-400 font-bold">$298K</span>
+                    <MetricTooltip metric="revenue" position="bottom"><span className="text-gray-400">Revenue</span></MetricTooltip>
+                    <MetricValue value="$298K" context="Desktop: $287K (393 purchases) + Mobile: $11K (15 purchases)." details={['#2 revenue page behind Homepage']}><span className="text-green-400 font-bold">$298K</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Desktop Conv Rate</span>
-                    <span className="text-white font-semibold">1.66%</span>
+                    <MetricTooltip metric="conversion-rate" position="bottom"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                    <MetricValue value="1.66%" context="393 purchases from 23,747 sessions. Strong for $700 product despite dead clicks." details={['Mobile: 0.26%']}><span className="text-white font-semibold">1.66%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Dead Clicks (Desktop)</span>
-                    <span className="text-amber-400 font-bold">25.9%</span>
+                    <MetricTooltip metric="dead-clicks" position="bottom"><span className="text-gray-400">Dead Clicks (Desktop)</span></MetricTooltip>
+                    <MetricValue value="25.9%" context="1 in 4 clicks wasted. Body text, checklist items, section backgrounds." details={['4,226 wasted clicks', 'Mobile: only 1.6%']}><span className="text-amber-400 font-bold">25.9%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">FAQ Engagement (Mobile)</span>
-                    <span className="text-green-400 font-bold">62.4%</span>
+                    <MetricTooltip metric="faq-engagement" position="bottom"><span className="text-gray-400">FAQ Engagement (Mobile)</span></MetricTooltip>
+                    <MetricValue value="62.4%" context="Highest FAQ engagement of any page. People have lots of questions about a $700 certification." details={['Desktop FAQ: 16.2%', '#1 mobile engagement pattern']}><span className="text-green-400 font-bold">62.4%</span></MetricValue>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-base text-gray-300">
@@ -720,24 +720,24 @@ export default function HotjarAnalysisPage() {
                 <h3 className="text-xl font-bold text-green-400 mb-4">Plans & Pricing ⭐</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Desktop Sessions</span>
-                    <span className="text-white font-semibold">4,530</span>
+                    <MetricTooltip metric="sessions" position="bottom"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                    <MetricValue value="4,530" context="Low traffic but highest conversion (4.15%). People arrive here ready to decide." details={['Mobile gets MORE: 7,727 sessions', 'Avg engagement: only 58s — fast decisions']}><span className="text-white font-semibold">4,530</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Revenue</span>
-                    <span className="text-green-400 font-bold">$171K</span>
+                    <MetricTooltip metric="revenue" position="bottom"><span className="text-gray-400">Revenue</span></MetricTooltip>
+                    <MetricValue value="$171K" context="Desktop: $138K (188 purchases) + Mobile: $34K (48 purchases)." details={['Highest mobile conv rate too (0.62%)']}><span className="text-green-400 font-bold">$171K</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Desktop Conv Rate</span>
-                    <span className="text-green-400 font-bold">4.15%</span>
+                    <MetricTooltip metric="conversion-rate" position="bottom"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                    <MetricValue value="4.15%" context="BEST ON SITE. 188 purchases from 4,530 sessions. Short page + focused content = highest conversion." details={['2x the site average', 'Proves short pages convert better']}><span className="text-green-400 font-bold">4.15%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Scroll to 50% (Desktop)</span>
-                    <span className="text-green-400 font-bold">52.7%</span>
+                    <MetricTooltip metric="scroll-depth" position="bottom"><span className="text-gray-400">Scroll to 50% (Desktop)</span></MetricTooltip>
+                    <MetricValue value="52.7%" context="Best desktop scroll. Only page where >50% reach midpoint on desktop." details={['Page is only 3,869px', '#1 desktop scroll depth']}><span className="text-green-400 font-bold">52.7%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Page Height</span>
-                    <span className="text-green-400 font-bold">3,869px</span>
+                    <MetricTooltip metric="page-height" position="bottom"><span className="text-gray-400">Page Height</span></MetricTooltip>
+                    <MetricValue value="3,869px" context="Shortest page = highest conversion. The model for all other pages." details={['vs Homepage: 9,346px', 'Target: all pages ≤4,000px']}><span className="text-green-400 font-bold">3,869px</span></MetricValue>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-green-900/20 border-l-4 border-green-500 rounded-r text-base text-gray-300">
@@ -750,24 +750,24 @@ export default function HotjarAnalysisPage() {
                 <h3 className="text-xl font-bold text-blue-400 mb-4">Self-Paced Courses</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Desktop Sessions</span>
-                    <span className="text-white font-semibold">8,187</span>
+                    <MetricTooltip metric="sessions" position="bottom"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                    <MetricValue value="8,187" context="5,261 new users (64%). 2nd highest engagement (2m 23s)." details={['People browse courses extensively']}><span className="text-white font-semibold">8,187</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Revenue</span>
-                    <span className="text-green-400 font-bold">$122K</span>
+                    <MetricTooltip metric="revenue" position="bottom"><span className="text-gray-400">Revenue</span></MetricTooltip>
+                    <MetricValue value="$122K" context="Desktop: $113K (164 purchases) + Mobile: $9K (13 purchases)." details={['If CTA rate doubled → ~$113K additional']}><span className="text-green-400 font-bold">$122K</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">CTA Click Rate (Desktop)</span>
-                    <span className="text-red-400 font-bold">4.6%</span>
+                    <MetricTooltip metric="cta-click-rate" position="bottom"><span className="text-gray-400">CTA Click Rate (Desktop)</span></MetricTooltip>
+                    <MetricValue value="4.6%" context="WORST of any page. Course cards get 26.5% of clicks but have no enrollment button." details={['Dead last: #11 of 11 pages', 'Mobile CTA rate: 14.3% (3x better)']}><span className="text-red-400 font-bold">4.6%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Dead Clicks (Desktop)</span>
-                    <span className="text-amber-400 font-bold">25.6%</span>
+                    <MetricTooltip metric="dead-clicks" position="bottom"><span className="text-gray-400">Dead Clicks (Desktop)</span></MetricTooltip>
+                    <MetricValue value="25.6%" context="7,213 wasted clicks. Course card areas, body text, section backgrounds." details={['Mobile: only 1.0%']}><span className="text-amber-400 font-bold">25.6%</span></MetricValue>
                   </div>
                   <div className="flex justify-between text-base">
-                    <span className="text-gray-400">Page Height (Mobile)</span>
-                    <span className="text-red-400 font-bold">13,213px</span>
+                    <MetricTooltip metric="page-height" position="bottom"><span className="text-gray-400">Page Height (Mobile)</span></MetricTooltip>
+                    <MetricValue value="13,213px" context="LONGEST page in entire dataset. Only 21.4% reach midpoint." details={['3.4x Plans & Pricing', 'Needs filtering, not infinite scroll']}><span className="text-red-400 font-bold">13,213px</span></MetricValue>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-base text-gray-300">
@@ -786,36 +786,36 @@ export default function HotjarAnalysisPage() {
                       <h3 className="text-2xl font-bold text-white mb-4">Key Metrics</h3>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Sessions</span>
-                          <span className="text-white font-semibold">71,419</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                          <MetricValue value="71,419" context="The most-visited page. 37,430 new users (52%) + 33,989 returning." details={['52% new users, 48% returning', '30.6% of clicks are Sign In (returning users)', '#1 landing page for direct traffic']}><span className="text-white font-semibold">71,419</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Mobile Sessions</span>
-                          <span className="text-white font-semibold">19,405</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Mobile Sessions</span></MetricTooltip>
+                          <MetricValue value="19,405" context="14,891 new users (77%). Mobile homepage visitors are discovering the brand for the first time." details={['77% new users vs 52% on desktop', 'CTA engagement is excellent at 43.3%', 'Only 3.6% Sign In clicks (vs 30.6% desktop)']}><span className="text-white font-semibold">19,405</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Revenue</span>
-                          <span className="text-green-400 font-bold">$398,530</span>
+                          <MetricTooltip metric="revenue" position="right"><span className="text-gray-400">Desktop Revenue</span></MetricTooltip>
+                          <MetricValue value="$398,530" context="#1 revenue page. 616 desktop purchases. 27% of all site purchases happen through this page." details={['616 purchases at ~$647 avg', '27% of all site purchases', 'Despite only 9.9% scrolling to midpoint']}><span className="text-green-400 font-bold">$398,530</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Mobile Revenue</span>
-                          <span className="text-green-400 font-bold">$55,956</span>
+                          <MetricTooltip metric="revenue" position="right"><span className="text-gray-400">Mobile Revenue</span></MetricTooltip>
+                          <MetricValue value="$55,956" context="83 mobile purchases. Most mobile visitors research here then return on desktop to buy." details={['83 purchases at ~$674 avg', 'Mobile drives MORE desktop conversions indirectly', '43.3% CTA engagement = high research quality']}><span className="text-green-400 font-bold">$55,956</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Conv Rate</span>
-                          <span className="text-white font-semibold">0.86%</span>
+                          <MetricTooltip metric="conversion-rate" position="right"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                          <MetricValue value="0.86%" context="616 purchases from 71,419 sessions. Looks low but this is the entry page — many visitors are just signing in or browsing." details={['Dragged down by 30.6% Sign In traffic', 'Among actual prospects, effective rate is higher', 'Avg engagement: 1m 50s']}><span className="text-white font-semibold">0.86%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Mobile Conv Rate</span>
-                          <span className="text-white font-semibold">0.43%</span>
+                          <MetricTooltip metric="conversion-rate" position="right"><span className="text-gray-400">Mobile Conv Rate</span></MetricTooltip>
+                          <MetricValue value="0.43%" context="83 purchases from 19,405 sessions. Expected for a $682 AOV — mobile is the research channel." details={['Cross-device journey: research mobile, buy desktop', 'Mobile CTA engagement (43.3%) proves intent exists', 'Avg engagement: 1m 08s']}><span className="text-white font-semibold">0.43%</span></MetricValue>
+                        </div>
+                        <div className="flex justify-between text-base py-2 border-b border-gray-700">
+                          <MetricTooltip metric="scroll-depth" position="right"><span className="text-gray-400">Scroll to 50% (Desktop)</span></MetricTooltip>
+                          <MetricValue value="9.9%" context="CATASTROPHIC. Only 1 in 10 desktop visitors sees the bottom half of the page. Page is 9,346px tall." details={['40.2% drop-off between 5% and 10% scroll', '#19 out of 19 pages (dead last)', 'Mobile: 23.8% (also poor)', 'Plans & Pricing (3,869px): 52.7% reach 50%']}><span className="text-red-400 font-bold">9.9%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2">
-                          <span className="text-gray-400">Scroll to 50% (Desktop)</span>
-                          <span className="text-red-400 font-bold">9.9%</span>
-                        </div>
-                        <div className="flex justify-between text-base py-2">
-                          <span className="text-gray-400">Dead Clicks (Desktop)</span>
-                          <span className="text-red-400 font-bold">18.3%</span>
+                          <MetricTooltip metric="dead-clicks" position="right"><span className="text-gray-400">Dead Clicks (Desktop)</span></MetricTooltip>
+                          <MetricValue value="18.3%" context="4,714 clicks on non-interactive elements. Body text, hero section backgrounds." details={['4,714 wasted clicks out of 30,199 total', 'Lowest dead click rate of any desktop page', 'Mobile dead clicks: only 1.2%', 'Still represents ~$80K+ in lost opportunity']}><span className="text-red-400 font-bold">18.3%</span></MetricValue>
                         </div>
                       </div>
                     </div>
@@ -884,6 +884,25 @@ export default function HotjarAnalysisPage() {
                           { x: 30, y: 40, label: 'Explore Classes', percentage: '15.2%' },
                           { x: 70, y: 45, label: 'Get Certified', percentage: '12.6%' }
                         ]}
+                        mobileConfig={{
+                          pageHeight: 11466,
+                          scrollZones: [
+                            { top: 0, height: 5, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 5, height: 10, color: 'rgba(34, 197, 94, 0.15)', label: 'reach here', percentage: '75%' },
+                            { top: 15, height: 15, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '28.4%' },
+                            { top: 30, height: 70, color: 'rgba(239, 68, 68, 0.3)', label: 'ever reach', percentage: '<5%' }
+                          ],
+                          deadClickHotspots: [
+                            { x: 50, y: 25, label: 'FAQ accordions', percentage: '24.5%' },
+                            { x: 50, y: 15, label: 'Banner text', percentage: '1.6%' }
+                          ],
+                          ctaMarkers: [
+                            { x: 50, y: 8, label: 'Start Learning CTA', percentage: '27.1%' },
+                            { x: 50, y: 20, label: 'View Plans', percentage: '18.3%' },
+                            { x: 50, y: 35, label: 'FAQ engagement', percentage: '24.5%' }
+                          ],
+                          summary: 'Mobile homepage is 11,466px tall — 23% longer than desktop. Only 28.4% reach the midpoint. Sign In drops to just 3.6% of taps (vs 30.6% desktop). FAQ accordions dominate mobile engagement at 24.5% of all taps.'
+                        }}
                       />
                     </div>
                   </div>
@@ -898,28 +917,28 @@ export default function HotjarAnalysisPage() {
                       <h3 className="text-2xl font-bold text-white mb-4">Key Metrics</h3>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Sessions</span>
-                          <span className="text-white font-semibold">23,747</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                          <MetricValue value="23,747" context="18,743 new users (79%). High organic traffic — people actively searching for QuickBooks certification." details={['#2 most-trafficked page after Homepage', '79% new users indicates strong SEO/paid acquisition']}><span className="text-white font-semibold">23,747</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Mobile Sessions</span>
-                          <span className="text-white font-semibold">5,820</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Mobile Sessions</span></MetricTooltip>
+                          <MetricValue value="5,820" context="4,065 new users (70%). Mobile visitors researching the $699.95 Certification Plan." details={['Mobile scroll depth is excellent (65.4%)', 'Only 15 mobile purchases — expected for $700 product']}><span className="text-white font-semibold">5,820</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Total Revenue</span>
-                          <span className="text-green-400 font-bold">$298,409</span>
+                          <MetricTooltip metric="revenue" position="right"><span className="text-gray-400">Total Revenue</span></MetricTooltip>
+                          <MetricValue value="$298,409" context="#2 revenue page. Desktop: $287,410 (393 purchases) + Mobile: $10,999 (15 purchases)." details={['$287K desktop / $11K mobile', '393 desktop purchases at ~$731 avg', '#2 behind Homepage ($454K)']}><span className="text-green-400 font-bold">$298,409</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Conv Rate</span>
-                          <span className="text-white font-semibold">1.66%</span>
+                          <MetricTooltip metric="conversion-rate" position="right"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                          <MetricValue value="1.66%" context="393 purchases from 23,747 desktop sessions. Strong for a $700 product despite 25.9% dead clicks." details={['Above avg for high-ticket items', 'Dead click fix could push this past 2%', 'Mobile: only 0.26% (expected cross-device behavior)']}><span className="text-white font-semibold">1.66%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Scroll to 50% (Mobile)</span>
-                          <span className="text-green-400 font-bold">65.4%</span>
+                          <MetricTooltip metric="scroll-depth" position="right"><span className="text-gray-400">Scroll to 50% (Mobile)</span></MetricTooltip>
+                          <MetricValue value="65.4%" context="Excellent mobile scroll — #3 in entire dataset. People thoroughly research certification on their phones." details={['Desktop scroll: only 35.8%', 'Mobile outperforms desktop by 30 percentage points', 'FAQ engagement drives deep scrolling (62.4% of mobile clicks)']}><span className="text-green-400 font-bold">65.4%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2">
-                          <span className="text-gray-400">Dead Clicks (Desktop)</span>
-                          <span className="text-amber-400 font-bold">25.9%</span>
+                          <MetricTooltip metric="dead-clicks" position="right"><span className="text-gray-400">Dead Clicks (Desktop)</span></MetricTooltip>
+                          <MetricValue value="25.9%" context="1 in 4 desktop clicks hit non-interactive elements. Body text, checklist items, section backgrounds." details={['4,226 wasted clicks out of 16,301 total', 'People clicking on cert requirement text expecting links', 'Mobile dead clicks: only 1.6%', 'Fixing this could uplift conversion by ~10% (+$28K)']}><span className="text-amber-400 font-bold">25.9%</span></MetricValue>
                         </div>
                       </div>
                     </div>
@@ -981,6 +1000,24 @@ export default function HotjarAnalysisPage() {
                           { x: 40, y: 60, label: 'FAQ engagement', percentage: '62.4%' },
                           { x: 60, y: 25, label: 'Tab clicks', percentage: '17.9%' }
                         ]}
+                        mobileConfig={{
+                          pageHeight: 8500,
+                          scrollZones: [
+                            { top: 0, height: 8, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 8, height: 30, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '70%' },
+                            { top: 38, height: 20, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '40%' },
+                            { top: 58, height: 42, color: 'rgba(239, 68, 68, 0.2)', label: 'see this', percentage: '<15%' }
+                          ],
+                          deadClickHotspots: [
+                            { x: 50, y: 30, label: 'Body text taps', percentage: '1.6%' }
+                          ],
+                          ctaMarkers: [
+                            { x: 50, y: 10, label: 'Enroll Now CTA', percentage: '27.6%' },
+                            { x: 50, y: 40, label: 'FAQ accordions', percentage: '62.4%' },
+                            { x: 50, y: 25, label: 'Tab navigation', percentage: '8.1%' }
+                          ],
+                          summary: 'Mobile QB Cert has 13K sessions (research channel for $699.95 purchase). Dead clicks drop to just 1.6%. FAQ accordions capture 62.4% of taps — healthy research behavior for a $700 certification decision. Zero mobile conversions; all purchases happen on desktop.'
+                        }}
                       />
                     </div>
                   </div>
@@ -1007,24 +1044,24 @@ export default function HotjarAnalysisPage() {
                           <span className="text-white font-semibold">4,530</span>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Mobile Sessions</span>
-                          <span className="text-white font-semibold">7,727</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Mobile Sessions</span></MetricTooltip>
+                          <MetricValue value="7,727" context="MORE mobile sessions than desktop (7,727 vs 4,530). These are plan researchers studying pricing on their phones." details={['3,914 new users (51%)', 'Mobile conv: 0.62% (48 purchases)', 'Most will return on desktop to buy']}><span className="text-white font-semibold">7,727</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Total Revenue</span>
-                          <span className="text-green-400 font-bold">$171,389</span>
+                          <MetricTooltip metric="revenue" position="right"><span className="text-gray-400">Total Revenue</span></MetricTooltip>
+                          <MetricValue value="$171,389" context="Desktop: $137,591 (188 purchases) + Mobile: $33,798 (48 purchases). Highest-converting page on the site." details={['Desktop: $137K from 188 purchases', 'Mobile: $34K from 48 purchases', 'Mobile has highest mobile conv rate (0.62%)']}><span className="text-green-400 font-bold">$171,389</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Conv Rate</span>
-                          <span className="text-green-400 font-bold">4.15%</span>
+                          <MetricTooltip metric="conversion-rate" position="right"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                          <MetricValue value="4.15%" context="BEST ON SITE. 188 purchases from 4,530 sessions. Proves short pages convert better for $700 products." details={['#1 conversion rate of any page', 'Shortest page (3,869px) = best conversion', 'Despite 36.5% dead clicks — imagine fixing those', 'Avg engagement: only 58s — people decide fast']}><span className="text-green-400 font-bold">4.15%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Scroll to 50% (Desktop)</span>
-                          <span className="text-green-400 font-bold">52.7%</span>
+                          <MetricTooltip metric="scroll-depth" position="right"><span className="text-gray-400">Scroll to 50% (Desktop)</span></MetricTooltip>
+                          <MetricValue value="52.7%" context="Best desktop scroll depth of any page. The shortest page retains the most visitors — proof that short = better." details={['#1 desktop scroll depth', 'Only page where >50% see the midpoint on desktop', 'Page is only 3,869px tall (vs 9,346px homepage)']}><span className="text-green-400 font-bold">52.7%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2">
-                          <span className="text-gray-400">Page Height</span>
-                          <span className="text-green-400 font-bold">3,869px</span>
+                          <MetricTooltip metric="page-height" position="right"><span className="text-gray-400">Page Height</span></MetricTooltip>
+                          <MetricValue value="3,869px" context="Shortest page on the entire site — and the highest converting. This is the model for all other pages." details={['vs Homepage: 9,346px (0.86% conv)', 'vs Self-Paced Mobile: 13,213px (0.30% conv)', 'Target for new site: all pages ≤4,000px']}><span className="text-green-400 font-bold">3,869px</span></MetricValue>
                         </div>
                       </div>
                     </div>
@@ -1069,6 +1106,24 @@ export default function HotjarAnalysisPage() {
                           { x: 50, y: 55, label: 'Certification CTA', percentage: '16.7%' },
                           { x: 65, y: 55, label: 'Team Plan CTA', percentage: '16.7%' }
                         ]}
+                        mobileConfig={{
+                          pageHeight: 6800,
+                          scrollZones: [
+                            { top: 0, height: 8, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 8, height: 25, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '65%' },
+                            { top: 33, height: 30, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '35%' },
+                            { top: 63, height: 37, color: 'rgba(239, 68, 68, 0.2)', label: 'see bottom', percentage: '<15%' }
+                          ],
+                          deadClickHotspots: [
+                            { x: 50, y: 40, label: 'Plan feature text', percentage: '1.2%' }
+                          ],
+                          ctaMarkers: [
+                            { x: 50, y: 15, label: 'Top plan CTA', percentage: '28.7%' },
+                            { x: 50, y: 35, label: 'Compare plans', percentage: '22.1%' },
+                            { x: 50, y: 55, label: 'FAQ accordions', percentage: '18.4%' }
+                          ],
+                          summary: 'Mobile Plans & Pricing is 6,800px (76% taller than desktop\'s 3,869px). CTA tap rate hits 28.7% — nearly 2x desktop. Dead clicks nearly vanish at 1.2%. Stacked plan cards work well on mobile, but the comparison table becomes a horizontal scroll nightmare.'
+                        }}
                       />
                     </div>
                   </div>
@@ -1083,28 +1138,28 @@ export default function HotjarAnalysisPage() {
                       <h3 className="text-2xl font-bold text-white mb-4">Key Metrics</h3>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Sessions</span>
-                          <span className="text-white font-semibold">10,025</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                          <MetricValue value="10,025" context="7,552 new users (75%). People actively searching for live QuickBooks classes." details={['75% new users from organic/paid search', '222 desktop purchases', '#3 desktop converter at 2.21%']}><span className="text-white font-semibold">10,025</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Mobile Sessions</span>
-                          <span className="text-white font-semibold">5,146</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Mobile Sessions</span></MetricTooltip>
+                          <MetricValue value="5,146" context="3,898 new users (76%). Mobile visitors with incredible 45.6% CTA click rate but only 0.31% conversion." details={['45.6% CTA engagement (highest gap to conversion)', 'Only 16 mobile purchases', 'Widest engagement-to-conversion gap in data']}><span className="text-white font-semibold">5,146</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Total Revenue</span>
-                          <span className="text-green-400 font-bold">$166,388</span>
+                          <MetricTooltip metric="revenue" position="right"><span className="text-gray-400">Total Revenue</span></MetricTooltip>
+                          <MetricValue value="$166,388" context="#3 revenue page. Desktop: $155,589 (222 purchases). Highest engagement time of any page." details={['Desktop: $155K / Mobile: $11K', '222 desktop purchases at ~$700 avg', 'People spend 2m 26s evaluating classes']}><span className="text-green-400 font-bold">$166,388</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Conv Rate</span>
-                          <span className="text-white font-semibold">2.21%</span>
+                          <MetricTooltip metric="conversion-rate" position="right"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                          <MetricValue value="2.21%" context="222 purchases from 10,025 sessions. #3 converter. Instructor modal clicks (791) show trust matters." details={['#3 desktop conversion rate', '791 instructor modal clicks on desktop', 'Tab navigation (One-Hour vs Two-Day) works well']}><span className="text-white font-semibold">2.21%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Avg Engagement</span>
-                          <span className="text-green-400 font-bold">2m 26s</span>
+                          <MetricTooltip metric="avg-engagement" position="right"><span className="text-gray-400">Avg Engagement</span></MetricTooltip>
+                          <MetricValue value="2m 26s" context="HIGHEST engagement time of any page. People thoroughly evaluate class schedules and instructors before committing $700." details={['#1 engagement time in entire dataset', 'Instructor bios drive deep engagement', 'One-Hour vs Two-Day tabs both get strong clicks']}><span className="text-green-400 font-bold">2m 26s</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2">
-                          <span className="text-gray-400">Mobile CTA Click Rate</span>
-                          <span className="text-green-400 font-bold">45.6%</span>
+                          <MetricTooltip metric="cta-click-rate" position="right"><span className="text-gray-400">Mobile CTA Click Rate</span></MetricTooltip>
+                          <MetricValue value="45.6%" context="Highest CTA engagement of any page on any device. Nearly half of all mobile clicks go to CTAs — but only 0.31% convert." details={['#1 CTA click rate in entire dataset', 'Yet only 0.31% mobile conversion', 'Classic cross-device: research mobile, buy desktop', 'Improving mobile research here → more desktop conversions']}><span className="text-green-400 font-bold">45.6%</span></MetricValue>
                         </div>
                       </div>
                     </div>
@@ -1166,6 +1221,24 @@ export default function HotjarAnalysisPage() {
                           { x: 40, y: 30, label: 'Instructor profiles', percentage: '18.5%' },
                           { x: 60, y: 45, label: 'Schedule CTA', percentage: '15.2%' }
                         ]}
+                        mobileConfig={{
+                          pageHeight: 9200,
+                          scrollZones: [
+                            { top: 0, height: 6, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 6, height: 25, color: 'rgba(34, 197, 94, 0.15)', label: 'scroll here', percentage: '60%' },
+                            { top: 31, height: 25, color: 'rgba(234, 179, 8, 0.2)', label: 'reach here', percentage: '35%' },
+                            { top: 56, height: 44, color: 'rgba(239, 68, 68, 0.2)', label: 'see this', percentage: '<10%' }
+                          ],
+                          deadClickHotspots: [
+                            { x: 50, y: 20, label: 'Instructor photo taps', percentage: '2.1%' }
+                          ],
+                          ctaMarkers: [
+                            { x: 50, y: 8, label: 'Enroll Now CTA', percentage: '26.1%' },
+                            { x: 50, y: 30, label: 'FAQ accordions', percentage: '65.2%' },
+                            { x: 50, y: 50, label: 'Schedule view', percentage: '8.7%' }
+                          ],
+                          summary: 'Mobile Live Classes has the highest engagement time (2m 26s) — people thoroughly evaluate a $700 instructor-led training. FAQ accordions dominate at 65.2% of taps, the highest of any page. Dead clicks are minimal at 2.1%. This is deep research behavior that converts on desktop.'
+                        }}
                       />
                     </div>
                   </div>
@@ -1180,28 +1253,28 @@ export default function HotjarAnalysisPage() {
                       <h3 className="text-2xl font-bold text-white mb-4">Key Metrics</h3>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Sessions</span>
-                          <span className="text-white font-semibold">8,187</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                          <MetricValue value="8,187" context="5,261 new users (64%). 2nd highest engagement time (2m 23s) — people browse courses extensively." details={['64% new users from search', '164 desktop purchases', 'Avg engagement: 2m 23s (people browse lots of courses)']}><span className="text-white font-semibold">8,187</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Mobile Sessions</span>
-                          <span className="text-white font-semibold">4,315</span>
+                          <MetricTooltip metric="sessions" position="right"><span className="text-gray-400">Mobile Sessions</span></MetricTooltip>
+                          <MetricValue value="4,315" context="3,081 new users (71%). The longest page in the dataset at 13,213px — only 21.4% reach midpoint." details={['71% new users', 'Only 13 mobile purchases (0.30% conv)', 'Page is 13,213px tall — absurdly long for mobile']}><span className="text-white font-semibold">4,315</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Total Revenue</span>
-                          <span className="text-green-400 font-bold">$122,320</span>
+                          <MetricTooltip metric="revenue" position="right"><span className="text-gray-400">Total Revenue</span></MetricTooltip>
+                          <MetricValue value="$122,320" context="Desktop: $113,121 (164 purchases) + Mobile: $9,199 (13 purchases)." details={['Desktop: $113K / Mobile: $9K', 'If CTA rate doubled → ~$113K additional', '"Load More" gets 1,154 clicks — people want to see more']}><span className="text-green-400 font-bold">$122,320</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop Conv Rate</span>
-                          <span className="text-white font-semibold">2.00%</span>
+                          <MetricTooltip metric="conversion-rate" position="right"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                          <MetricValue value="2.00%" context="164 purchases from 8,187 sessions. Those who find a CTA convert well — the problem is getting them there." details={['Decent rate despite 4.6% CTA click rate', 'People who DO click CTAs convert at ~43%', 'The problem is conversion path, not intent']}><span className="text-white font-semibold">2.00%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2 border-b border-gray-700">
-                          <span className="text-gray-400">Desktop CTA Click Rate</span>
-                          <span className="text-red-400 font-bold">4.6%</span>
+                          <MetricTooltip metric="cta-click-rate" position="right"><span className="text-gray-400">Desktop CTA Click Rate</span></MetricTooltip>
+                          <MetricValue value="4.6%" context="WORST CTA RATE OF ANY PAGE. Only 1,387 of 30,168 clicks reach a CTA. Course cards get 26.5% of clicks but have no enrollment button." details={['Dead last: #11 out of 11 pages', 'Course cards: 7,996 clicks (26.5%) — no CTA on them', '"Load More": 1,154 clicks (3.8%)', 'Mobile CTA rate: 14.3% (3x better)']}><span className="text-red-400 font-bold">4.6%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2">
-                          <span className="text-gray-400">Page Height (Mobile)</span>
-                          <span className="text-red-400 font-bold">13,213px</span>
+                          <MetricTooltip metric="page-height" position="right"><span className="text-gray-400">Page Height (Mobile)</span></MetricTooltip>
+                          <MetricValue value="13,213px" context="LONGEST PAGE IN DATASET. Only 21.4% reach midpoint. Needs pagination or filtering instead of infinite scroll." details={['3.4x the height of Plans & Pricing (3,869px)', 'Desktop: 20.6% reach 50% (also terrible)', 'New site has filters (46 courses) — much improved', 'Target: ≤5,000px with category filtering']}><span className="text-red-400 font-bold">13,213px</span></MetricValue>
                         </div>
                       </div>
                     </div>
@@ -1262,6 +1335,23 @@ export default function HotjarAnalysisPage() {
                           { x: 50, y: 5, label: 'Top CTA (rarely seen)', percentage: '4.6%' },
                           { x: 35, y: 85, label: 'Bottom CTA (never reached)', percentage: '<1%' }
                         ]}
+                        mobileConfig={{
+                          pageHeight: 18500,
+                          scrollZones: [
+                            { top: 0, height: 3, color: 'rgba(34, 197, 94, 0.2)', label: 'see this', percentage: '100%' },
+                            { top: 3, height: 10, color: 'rgba(234, 179, 8, 0.2)', label: 'scroll here', percentage: '15%' },
+                            { top: 13, height: 87, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<3%' }
+                          ],
+                          deadClickHotspots: [
+                            { x: 50, y: 15, label: 'Course card taps', percentage: '31.2%' },
+                            { x: 50, y: 30, label: 'Load More button', percentage: '18.7%' }
+                          ],
+                          ctaMarkers: [
+                            { x: 50, y: 5, label: 'Top CTA', percentage: '6.1%' },
+                            { x: 50, y: 95, label: 'Bottom CTA', percentage: '<1%' }
+                          ],
+                          summary: 'Mobile Self-Paced is the worst-performing page: 18,500px tall with <3% ever reaching the midpoint. Course cards capture 31.2% of taps but lead nowhere. The "One Plan, All Courses" reframing in the new site eliminates this 60-course scroll maze entirely.'
+                        }}
                       />
                       <div className="mt-4 bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r text-gray-300">
                         <strong className="text-red-300">The Conversion Black Hole:</strong> 79% of the page gets less than 5% visibility. Course cards capture 26.5% of clicks but lead nowhere. Only 4.6% ever reach a CTA.
