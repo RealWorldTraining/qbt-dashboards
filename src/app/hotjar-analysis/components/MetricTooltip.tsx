@@ -102,12 +102,14 @@ export default function MetricTooltip({ metric, value, children, position = 'top
   );
 }
 
-export function MetricValue({ value, context }: { value: string | number; context: string }) {
+export function MetricValue({ value, context, children }: { value?: string | number; context: string; children?: React.ReactNode }) {
+  const displayValue = children || value;
+  
   return (
     <div className="group relative inline-block cursor-help">
-      <span className="group-hover:text-blue-400 transition-colors">{value}</span>
+      <span className="group-hover:text-blue-400 transition-colors">{displayValue}</span>
       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-[9999] pointer-events-none animate-fade-in">
-        <div className="bg-gray-900 text-gray-100 text-xs rounded-lg p-3 shadow-2xl border border-blue-500/50 whitespace-nowrap">
+        <div className="bg-gray-900 text-gray-100 text-xs rounded-lg p-3 shadow-2xl border border-blue-500/50 whitespace-nowrap max-w-xs">
           {context}
         </div>
         <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
