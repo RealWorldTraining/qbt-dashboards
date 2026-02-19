@@ -74,14 +74,14 @@ export default function GoogleAdsQuickView() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-600">Loading Google Ads data...</div>
+        <div className="text-gray-400">Loading Google Ads data...</div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+      <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-8 text-center">
         <p className="text-gray-500">No Google Ads data available</p>
       </div>
     );
@@ -93,30 +93,30 @@ export default function GoogleAdsQuickView() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">📊 Google Ads Quick View</h2>
-        <p className="text-sm text-gray-600 mt-1">
+        <h2 className="text-2xl font-bold text-white">📊 Google Ads Quick View</h2>
+        <p className="text-sm text-gray-400 mt-1">
           Latest week · Updates daily at 4 AM CST · Last: {formatDate(metrics.lastUpdated)}
         </p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="text-sm text-gray-600 mb-1">Total Spend</div>
-          <div className="text-3xl font-bold text-gray-900">
+        <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
+          <div className="text-sm text-gray-400 mb-1">Total Spend</div>
+          <div className="text-3xl font-bold text-white">
             {formatCurrency(metrics.totalSpend)}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="text-sm text-gray-600 mb-1">Total Conversions</div>
-          <div className="text-3xl font-bold text-gray-900">
+        <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
+          <div className="text-sm text-gray-400 mb-1">Total Conversions</div>
+          <div className="text-3xl font-bold text-white">
             {metrics.totalConversions}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="text-sm text-gray-600 mb-1">Avg CPA</div>
+        <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
+          <div className="text-sm text-gray-400 mb-1">Avg CPA</div>
           <div className={`text-3xl font-bold ${
             metrics.avgCPA > 180 ? 'text-red-600' : 'text-green-600'
           }`}>
@@ -126,19 +126,19 @@ export default function GoogleAdsQuickView() {
       </div>
 
       {/* Device Breakdown */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
         <h3 className="font-semibold text-lg mb-4">Performance by Device</h3>
         <div className="space-y-3">
           {metrics.byDevice.map((device, idx) => (
-            <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div key={idx} className="flex items-center justify-between p-4 bg-[#0a0a0a] rounded-lg">
               <div>
-                <div className="font-medium text-gray-900">{device.device}</div>
-                <div className="text-sm text-gray-600 mt-1">
+                <div className="font-medium text-white">{device.device}</div>
+                <div className="text-sm text-gray-400 mt-1">
                   {device.conversions} conversions
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-semibold text-gray-900">
+                <div className="font-semibold text-white">
                   {formatCurrency(device.spend)}
                 </div>
                 <div className={`text-sm font-medium ${
@@ -153,22 +153,22 @@ export default function GoogleAdsQuickView() {
       </div>
 
       {/* Top Campaigns */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-6">
         <h3 className="font-semibold text-lg mb-4">Top Campaigns (by Conversions)</h3>
         <div className="space-y-2">
           {topCampaigns.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No campaign data available</p>
           ) : (
             topCampaigns.map((campaign, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg border border-gray-100">
+              <div key={idx} className="flex items-center justify-between p-3 hover:bg-[#0a0a0a] rounded-lg border border-gray-100">
                 <div className="flex-1">
-                  <div className="font-medium text-gray-900 text-sm">{campaign.name}</div>
+                  <div className="font-medium text-white text-sm">{campaign.name}</div>
                   <div className="text-xs text-gray-500 mt-1">
                     {campaign.device} · {campaign.conversions} conv
                   </div>
                 </div>
                 <div className="text-right ml-4">
-                  <div className="text-sm font-semibold text-gray-900">
+                  <div className="text-sm font-semibold text-white">
                     {formatCurrency(campaign.spend)}
                   </div>
                   <div className={`text-xs font-medium ${

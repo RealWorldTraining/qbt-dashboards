@@ -105,14 +105,14 @@ export default function CalendarView() {
       case 'error':
         return 'bg-red-100 text-red-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-800 text-gray-300';
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-600">Loading cron jobs...</div>
+        <div className="text-gray-400">Loading cron jobs...</div>
       </div>
     );
   }
@@ -122,14 +122,14 @@ export default function CalendarView() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">📅 Calendar / Cron Jobs</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-white">📅 Calendar / Cron Jobs</h2>
+          <p className="text-sm text-gray-400 mt-1">
             Scheduled tasks and recurring jobs
           </p>
         </div>
         <button
           onClick={() => setShowNewJobForm(!showNewJobForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
         >
           + New Job
         </button>
@@ -137,7 +137,7 @@ export default function CalendarView() {
 
       {/* New Job Form */}
       {showNewJobForm && (
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+        <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4 shadow-sm">
           <h3 className="font-semibold mb-3">Create New Cron Job</h3>
           <form onSubmit={createJob} className="space-y-3">
             <input
@@ -145,7 +145,7 @@ export default function CalendarView() {
               placeholder="Job name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <textarea
@@ -153,14 +153,14 @@ export default function CalendarView() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="text"
               placeholder="Cron schedule (e.g., 0 9 * * 1 for every Monday at 9 AM)"
               value={formData.schedule}
               onChange={(e) => setFormData({ ...formData, schedule: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <input
@@ -168,19 +168,19 @@ export default function CalendarView() {
               placeholder="Human-readable schedule (e.g., Every Monday at 9 AM)"
               value={formData.scheduleHuman}
               onChange={(e) => setFormData({ ...formData, scheduleHuman: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowNewJobForm(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                className="px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
               >
                 Create Job
               </button>
@@ -192,20 +192,20 @@ export default function CalendarView() {
       {/* Jobs List */}
       <div className="space-y-3">
         {jobs.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+          <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-8 text-center">
             <p className="text-gray-500">No cron jobs yet. Create your first scheduled task!</p>
           </div>
         ) : (
           jobs.map((job) => (
             <div
               key={job.id}
-              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+              className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="font-semibold text-lg text-gray-900">{job.name}</h3>
+                  <h3 className="font-semibold text-lg text-white">{job.name}</h3>
                   {job.description && (
-                    <p className="text-sm text-gray-600 mt-1">{job.description}</p>
+                    <p className="text-sm text-gray-400 mt-1">{job.description}</p>
                   )}
                 </div>
                 <button
@@ -219,11 +219,11 @@ export default function CalendarView() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <div className="text-gray-500 text-xs mb-1">Schedule</div>
-                  <div className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                  <div className="font-mono text-xs bg-gray-800 px-2 py-1 rounded">
                     {job.schedule}
                   </div>
                   {job.scheduleHuman && (
-                    <div className="text-xs text-gray-600 mt-1">{job.scheduleHuman}</div>
+                    <div className="text-xs text-gray-400 mt-1">{job.scheduleHuman}</div>
                   )}
                 </div>
 

@@ -90,7 +90,7 @@ export default function MemoryViewer() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-600">Loading memories...</div>
+        <div className="text-gray-400">Loading memories...</div>
       </div>
     );
   }
@@ -100,14 +100,14 @@ export default function MemoryViewer() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">🧠 Memory Viewer</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-white">🧠 Memory Viewer</h2>
+          <p className="text-sm text-gray-400 mt-1">
             Searchable log of key decisions and context
           </p>
         </div>
         <button
           onClick={() => setShowNewMemoryForm(!showNewMemoryForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
         >
           + New Memory
         </button>
@@ -120,7 +120,7 @@ export default function MemoryViewer() {
           placeholder="Search memories..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           type="submit"
@@ -135,7 +135,7 @@ export default function MemoryViewer() {
               setSearchQuery('');
               fetchMemories();
             }}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 bg-gray-200 text-gray-300 rounded-lg hover:bg-gray-300 transition-colors"
           >
             Clear
           </button>
@@ -144,7 +144,7 @@ export default function MemoryViewer() {
 
       {/* New Memory Form */}
       {showNewMemoryForm && (
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+        <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4 shadow-sm">
           <h3 className="font-semibold mb-3">Create New Memory</h3>
           <form onSubmit={createMemory} className="space-y-3">
             <input
@@ -152,7 +152,7 @@ export default function MemoryViewer() {
               placeholder="Title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <textarea
@@ -160,7 +160,7 @@ export default function MemoryViewer() {
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
             <input
@@ -168,26 +168,26 @@ export default function MemoryViewer() {
               placeholder="Tags (comma-separated)"
               value={formData.tags}
               onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="text"
               placeholder="Conversation reference (optional)"
               value={formData.conversationRef}
               onChange={(e) => setFormData({ ...formData, conversationRef: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowNewMemoryForm(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                className="px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
               >
                 Save Memory
               </button>
@@ -199,7 +199,7 @@ export default function MemoryViewer() {
       {/* Memories List */}
       <div className="space-y-3">
         {memories.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+          <div className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-8 text-center">
             <p className="text-gray-500">
               {searchQuery ? 'No memories found matching your search.' : 'No memories yet. Create your first memory!'}
             </p>
@@ -208,10 +208,10 @@ export default function MemoryViewer() {
           memories.map((memory) => (
             <div
               key={memory.id}
-              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+              className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-lg text-gray-900">
+                <h3 className="font-semibold text-lg text-white">
                   {memory.title}
                 </h3>
                 <span className="text-xs text-gray-500">
@@ -219,7 +219,7 @@ export default function MemoryViewer() {
                 </span>
               </div>
               
-              <p className="text-gray-700 mb-3 whitespace-pre-wrap">
+              <p className="text-gray-300 mb-3 whitespace-pre-wrap">
                 {memory.content}
               </p>
               

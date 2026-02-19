@@ -75,11 +75,11 @@ export default function N8nStatus() {
       case 'error':
         return 'bg-red-100 text-red-700';
       case 'running':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-blue-600/20 text-blue-700';
       case 'waiting':
         return 'bg-yellow-100 text-yellow-700';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-800 text-gray-300';
     }
   };
 
@@ -101,7 +101,7 @@ export default function N8nStatus() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-600">Loading n8n workflows...</div>
+        <div className="text-gray-400">Loading n8n workflows...</div>
       </div>
     );
   }
@@ -110,8 +110,8 @@ export default function N8nStatus() {
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">🔄 n8n Workflow Status</h2>
-        <p className="text-sm text-gray-600 mt-1">
+        <h2 className="text-2xl font-bold text-white">🔄 n8n Workflow Status</h2>
+        <p className="text-sm text-gray-400 mt-1">
           Live monitoring of key workflows · Auto-refreshes every minute
         </p>
       </div>
@@ -121,14 +121,14 @@ export default function N8nStatus() {
         {workflows.map((workflow) => (
           <div
             key={workflow.id}
-            className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+            className="bg-[#1a1a1a] rounded-lg border border-gray-800 p-4 hover:shadow-md transition-shadow"
           >
             {/* Workflow Header */}
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h3 className="font-semibold text-lg text-gray-900">{workflow.name}</h3>
+                <h3 className="font-semibold text-lg text-white">{workflow.name}</h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={`px-2 py-1 text-xs rounded-full ${workflow.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                  <span className={`px-2 py-1 text-xs rounded-full ${workflow.active ? 'bg-green-100 text-green-700' : 'bg-gray-800 text-gray-300'}`}>
                     {workflow.active ? 'Active' : 'Inactive'}
                   </span>
                   {workflow.lastExecutionStatus && (
@@ -142,7 +142,7 @@ export default function N8nStatus() {
 
             {/* Last Execution */}
             {workflow.lastExecutionTime ? (
-              <div className="text-sm text-gray-600 mb-3">
+              <div className="text-sm text-gray-400 mb-3">
                 <div className="flex justify-between">
                   <span>Last run:</span>
                   <span className="font-medium">{formatDate(workflow.lastExecutionTime)}</span>
@@ -175,7 +175,7 @@ export default function N8nStatus() {
                 {workflow.recentExecutions.map((exec) => (
                   <div
                     key={exec.id}
-                    className="text-xs bg-gray-50 rounded p-2"
+                    className="text-xs bg-[#0a0a0a] rounded p-2"
                   >
                     <div className="flex justify-between items-center">
                       <span className={`px-2 py-1 rounded-full ${getStatusColor(exec.status)}`}>
@@ -185,7 +185,7 @@ export default function N8nStatus() {
                         {getDuration(exec.startedAt, exec.stoppedAt)}
                       </span>
                     </div>
-                    <div className="text-gray-600 mt-1">
+                    <div className="text-gray-400 mt-1">
                       {formatDate(exec.startedAt)}
                     </div>
                   </div>
