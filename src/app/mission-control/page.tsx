@@ -57,10 +57,10 @@ export default function MissionControlPage() {
       </header>
 
       {/* Content */}
-      <main className={`px-4 sm:px-6 lg:px-8 py-8 ${
-        activeTab !== 'tasks' ? 'max-w-7xl mx-auto' : ''
-      }`}>
-        <div className="animate-preview-in">
+      <main className="py-8">
+        <div className={`animate-preview-in ${
+          activeTab === 'tasks' ? 'max-w-[1600px] mx-auto px-8' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
+        }`}>
           {activeTab === 'tasks' && <TasksBoard />}
           {activeTab === 'memory' && <MemoryViewer />}
           {activeTab === 'calendar' && <CalendarView />}
