@@ -18,33 +18,25 @@ interface AssetRow {
   cost: number
 }
 
-// Map Google Ads enum values to readable labels
+// Map Google Ads enum numeric codes to readable labels
+// Based on AssetFieldTypeEnum: https://developers.google.com/google-ads/api/reference/rpc/latest/AssetFieldTypeEnum.AssetFieldType
 const FIELD_TYPE_MAP: Record<string, string> = {
-  '1': 'HEADLINE',
-  '2': 'DESCRIPTION',
+  '2': 'HEADLINE',
   '3': 'DESCRIPTION',
-  '4': 'SITELINK',
-  '5': 'CALLOUT',
-  '6': 'STRUCTURED_SNIPPET',
-  '7': 'HEADLINE',
-  'HEADLINE': 'HEADLINE',
-  'DESCRIPTION': 'DESCRIPTION',
-  'LONG_HEADLINE': 'HEADLINE',
+  '4': 'LONG_HEADLINE',
+  '5': 'SITELINK',
+  '6': 'CALLOUT',
+  '7': 'STRUCTURED_SNIPPET',
 }
 
+// Based on AssetPerformanceLabelEnum
 const PERFORMANCE_LABEL_MAP: Record<string, string> = {
   '1': 'LEARNING',
   '2': 'LOW',
   '3': 'GOOD',
   '4': 'BEST',
-  '5': 'LEARNING',
-  '6': 'LOW',
+  '5': 'PENDING',
   '7': 'UNSPECIFIED',
-  'LEARNING': 'LEARNING',
-  'LOW': 'LOW',
-  'GOOD': 'GOOD',
-  'BEST': 'BEST',
-  'UNSPECIFIED': 'UNSPECIFIED',
 }
 
 function parseNumber(val: string): number {
