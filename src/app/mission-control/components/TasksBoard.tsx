@@ -33,6 +33,7 @@ const priorityColors = {
 export default function TasksBoard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [usingMockData, setUsingMockData] = useState(false);
   const [formData, setFormData] = useState({
@@ -91,6 +92,50 @@ export default function TasksBoard() {
     }
   };
 
+  const updateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingTask || !formData.title.trim()) return;
+
+    try {
+      const response = await fetch('/api/mission-control/tasks', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingTask.id,
+          title: formData.title,
+          description: formData.description,
+          priority: formData.priority,
+          assignedTo: formData.assignedTo,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchTasks();
+        setEditingTask(null);
+        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'claude' });
+      }
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const deleteTask = async (taskId: number) => {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+
+    try {
+      const response = await fetch(`/api/mission-control/tasks?id=${taskId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchTasks();
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
   const updateTaskStatus = async (taskId: number, newStatus: TaskStatus) => {
     try {
       const response = await fetch('/api/mission-control/tasks', {
@@ -105,6 +150,22 @@ export default function TasksBoard() {
     } catch (error) {
       console.error('Error updating task:', error);
     }
+  };
+
+  const startEditingTask = (task: Task) => {
+    setEditingTask(task);
+    setFormData({
+      title: task.title,
+      description: task.description || '',
+      priority: task.priority,
+      assignedTo: task.assignedTo || 'claude',
+    });
+    setShowNewTaskForm(false);
+  };
+
+  const cancelEditing = () => {
+    setEditingTask(null);
+    setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'claude' });
   };
 
   const getTasksByStatus = (status: TaskStatus) => {
@@ -130,18 +191,23 @@ export default function TasksBoard() {
           </p>
         </div>
         <button
-          onClick={() => setShowNewTaskForm(!showNewTaskForm)}
+          onClick={() => {
+            setShowNewTaskForm(!showNewTaskForm);
+            setEditingTask(null);
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
         >
           + New Task
         </button>
       </div>
 
-      {/* New Task Form */}
-      {showNewTaskForm && (
+      {/* New/Edit Task Form */}
+      {(showNewTaskForm || editingTask) && (
         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-          <h3 className="font-semibold mb-3">Create New Task</h3>
-          <form onSubmit={createTask} className="space-y-3">
+          <h3 className="font-semibold mb-3">
+            {editingTask ? 'Edit Task' : 'Create New Task'}
+          </h3>
+          <form onSubmit={editingTask ? updateTask : createTask} className="space-y-3">
             <input
               type="text"
               placeholder="Task title"
@@ -173,6 +239,7 @@ export default function TasksBoard() {
                 onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
+                <option value="professor">Assigned to: Professor</option>
                 <option value="claude">Assigned to: Claude</option>
                 <option value="aaron">Assigned to: Aaron</option>
               </select>
@@ -180,7 +247,10 @@ export default function TasksBoard() {
             <div className="flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setShowNewTaskForm(false)}
+                onClick={() => {
+                  setShowNewTaskForm(false);
+                  cancelEditing();
+                }}
                 className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Cancel
@@ -189,7 +259,7 @@ export default function TasksBoard() {
                 type="submit"
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Create Task
+                {editingTask ? 'Save Changes' : 'Create Task'}
               </button>
             </div>
           </form>
@@ -216,28 +286,30 @@ export default function TasksBoard() {
               {getTasksByStatus(column.status).map(task => (
                 <div
                   key={task.id}
-                  className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
+                  className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:shadow-md transition-shadow group"
                 >
-                  {/* Priority Badge + Status Controls */}
+                  {/* Priority Badge + Actions */}
                   <div className="flex items-start justify-between mb-2">
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${priorityColors[task.priority]}`}>
                       {task.priority}
                     </span>
                     
-                    {/* Quick status change buttons (shown on hover) */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                      {columns.map(col => 
-                        col.status !== task.status && (
-                          <button
-                            key={col.status}
-                            onClick={() => updateTaskStatus(task.id, col.status)}
-                            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
-                            title={`Move to ${col.label}`}
-                          >
-                            {col.emoji}
-                          </button>
-                        )
-                      )}
+                    {/* Action buttons */}
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => startEditingTask(task)}
+                        className="text-xs px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
+                        title="Edit task"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded"
+                        title="Delete task"
+                      >
+                        🗑️
+                      </button>
                     </div>
                   </div>
 
@@ -255,11 +327,27 @@ export default function TasksBoard() {
 
                   {/* Assigned To */}
                   {task.assignedTo && (
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                       <span>👤</span>
                       <span>{task.assignedTo}</span>
                     </div>
                   )}
+
+                  {/* Quick status change buttons (shown on hover) */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 flex-wrap">
+                    {columns.map(col => 
+                      col.status !== task.status && (
+                        <button
+                          key={col.status}
+                          onClick={() => updateTaskStatus(task.id, col.status)}
+                          className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+                          title={`Move to ${col.label}`}
+                        >
+                          {col.emoji}
+                        </button>
+                      )
+                    )}
+                  </div>
                 </div>
               ))}
 
