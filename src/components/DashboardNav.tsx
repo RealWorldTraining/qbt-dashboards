@@ -66,6 +66,17 @@ const dashboardGroups: (DashboardItem | DashboardCategory)[] = [
     ]
   },
   {
+    name: "Classes & Webinars",
+    icon: Users,
+    accent: "border-cyan-500",
+    iconColor: "bg-cyan-500/20 text-cyan-400",
+    items: [
+      { name: "Webinars", href: "/webinars", icon: BarChart3, description: "Live feed + historical attendance" },
+      { name: "Live Help", href: "/live-help", icon: Users, description: "Real-time Live Help sessions" },
+      { name: "Live Help Archive", href: "/live-help-archive", icon: FileText, description: "Historical session data" },
+    ]
+  },
+  {
     name: "Organic & SEO",
     icon: Sprout,
     accent: "border-sky-500",
