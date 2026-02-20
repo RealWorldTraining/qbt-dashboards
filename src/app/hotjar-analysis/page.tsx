@@ -75,15 +75,15 @@ export default function HotjarAnalysisPage() {
   const [activeDesignFix, setActiveDesignFix] = useState(0);
 
   const sections = [
-    { id: 'exec-summary', title: 'Executive Summary', icon: '📊' },
-    { id: 'business-context', title: 'Business Context', icon: '💰' },
-    { id: 'buyer-journey', title: 'Buyer Journey', icon: '🛤️' },
-    { id: 'problems', title: 'Five Problems', icon: '⚠️' },
+    { id: 'exec-summary', title: 'Summary', icon: '📊' },
+    { id: 'business-context', title: 'Context', icon: '💰' },
+    { id: 'buyer-journey', title: 'Journey', icon: '🛤️' },
+    { id: 'problems', title: 'Problems', icon: '⚠️' },
     { id: 'performance', title: 'Performance', icon: '📈' },
-    { id: 'page-analysis', title: 'Page Analysis', icon: '🔍' },
-    { id: 'design-fixes', title: 'Design Fixes', icon: '🔧' },
-    { id: 'recommendations', title: 'Recommendations', icon: '💡' },
-    { id: 'execution', title: 'Execution Plan', icon: '🗺️' },
+    { id: 'page-analysis', title: 'Pages', icon: '🔍' },
+    { id: 'design-fixes', title: 'Fixes', icon: '🔧' },
+    { id: 'recommendations', title: 'Recs', icon: '💡' },
+    { id: 'execution', title: 'Execution', icon: '🗺️' },
   ];
 
   const designFixPages = [
