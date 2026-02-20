@@ -45,15 +45,21 @@ interface TeamMember {
   type: string;
 }
 
-const FALLBACK_ASSIGNEES = [
-  { value: 'Professor', label: '🎓 Professor' },
-  { value: 'Claude Code', label: '⌨️ Claude Code' },
-  { value: 'Aaron', label: '👨‍💼 Aaron' },
+interface Assignee {
+  value: string;
+  label: string;
+  avatar: string | null;
+}
+
+const FALLBACK_ASSIGNEES: Assignee[] = [
+  { value: 'Professor', label: 'Professor', avatar: null },
+  { value: 'Claude Code', label: 'Claude Code', avatar: null },
+  { value: 'Aaron', label: 'Aaron', avatar: null },
 ];
 
 export default function TasksBoard() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [assignees, setAssignees] = useState(FALLBACK_ASSIGNEES);
+  const [assignees, setAssignees] = useState<Assignee[]>(FALLBACK_ASSIGNEES);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,9 +84,10 @@ export default function TasksBoard() {
       const response = await fetch('/api/mission-control/team');
       const data = await response.json();
       if (data.members && data.members.length > 0) {
-        const teamAssignees = data.members.map((m: TeamMember) => ({
+        const teamAssignees: Assignee[] = data.members.map((m: TeamMember) => ({
           value: m.name,
-          label: `${m.avatar || (m.type === 'human' ? '👤' : '🤖')} ${m.name}`,
+          label: m.name,
+          avatar: m.avatar,
         }));
         setAssignees(teamAssignees);
         if (!formData.assignedTo) {
@@ -243,6 +250,24 @@ export default function TasksBoard() {
     return { label: `${diffDays}d left`, color: 'text-gray-400 bg-gray-800' };
   };
 
+  const getAssigneeAvatar = (name: string | null | undefined) => {
+    if (!name) return null;
+    const assignee = assignees.find(a => a.value === name);
+    const avatar = assignee?.avatar;
+    if (avatar && (avatar.startsWith('/') || avatar.startsWith('http'))) {
+      return avatar;
+    }
+    return null;
+  };
+
+  const renderAvatar = (name: string | null | undefined, size: string = 'w-6 h-6') => {
+    const avatarUrl = getAssigneeAvatar(name);
+    if (avatarUrl) {
+      return <img src={avatarUrl} alt={name || ''} className={`${size} rounded-full object-cover`} />;
+    }
+    return <span className="text-sm">👤</span>;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -296,17 +321,18 @@ export default function TasksBoard() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500 uppercase tracking-wider">Assignee:</span>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {assignees.map(a => (
               <button
                 key={a.value}
                 onClick={() => setAssigneeFilter(assigneeFilter === a.value ? null : a.value)}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 ${
                   assigneeFilter === a.value
                     ? 'bg-cyan-600/20 text-cyan-400 ring-1 ring-cyan-500'
                     : 'bg-gray-800 text-gray-400 hover:text-gray-200'
                 }`}
               >
+                {renderAvatar(a.value, 'w-4 h-4')}
                 {a.label}
               </button>
             ))}
@@ -469,7 +495,7 @@ export default function TasksBoard() {
                     {/* Assigned To */}
                     {task.assignedTo && (
                       <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                        <span>👤</span>
+                        {renderAvatar(task.assignedTo, 'w-5 h-5')}
                         <span className="text-gray-400">{task.assignedTo}</span>
                       </div>
                     )}
