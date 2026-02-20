@@ -21,6 +21,8 @@ export const memories = pgTable('memories', {
   tags: json('tags').$type<string[]>(), // Array of tag strings
   pinned: boolean('pinned').notNull().default(false),
   category: varchar('category', { length: 50 }), // decision, context, reference, insight, bug
+  project: varchar('project', { length: 100 }), // qbt-dashboards, max-cpc-engine, qbtraining-site, etc.
+  createdBy: varchar('created_by', { length: 100 }), // agent name: Professor, Thanos, Scarlet, Claude Code, Aaron
   date: timestamp('date').notNull().defaultNow(),
   conversationRef: text('conversation_ref'), // Discord message ID or session reference
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -64,7 +66,7 @@ export const teamMembers = pgTable('team_members', {
   role: varchar('role', { length: 200 }),
   type: varchar('type', { length: 50 }).notNull().default('human'), // human, ai_main, ai_desktop, ai_subagent
   status: varchar('status', { length: 20 }).notNull().default('active'), // active, idle, offline
-  avatar: varchar('avatar', { length: 50 }), // emoji or icon key
+  avatar: varchar('avatar', { length: 500 }), // emoji or image path
   description: text('description'),
   responsibilities: json('responsibilities').$type<string[]>(),
   currentWork: text('current_work'),

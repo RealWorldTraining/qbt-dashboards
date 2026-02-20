@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db, isConnected } from '@/db';
 import { memories } from '@/db/schema';
-import { desc, like, or, eq } from 'drizzle-orm';
+import { desc, like, or, eq, and, SQL } from 'drizzle-orm';
 
 // GET /api/mission-control/memories - Fetch all memories (with optional search)
 export async function GET(request: Request) {
@@ -15,19 +15,34 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
+    const projectFilter = searchParams.get('project');
+    const agentFilter = searchParams.get('agent');
+
+    // Build conditions array
+    const conditions: SQL[] = [];
+
+    if (query) {
+      const searchCondition = or(
+        like(memories.title, `%${query}%`),
+        like(memories.content, `%${query}%`)
+      );
+      if (searchCondition) conditions.push(searchCondition);
+    }
+
+    if (projectFilter) {
+      conditions.push(eq(memories.project, projectFilter));
+    }
+
+    if (agentFilter) {
+      conditions.push(eq(memories.createdBy, agentFilter));
+    }
 
     let allMemories;
-    
-    if (query) {
-      // Search across title and content
+
+    if (conditions.length > 0) {
       allMemories = await db.select()
         .from(memories)
-        .where(
-          or(
-            like(memories.title, `%${query}%`),
-            like(memories.content, `%${query}%`)
-          )
-        )
+        .where(and(...conditions))
         .orderBy(desc(memories.createdAt));
     } else {
       allMemories = await db.select()
@@ -58,11 +73,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, content, tags, conversationRef } = body;
+    const { title, content, tags, conversationRef, category, project, createdBy } = body;
 
     if (!title || !content) {
-      return NextResponse.json({ 
-        error: 'Title and content are required' 
+      return NextResponse.json({
+        error: 'Title and content are required'
       }, { status: 400 });
     }
 
@@ -71,6 +86,9 @@ export async function POST(request: Request) {
       content,
       tags: tags || [],
       conversationRef: conversationRef || null,
+      category: category || null,
+      project: project || null,
+      createdBy: createdBy || null,
     }).returning();
 
     return NextResponse.json({
