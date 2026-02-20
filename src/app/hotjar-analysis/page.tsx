@@ -217,6 +217,76 @@ export default function HotjarAnalysisPage() {
                 Estimated Annual Revenue Uplift from Recommendations
               </div>
             </div>
+
+            {/* Data Notes & Methodology */}
+            <details className="bg-gray-800/30 rounded-2xl border border-gray-700/50 overflow-hidden">
+              <summary className="px-8 py-5 cursor-pointer hover:bg-gray-800/50 transition-colors flex items-center gap-3 text-gray-400 hover:text-gray-200">
+                <svg className="w-5 h-5 transition-transform details-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                <span className="text-lg font-semibold">Data Notes & Methodology</span>
+              </summary>
+              <div className="px-8 pb-8 pt-2">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">Data Sources</h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-gray-300">GA4:</strong> Sessions, revenue, purchases, conversion rates, engagement time. Nov 2025 – Feb 2026 (319,718 sessions).</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-gray-300">Hotjar:</strong> Click heatmaps, scroll depth maps, dead click detection. 250,000+ recorded interactions across desktop and mobile.</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">What's Measured vs. Estimated</h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li className="flex items-start gap-2">
+                          <span className="text-green-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-green-300">Measured:</strong> Revenue, sessions, purchases, conversion rates, page heights, midpoint scroll stats, dead click rates, CTA click rates, engagement time.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-amber-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-amber-300">Estimated:</strong> Scroll zone intermediate values between 100% and midpoint (interpolated — only the midpoint stat is from Hotjar). Revenue uplift projections are directional ranges, not forecasts.</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">Key Assumptions</h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-gray-300">Cross-device journey:</strong> High mobile new-user rate (70–77%), high desktop returning-user rate (48%), and low mobile conversion (0.30–0.62%) strongly suggest mobile-research-then-desktop-purchase behavior. GA4 cannot directly confirm the same user across devices without user-ID tracking.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-gray-300">Revenue uplift ($450K–$720K):</strong> Sum of 7 independent initiative estimates. Assumes fixes are implemented correctly and traffic remains stable. Real-world results may vary. Initiatives may have overlapping effects.</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">Visual Analysis Precision</h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-gray-300">Hotspot positions:</strong> Dead click and CTA marker positions on page screenshots are approximate placements representing behavioral zones, not pixel-exact Hotjar overlay coordinates.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
+                          <span><strong className="text-gray-300">Mobile dead clicks (1–2%):</strong> Dramatically lower than desktop (18–39%). Worth verifying against raw Hotjar data to confirm these aren't artifacts of lower mobile sample sizes.</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
           </div>
         )}
 
