@@ -28,7 +28,7 @@ export default function MissionControlPage() {
     <div className="min-h-screen bg-[#0a0a0a]">
       {/* Header */}
       <header className="bg-[#1a1a1a] border-b border-gray-800 sticky top-0 z-10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <h1 className="text-4xl font-bold text-white flex items-center gap-3">
               <span className="text-5xl">🎓</span>
@@ -62,7 +62,7 @@ export default function MissionControlPage() {
 
       {/* Content */}
       <main className="py-8">
-        <div className="animate-preview-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="animate-preview-in mx-auto px-4 sm:px-6 lg:px-8">
           {activeTab === 'tasks' && <TasksBoard />}
           {activeTab === 'memory' && <MemoryViewer />}
           {activeTab === 'calendar' && <CalendarView />}
