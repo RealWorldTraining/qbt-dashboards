@@ -50,6 +50,7 @@ export function GadsAssetTab() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [typeFilter, setTypeFilter] = useState<string>('All')
+  const [campaignFilter, setCampaignFilter] = useState<string>('All')
   const [perfFilter, setPerfFilter] = useState<string | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('impressions')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
@@ -99,8 +100,17 @@ export function GadsAssetTab() {
     return sortDir === 'desc' ? ' \u25BC' : ' \u25B2'
   }
 
+  // Derive unique campaigns sorted by total impressions (highest first)
+  const campaigns = Array.from(new Set(data.assets.map(a => a.campaign))).filter(Boolean)
+  const campaignImpressions: Record<string, number> = {}
+  for (const a of data.assets) {
+    campaignImpressions[a.campaign] = (campaignImpressions[a.campaign] || 0) + a.impressions
+  }
+  campaigns.sort((a, b) => (campaignImpressions[b] || 0) - (campaignImpressions[a] || 0))
+
   const filtered = data.assets
     .filter(a => typeFilter === 'All' || a.fieldType === typeFilter)
+    .filter(a => campaignFilter === 'All' || a.campaign === campaignFilter)
     .filter(a => !perfFilter || a.performanceLabel === perfFilter)
     .sort((a, b) => {
       const mul = sortDir === 'desc' ? -1 : 1
@@ -163,7 +173,33 @@ export function GadsAssetTab() {
             </button>
           ))}
         </div>
-        <span className="text-gray-500 text-xs ml-auto">{filtered.length} assets</span>
+        <div className="w-px h-5 bg-gray-700" />
+        <div className="flex gap-1.5 flex-wrap">
+          <button
+            onClick={() => setCampaignFilter('All')}
+            className={`px-3 py-1.5 rounded text-xs font-medium ${
+              campaignFilter === 'All'
+                ? 'bg-blue-600 text-white'
+                : 'bg-[#1a1a1a] text-gray-400 hover:bg-gray-800'
+            }`}
+          >
+            All Campaigns
+          </button>
+          {campaigns.map(c => (
+            <button
+              key={c}
+              onClick={() => setCampaignFilter(campaignFilter === c ? 'All' : c)}
+              className={`px-3 py-1.5 rounded text-xs font-medium ${
+                campaignFilter === c
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-[#1a1a1a] text-gray-400 hover:bg-gray-800'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <span className="text-gray-500 text-xs ml-auto whitespace-nowrap">{filtered.length} assets</span>
       </div>
 
       {/* Table */}
@@ -227,6 +263,32 @@ export function GadsAssetTab() {
                 </tr>
               )}
             </tbody>
+            {filtered.length > 0 && (() => {
+              const totImpr = filtered.reduce((s, a) => s + a.impressions, 0)
+              const totClicks = filtered.reduce((s, a) => s + a.clicks, 0)
+              const totConv = filtered.reduce((s, a) => s + a.conversions, 0)
+              const totCost = filtered.reduce((s, a) => s + a.cost, 0)
+              const avgCtr = totImpr > 0 ? (totClicks / totImpr) * 100 : 0
+              const avgConvRate = totClicks > 0 ? (totConv / totClicks) * 100 : 0
+              return (
+                <tfoot className="bg-black border-t-2 border-gray-600">
+                  <tr className="text-white font-semibold">
+                    <td className="p-2.5" colSpan={2}>
+                      Summary — {campaignFilter === 'All' ? 'All Campaigns' : campaignFilter}
+                      {typeFilter !== 'All' && ` / ${typeFilter.charAt(0) + typeFilter.slice(1).toLowerCase()}s`}
+                    </td>
+                    <td></td>
+                    <td className="p-2.5 text-right text-xs text-gray-400">{filtered.length} assets</td>
+                    <td className="p-2.5 text-right">{totImpr.toLocaleString()}</td>
+                    <td className="p-2.5 text-right">{totClicks.toLocaleString()}</td>
+                    <td className="p-2.5 text-right">{avgCtr.toFixed(1)}%</td>
+                    <td className="p-2.5 text-right">{totConv.toFixed(1)}</td>
+                    <td className="p-2.5 text-right">{avgConvRate.toFixed(1)}%</td>
+                    <td className="p-2.5 text-right">${Math.round(totCost).toLocaleString()}</td>
+                  </tr>
+                </tfoot>
+              )
+            })()}
           </table>
         </div>
       </div>
