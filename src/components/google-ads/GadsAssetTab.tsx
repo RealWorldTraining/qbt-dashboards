@@ -205,9 +205,11 @@ export function GadsAssetTab() {
                     <td className="p-2.5 text-gray-300 max-w-xs truncate" title={a.assetText}>{a.assetText}</td>
                     <td className="p-2.5 text-gray-500 text-xs whitespace-nowrap">{a.fieldType}</td>
                     <td className="p-2.5 text-center">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${perf.bg} ${perf.text}`}>
-                        {a.performanceLabel}
-                      </span>
+                      {a.performanceLabel !== 'UNSPECIFIED' && (
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${perf.bg} ${perf.text}`}>
+                          {a.performanceLabel}
+                        </span>
+                      )}
                     </td>
                     <td className="p-2.5 text-gray-500 text-xs">{a.campaign}</td>
                     <td className="p-2.5 text-right text-gray-400">{a.impressions.toLocaleString()}</td>

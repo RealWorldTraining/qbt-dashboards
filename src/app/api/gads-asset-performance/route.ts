@@ -124,7 +124,9 @@ export async function GET() {
     const byPerformanceLabel: Record<string, number> = {}
     for (const a of assets) {
       byType[a.fieldType] = (byType[a.fieldType] || 0) + 1
-      byPerformanceLabel[a.performanceLabel] = (byPerformanceLabel[a.performanceLabel] || 0) + 1
+      if (a.performanceLabel !== 'UNSPECIFIED') {
+        byPerformanceLabel[a.performanceLabel] = (byPerformanceLabel[a.performanceLabel] || 0) + 1
+      }
     }
 
     return NextResponse.json({
