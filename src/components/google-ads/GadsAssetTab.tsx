@@ -176,7 +176,7 @@ function AqsBadge({ aqs, fieldType }: { aqs: AqsResult; fieldType: string }) {
         {aqs.grade}
       </span>
       {showTip && aqs.grade !== '--' && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-xl text-xs">
+        <div className="absolute z-50 left-full top-1/2 -translate-y-1/2 ml-2 w-64 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-xl text-xs">
           <div className="font-bold text-white mb-2">AQS Breakdown</div>
           <div className="space-y-1.5 text-gray-300">
             <div className="flex justify-between">
@@ -209,13 +209,13 @@ function AqsBadge({ aqs, fieldType }: { aqs: AqsResult; fieldType: string }) {
           }`}>
             Recommendation: {aqs.action}
           </div>
-          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700" />
+          <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-700" />
         </div>
       )}
       {showTip && aqs.grade === '--' && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-900 border border-gray-700 rounded-lg p-2 shadow-xl text-xs text-gray-400 text-center">
+        <div className="absolute z-50 left-full top-1/2 -translate-y-1/2 ml-2 w-48 bg-gray-900 border border-gray-700 rounded-lg p-2 shadow-xl text-xs text-gray-400 text-center">
           Not enough data to score. Need 50+ impressions.
-          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-700" />
+          <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-700" />
         </div>
       )}
     </div>
