@@ -176,7 +176,7 @@ function AqsBadge({ aqs, fieldType }: { aqs: AqsResult; fieldType: string }) {
         {aqs.grade}
       </span>
       {showTip && aqs.grade !== '--' && (
-        <div className="absolute z-50 left-full top-1/2 -translate-y-1/2 ml-2 w-64 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-xl text-xs">
+        <div className="absolute z-50 left-full top-1/2 -translate-y-1/2 ml-2 w-80 bg-gray-900 border border-gray-700 rounded-lg p-4 shadow-xl text-sm">
           <div className="font-bold text-white mb-2">AQS Breakdown</div>
           <div className="space-y-1.5 text-gray-300">
             <div className="flex justify-between">
