@@ -38,14 +38,22 @@ const priorityBorders: Record<TaskPriority, string> = {
   urgent: 'border-l-red-500',
 };
 
-const assignees = [
-  { value: 'professor', label: '👤 Professor' },
-  { value: 'claude', label: '🤖 Claude' },
-  { value: 'aaron', label: '👨‍💼 Aaron' },
+interface TeamMember {
+  id: number;
+  name: string;
+  avatar: string | null;
+  type: string;
+}
+
+const FALLBACK_ASSIGNEES = [
+  { value: 'Professor', label: '🎓 Professor' },
+  { value: 'Claude Code', label: '⌨️ Claude Code' },
+  { value: 'Aaron', label: '👨‍💼 Aaron' },
 ];
 
 export default function TasksBoard() {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [assignees, setAssignees] = useState(FALLBACK_ASSIGNEES);
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,13 +64,33 @@ export default function TasksBoard() {
     title: '',
     description: '',
     priority: 'medium' as TaskPriority,
-    assignedTo: 'professor',
+    assignedTo: '',
     dueDate: '',
   });
 
   useEffect(() => {
     fetchTasks();
+    fetchTeamMembers();
   }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      const response = await fetch('/api/mission-control/team');
+      const data = await response.json();
+      if (data.members && data.members.length > 0) {
+        const teamAssignees = data.members.map((m: TeamMember) => ({
+          value: m.name,
+          label: `${m.avatar || (m.type === 'human' ? '👤' : '🤖')} ${m.name}`,
+        }));
+        setAssignees(teamAssignees);
+        if (!formData.assignedTo) {
+          setFormData(prev => ({ ...prev, assignedTo: teamAssignees[0].value }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+    }
+  };
 
   const fetchTasks = async () => {
     try {
@@ -101,7 +129,7 @@ export default function TasksBoard() {
 
       if (response.ok) {
         await fetchTasks();
-        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor', dueDate: '' });
+        setFormData({ title: '', description: '', priority: 'medium', assignedTo: assignees[0]?.value || '', dueDate: '' });
         setShowNewTaskForm(false);
       }
     } catch (error) {
@@ -131,7 +159,7 @@ export default function TasksBoard() {
       if (response.ok) {
         await fetchTasks();
         setEditingTask(null);
-        setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor', dueDate: '' });
+        setFormData({ title: '', description: '', priority: 'medium', assignedTo: assignees[0]?.value || '', dueDate: '' });
       }
     } catch (error) {
       console.error('Error updating task:', error);
@@ -176,7 +204,7 @@ export default function TasksBoard() {
       title: task.title,
       description: task.description || '',
       priority: task.priority,
-      assignedTo: task.assignedTo || 'professor',
+      assignedTo: task.assignedTo || assignees[0]?.value || '',
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
     });
     setShowNewTaskForm(false);
@@ -184,7 +212,7 @@ export default function TasksBoard() {
 
   const cancelEditing = () => {
     setEditingTask(null);
-    setFormData({ title: '', description: '', priority: 'medium', assignedTo: 'professor', dueDate: '' });
+    setFormData({ title: '', description: '', priority: 'medium', assignedTo: assignees[0]?.value || '', dueDate: '' });
   };
 
   const getFilteredTasksByStatus = (status: TaskStatus) => {
