@@ -299,53 +299,85 @@ export default function TasksBoard() {
         </button>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 uppercase tracking-wider">Priority:</span>
-          <div className="flex gap-1">
-            {(['low', 'medium', 'high', 'urgent'] as TaskPriority[]).map(p => (
+      {/* Team Roster + Priority Filter */}
+      <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Team</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 uppercase tracking-wider">Priority:</span>
+              <div className="flex gap-1">
+                {(['low', 'medium', 'high', 'urgent'] as TaskPriority[]).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPriorityFilter(priorityFilter === p ? null : p)}
+                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                      priorityFilter === p
+                        ? priorityColors[p] + ' ring-1 ring-current'
+                        : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {(priorityFilter || assigneeFilter) && (
               <button
-                key={p}
-                onClick={() => setPriorityFilter(priorityFilter === p ? null : p)}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
-                  priorityFilter === p
-                    ? priorityColors[p] + ' ring-1 ring-current'
-                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
-                }`}
+                onClick={() => { setPriorityFilter(null); setAssigneeFilter(null); }}
+                className="text-xs px-3 py-1.5 bg-gray-800 text-gray-400 rounded-full hover:text-white"
               >
-                {p}
+                Clear filters
               </button>
-            ))}
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 uppercase tracking-wider">Assignee:</span>
-          <div className="flex gap-1.5">
-            {assignees.map(a => (
+        <div className="flex gap-4">
+          {assignees.map(a => {
+            const isSelected = assigneeFilter === a.value;
+            const avatarUrl = getAssigneeAvatar(a.value);
+            const memberTasks = tasks.filter(t => t.assignedTo === a.value && t.status !== 'done');
+            return (
               <button
                 key={a.value}
-                onClick={() => setAssigneeFilter(assigneeFilter === a.value ? null : a.value)}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all flex items-center gap-1.5 ${
-                  assigneeFilter === a.value
-                    ? 'bg-cyan-600/20 text-cyan-400 ring-1 ring-cyan-500'
-                    : 'bg-gray-800 text-gray-400 hover:text-gray-200'
+                onClick={() => setAssigneeFilter(isSelected ? null : a.value)}
+                className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
+                  isSelected
+                    ? 'bg-cyan-600/15 ring-2 ring-cyan-500 scale-105'
+                    : 'hover:bg-gray-800/60'
                 }`}
               >
-                {renderAvatar(a.value, 'w-4 h-4')}
-                {a.label}
+                <div className="relative">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={a.value}
+                      className={`w-12 h-12 rounded-full object-cover transition-all ${
+                        isSelected ? 'ring-2 ring-cyan-400 shadow-[0_0_16px_rgba(6,182,212,0.4)]' : 'ring-1 ring-gray-700'
+                      }`}
+                    />
+                  ) : (
+                    <div className={`w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl ${
+                      isSelected ? 'ring-2 ring-cyan-400' : 'ring-1 ring-gray-700'
+                    }`}>
+                      👤
+                    </div>
+                  )}
+                  {memberTasks.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {memberTasks.length}
+                    </span>
+                  )}
+                </div>
+                <span className={`text-xs font-medium truncate max-w-[72px] ${
+                  isSelected ? 'text-cyan-400' : 'text-gray-400'
+                }`}>
+                  {a.label}
+                </span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-        {(priorityFilter || assigneeFilter) && (
-          <button
-            onClick={() => { setPriorityFilter(null); setAssigneeFilter(null); }}
-            className="text-xs px-3 py-1.5 bg-gray-800 text-gray-400 rounded-full hover:text-white"
-          >
-            Clear filters
-          </button>
-        )}
       </div>
 
       {/* New/Edit Task Form */}
