@@ -6,10 +6,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 
 interface LiveParticipant {
   name: string;
-  email: string;
   joinTime: string;
-  country: string;
-  device: string;
+  location: string;
   connection?: string;
 }
 
@@ -19,6 +17,7 @@ interface LiveWebinar {
   startTime: string;
   host?: string;
   participantCount: number;
+  registrantsCount?: number | null;
   participants: LiveParticipant[];
   source: string;
 }
@@ -39,6 +38,8 @@ interface HistoricalWebinar {
   hostEmail: string;
   attendeeCount: number;
   avgDurationMin: number | null;
+  registrantsCount?: number | null;
+  attendanceRate?: number | null;
 }
 
 interface HistorySummary {
@@ -56,13 +57,9 @@ interface HistoryResponse {
 
 interface DrilldownAttendee {
   name: string;
-  email: string;
   joinTime: string;
   leaveTime: string;
   durationMin: number | null;
-  attentivenessScore: number | null;
-  country: string;
-  device: string;
 }
 
 interface DrilldownResponse {
@@ -71,6 +68,7 @@ interface DrilldownResponse {
   date: string;
   startTime: string;
   hostEmail: string;
+  registrantsCount?: number | null;
   total: number;
   attendees: DrilldownAttendee[];
 }
@@ -192,7 +190,14 @@ function LiveSection() {
                   <div className="flex items-center gap-6 text-right">
                     <div>
                       <div className="text-3xl font-bold text-cyan-400">{w.participantCount}</div>
-                      <div className="text-xs text-gray-500">live attendees</div>
+                      <div className="text-xs text-gray-500">
+                        attending{w.registrantsCount ? ` / ${w.registrantsCount} registered` : ''}
+                      </div>
+                      {w.registrantsCount && w.registrantsCount > 0 && (
+                        <div className="text-xs text-green-400 font-semibold">
+                          {Math.round((w.participantCount / w.registrantsCount) * 100)}% show rate
+                        </div>
+                      )}
                     </div>
                     <div className="text-gray-400 text-xl">{isOpen ? '▲' : '▼'}</div>
                   </div>
@@ -209,22 +214,24 @@ function LiveSection() {
                           <thead>
                             <tr className="text-left text-cyan-400 text-xs uppercase tracking-wider">
                               <th className="pb-3 pr-6">Name</th>
-                              <th className="pb-3 pr-6">Email</th>
                               <th className="pb-3 pr-6">Joined</th>
-                              <th className="pb-3 pr-6">Country</th>
-                              <th className="pb-3">Device</th>
+                              <th className="pb-3 pr-6">Duration</th>
+                              <th className="pb-3">Location</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {w.participants.map((p, i) => (
-                              <tr key={i} className="border-t border-white/5 hover:bg-white/5">
-                                <td className="py-2 pr-6 font-medium">{p.name || '—'}</td>
-                                <td className="py-2 pr-6 text-gray-400">{p.email || '—'}</td>
-                                <td className="py-2 pr-6 text-gray-400">{p.joinTime ? new Date(p.joinTime).toLocaleTimeString() : '—'}</td>
-                                <td className="py-2 pr-6 text-gray-400">{p.country || '—'}</td>
-                                <td className="py-2 text-gray-400">{p.device || '—'}</td>
-                              </tr>
-                            ))}
+                            {w.participants.map((p, i) => {
+                              const joinedMs = p.joinTime ? Date.now() - new Date(p.joinTime).getTime() : null;
+                              const durationMins = joinedMs != null ? Math.floor(joinedMs / 60000) : null;
+                              return (
+                                <tr key={i} className="border-t border-white/5 hover:bg-white/5">
+                                  <td className="py-2 pr-6 font-medium">{p.name || '—'}</td>
+                                  <td className="py-2 pr-6 text-gray-400">{p.joinTime ? new Date(p.joinTime).toLocaleTimeString() : '—'}</td>
+                                  <td className="py-2 pr-6 text-gray-400">{durationMins != null ? `${durationMins} min` : '—'}</td>
+                                  <td className="py-2 text-gray-400">{p.location || '—'}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -370,7 +377,9 @@ function HistoricalSection() {
                   <th className="p-4">Date</th>
                   <th className="p-4">Topic</th>
                   <th className="p-4">Host</th>
-                  <th className="p-4 text-center">Attendees</th>
+                  <th className="p-4 text-center">Registered</th>
+                  <th className="p-4 text-center">Attended</th>
+                  <th className="p-4 text-center">Show %</th>
                   <th className="p-4 text-center">Avg Duration</th>
                   <th className="p-4"></th>
                 </tr>
@@ -378,7 +387,7 @@ function HistoricalSection() {
               <tbody>
                 {paged.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-gray-400">No webinars found</td>
+                    <td colSpan={8} className="p-8 text-center text-gray-400">No webinars found</td>
                   </tr>
                 ) : (
                   paged.map(w => (
@@ -393,7 +402,17 @@ function HistoricalSection() {
                           {hostLabel(w.hostEmail)}
                         </span>
                       </td>
+                      <td className="p-4 text-center text-gray-400">
+                        {w.registrantsCount != null ? w.registrantsCount.toLocaleString() : '—'}
+                      </td>
                       <td className="p-4 text-center font-bold text-cyan-400">{w.attendeeCount}</td>
+                      <td className="p-4 text-center">
+                        {w.attendanceRate != null ? (
+                          <span className={`font-semibold ${w.attendanceRate >= 50 ? 'text-green-400' : w.attendanceRate >= 25 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            {w.attendanceRate}%
+                          </span>
+                        ) : '—'}
+                      </td>
                       <td className="p-4 text-center text-gray-400">
                         {w.avgDurationMin != null ? `${w.avgDurationMin} min` : '—'}
                       </td>
@@ -454,8 +473,27 @@ function HistoricalSection() {
                     <div>
                       <h3 className="text-xl font-bold">{drilldown.topic}</h3>
                       <p className="text-gray-400 text-sm mt-1">
-                        {drilldown.date} at {drilldown.startTime} · {hostLabel(drilldown.hostEmail)} · {drilldown.total} attendees
+                        {drilldown.date} at {drilldown.startTime} · {hostLabel(drilldown.hostEmail)}
                       </p>
+                      <div className="flex items-center gap-4 mt-2">
+                        <span className="text-sm font-bold text-cyan-400">{drilldown.total} attended</span>
+                        {drilldown.registrantsCount != null && (
+                          <>
+                            <span className="text-gray-500">·</span>
+                            <span className="text-sm text-gray-400">{drilldown.registrantsCount} registered</span>
+                            <span className="text-gray-500">·</span>
+                            <span className={`text-sm font-semibold ${
+                              Math.round(drilldown.total / drilldown.registrantsCount * 100) >= 50
+                                ? 'text-green-400'
+                                : Math.round(drilldown.total / drilldown.registrantsCount * 100) >= 25
+                                  ? 'text-yellow-400'
+                                  : 'text-red-400'
+                            }`}>
+                              {Math.round(drilldown.total / drilldown.registrantsCount * 100)}% show rate
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                     <button onClick={() => setDrilldown(null)} className="text-gray-400 hover:text-white text-2xl">✕</button>
                   </div>
@@ -465,24 +503,18 @@ function HistoricalSection() {
                     <thead>
                       <tr className="text-left text-cyan-400 text-xs uppercase tracking-wider">
                         <th className="pb-3 pr-4">Name</th>
-                        <th className="pb-3 pr-4">Email</th>
                         <th className="pb-3 pr-4">Join Time</th>
                         <th className="pb-3 pr-4">Leave Time</th>
-                        <th className="pb-3 pr-4">Duration</th>
-                        <th className="pb-3 pr-4">Score</th>
-                        <th className="pb-3">Country</th>
+                        <th className="pb-3">Duration</th>
                       </tr>
                     </thead>
                     <tbody>
                       {drilldown.attendees.map((a, i) => (
                         <tr key={i} className="border-t border-white/5 hover:bg-white/5">
                           <td className="py-2 pr-4 font-medium">{a.name || '—'}</td>
-                          <td className="py-2 pr-4 text-gray-400">{a.email || '—'}</td>
                           <td className="py-2 pr-4 text-gray-400">{a.joinTime || '—'}</td>
                           <td className="py-2 pr-4 text-gray-400">{a.leaveTime || '—'}</td>
-                          <td className="py-2 pr-4 text-gray-400">{a.durationMin != null ? `${a.durationMin} min` : '—'}</td>
-                          <td className="py-2 pr-4 text-gray-400">{a.attentivenessScore != null ? `${a.attentivenessScore}%` : '—'}</td>
-                          <td className="py-2 text-gray-400">{a.country || '—'}</td>
+                          <td className="py-2 text-gray-400">{a.durationMin != null ? `${a.durationMin} min` : '—'}</td>
                         </tr>
                       ))}
                     </tbody>

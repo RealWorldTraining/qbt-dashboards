@@ -50,6 +50,10 @@ let cachedRows: string[][] | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 2 * 60 * 1000;
 
+// Registrant count cache (separate — changes less often)
+let cachedRegistrants: Map<string, number> | null = null;
+let registrantsCacheTimestamp = 0;
+
 async function getAttendanceRows(): Promise<string[][]> {
   const now = Date.now();
   if (cachedRows && now - cacheTimestamp < CACHE_TTL) return cachedRows;
@@ -67,6 +71,34 @@ async function getAttendanceRows(): Promise<string[][]> {
   return cachedRows;
 }
 
+async function getRegistrantCounts(): Promise<Map<string, number>> {
+  const now = Date.now();
+  if (cachedRegistrants && now - registrantsCacheTimestamp < CACHE_TTL) return cachedRegistrants;
+
+  try {
+    const sheets = await getSheetsClient();
+    const resp = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: `Processed Webinars!A:F`,
+    });
+    const rows = (resp.data.values || []).slice(1); // skip header
+    const map = new Map<string, number>();
+    for (const row of rows) {
+      const id = String(row[0] || '');
+      const count = row[5] !== undefined && row[5] !== '' ? Number(row[5]) : null;
+      if (id && count != null && !isNaN(count) && count > 0) {
+        map.set(id, count);
+      }
+    }
+    cachedRegistrants = map;
+    registrantsCacheTimestamp = now;
+    return map;
+  } catch (err) {
+    console.error('Failed to read registrant counts:', err);
+    return new Map();
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -76,10 +108,16 @@ export async function GET(request: NextRequest) {
     const to        = searchParams.get('to');
     const topic     = searchParams.get('topic');
 
-    const rows = await getAttendanceRows();
+    const [rows, registrantMap] = await Promise.all([
+      getAttendanceRows(),
+      getRegistrantCounts(),
+    ]);
 
-    // Apply filters
-    let filtered = rows;
+    // Always filter out internal staff
+    let filtered = rows.filter(r => {
+      const email = (r[COL.attendeeEmail] || '').toLowerCase();
+      return !email.includes('@quickbookstraining.com');
+    });
 
     if (host) {
       filtered = filtered.filter(r => (r[COL.hostEmail] || '').toLowerCase().includes(host.toLowerCase()));
@@ -107,22 +145,23 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ webinarId, attendees: [], total: 0 });
       }
       const meta = webinarRows[0];
+      const externalRows = webinarRows.filter(r =>
+        !((r[COL.attendeeEmail] || '').toLowerCase().includes('@quickbookstraining.com'))
+      );
+      const registrantsCount = registrantMap.get(webinarId) ?? null;
       return NextResponse.json({
         webinarId,
         topic: meta[COL.topic],
         date: meta[COL.date],
         startTime: meta[COL.startTime],
         hostEmail: meta[COL.hostEmail],
-        total: webinarRows.length,
-        attendees: webinarRows.map(r => ({
-          name:               r[COL.attendeeName]       || '',
-          email:              r[COL.attendeeEmail]      || '',
-          joinTime:           r[COL.joinTime]           || '',
-          leaveTime:          r[COL.leaveTime]          || '',
-          durationMin:        r[COL.durationMin]        ? Number(r[COL.durationMin])        : null,
-          attentivenessScore: r[COL.attentivenessScore] ? Number(r[COL.attentivenessScore]) : null,
-          country:            r[COL.country]            || '',
-          device:             r[COL.device]             || '',
+        registrantsCount,
+        total: externalRows.length,
+        attendees: externalRows.map(r => ({
+          name:        r[COL.attendeeName]  || '',
+          joinTime:    r[COL.joinTime]      || '',
+          leaveTime:   r[COL.leaveTime]     || '',
+          durationMin: r[COL.durationMin]   ? Number(r[COL.durationMin]) : null,
         })),
       });
     }
@@ -164,12 +203,20 @@ export async function GET(request: NextRequest) {
 
     // Sort by date desc
     const webinars = Array.from(webinarMap.values())
-      .map(w => ({
-        ...w,
-        avgDurationMin: w.durationsWithValue > 0
-          ? Math.round(w.totalDurationMin / w.durationsWithValue)
-          : null,
-      }))
+      .map(w => {
+        const registrantsCount = registrantMap.get(w.webinarId) ?? null;
+        const attendanceRate = (registrantsCount && registrantsCount > 0)
+          ? Math.round((w.attendeeCount / registrantsCount) * 100)
+          : null;
+        return {
+          ...w,
+          avgDurationMin: w.durationsWithValue > 0
+            ? Math.round(w.totalDurationMin / w.durationsWithValue)
+            : null,
+          registrantsCount,
+          attendanceRate,
+        };
+      })
       .sort((a, b) => {
         // Sort by date desc (M/D/YYYY format)
         const parseDate = (s: string) => {
