@@ -73,6 +73,7 @@ export default function HotjarAnalysisPage() {
   const [activeSection, setActiveSection] = useState(0);
   const [activePageAnalysis, setActivePageAnalysis] = useState(0);
   const [activeDesignFix, setActiveDesignFix] = useState(0);
+  const [activeMockup, setActiveMockup] = useState(0);
 
   const sections = [
     { id: 'exec-summary', title: 'Summary', icon: '📊' },
@@ -82,8 +83,19 @@ export default function HotjarAnalysisPage() {
     { id: 'performance', title: 'Performance', icon: '📈' },
     { id: 'page-analysis', title: 'Pages', icon: '🔍' },
     { id: 'design-fixes', title: 'Fixes', icon: '🔧' },
+    { id: 'mockups', title: 'Mockups', icon: '🎨' },
     { id: 'recommendations', title: 'Recs', icon: '💡' },
     { id: 'execution', title: 'Execution', icon: '🗺️' },
+  ];
+
+  const mockupPages = [
+    { id: 'homepage', title: 'Homepage', icon: '🏠' },
+    { id: 'plans-pricing', title: 'Plans & Pricing', icon: '💳' },
+    { id: 'qb-cert', title: 'QB Cert', icon: '🎓' },
+    { id: 'live-classes', title: 'Live Classes', icon: '📺' },
+    { id: 'self-paced', title: 'Self-Paced', icon: '📚' },
+    { id: 'learn-qb', title: 'Learn QB', icon: '📖' },
+    { id: 'one-on-one', title: '1-on-1 Help', icon: '🤝' },
   ];
 
   const designFixPages = [
@@ -93,7 +105,6 @@ export default function HotjarAnalysisPage() {
     { id: 'qb-cert', title: 'QB Certification', icon: '🎓' },
     { id: 'live-classes', title: 'Live Classes', icon: '📺' },
     { id: 'self-paced', title: 'Self-Paced', icon: '📚' },
-    { id: 'mockups', title: 'Mockups', icon: '🎨' },
   ];
 
   const pageAnalysisPages = [
@@ -2341,455 +2352,6 @@ export default function HotjarAnalysisPage() {
                 </div>
               )}
 
-              {/* Mockups */}
-              {activeDesignFix === 6 && (
-                <div className="space-y-8">
-                  <div className="bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r mb-6">
-                    <strong className="text-blue-300">Wireframe Mockups:</strong> <span className="text-gray-300">Visual representations of the recommended changes. These show layout structure and content hierarchy, not final visual design.</span>
-                  </div>
-
-                  {/* MOCKUP 1: Homepage 6-Section Layout */}
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 1</span>
-                      <h3 className="text-xl font-bold text-white">Homepage: Consolidated 6-Section Layout</h3>
-                    </div>
-                    <p className="text-gray-400 text-sm mb-6">Current: 9 sections, 9,346px, 9.9% reach midpoint. Target: 6 sections, ~4,500px, &gt;30% reach midpoint.</p>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Current Layout */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                          <span className="text-red-400 font-semibold text-sm">Current: 9 Sections (~9,346px)</span>
-                        </div>
-                        <div className="bg-gray-900 rounded-lg border border-red-800/30 p-4 space-y-2 text-xs font-mono">
-                          {[
-                            { label: '1. HERO', height: '~800px', color: 'bg-red-900/40 border-red-700/50', desc: 'Headline + video + CTA' },
-                            { label: '2. TRUST BAR', height: '~120px', color: 'bg-gray-800 border-gray-600', desc: 'Intuit / 1M+ / Guarantee' },
-                            { label: '3. OFFERINGS GRID', height: '~600px', color: 'bg-gray-800 border-gray-600', desc: '3 feature cards' },
-                            { label: '4. PRICING CARDS', height: '~800px', color: 'bg-red-900/40 border-red-700/50', desc: '3 plan cards with prices' },
-                            { label: '5. TESTIMONIALS', height: '~600px', color: 'bg-red-900/40 border-red-700/50', desc: '4 individual quotes' },
-                            { label: '6. COMPARISON TABLE', height: '~1,200px', color: 'bg-red-900/40 border-red-700/50', desc: 'Static feature matrix' },
-                            { label: '7. FAQ', height: '~800px', color: 'bg-gray-800 border-gray-600', desc: '7 questions' },
-                            { label: '8. INSTRUCTORS', height: '~600px', color: 'bg-red-900/40 border-red-700/50', desc: 'Photo grid with modals' },
-                            { label: '9. FINAL CTA', height: '~400px', color: 'bg-gray-800 border-gray-600', desc: 'Bottom conversion block' },
-                          ].map((s, i) => (
-                            <div key={i} className={`${s.color} border rounded px-3 py-2`}>
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-200 font-bold">{s.label}</span>
-                                <span className="text-gray-500">{s.height}</span>
-                              </div>
-                              <div className="text-gray-500 mt-0.5">{s.desc}</div>
-                            </div>
-                          ))}
-                          <div className="text-center text-red-400 font-bold mt-3 pt-2 border-t border-red-800/30">
-                            Only 9.9% of desktop users see below section 5
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Proposed Layout */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                          <span className="text-green-400 font-semibold text-sm">Proposed: 6 Sections (~4,500px)</span>
-                        </div>
-                        <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-2 text-xs font-mono">
-                          {[
-                            { label: '1. HERO', height: '~600px', color: 'bg-green-900/30 border-green-700/40', desc: 'Headline + 3 bullets + CTA. Video as thumbnail only.', note: 'SIMPLIFIED' },
-                            { label: '2. TRUST BAR', height: '~120px', color: 'bg-green-900/30 border-green-700/40', desc: 'Intuit / 1M+ / Guarantee + "4.7 from 1,581+ reviews"', note: '+ REVIEWS' },
-                            { label: '3. OFFERINGS GRID', height: '~500px', color: 'bg-green-900/30 border-green-700/40', desc: '[Classes & Courses] [Certification] [1-on-1 Help]', note: 'KEPT' },
-                            { label: '4. INTERACTIVE TABLE', height: '~1,400px', color: 'bg-blue-900/30 border-blue-700/40', desc: 'MERGED: Pricing + Comparison + 1-2 Testimonials. Expandable rows. Prices at top. "Enroll Now" at bottom.', note: 'MERGED 3→1' },
-                            { label: '5. FAQ ACCORDION', height: '~700px', color: 'bg-green-900/30 border-green-700/40', desc: '5-7 most-asked questions. 23.9% of mobile clicks.', note: 'KEPT' },
-                            { label: '6. FINAL CTA', height: '~400px', color: 'bg-green-900/30 border-green-700/40', desc: '"Ready to Master QuickBooks?" Dark background.', note: 'KEPT' },
-                          ].map((s, i) => (
-                            <div key={i} className={`${s.color} border rounded px-3 py-2`}>
-                              <div className="flex justify-between items-center">
-                                <span className="text-gray-200 font-bold">{s.label}</span>
-                                <div className="flex items-center gap-2">
-                                  {s.note && <span className="text-xs bg-blue-800/50 text-blue-300 px-1.5 py-0.5 rounded">{s.note}</span>}
-                                  <span className="text-gray-500">{s.height}</span>
-                                </div>
-                              </div>
-                              <div className="text-gray-400 mt-0.5">{s.desc}</div>
-                            </div>
-                          ))}
-                          <div className="text-center text-green-400 font-bold mt-3 pt-2 border-t border-green-800/30">
-                            Target: &gt;30% reach midpoint (~2,250px)
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* What's cut */}
-                    <div className="mt-6 bg-red-950/20 rounded-lg p-4 border border-red-800/30">
-                      <div className="text-red-400 font-bold text-sm mb-2">Cut / Merged (~3,000px saved):</div>
-                      <div className="grid md:grid-cols-3 gap-3 text-sm">
-                        <div className="text-gray-400"><span className="text-red-400 font-bold mr-1">X</span> Separate pricing cards section <span className="text-gray-600">(merged into table)</span></div>
-                        <div className="text-gray-400"><span className="text-red-400 font-bold mr-1">X</span> Separate testimonials section <span className="text-gray-600">(1-2 inline in table)</span></div>
-                        <div className="text-gray-400"><span className="text-red-400 font-bold mr-1">X</span> Separate instructor section <span className="text-gray-600">(moved to Live Classes)</span></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* MOCKUP 2: Interactive Comparison Table */}
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 2</span>
-                      <h3 className="text-xl font-bold text-white">Interactive Comparison Table</h3>
-                    </div>
-                    <p className="text-gray-400 text-sm mb-6">The #1 decision tool for a $700 purchase. 1,513 clicks on static text prove users expect interaction. This wireframe shows expandable feature rows.</p>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Desktop Version */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Monitor className="w-4 h-4 text-blue-400" />
-                          <span className="text-blue-400 font-semibold text-sm">Desktop: Hover + Click to Expand</span>
-                        </div>
-                        <div className="bg-gray-900 rounded-lg border border-blue-800/30 p-4 font-mono text-xs overflow-x-auto">
-                          {/* Table header */}
-                          <div className="bg-slate-800 rounded-t-lg px-3 py-3 grid grid-cols-4 gap-2 text-center font-bold border-b border-slate-600">
-                            <div className="text-left text-gray-300">Feature</div>
-                            <div className="text-gray-400">
-                              <div>Learner</div>
-                              <div className="text-green-400 text-[11px]">$599.95</div>
-                            </div>
-                            <div className="text-gray-400">
-                              <div className="text-blue-300">Certification</div>
-                              <div className="text-green-400 text-[11px]">$699.95</div>
-                              <div className="text-[10px] text-blue-400 mt-0.5">MOST POPULAR</div>
-                            </div>
-                            <div className="text-gray-400">
-                              <div>Team</div>
-                              <div className="text-green-400 text-[11px]">$999.95</div>
-                            </div>
-                          </div>
-
-                          {/* Collapsed row */}
-                          <div className="border-b border-gray-800 px-3 py-2.5 grid grid-cols-4 gap-2 items-center hover:bg-gray-800/50 cursor-pointer transition-colors">
-                            <div className="text-gray-300 flex items-center gap-1.5">
-                              <span className="text-gray-600">&#9654;</span>
-                              <span>Live 2-Day Classes</span>
-                              <span className="text-gray-600 text-[10px]">&#9432;</span>
-                            </div>
-                            <div className="text-center text-green-400">&#10003;</div>
-                            <div className="text-center text-green-400">&#10003;</div>
-                            <div className="text-center text-green-400">&#10003;</div>
-                          </div>
-
-                          {/* Expanded row example */}
-                          <div className="border-b border-blue-800/50 bg-blue-950/30">
-                            <div className="px-3 py-2.5 grid grid-cols-4 gap-2 items-center cursor-pointer">
-                              <div className="text-blue-300 flex items-center gap-1.5 font-semibold">
-                                <span className="text-blue-400">&#9660;</span>
-                                <span>Certification Exams</span>
-                              </div>
-                              <div className="text-center text-gray-600">&#10007;</div>
-                              <div className="text-center text-green-400">&#10003;</div>
-                              <div className="text-center text-green-400">&#10003;</div>
-                            </div>
-                            <div className="px-3 pb-3 pt-0 col-span-4">
-                              <div className="bg-blue-900/30 rounded p-3 text-gray-300 text-[11px] leading-relaxed border border-blue-800/30">
-                                <strong className="text-blue-300">3 Intuit certification exams</strong> — QuickBooks Online, QuickBooks Desktop, and Bookkeeping. Practice exams included. Unlimited retakes. Average pass rate: 94%. Employers recognize these as the industry standard.
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* More collapsed rows */}
-                          {['46+ Self-Paced Courses', '1-on-1 Expert Help', 'Lifetime Access'].map((feature, i) => (
-                            <div key={i} className="border-b border-gray-800 px-3 py-2.5 grid grid-cols-4 gap-2 items-center hover:bg-gray-800/50 cursor-pointer transition-colors">
-                              <div className="text-gray-300 flex items-center gap-1.5">
-                                <span className="text-gray-600">&#9654;</span>
-                                <span>{feature}</span>
-                                <span className="text-gray-600 text-[10px]">&#9432;</span>
-                              </div>
-                              <div className="text-center text-green-400">&#10003;</div>
-                              <div className="text-center text-green-400">&#10003;</div>
-                              <div className="text-center text-green-400">&#10003;</div>
-                            </div>
-                          ))}
-
-                          {/* CTA row */}
-                          <div className="px-3 py-4 grid grid-cols-4 gap-2 mt-2">
-                            <div></div>
-                            <div className="text-center"><div className="bg-gray-700 text-gray-300 px-2 py-1.5 rounded text-[11px] font-bold">Enroll Now</div></div>
-                            <div className="text-center"><div className="bg-green-600 text-white px-2 py-1.5 rounded text-[11px] font-bold shadow-lg">Enroll Now</div></div>
-                            <div className="text-center"><div className="bg-gray-700 text-gray-300 px-2 py-1.5 rounded text-[11px] font-bold">Enroll Now</div></div>
-                          </div>
-
-                          {/* Inline testimonial */}
-                          <div className="mx-3 mb-3 bg-gray-800/80 rounded-lg p-3 border border-gray-700 italic text-gray-400 text-[11px]">
-                            &quot;Best investment I ever made for my career.&quot; — <span className="text-gray-300 not-italic">Sarah K., Certified QuickBooks ProAdvisor</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Mobile Version */}
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <Smartphone className="w-4 h-4 text-purple-400" />
-                          <span className="text-purple-400 font-semibold text-sm">Mobile: Tap to Expand + Swipe Plans</span>
-                        </div>
-                        <div className="bg-gray-900 rounded-lg border border-purple-800/30 p-4 max-w-[280px] mx-auto">
-                          {/* Mobile plan selector */}
-                          <div className="flex gap-1 mb-4 bg-gray-800 rounded-lg p-1">
-                            <div className="flex-1 text-center py-2 rounded-md bg-gray-700 text-gray-400 text-[10px] font-bold">Learner</div>
-                            <div className="flex-1 text-center py-2 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-md">Certification</div>
-                            <div className="flex-1 text-center py-2 rounded-md bg-gray-700 text-gray-400 text-[10px] font-bold">Team</div>
-                          </div>
-
-                          {/* Mobile plan card */}
-                          <div className="bg-gray-800 rounded-xl p-4 border border-blue-700/50 mb-4">
-                            <div className="text-center mb-3">
-                              <div className="text-blue-400 text-[10px] font-bold uppercase tracking-wider">Most Popular</div>
-                              <div className="text-white text-lg font-black">Certification</div>
-                              <div className="text-gray-500 text-xs line-through">$999.95</div>
-                              <div className="text-green-400 text-2xl font-black">$699.95</div>
-                            </div>
-
-                            <div className="space-y-1.5 text-[11px]">
-                              {/* Collapsed feature */}
-                              <div className="flex items-center gap-2 bg-gray-900/50 rounded px-2.5 py-2 border border-gray-700">
-                                <span className="text-green-400">&#10003;</span>
-                                <span className="text-gray-300 flex-1">Live 2-Day Classes</span>
-                                <span className="text-gray-600">&#9654;</span>
-                              </div>
-
-                              {/* Expanded feature */}
-                              <div className="bg-blue-950/30 rounded border border-blue-800/30">
-                                <div className="flex items-center gap-2 px-2.5 py-2">
-                                  <span className="text-green-400">&#10003;</span>
-                                  <span className="text-blue-300 flex-1 font-semibold">Certification Exams</span>
-                                  <span className="text-blue-400">&#9660;</span>
-                                </div>
-                                <div className="px-2.5 pb-2 text-gray-400 text-[10px] leading-relaxed">
-                                  3 Intuit exams. Practice tests included. Unlimited retakes. 94% pass rate.
-                                </div>
-                              </div>
-
-                              {/* More collapsed */}
-                              {['46+ Self-Paced Courses', '1-on-1 Help (30 days free)', 'Lifetime Access'].map((f, i) => (
-                                <div key={i} className="flex items-center gap-2 bg-gray-900/50 rounded px-2.5 py-2 border border-gray-700">
-                                  <span className="text-green-400">&#10003;</span>
-                                  <span className="text-gray-300 flex-1">{f}</span>
-                                  <span className="text-gray-600">&#9654;</span>
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="mt-4">
-                              <div className="bg-green-600 text-white text-center py-2.5 rounded-lg text-sm font-bold shadow-lg">
-                                Enroll Now — $699.95
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Swipe indicator */}
-                          <div className="flex justify-center gap-1.5 mb-2">
-                            <div className="w-2 h-2 rounded-full bg-gray-600"></div>
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <div className="w-2 h-2 rounded-full bg-gray-600"></div>
-                          </div>
-                          <div className="text-center text-gray-600 text-[10px]">Swipe to compare plans</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Key behaviors */}
-                    <div className="mt-6 grid md:grid-cols-3 gap-4">
-                      <div className="bg-blue-950/30 rounded-lg p-4 border border-blue-800/30">
-                        <div className="text-blue-300 font-bold text-sm mb-1">Desktop Hover</div>
-                        <div className="text-gray-400 text-xs">Row highlights on hover. cursor:pointer. Subtle background change. Clear "this is clickable" signal.</div>
-                      </div>
-                      <div className="bg-blue-950/30 rounded-lg p-4 border border-blue-800/30">
-                        <div className="text-blue-300 font-bold text-sm mb-1">Click/Tap to Expand</div>
-                        <div className="text-gray-400 text-xs">2-3 sentence feature description slides open. Smooth animation. Only one row expanded at a time.</div>
-                      </div>
-                      <div className="bg-blue-950/30 rounded-lg p-4 border border-blue-800/30">
-                        <div className="text-blue-300 font-bold text-sm mb-1">Mobile Swipe</div>
-                        <div className="text-gray-400 text-xs">Swipe between plan cards. Each card shows all features with expand/collapse. Dot indicators show position.</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* MOCKUP 3: Sticky Mobile CTA Bar */}
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 3</span>
-                      <h3 className="text-xl font-bold text-white">Sticky Mobile CTA Bar</h3>
-                    </div>
-                    <p className="text-gray-400 text-sm mb-6">Fixed at the bottom of every mobile page. Always one tap away from pricing. Research-oriented language ("View Pricing") not purchase-push ("Buy Now").</p>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                      {/* Phone frame with sticky bar */}
-                      <div className="flex justify-center">
-                        <div className="relative bg-gray-950 rounded-[2rem] border-4 border-gray-700 w-[280px] h-[520px] overflow-hidden shadow-2xl">
-                          {/* Phone notch */}
-                          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-700 rounded-b-xl z-10"></div>
-
-                          {/* Screen content */}
-                          <div className="h-full pt-8 px-3 pb-20 overflow-hidden">
-                            <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
-                              <div className="h-3 bg-gray-700 rounded w-3/4 mb-2"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-5/6 mb-1.5"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-4/6"></div>
-                            </div>
-                            <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
-                              <div className="h-3 bg-gray-700 rounded w-2/3 mb-2"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-5/6"></div>
-                            </div>
-                            <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
-                              <div className="h-3 bg-gray-700 rounded w-1/2 mb-2"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-3/4"></div>
-                            </div>
-                            <div className="bg-gray-800/50 rounded-lg p-3">
-                              <div className="h-3 bg-gray-700 rounded w-2/3 mb-2"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
-                              <div className="h-2 bg-gray-700/50 rounded w-5/6"></div>
-                            </div>
-                          </div>
-
-                          {/* Sticky CTA Bar */}
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 via-gray-900 to-gray-900/95 border-t border-gray-700 px-4 py-3">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="text-white text-sm font-bold">Plans from $599.95</div>
-                                <div className="text-gray-400 text-[10px]">Includes everything. Cancel anytime.</div>
-                              </div>
-                              <div className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg whitespace-nowrap">
-                                View Pricing
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Specifications */}
-                      <div className="space-y-4">
-                        <h4 className="text-lg font-bold text-white">Specifications</h4>
-
-                        <div className="space-y-3">
-                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-                            <div className="text-blue-300 font-bold text-sm mb-1">Positioning</div>
-                            <div className="text-gray-400 text-sm">Fixed at viewport bottom. <code className="text-xs bg-gray-800 px-1 rounded">position: fixed; bottom: 0;</code> with safe area inset for iOS notch devices.</div>
-                          </div>
-
-                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-                            <div className="text-blue-300 font-bold text-sm mb-1">Appearance</div>
-                            <div className="text-gray-400 text-sm">Shows on scroll after the hero section passes out of view. Subtle fade-in animation. Semi-transparent gradient top edge for seamless blend.</div>
-                          </div>
-
-                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-                            <div className="text-blue-300 font-bold text-sm mb-1">Copy Strategy</div>
-                            <div className="text-gray-400 text-sm">"<strong className="text-white">Plans from $599.95</strong>" anchors the starting price. "<strong className="text-white">View Pricing</strong>" is research-oriented (not "Buy Now"). Supports the mobile-as-research channel pattern.</div>
-                          </div>
-
-                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-                            <div className="text-blue-300 font-bold text-sm mb-1">Touch Target</div>
-                            <div className="text-gray-400 text-sm">Button meets Apple HIG minimum (44x44px). Total bar height ~60px. Doesn&apos;t obscure content significantly.</div>
-                          </div>
-
-                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-                            <div className="text-blue-300 font-bold text-sm mb-1">Link Destination</div>
-                            <div className="text-gray-400 text-sm">Always links to <code className="text-xs bg-gray-800 px-1 rounded">/plans-and-pricing</code> with smooth scroll to comparison table. Consistent across all pages.</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* MOCKUP 4: First-Fold Desktop Experience */}
-                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 4</span>
-                      <h3 className="text-xl font-bold text-white">Homepage First-Fold (1920x1080 Desktop)</h3>
-                    </div>
-                    <p className="text-gray-400 text-sm mb-6">Fixing the 40.2% drop-off at 5-10% scroll. Everything above must earn the scroll. No dead space. Complete value proposition in one viewport.</p>
-
-                    {/* Desktop viewport wireframe */}
-                    <div className="bg-gray-900 rounded-xl border-2 border-gray-600 overflow-hidden max-w-[800px] mx-auto">
-                      {/* Browser chrome */}
-                      <div className="bg-gray-800 px-4 py-2 flex items-center gap-3 border-b border-gray-700">
-                        <div className="flex gap-1.5">
-                          <div className="w-3 h-3 rounded-full bg-red-500/60"></div>
-                          <div className="w-3 h-3 rounded-full bg-yellow-500/60"></div>
-                          <div className="w-3 h-3 rounded-full bg-green-500/60"></div>
-                        </div>
-                        <div className="flex-1 bg-gray-700 rounded px-3 py-1 text-xs text-gray-400 text-center">qbtraining.com</div>
-                      </div>
-
-                      {/* Viewport content */}
-                      <div className="p-6">
-                        {/* Header bar */}
-                        <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-700">
-                          <div className="flex items-center gap-6">
-                            <div className="text-white font-black text-sm">QBTraining</div>
-                            <div className="flex gap-4 text-[10px] text-gray-400">
-                              <span>Classes</span>
-                              <span>Courses</span>
-                              <span>Certifications</span>
-                              <span>Pricing</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-gray-500 text-[10px]">Sign In</span>
-                            <div className="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold">Start Learning</div>
-                          </div>
-                        </div>
-
-                        {/* Hero section */}
-                        <div className="grid grid-cols-2 gap-8 mb-6">
-                          <div>
-                            <div className="text-white text-lg font-black mb-3 leading-tight">Master QuickBooks.<br/>Get Certified.<br/>Advance Your Career.</div>
-                            <div className="space-y-1.5 text-[11px] text-gray-400 mb-4">
-                              <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Live classes + 46 self-paced courses</div>
-                              <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 3 Intuit certifications included</div>
-                              <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 1-on-1 expert help for 30 days</div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Start Learning — From $599.95</div>
-                              <span className="text-gray-500 text-[10px]">or compare plans</span>
-                            </div>
-                          </div>
-                          <div className="bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700">
-                            <div className="text-center">
-                              <div className="text-gray-600 text-2xl mb-1">&#9654;</div>
-                              <div className="text-gray-500 text-[10px]">Video thumbnail</div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Trust bar */}
-                        <div className="bg-gray-800/80 rounded-lg px-4 py-2.5 flex items-center justify-center gap-6 text-[10px] text-gray-400 border border-gray-700">
-                          <span><strong className="text-white">Intuit</strong> Authorized</span>
-                          <span className="text-gray-600">|</span>
-                          <span><strong className="text-white">25</strong> Years</span>
-                          <span className="text-gray-600">|</span>
-                          <span><strong className="text-white">1M+</strong> People Trained</span>
-                          <span className="text-gray-600">|</span>
-                          <span className="text-yellow-400">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <strong className="text-white">4.7</strong> from 1,581+ reviews
-                          <span className="text-gray-600">|</span>
-                          <span><strong className="text-white">30-Day</strong> Guarantee</span>
-                        </div>
-
-                        {/* Fold line */}
-                        <div className="mt-4 pt-2 border-t-2 border-dashed border-amber-600/50 text-center">
-                          <span className="text-amber-400 text-[10px] font-bold bg-gray-900 px-2">&#9660; FOLD LINE (1080px viewport) — Everything above must earn the scroll &#9660;</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 text-center text-gray-500 text-sm">
-                      The first viewport delivers: headline, 3-bullet value prop, primary CTA, video thumbnail, and full trust bar including star rating. Zero wasted space.
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Measurement Plan */}
               <div className="mt-8 bg-gray-800/50 rounded-xl p-6 border border-gray-700">
@@ -2827,8 +2389,562 @@ export default function HotjarAnalysisPage() {
           </div>
         )}
 
-        {/* Recommendations */}
+        {/* Mockups */}
         {activeSection === 7 && (
+          <div className="space-y-8 animate-fade-in">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+              <h2 className="text-3xl font-bold mb-2 text-blue-400">Page Wireframes</h2>
+              <p className="text-gray-400 text-lg mb-2">Proposed V1 layouts driven by Hotjar + GA4 conversion data</p>
+              <p className="text-sm text-gray-500 mb-6">Every layout decision answers one question: <strong className="text-white">How does this move a new visitor closer to converting?</strong> Tracking via Microsoft Clarity + GA4 post-launch.</p>
+
+              {/* Sub-tabs */}
+              <div className="flex gap-2 flex-wrap mb-8">
+                {mockupPages.map((page, idx) => (
+                  <button
+                    key={page.id}
+                    onClick={() => setActiveMockup(idx)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      activeMockup === idx
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    {page.icon} {page.title}
+                  </button>
+                ))}
+              </div>
+
+              {/* ===== HOMEPAGE WIREFRAME ===== */}
+              {activeMockup === 0 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { value: '$454K', label: 'Revenue (27% of total)', color: 'text-green-400' },
+                      { value: '0.86%', label: 'Desktop conversion', color: 'text-red-400' },
+                      { value: '9.9%', label: 'Reach midpoint', color: 'text-red-400' },
+                      { value: '18.3%', label: 'Dead click rate', color: 'text-amber-400' },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 text-center border border-gray-700">
+                        <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+                        <div className="text-xs text-gray-400 mt-1">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                        <span className="text-red-400 font-semibold text-sm">Current: 9 Sections (~9,346px)</span>
+                      </div>
+                      <div className="bg-gray-900 rounded-lg border border-red-800/30 p-4 space-y-1.5 text-xs font-mono">
+                        {[
+                          { label: '1. HERO', h: '~800px', c: 'bg-gray-800 border-gray-600' },
+                          { label: '2. TRUST BAR', h: '~120px', c: 'bg-gray-800 border-gray-600' },
+                          { label: '3. OFFERINGS', h: '~600px', c: 'bg-gray-800 border-gray-600' },
+                          { label: '4. PRICING CARDS', h: '~800px', c: 'bg-red-900/40 border-red-700/50' },
+                          { label: '5. TESTIMONIALS', h: '~600px', c: 'bg-red-900/40 border-red-700/50' },
+                          { label: '6. COMPARISON TABLE', h: '~1,200px', c: 'bg-red-900/40 border-red-700/50' },
+                          { label: '7. FAQ', h: '~800px', c: 'bg-gray-800 border-gray-600' },
+                          { label: '8. INSTRUCTORS', h: '~600px', c: 'bg-red-900/40 border-red-700/50' },
+                          { label: '9. FINAL CTA', h: '~400px', c: 'bg-gray-800 border-gray-600' },
+                        ].map((s, i) => (
+                          <div key={i} className={`${s.c} border rounded px-3 py-1.5 flex justify-between`}>
+                            <span className="text-gray-200 font-bold">{s.label}</span>
+                            <span className="text-gray-500">{s.h}</span>
+                          </div>
+                        ))}
+                        <div className="text-center text-red-400 font-bold mt-2 pt-2 border-t border-red-800/30 text-[11px]">90% of desktop users never see below section 5</div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        <span className="text-green-400 font-semibold text-sm">Proposed: 6 Sections (~4,500px)</span>
+                      </div>
+                      <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-1.5 text-xs font-mono">
+                        {[
+                          { label: '1. HERO', h: '~600px', note: 'SIMPLIFIED', c: 'bg-green-900/30 border-green-700/40', desc: 'Headline + 3 bullets + CTA. Video thumbnail only.' },
+                          { label: '2. TRUST BAR', h: '~120px', note: '+ REVIEWS', c: 'bg-green-900/30 border-green-700/40', desc: '"4.7 from 1,581+ reviews" added' },
+                          { label: '3. OFFERINGS', h: '~500px', note: 'KEPT', c: 'bg-green-900/30 border-green-700/40', desc: 'Classes / Certification / 1-on-1 Help' },
+                          { label: '4. INTERACTIVE TABLE', h: '~1,400px', note: 'MERGED 3-1', c: 'bg-blue-900/30 border-blue-700/40', desc: 'Pricing + comparison + testimonials. Expandable rows.' },
+                          { label: '5. FAQ ACCORDION', h: '~700px', note: 'KEPT', c: 'bg-green-900/30 border-green-700/40', desc: '5-7 top questions (23.9% of mobile taps)' },
+                          { label: '6. FINAL CTA', h: '~400px', note: 'KEPT', c: 'bg-green-900/30 border-green-700/40', desc: '"Ready to Master QuickBooks?"' },
+                        ].map((s, i) => (
+                          <div key={i} className={`${s.c} border rounded px-3 py-1.5`}>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-200 font-bold">{s.label}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] bg-blue-800/50 text-blue-300 px-1.5 py-0.5 rounded">{s.note}</span>
+                                <span className="text-gray-500">{s.h}</span>
+                              </div>
+                            </div>
+                            <div className="text-gray-400 mt-0.5 text-[11px]">{s.desc}</div>
+                          </div>
+                        ))}
+                        <div className="text-center text-green-400 font-bold mt-2 pt-2 border-t border-green-800/30 text-[11px]">Target: &gt;30% reach midpoint</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop first-fold wireframe */}
+                  <div className="bg-gray-900 rounded-xl border-2 border-gray-600 overflow-hidden max-w-[800px] mx-auto">
+                    <div className="bg-gray-800 px-4 py-2 flex items-center gap-3 border-b border-gray-700">
+                      <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-500/60"></div><div className="w-3 h-3 rounded-full bg-yellow-500/60"></div><div className="w-3 h-3 rounded-full bg-green-500/60"></div></div>
+                      <div className="flex-1 bg-gray-700 rounded px-3 py-1 text-xs text-gray-400 text-center">qbtraining.com</div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-700">
+                        <div className="flex items-center gap-6">
+                          <div className="text-white font-black text-sm">QBTraining</div>
+                          <div className="flex gap-4 text-[10px] text-gray-400"><span>Classes</span><span>Courses</span><span>Certifications</span><span>Pricing</span></div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-gray-500 text-[10px]">Sign In</span>
+                          <div className="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold">Start Learning</div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-8 mb-6">
+                        <div>
+                          <div className="text-white text-lg font-black mb-3 leading-tight">Master QuickBooks.<br/>Get Certified.<br/>Advance Your Career.</div>
+                          <div className="space-y-1.5 text-[11px] text-gray-400 mb-4">
+                            <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Live classes + 46 self-paced courses</div>
+                            <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 3 Intuit certifications included</div>
+                            <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 1-on-1 expert help for 30 days</div>
+                          </div>
+                          <div className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold inline-block">Start Learning — From $599.95</div>
+                        </div>
+                        <div className="bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700 min-h-[120px]">
+                          <div className="text-center"><div className="text-gray-600 text-2xl mb-1">&#9654;</div><div className="text-gray-500 text-[10px]">Video thumbnail</div></div>
+                        </div>
+                      </div>
+                      <div className="bg-gray-800/80 rounded-lg px-4 py-2.5 flex items-center justify-center gap-6 text-[10px] text-gray-400 border border-gray-700">
+                        <span><strong className="text-white">Intuit</strong> Authorized</span><span className="text-gray-600">|</span>
+                        <span><strong className="text-white">1M+</strong> Trained</span><span className="text-gray-600">|</span>
+                        <span className="text-yellow-400">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <strong className="text-white">4.7</strong> (1,581+)<span className="text-gray-600">|</span>
+                        <span><strong className="text-white">30-Day</strong> Guarantee</span>
+                      </div>
+                      <div className="mt-4 pt-2 border-t-2 border-dashed border-amber-600/50 text-center">
+                        <span className="text-amber-400 text-[10px] font-bold bg-gray-900 px-2">&#9660; FOLD LINE — Everything above earns the scroll &#9660;</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-700/30">
+                    <h4 className="font-bold text-purple-300 mb-4">A/B Tests for Homepage</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 1: Hero Video vs. No Video</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> Video thumbnail in hero. <strong className="text-gray-300">Variant:</strong> Full-width headline + testimonial replacing video. <strong className="text-gray-300">Metric:</strong> Scroll past fold + CTA click rate.</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 2: 6 Sections vs. 5 Sections</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> 6-section layout. <strong className="text-gray-300">Variant:</strong> Remove offerings grid, go straight to interactive table. <strong className="text-gray-300">Metric:</strong> Conversion rate + table engagement.</div>
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-500">Track with Microsoft Clarity heatmaps + GA4 conversion events. Run each test 2-4 weeks (1,000+ sessions per variant).</div>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== PLANS & PRICING WIREFRAME ===== */}
+              {activeMockup === 1 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { value: '4.15%', label: 'Desktop conv (BEST)', color: 'text-green-400' },
+                      { value: '$171K', label: 'Total revenue', color: 'text-green-400' },
+                      { value: '3,869px', label: 'Height (shortest)', color: 'text-green-400' },
+                      { value: '36.5%', label: 'Dead click rate', color: 'text-red-400' },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 text-center border border-gray-700">
+                        <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+                        <div className="text-xs text-gray-400 mt-1">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-green-900/20 border-l-4 border-green-500 p-4 rounded-r">
+                    <strong className="text-green-300">Model page.</strong> <span className="text-gray-300">Shortest page, highest conversion. Do NOT make it longer. Only improve interactivity and mobile experience.</span>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3"><Monitor className="w-4 h-4 text-blue-400" /><span className="text-blue-400 font-semibold text-sm">Desktop: Expandable Table</span></div>
+                      <div className="bg-gray-900 rounded-lg border border-blue-800/30 p-4 font-mono text-xs">
+                        <div className="bg-slate-800 rounded-t-lg px-3 py-3 grid grid-cols-4 gap-2 text-center font-bold border-b border-slate-600">
+                          <div className="text-left text-gray-300">Feature</div>
+                          <div className="text-gray-400"><div>Learner</div><div className="text-green-400 text-[11px]">$599.95</div></div>
+                          <div><div className="text-blue-300">Certification</div><div className="text-green-400 text-[11px]">$699.95</div><div className="text-[10px] text-blue-400 mt-0.5">POPULAR</div></div>
+                          <div className="text-gray-400"><div>Team</div><div className="text-green-400 text-[11px]">$999.95</div></div>
+                        </div>
+                        <div className="border-b border-gray-800 px-3 py-2.5 grid grid-cols-4 gap-2 items-center hover:bg-gray-800/50">
+                          <div className="text-gray-300 flex items-center gap-1.5"><span className="text-gray-600">&#9654;</span> Live Classes</div>
+                          <div className="text-center text-green-400">&#10003;</div><div className="text-center text-green-400">&#10003;</div><div className="text-center text-green-400">&#10003;</div>
+                        </div>
+                        <div className="border-b border-blue-800/50 bg-blue-950/30">
+                          <div className="px-3 py-2.5 grid grid-cols-4 gap-2 items-center">
+                            <div className="text-blue-300 flex items-center gap-1.5 font-semibold"><span className="text-blue-400">&#9660;</span> Cert Exams</div>
+                            <div className="text-center text-gray-600">&#10007;</div><div className="text-center text-green-400">&#10003;</div><div className="text-center text-green-400">&#10003;</div>
+                          </div>
+                          <div className="px-3 pb-3"><div className="bg-blue-900/30 rounded p-2.5 text-gray-300 text-[11px] border border-blue-800/30"><strong className="text-blue-300">3 Intuit exams</strong> — QB Online, Desktop, Bookkeeping. Practice exams. Unlimited retakes. 94% pass rate.</div></div>
+                        </div>
+                        {['Self-Paced Courses', '1-on-1 Help'].map((f, i) => (
+                          <div key={i} className="border-b border-gray-800 px-3 py-2.5 grid grid-cols-4 gap-2 items-center hover:bg-gray-800/50">
+                            <div className="text-gray-300 flex items-center gap-1.5"><span className="text-gray-600">&#9654;</span> {f}</div>
+                            <div className="text-center text-green-400">&#10003;</div><div className="text-center text-green-400">&#10003;</div><div className="text-center text-green-400">&#10003;</div>
+                          </div>
+                        ))}
+                        <div className="px-3 py-3 grid grid-cols-4 gap-2 mt-1">
+                          <div></div>
+                          <div className="text-center"><div className="bg-gray-700 text-gray-300 px-2 py-1.5 rounded text-[11px] font-bold">Enroll</div></div>
+                          <div className="text-center"><div className="bg-green-600 text-white px-2 py-1.5 rounded text-[11px] font-bold shadow-lg">Enroll Now</div></div>
+                          <div className="text-center"><div className="bg-gray-700 text-gray-300 px-2 py-1.5 rounded text-[11px] font-bold">Enroll</div></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-3"><Smartphone className="w-4 h-4 text-purple-400" /><span className="text-purple-400 font-semibold text-sm">Mobile: Swipeable Cards</span></div>
+                      <div className="bg-gray-900 rounded-lg border border-purple-800/30 p-4 max-w-[260px] mx-auto">
+                        <div className="flex gap-1 mb-3 bg-gray-800 rounded-lg p-1">
+                          <div className="flex-1 text-center py-1.5 rounded-md bg-gray-700 text-gray-400 text-[10px] font-bold">Learner</div>
+                          <div className="flex-1 text-center py-1.5 rounded-md bg-blue-600 text-white text-[10px] font-bold">Certification</div>
+                          <div className="flex-1 text-center py-1.5 rounded-md bg-gray-700 text-gray-400 text-[10px] font-bold">Team</div>
+                        </div>
+                        <div className="bg-gray-800 rounded-xl p-4 border border-blue-700/50 mb-3">
+                          <div className="text-center mb-3">
+                            <div className="text-blue-400 text-[10px] font-bold uppercase">Most Popular</div>
+                            <div className="text-white text-lg font-black">Certification</div>
+                            <div className="text-gray-500 text-xs line-through">$999.95</div>
+                            <div className="text-green-400 text-2xl font-black">$699.95</div>
+                          </div>
+                          <div className="space-y-1.5 text-[11px]">
+                            {['Live Classes', 'Cert Exams', '46+ Courses', '1-on-1 Help'].map((f, i) => (
+                              <div key={i} className="flex items-center gap-2 bg-gray-900/50 rounded px-2.5 py-2 border border-gray-700">
+                                <span className="text-green-400">&#10003;</span><span className="text-gray-300 flex-1">{f}</span><span className="text-gray-600">&#9654;</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3"><div className="bg-green-600 text-white text-center py-2.5 rounded-lg text-sm font-bold">Enroll — $699.95</div></div>
+                        </div>
+                        <div className="flex justify-center gap-1.5"><div className="w-2 h-2 rounded-full bg-gray-600"></div><div className="w-2 h-2 rounded-full bg-blue-500"></div><div className="w-2 h-2 rounded-full bg-gray-600"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-700/30">
+                    <h4 className="font-bold text-purple-300 mb-4">A/B Tests for Plans & Pricing</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 1: Static vs. Interactive Table</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> Static checkmark table. <strong className="text-gray-300">Variant:</strong> Expandable rows. <strong className="text-gray-300">Metric:</strong> Dead click rate + conversion.</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 2: Mobile Email Bridge</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> No bridge. <strong className="text-gray-300">Variant:</strong> "Email me this comparison" below table. <strong className="text-gray-300">Metric:</strong> Email captures + desktop return rate.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== QB CERTIFICATION WIREFRAME ===== */}
+              {activeMockup === 2 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { value: '$298K', label: 'Revenue (#2 page)', color: 'text-green-400' },
+                      { value: '1.66%', label: 'Desktop conversion', color: 'text-amber-400' },
+                      { value: '62.4%', label: 'Mobile FAQ taps', color: 'text-blue-400' },
+                      { value: '25.9%', label: 'Dead click rate', color: 'text-red-400' },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 text-center border border-gray-700">
+                        <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+                        <div className="text-xs text-gray-400 mt-1">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-1.5 text-xs font-mono max-w-[500px] mx-auto">
+                    <div className="text-center text-green-400 font-bold mb-3">Proposed Layout (~4,000px)</div>
+                    {[
+                      { label: '1. HERO — OUTCOME-LED', desc: '"Get 3 Intuit Certifications. 20-30% salary increase." CTA + trust bar.', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '2. CERTIFICATION PATH', desc: 'Visual: Learn (13hr) > Practice (6hr) > Pass (1hr). Simple, clear.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '3. WHAT YOU EARN', desc: '3 cert badges. "Recognized by employers nationwide."', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '4. US vs. COMPETITORS', desc: 'QBTraining vs. DIY vs. YouTube vs. Community College.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '5. PRICING + CTA', desc: 'Interactive comparison table. "Certification Plan" highlighted.', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '6. FAQ (10-12 questions)', desc: 'Exam format, retakes, employer recognition, study time.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '7. FINAL CTA', desc: '"Start Your Certification Journey" + guarantee.', c: 'bg-green-900/30 border-green-700/40' },
+                    ].map((s, i) => (
+                      <div key={i} className={`${s.c} border rounded px-3 py-2`}>
+                        <div className="text-gray-200 font-bold">{s.label}</div>
+                        <div className="text-gray-400 mt-0.5 text-[11px]">{s.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-amber-900/20 border-l-4 border-amber-500 p-4 rounded-r">
+                    <strong className="text-amber-300">Key shift:</strong> <span className="text-gray-300">Lead with what certification GETS you (outcomes, salary), not what it INCLUDES (hours, courses). At $700, people need ROI before features.</span>
+                  </div>
+                  <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-700/30">
+                    <h4 className="font-bold text-purple-300 mb-4">A/B Tests for QB Certification</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 1: Feature-Led vs. Outcome-Led Hero</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> Feature list hero. <strong className="text-gray-300">Variant:</strong> "3 Certs. 20-30% salary increase." <strong className="text-gray-300">Metric:</strong> Scroll past hero + conversion.</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 2: 7 FAQ vs. 12 FAQ</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> 7 questions. <strong className="text-gray-300">Variant:</strong> 12 questions. <strong className="text-gray-300">Metric:</strong> FAQ engagement + conversion.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== LIVE CLASSES WIREFRAME ===== */}
+              {activeMockup === 3 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { value: '$166K', label: 'Total revenue', color: 'text-green-400' },
+                      { value: '2.21%', label: 'Desktop conversion', color: 'text-green-400' },
+                      { value: '2m 26s', label: 'Engagement (HIGHEST)', color: 'text-blue-400' },
+                      { value: '1,083', label: 'Instructor clicks', color: 'text-blue-400' },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 text-center border border-gray-700">
+                        <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+                        <div className="text-xs text-gray-400 mt-1">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-1.5 text-xs font-mono max-w-[500px] mx-auto">
+                    <div className="text-center text-green-400 font-bold mb-3">Proposed Layout (~4,500px)</div>
+                    {[
+                      { label: '1. HERO + NEXT CLASS', desc: '"Next class: March 15-16 with Sarah Chen." Countdown. CTA.', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '2. FORMAT TOGGLE', desc: 'One-Hour Intro vs. Two-Day Intensive. Tab toggle.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '3. FULL SCHEDULE', desc: 'Next 8 dates with instructor, format, city/online. Filterable.', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '4. INSTRUCTORS', desc: 'Photo + "X,000+ trained" + student review. Inline, not modal.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '5. PRICING + CTA', desc: 'Interactive table. "All plans include live classes."', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '6. FAQ (8-10 questions)', desc: 'Schedule, format, recordings, cancellation, groups.', c: 'bg-green-900/30 border-green-700/40' },
+                    ].map((s, i) => (
+                      <div key={i} className={`${s.c} border rounded px-3 py-2`}>
+                        <div className="text-gray-200 font-bold">{s.label}</div>
+                        <div className="text-gray-400 mt-0.5 text-[11px]">{s.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r">
+                    <strong className="text-blue-300">Conversion insight:</strong> <span className="text-gray-300">2m 26s engagement = they came FOR the schedule. Put it above the fold. "Next class: [date]" creates urgency. Instructor trust signals close the deal.</span>
+                  </div>
+                  <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-700/30">
+                    <h4 className="font-bold text-purple-300 mb-4">A/B Tests for Live Classes</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 1: Schedule Position</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> Schedule below hero. <strong className="text-gray-300">Variant:</strong> Next class date IN hero. <strong className="text-gray-300">Metric:</strong> CTA clicks + conversion.</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 2: Instructor Display</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> Photo + name (click for modal). <strong className="text-gray-300">Variant:</strong> Full inline profile. <strong className="text-gray-300">Metric:</strong> Scroll depth + conversion.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== SELF-PACED WIREFRAME ===== */}
+              {activeMockup === 4 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { value: '$122K', label: 'Total revenue', color: 'text-green-400' },
+                      { value: '4.6%', label: 'CTA clicks (WORST)', color: 'text-red-400' },
+                      { value: '26.5%', label: 'Clicks to dead cards', color: 'text-amber-400' },
+                      { value: '13,213px', label: 'Height (LONGEST)', color: 'text-red-400' },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 text-center border border-gray-700">
+                        <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+                        <div className="text-xs text-gray-400 mt-1">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r">
+                    <strong className="text-red-300">Conversion black hole:</strong> <span className="text-gray-300">26.5% of clicks go to course cards with zero CTAs. People browse thinking they buy individually. They don&apos;t understand the plan model. Fix this = conversion jumps.</span>
+                  </div>
+                  <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-1.5 text-xs font-mono max-w-[500px] mx-auto">
+                    <div className="text-center text-green-400 font-bold mb-3">Proposed Layout (~5,000px)</div>
+                    {[
+                      { label: '1. "ONE PLAN" HERO', desc: '"46+ Courses — Included in Every Plan. From $599.95."', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '2. CATEGORY FILTERS', desc: 'Most Popular | Beginners | Industry | Cert Prep.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '3. COURSE GRID (9-12)', desc: 'Each card: name, duration + "Included in All Plans" + CTA.', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '4. SHOW MORE', desc: 'Loads more without full scroll. Height stays manageable.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '5. PRICING + CTA', desc: '"Get access to all 46+ courses." Comparison table.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '6. FAQ (5-7 questions)', desc: 'How many? Download? Access length? What is self-paced?', c: 'bg-green-900/30 border-green-700/40' },
+                    ].map((s, i) => (
+                      <div key={i} className={`${s.c} border rounded px-3 py-2`}>
+                        <div className="text-gray-200 font-bold">{s.label}</div>
+                        <div className="text-gray-400 mt-0.5 text-[11px]">{s.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-sm font-bold text-blue-300 mb-3 text-center">Course Card Wireframe</div>
+                  <div className="flex justify-center gap-4 flex-wrap">
+                    {['QuickBooks Online Basics', 'Payroll Fundamentals', 'Advanced Reporting'].map((name, i) => (
+                      <div key={i} className="bg-gray-800 rounded-xl p-4 border border-gray-700 w-[200px]">
+                        <div className="bg-gray-700 rounded-lg h-20 mb-3 flex items-center justify-center text-gray-500 text-[10px]">Course thumbnail</div>
+                        <div className="text-white font-bold text-xs mb-1">{name}</div>
+                        <div className="text-gray-500 text-[10px] mb-2">2.5 hrs &bull; Beginner</div>
+                        <div className="text-green-400 text-[10px] font-bold mb-2">Included in All Plans</div>
+                        <div className="bg-green-600/20 text-green-400 text-center py-1.5 rounded text-[10px] font-bold border border-green-600/30">View Plans &rarr;</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-700/30">
+                    <h4 className="font-bold text-purple-300 mb-4">A/B Tests for Self-Paced</h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 1: Card CTA Wording</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">A:</strong> "View Plans" <strong className="text-gray-300">B:</strong> "Get Access" <strong className="text-gray-300">C:</strong> "Start Learning" <strong className="text-gray-300">Metric:</strong> CTA click rate (baseline: 4.6%).</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                        <div className="text-white font-bold text-sm mb-1">Test 2: 9 Cards vs. All</div>
+                        <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> All 46 visible. <strong className="text-gray-300">Variant:</strong> 9 cards + "Show all." <strong className="text-gray-300">Metric:</strong> CTA rate + conversion.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== LEARN QUICKBOOKS WIREFRAME ===== */}
+              {activeMockup === 5 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { value: '$10K', label: 'Revenue (low)', color: 'text-amber-400' },
+                      { value: '1,942', label: 'Sessions', color: 'text-gray-400' },
+                      { value: '0.88%', label: 'Desktop conversion', color: 'text-red-400' },
+                      { value: '#1 click', label: 'Goes to Self-Paced', color: 'text-blue-400' },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 text-center border border-gray-700">
+                        <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+                        <div className="text-xs text-gray-400 mt-1">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r">
+                    <strong className="text-blue-300">Redesign as routing page.</strong> <span className="text-gray-300">Catches "learn QuickBooks" searchers who don&apos;t know what they want. Route them to the right path fast. ~3,000px.</span>
+                  </div>
+                  <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-1.5 text-xs font-mono max-w-[500px] mx-auto">
+                    <div className="text-center text-green-400 font-bold mb-3">Proposed Layout (~3,000px)</div>
+                    {[
+                      { label: '1. HERO', desc: '"Learn QuickBooks Your Way." Trust bar.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '2. THREE PATHWAYS', desc: '"My pace" > Self-Paced | "Live class" > Classes | "Get certified" > Certs', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '3. "ALL INCLUDED" BANNER', desc: '"Not sure? All three included in every plan. From $599.95."', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '4. QUICK FAQ (3-5)', desc: '"Right plan for me?" "Need certification?" "How long?"', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '5. CTA', desc: '"Compare Plans" button. Short and done.', c: 'bg-green-900/30 border-green-700/40' },
+                    ].map((s, i) => (
+                      <div key={i} className={`${s.c} border rounded px-3 py-2`}>
+                        <div className="text-gray-200 font-bold">{s.label}</div>
+                        <div className="text-gray-400 mt-0.5 text-[11px]">{s.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center gap-4 flex-wrap">
+                    {[
+                      { title: 'Learn at My Pace', desc: '46+ self-paced courses.', link: 'Self-Paced Courses', icon: '📚' },
+                      { title: 'Join a Live Class', desc: '2-day intensives.', link: 'View Schedule', icon: '📺' },
+                      { title: 'Get Certified', desc: '3 Intuit certs. 94% pass.', link: 'Certification Details', icon: '🎓' },
+                    ].map((card, i) => (
+                      <div key={i} className="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:border-blue-500 transition-colors w-[200px] text-center">
+                        <div className="text-3xl mb-3">{card.icon}</div>
+                        <div className="text-white font-bold text-sm mb-1">{card.title}</div>
+                        <div className="text-gray-400 text-xs mb-3">{card.desc}</div>
+                        <div className="text-blue-400 text-xs font-bold">{card.link} &rarr;</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-700/30">
+                    <h4 className="font-bold text-purple-300 mb-3">A/B Test</h4>
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                      <div className="text-white font-bold text-sm mb-1">Routing Page vs. Content Page</div>
+                      <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> Current content-heavy page. <strong className="text-gray-300">Variant:</strong> Clean 3-pathway routing (~3,000px). <strong className="text-gray-300">Metric:</strong> Click-through to product pages + conversion.</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ===== 1-ON-1 HELP WIREFRAME ===== */}
+              {activeMockup === 6 && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-4 gap-4">
+                    {[
+                      { value: '69.4%', label: 'Mobile scroll (BEST)', color: 'text-green-400' },
+                      { value: 'Free', label: '30 days with plan', color: 'text-green-400' },
+                      { value: '$50/mo', label: 'After 30 days', color: 'text-blue-400' },
+                      { value: 'Trust', label: 'Key differentiator', color: 'text-purple-400' },
+                    ].map((m, i) => (
+                      <div key={i} className="bg-gray-800/60 rounded-lg p-4 text-center border border-gray-700">
+                        <div className={`text-2xl font-black ${m.color}`}>{m.value}</div>
+                        <div className="text-xs text-gray-400 mt-1">{m.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-green-900/20 border-l-4 border-green-500 p-4 rounded-r">
+                    <strong className="text-green-300">Conversion role:</strong> <span className="text-gray-300">This is the trust closer. "You&apos;re not alone — real humans help you." Overcomes the #1 online learning objection: "What if I get stuck?" Position as included, not upsell.</span>
+                  </div>
+                  <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-1.5 text-xs font-mono max-w-[500px] mx-auto">
+                    <div className="text-center text-green-400 font-bold mb-3">Proposed Layout (~3,500px)</div>
+                    {[
+                      { label: '1. HERO — "INCLUDED FREE"', desc: '"1-on-1 Expert Help — FREE for 30 Days." Not upsell framing.', c: 'bg-blue-900/30 border-blue-700/40' },
+                      { label: '2. HOW IT WORKS', desc: 'Book > Screen share > Get answer. Show mock session screenshot.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '3. WHAT YOU CAN ASK', desc: '"How do I reconcile?" "Why don\'t reports match?" Real examples.', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '4. EXPERT PROFILES', desc: '2-3 photos + creds. "10+ years QB experience."', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '5. PRICING CONTEXT', desc: '"30 days free. Then $50/mo." vs. "$150+/hr from a CPA."', c: 'bg-green-900/30 border-green-700/40' },
+                      { label: '6. FAQ (5 questions)', desc: 'How to book? Session length? After 30 days?', c: 'bg-green-900/30 border-green-700/40' },
+                    ].map((s, i) => (
+                      <div key={i} className={`${s.c} border rounded px-3 py-2`}>
+                        <div className="text-gray-200 font-bold">{s.label}</div>
+                        <div className="text-gray-400 mt-0.5 text-[11px]">{s.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-purple-900/20 rounded-xl p-6 border border-purple-700/30">
+                    <h4 className="font-bold text-purple-300 mb-3">A/B Test</h4>
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                      <div className="text-white font-bold text-sm mb-1">"Included Free" vs. "Add-On" Framing</div>
+                      <div className="text-gray-400 text-xs"><strong className="text-gray-300">Control:</strong> "$50/mo add-on." <strong className="text-gray-300">Variant:</strong> "FREE for 30 days with every plan." <strong className="text-gray-300">Metric:</strong> Does "free" framing increase plan page conversion?</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Clarity Migration Note */}
+              <div className="mt-8 bg-blue-900/20 rounded-xl p-6 border border-blue-700/30">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl flex-shrink-0">📊</div>
+                  <div>
+                    <h4 className="font-bold text-blue-300 mb-2">Tracking: Hotjar &rarr; Microsoft Clarity</h4>
+                    <p className="text-gray-400 text-sm mb-3">Post-launch, switch from Hotjar to Microsoft Clarity for behavioral analytics:</p>
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                        <div className="text-green-400 font-bold text-sm">Free</div>
+                        <div className="text-gray-400 text-xs">Unlimited heatmaps, recordings, sessions. No traffic caps.</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                        <div className="text-green-400 font-bold text-sm">GA4 Integration</div>
+                        <div className="text-gray-400 text-xs">Native integration. Link recordings to conversion events.</div>
+                      </div>
+                      <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                        <div className="text-green-400 font-bold text-sm">Dead Click Detection</div>
+                        <div className="text-gray-400 text-xs">Built-in rage click and dead click detection.</div>
+                      </div>
+                    </div>
+                    <p className="text-gray-500 text-xs mt-3">All A/B tests reference Clarity as primary behavioral tool alongside GA4 for conversion tracking.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {activeSection === 8 && (
           <div className="space-y-8 animate-fade-in">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
               <h2 className="text-3xl font-bold mb-6 text-blue-400">Recommendations</h2>
@@ -3134,7 +3250,7 @@ export default function HotjarAnalysisPage() {
         )}
 
         {/* Execution Plan */}
-        {activeSection === 8 && (
+        {activeSection === 9 && (
           <div className="space-y-8 animate-fade-in">
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
               <h2 className="text-3xl font-bold mb-2 text-blue-400">Execution Plan</h2>
