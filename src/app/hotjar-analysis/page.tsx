@@ -83,6 +83,7 @@ export default function HotjarAnalysisPage() {
     { id: 'page-analysis', title: 'Page Analysis', icon: '🔍' },
     { id: 'design-fixes', title: 'Design Fixes', icon: '🔧' },
     { id: 'recommendations', title: 'Recommendations', icon: '💡' },
+    { id: 'execution', title: 'Execution Plan', icon: '🗺️' },
   ];
 
   const designFixPages = [
@@ -92,6 +93,7 @@ export default function HotjarAnalysisPage() {
     { id: 'qb-cert', title: 'QB Certification', icon: '🎓' },
     { id: 'live-classes', title: 'Live Classes', icon: '📺' },
     { id: 'self-paced', title: 'Self-Paced', icon: '📚' },
+    { id: 'mockups', title: 'Mockups', icon: '🎨' },
   ];
 
   const pageAnalysisPages = [
@@ -2339,6 +2341,456 @@ export default function HotjarAnalysisPage() {
                 </div>
               )}
 
+              {/* Mockups */}
+              {activeDesignFix === 6 && (
+                <div className="space-y-8">
+                  <div className="bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r mb-6">
+                    <strong className="text-blue-300">Wireframe Mockups:</strong> <span className="text-gray-300">Visual representations of the recommended changes. These show layout structure and content hierarchy, not final visual design.</span>
+                  </div>
+
+                  {/* MOCKUP 1: Homepage 6-Section Layout */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 1</span>
+                      <h3 className="text-xl font-bold text-white">Homepage: Consolidated 6-Section Layout</h3>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-6">Current: 9 sections, 9,346px, 9.9% reach midpoint. Target: 6 sections, ~4,500px, &gt;30% reach midpoint.</p>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Current Layout */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          <span className="text-red-400 font-semibold text-sm">Current: 9 Sections (~9,346px)</span>
+                        </div>
+                        <div className="bg-gray-900 rounded-lg border border-red-800/30 p-4 space-y-2 text-xs font-mono">
+                          {[
+                            { label: '1. HERO', height: '~800px', color: 'bg-red-900/40 border-red-700/50', desc: 'Headline + video + CTA' },
+                            { label: '2. TRUST BAR', height: '~120px', color: 'bg-gray-800 border-gray-600', desc: 'Intuit / 1M+ / Guarantee' },
+                            { label: '3. OFFERINGS GRID', height: '~600px', color: 'bg-gray-800 border-gray-600', desc: '3 feature cards' },
+                            { label: '4. PRICING CARDS', height: '~800px', color: 'bg-red-900/40 border-red-700/50', desc: '3 plan cards with prices' },
+                            { label: '5. TESTIMONIALS', height: '~600px', color: 'bg-red-900/40 border-red-700/50', desc: '4 individual quotes' },
+                            { label: '6. COMPARISON TABLE', height: '~1,200px', color: 'bg-red-900/40 border-red-700/50', desc: 'Static feature matrix' },
+                            { label: '7. FAQ', height: '~800px', color: 'bg-gray-800 border-gray-600', desc: '7 questions' },
+                            { label: '8. INSTRUCTORS', height: '~600px', color: 'bg-red-900/40 border-red-700/50', desc: 'Photo grid with modals' },
+                            { label: '9. FINAL CTA', height: '~400px', color: 'bg-gray-800 border-gray-600', desc: 'Bottom conversion block' },
+                          ].map((s, i) => (
+                            <div key={i} className={`${s.color} border rounded px-3 py-2`}>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-200 font-bold">{s.label}</span>
+                                <span className="text-gray-500">{s.height}</span>
+                              </div>
+                              <div className="text-gray-500 mt-0.5">{s.desc}</div>
+                            </div>
+                          ))}
+                          <div className="text-center text-red-400 font-bold mt-3 pt-2 border-t border-red-800/30">
+                            Only 9.9% of desktop users see below section 5
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Proposed Layout */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-green-400 font-semibold text-sm">Proposed: 6 Sections (~4,500px)</span>
+                        </div>
+                        <div className="bg-gray-900 rounded-lg border border-green-800/30 p-4 space-y-2 text-xs font-mono">
+                          {[
+                            { label: '1. HERO', height: '~600px', color: 'bg-green-900/30 border-green-700/40', desc: 'Headline + 3 bullets + CTA. Video as thumbnail only.', note: 'SIMPLIFIED' },
+                            { label: '2. TRUST BAR', height: '~120px', color: 'bg-green-900/30 border-green-700/40', desc: 'Intuit / 1M+ / Guarantee + "4.7 from 1,581+ reviews"', note: '+ REVIEWS' },
+                            { label: '3. OFFERINGS GRID', height: '~500px', color: 'bg-green-900/30 border-green-700/40', desc: '[Classes & Courses] [Certification] [1-on-1 Help]', note: 'KEPT' },
+                            { label: '4. INTERACTIVE TABLE', height: '~1,400px', color: 'bg-blue-900/30 border-blue-700/40', desc: 'MERGED: Pricing + Comparison + 1-2 Testimonials. Expandable rows. Prices at top. "Enroll Now" at bottom.', note: 'MERGED 3→1' },
+                            { label: '5. FAQ ACCORDION', height: '~700px', color: 'bg-green-900/30 border-green-700/40', desc: '5-7 most-asked questions. 23.9% of mobile clicks.', note: 'KEPT' },
+                            { label: '6. FINAL CTA', height: '~400px', color: 'bg-green-900/30 border-green-700/40', desc: '"Ready to Master QuickBooks?" Dark background.', note: 'KEPT' },
+                          ].map((s, i) => (
+                            <div key={i} className={`${s.color} border rounded px-3 py-2`}>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-200 font-bold">{s.label}</span>
+                                <div className="flex items-center gap-2">
+                                  {s.note && <span className="text-xs bg-blue-800/50 text-blue-300 px-1.5 py-0.5 rounded">{s.note}</span>}
+                                  <span className="text-gray-500">{s.height}</span>
+                                </div>
+                              </div>
+                              <div className="text-gray-400 mt-0.5">{s.desc}</div>
+                            </div>
+                          ))}
+                          <div className="text-center text-green-400 font-bold mt-3 pt-2 border-t border-green-800/30">
+                            Target: &gt;30% reach midpoint (~2,250px)
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* What's cut */}
+                    <div className="mt-6 bg-red-950/20 rounded-lg p-4 border border-red-800/30">
+                      <div className="text-red-400 font-bold text-sm mb-2">Cut / Merged (~3,000px saved):</div>
+                      <div className="grid md:grid-cols-3 gap-3 text-sm">
+                        <div className="text-gray-400"><span className="text-red-400 font-bold mr-1">X</span> Separate pricing cards section <span className="text-gray-600">(merged into table)</span></div>
+                        <div className="text-gray-400"><span className="text-red-400 font-bold mr-1">X</span> Separate testimonials section <span className="text-gray-600">(1-2 inline in table)</span></div>
+                        <div className="text-gray-400"><span className="text-red-400 font-bold mr-1">X</span> Separate instructor section <span className="text-gray-600">(moved to Live Classes)</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MOCKUP 2: Interactive Comparison Table */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 2</span>
+                      <h3 className="text-xl font-bold text-white">Interactive Comparison Table</h3>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-6">The #1 decision tool for a $700 purchase. 1,513 clicks on static text prove users expect interaction. This wireframe shows expandable feature rows.</p>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Desktop Version */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Monitor className="w-4 h-4 text-blue-400" />
+                          <span className="text-blue-400 font-semibold text-sm">Desktop: Hover + Click to Expand</span>
+                        </div>
+                        <div className="bg-gray-900 rounded-lg border border-blue-800/30 p-4 font-mono text-xs overflow-x-auto">
+                          {/* Table header */}
+                          <div className="bg-slate-800 rounded-t-lg px-3 py-3 grid grid-cols-4 gap-2 text-center font-bold border-b border-slate-600">
+                            <div className="text-left text-gray-300">Feature</div>
+                            <div className="text-gray-400">
+                              <div>Learner</div>
+                              <div className="text-green-400 text-[11px]">$599.95</div>
+                            </div>
+                            <div className="text-gray-400">
+                              <div className="text-blue-300">Certification</div>
+                              <div className="text-green-400 text-[11px]">$699.95</div>
+                              <div className="text-[10px] text-blue-400 mt-0.5">MOST POPULAR</div>
+                            </div>
+                            <div className="text-gray-400">
+                              <div>Team</div>
+                              <div className="text-green-400 text-[11px]">$999.95</div>
+                            </div>
+                          </div>
+
+                          {/* Collapsed row */}
+                          <div className="border-b border-gray-800 px-3 py-2.5 grid grid-cols-4 gap-2 items-center hover:bg-gray-800/50 cursor-pointer transition-colors">
+                            <div className="text-gray-300 flex items-center gap-1.5">
+                              <span className="text-gray-600">&#9654;</span>
+                              <span>Live 2-Day Classes</span>
+                              <span className="text-gray-600 text-[10px]">&#9432;</span>
+                            </div>
+                            <div className="text-center text-green-400">&#10003;</div>
+                            <div className="text-center text-green-400">&#10003;</div>
+                            <div className="text-center text-green-400">&#10003;</div>
+                          </div>
+
+                          {/* Expanded row example */}
+                          <div className="border-b border-blue-800/50 bg-blue-950/30">
+                            <div className="px-3 py-2.5 grid grid-cols-4 gap-2 items-center cursor-pointer">
+                              <div className="text-blue-300 flex items-center gap-1.5 font-semibold">
+                                <span className="text-blue-400">&#9660;</span>
+                                <span>Certification Exams</span>
+                              </div>
+                              <div className="text-center text-gray-600">&#10007;</div>
+                              <div className="text-center text-green-400">&#10003;</div>
+                              <div className="text-center text-green-400">&#10003;</div>
+                            </div>
+                            <div className="px-3 pb-3 pt-0 col-span-4">
+                              <div className="bg-blue-900/30 rounded p-3 text-gray-300 text-[11px] leading-relaxed border border-blue-800/30">
+                                <strong className="text-blue-300">3 Intuit certification exams</strong> — QuickBooks Online, QuickBooks Desktop, and Bookkeeping. Practice exams included. Unlimited retakes. Average pass rate: 94%. Employers recognize these as the industry standard.
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* More collapsed rows */}
+                          {['46+ Self-Paced Courses', '1-on-1 Expert Help', 'Lifetime Access'].map((feature, i) => (
+                            <div key={i} className="border-b border-gray-800 px-3 py-2.5 grid grid-cols-4 gap-2 items-center hover:bg-gray-800/50 cursor-pointer transition-colors">
+                              <div className="text-gray-300 flex items-center gap-1.5">
+                                <span className="text-gray-600">&#9654;</span>
+                                <span>{feature}</span>
+                                <span className="text-gray-600 text-[10px]">&#9432;</span>
+                              </div>
+                              <div className="text-center text-green-400">&#10003;</div>
+                              <div className="text-center text-green-400">&#10003;</div>
+                              <div className="text-center text-green-400">&#10003;</div>
+                            </div>
+                          ))}
+
+                          {/* CTA row */}
+                          <div className="px-3 py-4 grid grid-cols-4 gap-2 mt-2">
+                            <div></div>
+                            <div className="text-center"><div className="bg-gray-700 text-gray-300 px-2 py-1.5 rounded text-[11px] font-bold">Enroll Now</div></div>
+                            <div className="text-center"><div className="bg-green-600 text-white px-2 py-1.5 rounded text-[11px] font-bold shadow-lg">Enroll Now</div></div>
+                            <div className="text-center"><div className="bg-gray-700 text-gray-300 px-2 py-1.5 rounded text-[11px] font-bold">Enroll Now</div></div>
+                          </div>
+
+                          {/* Inline testimonial */}
+                          <div className="mx-3 mb-3 bg-gray-800/80 rounded-lg p-3 border border-gray-700 italic text-gray-400 text-[11px]">
+                            &quot;Best investment I ever made for my career.&quot; — <span className="text-gray-300 not-italic">Sarah K., Certified QuickBooks ProAdvisor</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Mobile Version */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Smartphone className="w-4 h-4 text-purple-400" />
+                          <span className="text-purple-400 font-semibold text-sm">Mobile: Tap to Expand + Swipe Plans</span>
+                        </div>
+                        <div className="bg-gray-900 rounded-lg border border-purple-800/30 p-4 max-w-[280px] mx-auto">
+                          {/* Mobile plan selector */}
+                          <div className="flex gap-1 mb-4 bg-gray-800 rounded-lg p-1">
+                            <div className="flex-1 text-center py-2 rounded-md bg-gray-700 text-gray-400 text-[10px] font-bold">Learner</div>
+                            <div className="flex-1 text-center py-2 rounded-md bg-blue-600 text-white text-[10px] font-bold shadow-md">Certification</div>
+                            <div className="flex-1 text-center py-2 rounded-md bg-gray-700 text-gray-400 text-[10px] font-bold">Team</div>
+                          </div>
+
+                          {/* Mobile plan card */}
+                          <div className="bg-gray-800 rounded-xl p-4 border border-blue-700/50 mb-4">
+                            <div className="text-center mb-3">
+                              <div className="text-blue-400 text-[10px] font-bold uppercase tracking-wider">Most Popular</div>
+                              <div className="text-white text-lg font-black">Certification</div>
+                              <div className="text-gray-500 text-xs line-through">$999.95</div>
+                              <div className="text-green-400 text-2xl font-black">$699.95</div>
+                            </div>
+
+                            <div className="space-y-1.5 text-[11px]">
+                              {/* Collapsed feature */}
+                              <div className="flex items-center gap-2 bg-gray-900/50 rounded px-2.5 py-2 border border-gray-700">
+                                <span className="text-green-400">&#10003;</span>
+                                <span className="text-gray-300 flex-1">Live 2-Day Classes</span>
+                                <span className="text-gray-600">&#9654;</span>
+                              </div>
+
+                              {/* Expanded feature */}
+                              <div className="bg-blue-950/30 rounded border border-blue-800/30">
+                                <div className="flex items-center gap-2 px-2.5 py-2">
+                                  <span className="text-green-400">&#10003;</span>
+                                  <span className="text-blue-300 flex-1 font-semibold">Certification Exams</span>
+                                  <span className="text-blue-400">&#9660;</span>
+                                </div>
+                                <div className="px-2.5 pb-2 text-gray-400 text-[10px] leading-relaxed">
+                                  3 Intuit exams. Practice tests included. Unlimited retakes. 94% pass rate.
+                                </div>
+                              </div>
+
+                              {/* More collapsed */}
+                              {['46+ Self-Paced Courses', '1-on-1 Help (30 days free)', 'Lifetime Access'].map((f, i) => (
+                                <div key={i} className="flex items-center gap-2 bg-gray-900/50 rounded px-2.5 py-2 border border-gray-700">
+                                  <span className="text-green-400">&#10003;</span>
+                                  <span className="text-gray-300 flex-1">{f}</span>
+                                  <span className="text-gray-600">&#9654;</span>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="mt-4">
+                              <div className="bg-green-600 text-white text-center py-2.5 rounded-lg text-sm font-bold shadow-lg">
+                                Enroll Now — $699.95
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Swipe indicator */}
+                          <div className="flex justify-center gap-1.5 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-gray-600"></div>
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <div className="w-2 h-2 rounded-full bg-gray-600"></div>
+                          </div>
+                          <div className="text-center text-gray-600 text-[10px]">Swipe to compare plans</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Key behaviors */}
+                    <div className="mt-6 grid md:grid-cols-3 gap-4">
+                      <div className="bg-blue-950/30 rounded-lg p-4 border border-blue-800/30">
+                        <div className="text-blue-300 font-bold text-sm mb-1">Desktop Hover</div>
+                        <div className="text-gray-400 text-xs">Row highlights on hover. cursor:pointer. Subtle background change. Clear "this is clickable" signal.</div>
+                      </div>
+                      <div className="bg-blue-950/30 rounded-lg p-4 border border-blue-800/30">
+                        <div className="text-blue-300 font-bold text-sm mb-1">Click/Tap to Expand</div>
+                        <div className="text-gray-400 text-xs">2-3 sentence feature description slides open. Smooth animation. Only one row expanded at a time.</div>
+                      </div>
+                      <div className="bg-blue-950/30 rounded-lg p-4 border border-blue-800/30">
+                        <div className="text-blue-300 font-bold text-sm mb-1">Mobile Swipe</div>
+                        <div className="text-gray-400 text-xs">Swipe between plan cards. Each card shows all features with expand/collapse. Dot indicators show position.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MOCKUP 3: Sticky Mobile CTA Bar */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 3</span>
+                      <h3 className="text-xl font-bold text-white">Sticky Mobile CTA Bar</h3>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-6">Fixed at the bottom of every mobile page. Always one tap away from pricing. Research-oriented language ("View Pricing") not purchase-push ("Buy Now").</p>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                      {/* Phone frame with sticky bar */}
+                      <div className="flex justify-center">
+                        <div className="relative bg-gray-950 rounded-[2rem] border-4 border-gray-700 w-[280px] h-[520px] overflow-hidden shadow-2xl">
+                          {/* Phone notch */}
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-700 rounded-b-xl z-10"></div>
+
+                          {/* Screen content */}
+                          <div className="h-full pt-8 px-3 pb-20 overflow-hidden">
+                            <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
+                              <div className="h-3 bg-gray-700 rounded w-3/4 mb-2"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-5/6 mb-1.5"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-4/6"></div>
+                            </div>
+                            <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
+                              <div className="h-3 bg-gray-700 rounded w-2/3 mb-2"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-5/6"></div>
+                            </div>
+                            <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
+                              <div className="h-3 bg-gray-700 rounded w-1/2 mb-2"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-3/4"></div>
+                            </div>
+                            <div className="bg-gray-800/50 rounded-lg p-3">
+                              <div className="h-3 bg-gray-700 rounded w-2/3 mb-2"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-full mb-1.5"></div>
+                              <div className="h-2 bg-gray-700/50 rounded w-5/6"></div>
+                            </div>
+                          </div>
+
+                          {/* Sticky CTA Bar */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900 via-gray-900 to-gray-900/95 border-t border-gray-700 px-4 py-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="text-white text-sm font-bold">Plans from $599.95</div>
+                                <div className="text-gray-400 text-[10px]">Includes everything. Cancel anytime.</div>
+                              </div>
+                              <div className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg whitespace-nowrap">
+                                View Pricing
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Specifications */}
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-bold text-white">Specifications</h4>
+
+                        <div className="space-y-3">
+                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                            <div className="text-blue-300 font-bold text-sm mb-1">Positioning</div>
+                            <div className="text-gray-400 text-sm">Fixed at viewport bottom. <code className="text-xs bg-gray-800 px-1 rounded">position: fixed; bottom: 0;</code> with safe area inset for iOS notch devices.</div>
+                          </div>
+
+                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                            <div className="text-blue-300 font-bold text-sm mb-1">Appearance</div>
+                            <div className="text-gray-400 text-sm">Shows on scroll after the hero section passes out of view. Subtle fade-in animation. Semi-transparent gradient top edge for seamless blend.</div>
+                          </div>
+
+                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                            <div className="text-blue-300 font-bold text-sm mb-1">Copy Strategy</div>
+                            <div className="text-gray-400 text-sm">"<strong className="text-white">Plans from $599.95</strong>" anchors the starting price. "<strong className="text-white">View Pricing</strong>" is research-oriented (not "Buy Now"). Supports the mobile-as-research channel pattern.</div>
+                          </div>
+
+                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                            <div className="text-blue-300 font-bold text-sm mb-1">Touch Target</div>
+                            <div className="text-gray-400 text-sm">Button meets Apple HIG minimum (44x44px). Total bar height ~60px. Doesn&apos;t obscure content significantly.</div>
+                          </div>
+
+                          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+                            <div className="text-blue-300 font-bold text-sm mb-1">Link Destination</div>
+                            <div className="text-gray-400 text-sm">Always links to <code className="text-xs bg-gray-800 px-1 rounded">/plans-and-pricing</code> with smooth scroll to comparison table. Consistent across all pages.</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MOCKUP 4: First-Fold Desktop Experience */}
+                  <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">MOCKUP 4</span>
+                      <h3 className="text-xl font-bold text-white">Homepage First-Fold (1920x1080 Desktop)</h3>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-6">Fixing the 40.2% drop-off at 5-10% scroll. Everything above must earn the scroll. No dead space. Complete value proposition in one viewport.</p>
+
+                    {/* Desktop viewport wireframe */}
+                    <div className="bg-gray-900 rounded-xl border-2 border-gray-600 overflow-hidden max-w-[800px] mx-auto">
+                      {/* Browser chrome */}
+                      <div className="bg-gray-800 px-4 py-2 flex items-center gap-3 border-b border-gray-700">
+                        <div className="flex gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-red-500/60"></div>
+                          <div className="w-3 h-3 rounded-full bg-yellow-500/60"></div>
+                          <div className="w-3 h-3 rounded-full bg-green-500/60"></div>
+                        </div>
+                        <div className="flex-1 bg-gray-700 rounded px-3 py-1 text-xs text-gray-400 text-center">qbtraining.com</div>
+                      </div>
+
+                      {/* Viewport content */}
+                      <div className="p-6">
+                        {/* Header bar */}
+                        <div className="flex items-center justify-between mb-6 pb-3 border-b border-gray-700">
+                          <div className="flex items-center gap-6">
+                            <div className="text-white font-black text-sm">QBTraining</div>
+                            <div className="flex gap-4 text-[10px] text-gray-400">
+                              <span>Classes</span>
+                              <span>Courses</span>
+                              <span>Certifications</span>
+                              <span>Pricing</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-500 text-[10px]">Sign In</span>
+                            <div className="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold">Start Learning</div>
+                          </div>
+                        </div>
+
+                        {/* Hero section */}
+                        <div className="grid grid-cols-2 gap-8 mb-6">
+                          <div>
+                            <div className="text-white text-lg font-black mb-3 leading-tight">Master QuickBooks.<br/>Get Certified.<br/>Advance Your Career.</div>
+                            <div className="space-y-1.5 text-[11px] text-gray-400 mb-4">
+                              <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> Live classes + 46 self-paced courses</div>
+                              <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 3 Intuit certifications included</div>
+                              <div className="flex items-center gap-2"><span className="text-green-400">&#10003;</span> 1-on-1 expert help for 30 days</div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Start Learning — From $599.95</div>
+                              <span className="text-gray-500 text-[10px]">or compare plans</span>
+                            </div>
+                          </div>
+                          <div className="bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700">
+                            <div className="text-center">
+                              <div className="text-gray-600 text-2xl mb-1">&#9654;</div>
+                              <div className="text-gray-500 text-[10px]">Video thumbnail</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Trust bar */}
+                        <div className="bg-gray-800/80 rounded-lg px-4 py-2.5 flex items-center justify-center gap-6 text-[10px] text-gray-400 border border-gray-700">
+                          <span><strong className="text-white">Intuit</strong> Authorized</span>
+                          <span className="text-gray-600">|</span>
+                          <span><strong className="text-white">25</strong> Years</span>
+                          <span className="text-gray-600">|</span>
+                          <span><strong className="text-white">1M+</strong> People Trained</span>
+                          <span className="text-gray-600">|</span>
+                          <span className="text-yellow-400">&#9733;&#9733;&#9733;&#9733;&#9733;</span> <strong className="text-white">4.7</strong> from 1,581+ reviews
+                          <span className="text-gray-600">|</span>
+                          <span><strong className="text-white">30-Day</strong> Guarantee</span>
+                        </div>
+
+                        {/* Fold line */}
+                        <div className="mt-4 pt-2 border-t-2 border-dashed border-amber-600/50 text-center">
+                          <span className="text-amber-400 text-[10px] font-bold bg-gray-900 px-2">&#9660; FOLD LINE (1080px viewport) — Everything above must earn the scroll &#9660;</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 text-center text-gray-500 text-sm">
+                      The first viewport delivers: headline, 3-bullet value prop, primary CTA, video thumbnail, and full trust bar including star rating. Zero wasted space.
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Measurement Plan */}
               <div className="mt-8 bg-gray-800/50 rounded-xl p-6 border border-gray-700">
                 <h3 className="text-xl font-bold text-white mb-4">Measurement Plan: Before → After Targets</h3>
@@ -2675,6 +3127,265 @@ export default function HotjarAnalysisPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Execution Plan */}
+        {activeSection === 8 && (
+          <div className="space-y-8 animate-fade-in">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700 shadow-2xl">
+              <h2 className="text-3xl font-bold mb-2 text-blue-400">Execution Plan</h2>
+              <p className="text-gray-400 text-lg mb-8">Implementation roadmap, measurement targets, and migration checklist</p>
+
+              {/* Implementation Roadmap */}
+              <h3 className="text-2xl font-bold text-white mb-6">Implementation Roadmap</h3>
+
+              {/* Phase 1: Before Launch */}
+              <div className="relative mb-8">
+                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-red-500/30"></div>
+                <div className="flex items-center gap-4 mb-4 relative">
+                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center z-10 shadow-lg">
+                    <span className="text-white font-black text-lg">1</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-red-400">Before Launch</h4>
+                    <p className="text-gray-400 text-sm">Critical changes before the new site goes live</p>
+                  </div>
+                  <div className="ml-auto bg-red-900/30 px-3 py-1 rounded-full border border-red-700/50">
+                    <span className="text-red-300 text-sm font-bold">7 items</span>
+                  </div>
+                </div>
+                <div className="ml-16 space-y-3">
+                  {[
+                    { id: 'SW-1', title: 'Interactive comparison table', effort: 'Medium', impact: 'Highest', desc: 'The $700 decision tool. 1,513 dead clicks on static table text. Expandable rows, hover states, mobile swipe.' },
+                    { id: 'HP-1', title: 'Consolidate homepage to 6 sections', effort: 'Medium', impact: 'High', desc: '$454K revenue page. Cut from 9,346px to ~4,500px. Merge pricing + comparison + testimonials.' },
+                    { id: 'SW-2', title: 'Desktop hover states / affordances audit', effort: 'Low-Med', impact: 'High', desc: 'Fix 20-39% wasted clicks. cursor:pointer on interactive elements, card hover lift, row highlights.' },
+                    { id: 'SW-3', title: 'Aggregate star rating site-wide', effort: 'Low', impact: 'Med-High', desc: '"4.7 from 1,581+ reviews" in trust bar. Schema.org AggregateRating for rich search snippets.' },
+                    { id: 'HP-2', title: 'First-fold optimization', effort: 'Low', impact: 'High', desc: 'Fix 40.2% desktop drop-off. Headline + value prop + CTA + trust bar in first viewport.' },
+                    { id: 'SC-1', title: '"One Plan, All Courses" messaging', effort: 'Low', impact: 'Medium', desc: 'Banner + card CTAs. Reframe Self-Paced browsing from "picking courses" to "previewing value."' },
+                    { id: 'SW-5', title: 'Page length audit (all ≤5,000px)', effort: 'Medium', impact: 'Medium', desc: 'Proven correlation: Plans & Pricing (3,869px) = 4.15%. Homepage (9,346px) = 0.86%.' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-gray-800/60 rounded-lg p-4 border border-gray-700 hover:border-red-700/50 transition-colors">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="bg-red-800/50 text-red-300 px-2 py-0.5 rounded text-xs font-bold">{item.id}</span>
+                        <span className="text-white font-semibold">{item.title}</span>
+                        <div className="ml-auto flex gap-2">
+                          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Effort: {item.effort}</span>
+                          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Impact: {item.impact}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-400 text-sm ml-0">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Phase 2: At Migration */}
+              <div className="relative mb-8">
+                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-amber-500/30"></div>
+                <div className="flex items-center gap-4 mb-4 relative">
+                  <div className="w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center z-10 shadow-lg">
+                    <span className="text-white font-black text-lg">2</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-amber-400">At Migration</h4>
+                    <p className="text-gray-400 text-sm">Execute on launch day to preserve traffic and SEO</p>
+                  </div>
+                  <div className="ml-auto bg-amber-900/30 px-3 py-1 rounded-full border border-amber-700/50">
+                    <span className="text-amber-300 text-sm font-bold">2 items</span>
+                  </div>
+                </div>
+                <div className="ml-16 space-y-3">
+                  {[
+                    { id: 'QC-2', title: '/certification-mobile → /quickbooks-certification redirect', effort: 'Low', impact: 'Medium', desc: '13,238 sessions at stake. 301 permanent redirect. Also add Hotjar tracking to monitor merged traffic.' },
+                    { id: 'MIG-1', title: 'All URL redirects (see Migration Redirects below)', effort: 'Medium', impact: 'SEO Critical', desc: '/login, /dashboard, /live-quickbooks, 45+ city pages. Failure = lost rankings and 404 errors for returning visitors.' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-gray-800/60 rounded-lg p-4 border border-gray-700 hover:border-amber-700/50 transition-colors">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="bg-amber-800/50 text-amber-300 px-2 py-0.5 rounded text-xs font-bold">{item.id}</span>
+                        <span className="text-white font-semibold">{item.title}</span>
+                        <div className="ml-auto flex gap-2">
+                          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Effort: {item.effort}</span>
+                          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Impact: {item.impact}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-400 text-sm">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Phase 3: Post-Launch v1 */}
+              <div className="relative mb-12">
+                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-green-500/30"></div>
+                <div className="flex items-center gap-4 mb-4 relative">
+                  <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center z-10 shadow-lg">
+                    <span className="text-white font-black text-lg">3</span>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-green-400">Post-Launch v1</h4>
+                    <p className="text-gray-400 text-sm">Iterate based on initial data from the new site</p>
+                  </div>
+                  <div className="ml-auto bg-green-900/30 px-3 py-1 rounded-full border border-green-700/50">
+                    <span className="text-green-300 text-sm font-bold">4 items</span>
+                  </div>
+                </div>
+                <div className="ml-16 space-y-3">
+                  {[
+                    { id: 'SW-4', title: 'Cross-device journey bridges', effort: 'Medium', impact: 'Med-High', desc: '"Email me this comparison" on Plans & Pricing. Captures email + bridges mobile-to-desktop. Lead gen + conversion path.' },
+                    { id: 'PP-2', title: 'Mobile plan comparison (swipeable)', effort: 'Medium', impact: 'Medium', desc: '7,727 mobile sessions, 0.62% conversion. Swipeable cards with plan highlight differences.' },
+                    { id: 'LQ-1', title: 'Learn QuickBooks as routing page', effort: 'Low-Med', impact: 'Medium', desc: '3 clear pathways: "Learn at my pace" → Self-Paced | "Live class" → Classes | "Get certified" → Certs.' },
+                    { id: 'M-2', title: 'Sticky mobile CTA bar', effort: 'Low', impact: 'Medium', desc: '"Plans from $599.95 — View Pricing" fixed at bottom. Persistent conversion path on every mobile page.' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-gray-800/60 rounded-lg p-4 border border-gray-700 hover:border-green-700/50 transition-colors">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="bg-green-800/50 text-green-300 px-2 py-0.5 rounded text-xs font-bold">{item.id}</span>
+                        <span className="text-white font-semibold">{item.title}</span>
+                        <div className="ml-auto flex gap-2">
+                          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Effort: {item.effort}</span>
+                          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">Impact: {item.impact}</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-400 text-sm">{item.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Measurement Plan */}
+              <h3 className="text-2xl font-bold text-white mb-6">Measurement Plan</h3>
+              <p className="text-gray-400 mb-6">Post-launch KPIs with baselines from the old site and targets for the new site. Measure at 30, 60, and 90 days post-launch.</p>
+
+              <div className="overflow-x-auto mb-12">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                      <th className="p-4 text-left font-bold text-blue-300">Metric</th>
+                      <th className="p-4 text-center font-bold text-red-300">Old Site (Baseline)</th>
+                      <th className="p-4 text-center font-bold text-green-300">Target</th>
+                      <th className="p-4 text-left font-bold text-gray-300">How to Measure</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    {[
+                      { metric: 'Homepage desktop scroll to 50%', baseline: '9.9%', target: '>30%', how: 'Hotjar scroll map — compare at 30/60/90 days', critical: true },
+                      { metric: 'Desktop dead click rate (site-wide)', baseline: '18–39%', target: '<10%', how: 'Hotjar click map — sample 5 pages monthly', critical: true },
+                      { metric: 'Plans & Pricing desktop conversion', baseline: '4.15%', target: '>5%', how: 'GA4 conversion events', critical: true },
+                      { metric: 'Homepage desktop conversion', baseline: '0.86%', target: '>1.5%', how: 'GA4 conversion events', critical: true },
+                      { metric: 'Self-Paced CTA click rate', baseline: '4.6%', target: '>15%', how: 'Hotjar click map + GA4 event tracking', critical: false },
+                      { metric: 'Mobile → desktop return rate', baseline: 'Unknown', target: 'Establish baseline', how: 'GA4 cross-device reports + User-ID', critical: false },
+                      { metric: 'Comparison table engagement', baseline: '7.3% dead clicks', target: 'Interactive clicks tracked', how: 'Hotjar click map + custom events', critical: false },
+                      { metric: 'Average page height', baseline: '~7,000px', target: '<5,000px', how: 'Manual audit at launch', critical: false },
+                      { metric: '"Email me this" captures', baseline: 'N/A', target: '2% of mobile visitors', how: 'Custom GA4 event + email platform', critical: false },
+                      { metric: 'Mobile checkout completion', baseline: '0.30–0.62%', target: '>1.0%', how: 'GA4 funnel visualization', critical: false },
+                    ].map((row, idx) => (
+                      <tr key={idx} className={`border-b border-gray-800 hover:bg-gray-800/50 ${row.critical ? '' : ''}`}>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            {row.critical && <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" title="Critical KPI"></span>}
+                            <span className={row.critical ? 'font-semibold text-white' : ''}>{row.metric}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center text-red-300 font-medium">{row.baseline}</td>
+                        <td className="p-4 text-center text-green-300 font-bold">{row.target}</td>
+                        <td className="p-4 text-gray-400 text-xs">{row.how}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r mb-12">
+                <strong className="text-blue-300">Measurement cadence:</strong> <span className="text-gray-300">Set up Hotjar recordings + heatmaps on all key pages within 48 hours of launch. Pull first comparison report at 30 days. Full assessment with A/B test planning at 90 days.</span>
+              </div>
+
+              {/* Migration Redirects */}
+              <h3 className="text-2xl font-bold text-white mb-6">Migration Redirects</h3>
+              <p className="text-gray-400 mb-6">301 permanent redirects required at migration. Failure to implement these results in lost traffic, broken bookmarks, and SEO damage.</p>
+
+              <div className="overflow-x-auto mb-8">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                      <th className="p-4 text-left font-bold text-blue-300">Old URL</th>
+                      <th className="p-4 text-left font-bold text-blue-300">New URL</th>
+                      <th className="p-4 text-right font-bold text-blue-300">Traffic</th>
+                      <th className="p-4 text-center font-bold text-blue-300">Priority</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-300">
+                    {[
+                      { old: '/certification-mobile', new_url: '/quickbooks-certification', traffic: '13,238 sessions', priority: 'Critical' },
+                      { old: '/dashboard', new_url: '/course-dashboard', traffic: '28,551 sessions', priority: 'Critical' },
+                      { old: '/login', new_url: '/login', traffic: '20,364 sessions', priority: 'Critical' },
+                      { old: '/live-quickbooks', new_url: '/quickbooks-classes', traffic: 'Low', priority: 'Medium' },
+                      { old: '/certifications-2', new_url: '/quickbooks-certification', traffic: 'Unknown', priority: 'Medium' },
+                      { old: '/quickbooks-certification-online', new_url: '/quickbooks-online-certification', traffic: 'Check', priority: 'Medium' },
+                      { old: '/quickbooks-certification-exam', new_url: '/quickbooks-certification', traffic: 'Check', priority: 'Medium' },
+                    ].map((row, idx) => (
+                      <tr key={idx} className="border-b border-gray-800 hover:bg-gray-800/50">
+                        <td className="p-4 font-mono text-xs">{row.old}</td>
+                        <td className="p-4 font-mono text-xs text-green-300">{row.new_url}</td>
+                        <td className="p-4 text-right font-medium">{row.traffic}</td>
+                        <td className="p-4 text-center">
+                          <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                            row.priority === 'Critical' ? 'bg-red-900/50 text-red-300' : 'bg-amber-900/50 text-amber-300'
+                          }`}>{row.priority}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="bg-amber-900/20 rounded-xl p-6 border border-amber-700/30 mb-8">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-amber-300 mb-2">45+ City Pages — SEO Critical</h4>
+                    <p className="text-gray-400 text-sm mb-3">The old site has 45+ city-specific class pages (e.g., <code className="text-xs bg-gray-800 px-1 rounded">/quickbooks-classes-new-york</code>). These rank for local search terms and drive organic traffic.</p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-green-950/30 rounded-lg p-3 border border-green-800/30">
+                        <div className="text-green-400 font-semibold text-sm mb-1">Option A: Keep city pages</div>
+                        <div className="text-gray-400 text-xs">Maintain all 45+ city pages on the new site with updated content and design. Best for SEO preservation.</div>
+                      </div>
+                      <div className="bg-amber-950/30 rounded-lg p-3 border border-amber-800/30">
+                        <div className="text-amber-400 font-semibold text-sm mb-1">Option B: Consolidate + redirect</div>
+                        <div className="text-gray-400 text-xs">301 redirect all city pages to /quickbooks-classes with city selector. Simpler but risks local ranking loss.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hotjar Re-tracking Setup */}
+              <h3 className="text-2xl font-bold text-white mb-6">Post-Launch Tracking Setup</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700">
+                  <h4 className="font-bold text-blue-300 mb-3">Hotjar Configuration</h4>
+                  <div className="space-y-2 text-sm text-gray-400">
+                    <div className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">1.</span> Install Hotjar snippet on all new site pages within 48 hours</div>
+                    <div className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">2.</span> Create heatmaps for: Homepage, Plans & Pricing, QB Certification, Live Classes, Self-Paced</div>
+                    <div className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">3.</span> Set up separate Desktop vs Mobile recordings per page</div>
+                    <div className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">4.</span> Create scroll maps to measure new midpoint reach %</div>
+                    <div className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">5.</span> Track comparison table interactions (expand/collapse events)</div>
+                    <div className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">6.</span> Monitor /certification-mobile redirect traffic behavior</div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700">
+                  <h4 className="font-bold text-green-300 mb-3">GA4 Events to Add</h4>
+                  <div className="space-y-2 text-sm text-gray-400">
+                    <div className="flex items-start gap-2"><span className="text-green-400 mt-0.5">1.</span> <code className="text-xs bg-gray-800 px-1 rounded">comparison_row_expand</code> — track which features get expanded</div>
+                    <div className="flex items-start gap-2"><span className="text-green-400 mt-0.5">2.</span> <code className="text-xs bg-gray-800 px-1 rounded">plan_card_swipe</code> — mobile plan comparison interactions</div>
+                    <div className="flex items-start gap-2"><span className="text-green-400 mt-0.5">3.</span> <code className="text-xs bg-gray-800 px-1 rounded">sticky_cta_click</code> — mobile sticky bar engagement</div>
+                    <div className="flex items-start gap-2"><span className="text-green-400 mt-0.5">4.</span> <code className="text-xs bg-gray-800 px-1 rounded">email_comparison</code> — "Email me this" cross-device bridge</div>
+                    <div className="flex items-start gap-2"><span className="text-green-400 mt-0.5">5.</span> <code className="text-xs bg-gray-800 px-1 rounded">faq_expand</code> — track which FAQ questions get clicked</div>
+                    <div className="flex items-start gap-2"><span className="text-green-400 mt-0.5">6.</span> <code className="text-xs bg-gray-800 px-1 rounded">course_card_cta</code> — Self-Paced card CTA clicks vs. browsing</div>
+                  </div>
                 </div>
               </div>
             </div>
