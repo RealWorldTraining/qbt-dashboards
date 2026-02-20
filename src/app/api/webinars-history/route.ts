@@ -164,6 +164,57 @@ export async function GET(request: NextRequest) {
       const externalRows = webinarRows.filter(r =>
         !((r[COL.attendeeEmail] || '').toLowerCase().includes('@quickbookstraining.com'))
       );
+
+      // Merge duplicate rows for the same attendee (rejoins)
+      const dedupMap = new Map<string, {
+        name: string; joinTime: string; leaveTime: string; totalDuration: number;
+      }>();
+      let noKeyCount = 0;
+      for (const r of externalRows) {
+        const email = (r[COL.attendeeEmail] || '').toLowerCase().trim();
+        const name  = (r[COL.attendeeName]  || '').toLowerCase().trim();
+        const key   = email || name;
+        const dur   = r[COL.durationMin] ? Number(r[COL.durationMin]) : 0;
+
+        if (!key) {
+          // No identifier — keep as-is with a synthetic key
+          dedupMap.set(`__nokey_${noKeyCount++}`, {
+            name: r[COL.attendeeName] || '',
+            joinTime:  r[COL.joinTime]  || '',
+            leaveTime: r[COL.leaveTime] || '',
+            totalDuration: dur,
+          });
+          continue;
+        }
+
+        if (!dedupMap.has(key)) {
+          dedupMap.set(key, {
+            name: r[COL.attendeeName] || '',
+            joinTime:  r[COL.joinTime]  || '',
+            leaveTime: r[COL.leaveTime] || '',
+            totalDuration: dur,
+          });
+        } else {
+          const existing = dedupMap.get(key)!;
+          existing.totalDuration += dur;
+          // Earliest join time (string compare works for CST locale strings here —
+          // imperfect but good enough; exact order matters less than merged duration)
+          if (r[COL.joinTime] && (!existing.joinTime || r[COL.joinTime] < existing.joinTime)) {
+            existing.joinTime = r[COL.joinTime];
+          }
+          if (r[COL.leaveTime] && r[COL.leaveTime] > (existing.leaveTime || '')) {
+            existing.leaveTime = r[COL.leaveTime];
+          }
+        }
+      }
+
+      const attendees = Array.from(dedupMap.values()).map(a => ({
+        name:        a.name,
+        joinTime:    a.joinTime,
+        leaveTime:   a.leaveTime,
+        durationMin: a.totalDuration > 0 ? a.totalDuration : null,
+      }));
+
       const registrantsCount = processedMap.get(webinarId)?.registrantsCount ?? null;
       return NextResponse.json({
         webinarId,
@@ -172,17 +223,13 @@ export async function GET(request: NextRequest) {
         startTime: meta[COL.startTime],
         hostEmail: meta[COL.hostEmail],
         registrantsCount,
-        total: externalRows.length,
-        attendees: externalRows.map(r => ({
-          name:        r[COL.attendeeName]  || '',
-          joinTime:    r[COL.joinTime]      || '',
-          leaveTime:   r[COL.leaveTime]     || '',
-          durationMin: r[COL.durationMin]   ? Number(r[COL.durationMin]) : null,
-        })),
+        total: attendees.length,
+        attendees,
       });
     }
 
     // Otherwise group by webinar → summary list
+    // Track unique attendees per webinar to avoid counting rejoins as separate people
     const webinarMap = new Map<string, {
       webinarId: string;
       topic: string;
@@ -193,6 +240,7 @@ export async function GET(request: NextRequest) {
       totalDurationMin: number;
       durationsWithValue: number;
     }>();
+    const webinarAttendees = new Map<string, Set<string>>(); // webinarId -> unique attendee keys
 
     for (const r of filtered) {
       const id = String(r[COL.webinarId]);
@@ -207,9 +255,21 @@ export async function GET(request: NextRequest) {
           totalDurationMin: 0,
           durationsWithValue: 0,
         });
+        webinarAttendees.set(id, new Set());
       }
-      const entry = webinarMap.get(id)!;
-      entry.attendeeCount++;
+      const entry      = webinarMap.get(id)!;
+      const attendeeSet = webinarAttendees.get(id)!;
+
+      // Dedup key: email preferred, fall back to name
+      const email = (r[COL.attendeeEmail] || '').toLowerCase().trim();
+      const name  = (r[COL.attendeeName]  || '').toLowerCase().trim();
+      const key   = email || name;
+
+      if (!key || !attendeeSet.has(key)) {
+        if (key) attendeeSet.add(key);
+        entry.attendeeCount++;
+      }
+      // Always accumulate duration (summed across rejoins for avg calculation)
       const dur = Number(r[COL.durationMin]);
       if (!isNaN(dur) && dur > 0) {
         entry.totalDurationMin += dur;
@@ -272,9 +332,9 @@ export async function GET(request: NextRequest) {
         return parseDate(b.date).localeCompare(parseDate(a.date));
       });
 
-    // Summary stats
-    const totalAttendees    = filtered.length;
-    const uniqueEmails      = new Set(filtered.map(r => r[COL.attendeeEmail]).filter(Boolean)).size;
+    // Summary stats — use deduped attendee counts from webinarMap
+    const totalAttendees = Array.from(webinarMap.values()).reduce((sum, w) => sum + w.attendeeCount, 0);
+    const uniqueEmails   = new Set(filtered.map(r => r[COL.attendeeEmail]).filter(Boolean)).size;
     const uniqueHosts       = [...new Set(webinars.map(w => w.hostEmail).filter(Boolean))];
     const topTopics         = [...webinarMap.values()]
       .sort((a, b) => b.attendeeCount - a.attendeeCount)
