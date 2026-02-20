@@ -311,7 +311,9 @@ export async function GET(request: NextRequest) {
       .map(w => {
         const meta = processedMap.get(w.webinarId);
         const registrantsCount = meta?.registrantsCount ?? null;
-        const attendanceRate = (registrantsCount != null && registrantsCount > 0)
+        // Only compute show rate when registered >= attended; otherwise the
+        // numbers aren't comparable (recurring webinar occurrence mismatch)
+        const attendanceRate = (registrantsCount != null && registrantsCount > 0 && w.attendeeCount <= registrantsCount)
           ? Math.round((w.attendeeCount / registrantsCount) * 100)
           : null;
         return {

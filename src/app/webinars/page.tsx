@@ -193,7 +193,7 @@ function LiveSection() {
                       <div className="text-xs text-gray-500">
                         attending{w.registrantsCount ? ` / ${w.registrantsCount} registered` : ''}
                       </div>
-                      {w.registrantsCount && w.registrantsCount > 0 && (
+                      {w.registrantsCount && w.registrantsCount > 0 && w.participantCount <= w.registrantsCount && (
                         <div className="text-xs text-green-400 font-semibold">
                           {Math.round((w.participantCount / w.registrantsCount) * 100)}% show rate
                         </div>
@@ -492,16 +492,20 @@ function HistoricalSection() {
                           <>
                             <span className="text-gray-500">·</span>
                             <span className="text-sm text-gray-400">{drilldown.registrantsCount} registered</span>
-                            <span className="text-gray-500">·</span>
-                            <span className={`text-sm font-semibold ${
-                              Math.round(drilldown.total / drilldown.registrantsCount * 100) >= 50
-                                ? 'text-green-400'
-                                : Math.round(drilldown.total / drilldown.registrantsCount * 100) >= 25
-                                  ? 'text-yellow-400'
-                                  : 'text-red-400'
-                            }`}>
-                              {Math.round(drilldown.total / drilldown.registrantsCount * 100)}% show rate
-                            </span>
+                            {drilldown.registrantsCount > 0 && drilldown.total <= drilldown.registrantsCount && (
+                              <>
+                                <span className="text-gray-500">·</span>
+                                <span className={`text-sm font-semibold ${
+                                  Math.round(drilldown.total / drilldown.registrantsCount * 100) >= 50
+                                    ? 'text-green-400'
+                                    : Math.round(drilldown.total / drilldown.registrantsCount * 100) >= 25
+                                      ? 'text-yellow-400'
+                                      : 'text-red-400'
+                                }`}>
+                                  {Math.round(drilldown.total / drilldown.registrantsCount * 100)}% show rate
+                                </span>
+                              </>
+                            )}
                           </>
                         )}
                       </div>
