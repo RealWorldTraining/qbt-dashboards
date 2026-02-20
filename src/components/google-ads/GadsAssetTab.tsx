@@ -26,7 +26,7 @@ interface AssetData {
   lastUpdated: string
 }
 
-type SortKey = keyof Pick<AssetRow, 'impressions' | 'clicks' | 'ctr' | 'conversions' | 'cost'>
+type SortKey = keyof Pick<AssetRow, 'impressions' | 'clicks' | 'ctr' | 'conversions' | 'cost'> | 'convRate'
 
 const PERF_COLORS: Record<string, { bg: string; text: string }> = {
   BEST: { bg: 'bg-green-900', text: 'text-green-300' },
@@ -104,7 +104,12 @@ export function GadsAssetTab() {
     .filter(a => !perfFilter || a.performanceLabel === perfFilter)
     .sort((a, b) => {
       const mul = sortDir === 'desc' ? -1 : 1
-      return (a[sortKey] - b[sortKey]) * mul
+      if (sortKey === 'convRate') {
+        const aRate = a.clicks > 0 ? (a.conversions / a.clicks) : 0
+        const bRate = b.clicks > 0 ? (b.conversions / b.clicks) : 0
+        return (aRate - bRate) * mul
+      }
+      return (a[sortKey as keyof AssetRow] as number - b[sortKey as keyof AssetRow] as number) * mul
     })
 
   const { byPerformanceLabel } = data.summary
@@ -181,7 +186,9 @@ export function GadsAssetTab() {
                 <th className="text-right p-2.5 cursor-pointer hover:text-white" onClick={() => handleSort('conversions')}>
                   Conv{sortArrow('conversions')}
                 </th>
-                <th className="text-right p-2.5">Conv %</th>
+                <th className="text-right p-2.5 cursor-pointer hover:text-white" onClick={() => handleSort('convRate')}>
+                  Conv %{sortArrow('convRate')}
+                </th>
                 <th className="text-right p-2.5 cursor-pointer hover:text-white" onClick={() => handleSort('cost')}>
                   Cost{sortArrow('cost')}
                 </th>
@@ -206,7 +213,7 @@ export function GadsAssetTab() {
                     <td className="p-2.5 text-right text-gray-400">{a.ctr.toFixed(1)}%</td>
                     <td className="p-2.5 text-right text-gray-400">{Math.round(a.conversions)}</td>
                     <td className="p-2.5 text-right text-gray-400">{convRate.toFixed(1)}%</td>
-                    <td className="p-2.5 text-right text-gray-400">${a.cost.toFixed(2)}</td>
+                    <td className="p-2.5 text-right text-gray-400">${Math.round(a.cost).toLocaleString()}</td>
                   </tr>
                 )
               })}
