@@ -81,16 +81,7 @@ export async function GET() {
   try {
     const credentials = getGoogleCredentials()
     if (!credentials) {
-      return NextResponse.json({
-        error: 'Missing Google credentials',
-        debug: {
-          hasSheetsReaderCreds: !!process.env.SHEETS_READER_CREDENTIALS,
-          hasSheetsCreds: !!process.env.GOOGLE_SHEETS_CREDENTIALS,
-          hasClientEmail: !!process.env.GOOGLE_CLIENT_EMAIL,
-          hasPrivateKey: !!process.env.GOOGLE_PRIVATE_KEY,
-          hasProjectId: !!process.env.GOOGLE_PROJECT_ID,
-        }
-      }, { status: 500 })
+      return NextResponse.json({ error: 'Missing Google credentials' }, { status: 500 })
     }
 
     const auth = new google.auth.GoogleAuth({
