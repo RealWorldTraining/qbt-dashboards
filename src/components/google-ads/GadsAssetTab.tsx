@@ -181,6 +181,7 @@ export function GadsAssetTab() {
                 <th className="text-right p-2.5 cursor-pointer hover:text-white" onClick={() => handleSort('conversions')}>
                   Conv{sortArrow('conversions')}
                 </th>
+                <th className="text-right p-2.5">Conv %</th>
                 <th className="text-right p-2.5 cursor-pointer hover:text-white" onClick={() => handleSort('cost')}>
                   Cost{sortArrow('cost')}
                 </th>
@@ -189,6 +190,7 @@ export function GadsAssetTab() {
             <tbody>
               {filtered.map((a, i) => {
                 const perf = PERF_COLORS[a.performanceLabel] || PERF_COLORS['N/A']
+                const convRate = a.clicks > 0 ? (a.conversions / a.clicks) * 100 : 0
                 return (
                   <tr key={i} className="border-t border-gray-800 hover:bg-gray-700">
                     <td className="p-2.5 text-gray-300 max-w-xs truncate" title={a.assetText}>{a.assetText}</td>
@@ -203,13 +205,14 @@ export function GadsAssetTab() {
                     <td className="p-2.5 text-right text-gray-400">{a.clicks.toLocaleString()}</td>
                     <td className="p-2.5 text-right text-gray-400">{a.ctr.toFixed(1)}%</td>
                     <td className="p-2.5 text-right text-gray-400">{Math.round(a.conversions)}</td>
+                    <td className="p-2.5 text-right text-gray-400">{convRate.toFixed(1)}%</td>
                     <td className="p-2.5 text-right text-gray-400">${a.cost.toFixed(2)}</td>
                   </tr>
                 )
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-gray-500">No assets match the current filters</td>
+                  <td colSpan={10} className="p-8 text-center text-gray-500">No assets match the current filters</td>
                 </tr>
               )}
             </tbody>
