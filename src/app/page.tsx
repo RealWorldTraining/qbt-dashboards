@@ -282,6 +282,22 @@ const sections: DashboardSection[] = [
         icon: Activity,
         tags: ["System", "Status"],
       },
+      {
+        name: "Hotjar Analysis",
+        description: "User behavior tracking and heatmaps",
+        href: "/hotjar-analysis",
+        icon: Eye,
+        tags: ["Heatmaps", "User Behavior"],
+        preview: "/previews/hotjar-analysis.png",
+      },
+      {
+        name: "Mission Control",
+        description: "Command center dashboard overview",
+        href: "/mission-control",
+        icon: Zap,
+        tags: ["Overview", "Command Center"],
+        preview: "/previews/mission-control.png",
+      },
     ],
   },
 ]
