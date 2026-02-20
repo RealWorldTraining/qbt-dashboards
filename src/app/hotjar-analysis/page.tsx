@@ -149,7 +149,7 @@ export default function HotjarAnalysisPage() {
                   QBTraining.com generated <span className="text-green-400 font-bold">$1.7 million in revenue</span> from 2,544 purchases across 319,718 sessions between November 2025 and February 2026. The average order value is <span className="text-blue-400 font-bold">$682</span>, confirming the Certification Plan ($699.95) as the likely best-seller.
                 </p>
                 <p>
-                  Analysis of 250,000+ Hotjar interactions and GA4 data reveals a site with enormous untapped potential. <span className="text-green-400 font-bold">Desktop generates 88% of revenue ($1.3M)</span> but suffers from <span className="text-red-400 font-bold">20–39% dead click rates</span>. Meanwhile, mobile serves as the research channel with excellent engagement but low direct conversion — expected behavior for a $700 product.
+                  Analysis of 250,000+ Hotjar interactions and GA4 data reveals a site with enormous untapped potential. <span className="text-green-400 font-bold">Desktop generates 88% of revenue ($1.3M)</span> but suffers from <span className="text-red-400 font-bold">18–39% dead click rates</span>. Meanwhile, mobile serves as the research channel with excellent engagement but low direct conversion — expected behavior for a $700 product.
                 </p>
               </div>
             </div>
@@ -178,10 +178,10 @@ export default function HotjarAnalysisPage() {
                   <AlertTriangle className="w-8 h-8 text-red-400" />
                 </div>
                 <MetricValue 
-                  value="20–39%" 
+                  value="18–39%"
                   context="Range: Homepage 18.3%, Plans & Pricing 36.5%, Bookkeeping Cert 38.8%. Industry best practice: <10%"
                 >
-                  <div className="text-4xl font-extrabold text-red-400 mb-2">20–39%</div>
+                  <div className="text-4xl font-extrabold text-red-400 mb-2">18–39%</div>
                 </MetricValue>
                 <div className="text-sm font-medium text-gray-400 uppercase tracking-wide">
                   <MetricTooltip metric="dead-clicks">
@@ -337,31 +337,31 @@ export default function HotjarAnalysisPage() {
               <div className="space-y-6">
                 <div className="bg-red-900/20 border-l-4 border-red-500 p-6 rounded-r-xl">
                   <h3 className="text-2xl font-bold text-red-300 mb-3">1. The Homepage Is Hemorrhaging Visitors</h3>
-                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">Only 8% of desktop users reach the halfway point. The page is 9.34kb tall. There is a catastrophic 40.2% drop-off between 5–10% of the page. At 80%+ AOV, each percentage point of improvement represents hundreds of potential purchases per quarter.</p>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">Only 9.9% of desktop users reach the halfway point. The page is 9,346px tall. There is a catastrophic 40.2% drop-off between 5–10% of the page. At $682 AOV, each percentage point of improvement represents hundreds of potential purchases per quarter.</p>
                   <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-red-400 font-semibold">CRITICAL</span> • Affects all traffic sources</div>
                 </div>
 
                 <div className="bg-amber-900/20 border-l-4 border-amber-500 p-6 rounded-r-xl">
-                  <h3 className="text-2xl font-bold text-amber-300 mb-3">2. The Homepage Function Confuses Visitors</h3>
-                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">20–39% of ALL desktop clicks hit non-interactive elements. People click on body text, comparison table cells, section backgrounds, and data areas expecting interactivity. This is the purchase channel — the device generating 88% of revenue — and up to 4 in 10 clicks are wasted.</p>
+                  <h3 className="text-2xl font-bold text-amber-300 mb-3">2. Desktop Dead Clicks Are Epidemic</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">18–39% of ALL desktop clicks hit non-interactive elements. People click on body text, comparison table cells, section backgrounds, and data areas expecting interactivity. This is the purchase channel — the device generating 88% of revenue — and up to 4 in 10 clicks are wasted.</p>
                   <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Desktop-specific issue</div>
                 </div>
 
                 <div className="bg-amber-900/20 border-l-4 border-amber-500 p-6 rounded-r-xl">
-                  <h3 className="text-2xl font-bold text-amber-300 mb-3">3. Pages Are Too Long High</h3>
-                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">The correlation is unambiguous: shorter pages retain better and convert better for a $700 product. Plans & Pricing (9.34px): 0.86% conv. Certification (13.21%px): 0.85% conv. Self-Paced (6.44px): 0.96% conv.</p>
+                  <h3 className="text-2xl font-bold text-amber-300 mb-3">3. Pages Are Too Long</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">The correlation is unambiguous: shorter pages retain better and convert better for a $700 product. Plans & Pricing (3,869px): 4.15% conv — best on site. Homepage (9,346px): 0.86% conv. Self-Paced (13,213px): 2.00% conv but only 4.6% CTA rate.</p>
                   <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-amber-400 font-semibold">HIGH</span> • Affects conversion rates</div>
                 </div>
 
                 <div className="bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
-                  <h3 className="text-2xl font-bold text-blue-300 mb-3">4. Sign In Dominates the Homepage High</h3>
-                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">The homepage functions more as a login portal than a landing page. After removing Sign In and clicks, only ~400 desktop clicks per quarter remain for CTAs. For first-time visitors, Sign In is a landing page. After removing account engagement, the page does not convert.</p>
-                  <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Crowds out CTA engagement</div>
+                  <h3 className="text-2xl font-bold text-blue-300 mb-3">4. Homepage Serves Two Audiences</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">30.6% of desktop homepage clicks are returning students signing in — legitimate customer traffic that the page must serve well. But this means the homepage must balance two jobs: login portal for existing customers AND landing page for prospects. Without clear visual hierarchy, prospect-facing CTAs compete with Sign In for attention.</p>
+                  <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Visual hierarchy needed</div>
                 </div>
 
                 <div className="bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl">
-                  <h3 className="text-2xl font-bold text-blue-300 mb-3">5. Self-Paced Courses: Conversion Black Hole High</h3>
-                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">28.5% of clicks go to course cards, but only 4.6% ever reach a CTA. People browse thinking they're buying individual courses, not understanding the plan model. "Load More" button gets 3.87% of clicks but no one sees a CTA. Conversion Black Hole: 98% of visitors who click any course card never reach a purchase path.</p>
+                  <h3 className="text-2xl font-bold text-blue-300 mb-3">5. Self-Paced Courses: Conversion Black Hole</h3>
+                  <p className="text-gray-300 mb-3 text-lg leading-relaxed">26.5% of clicks go to course cards, but only 4.6% ever reach a CTA. People browse thinking they're buying individual courses, not understanding the plan model. "Load More" button gets 3.8% of clicks but no one sees a CTA. Conversion Black Hole: 98% of visitors who click any course card never reach a purchase path.</p>
                   <div className="text-lg text-gray-400 mt-2">Impact: <span className="text-blue-400 font-semibold">MEDIUM</span> • Specific to Self-Paced page</div>
                 </div>
               </div>
@@ -384,15 +384,15 @@ export default function HotjarAnalysisPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">Homepage</span>
-                      <span className="text-green-400 font-bold">$399.8M</span>
+                      <span className="text-green-400 font-bold">$454K</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">QB Certification</span>
-                      <span className="text-green-400 font-bold">$267.8M</span>
+                      <span className="text-green-400 font-bold">$298K</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-300">Plans & Pricing</span>
-                      <span className="text-green-400 font-bold">$321.8M</span>
+                      <span className="text-green-400 font-bold">$171K</span>
                     </div>
                   </div>
                 </div>
@@ -430,7 +430,7 @@ export default function HotjarAnalysisPage() {
                   <div className="text-gray-400">of revenue ($1.3M)</div>
                   <div className="mt-4 space-y-2">
                     <div className="text-base text-gray-300">• Purchase device</div>
-                    <div className="text-base text-gray-300">• High dead click rates (20-39%)</div>
+                    <div className="text-base text-gray-300">• High dead click rates (18-39%)</div>
                     <div className="text-base text-gray-300">• Returning users dominant</div>
                   </div>
                 </div>
@@ -587,6 +587,13 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
                     </tr>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">4</td>
+                      <td className="p-4">Live Classes</td>
+                      <td className="p-4">Desktop</td>
+                      <td className="p-4 text-blue-400 font-bold">50.8%</td>
+                      <td className="p-4"><span className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-sm font-semibold">Good</span></td>
+                    </tr>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4">5</td>
                       <td className="p-4">Plans & Pricing</td>
                       <td className="p-4">Desktop</td>
@@ -634,7 +641,7 @@ export default function HotjarAnalysisPage() {
                     </tr>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4">2</td>
-                      <td className="p-4">Desktop Cert</td>
+                      <td className="p-4">QB Certification</td>
                       <td className="p-4">Mobile</td>
                       <td className="p-4 text-green-400 font-bold">45.0%</td>
                       <td className="p-4"><span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm font-semibold">Excellent</span></td>
@@ -825,11 +832,40 @@ export default function HotjarAnalysisPage() {
                   </div>
                   <div className="flex justify-between text-base">
                     <MetricTooltip metric="page-height" position="bottom"><span className="text-gray-400">Page Height (Mobile)</span></MetricTooltip>
-                    <MetricValue value="13,213px" context="LONGEST page in entire dataset. Only 21.4% reach midpoint." details={['3.4x Plans & Pricing', 'Needs filtering, not infinite scroll']}><span className="text-red-400 font-bold">13,213px</span></MetricValue>
+                    <MetricValue value="18,500px" context="LONGEST page in entire dataset on mobile. Desktop: 13,213px. Only 21.4% reach midpoint on desktop, <3% on mobile." details={['4.8x Plans & Pricing on mobile', 'Needs filtering, not infinite scroll']}><span className="text-red-400 font-bold">18,500px</span></MetricValue>
                   </div>
                 </div>
                 <div className="mt-4 p-3 bg-red-900/20 border-l-4 border-red-500 rounded-r text-base text-gray-300">
                   Conversion black hole. Course cards get 26.5% clicks but only 4.6% reach CTA. Longest page in dataset.
+                </div>
+              </div>
+              {/* Live Classes */}
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
+                <h3 className="text-xl font-bold text-blue-400 mb-4">Live Classes</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-base">
+                    <MetricTooltip metric="sessions" position="bottom"><span className="text-gray-400">Desktop Sessions</span></MetricTooltip>
+                    <MetricValue value="10,025" context="7,552 new users (75%). Highest engagement time of any page." details={['Avg engagement: 2m 26s (highest)', '222 desktop purchases']}><span className="text-white font-semibold">10,025</span></MetricValue>
+                  </div>
+                  <div className="flex justify-between text-base">
+                    <MetricTooltip metric="revenue" position="bottom"><span className="text-gray-400">Revenue</span></MetricTooltip>
+                    <MetricValue value="$166K" context="Desktop: $156K (222 purchases) + Mobile: $11K (16 purchases)." details={['#3 revenue page behind Homepage & QB Cert']}><span className="text-green-400 font-bold">$166K</span></MetricValue>
+                  </div>
+                  <div className="flex justify-between text-base">
+                    <MetricTooltip metric="conversion-rate" position="bottom"><span className="text-gray-400">Desktop Conv Rate</span></MetricTooltip>
+                    <MetricValue value="2.21%" context="222 purchases from 10,025 sessions. Instructor trust signals drive conversion." details={['791 instructor modal clicks', 'Mobile: 0.31%']}><span className="text-white font-semibold">2.21%</span></MetricValue>
+                  </div>
+                  <div className="flex justify-between text-base">
+                    <MetricTooltip metric="scroll-depth" position="bottom"><span className="text-gray-400">Scroll to 50% (Desktop)</span></MetricTooltip>
+                    <MetricValue value="50.8%" context="Good retention — instructor profiles and schedule anchor attention." details={['Mobile: ~35%', '2m 26s avg engagement time']}><span className="text-blue-400 font-bold">50.8%</span></MetricValue>
+                  </div>
+                  <div className="flex justify-between text-base">
+                    <MetricTooltip metric="avg-engagement" position="bottom"><span className="text-gray-400">Avg Engagement</span></MetricTooltip>
+                    <MetricValue value="2m 26s" context="HIGHEST engagement time of any page. People evaluate instructors and schedules." details={['#1 in entire dataset', 'Instructor bios drive deep engagement']}><span className="text-green-400 font-bold">2m 26s</span></MetricValue>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-blue-900/20 border-l-4 border-blue-500 rounded-r text-base text-gray-300">
+                  #3 revenue page. Highest engagement (2m 26s). Instructor profiles are a key trust driver for $700 live training.
                 </div>
               </div>
             </div>
@@ -952,8 +988,8 @@ export default function HotjarAnalysisPage() {
                             { top: 75, height: 25, color: 'rgba(220, 38, 38, 0.3)', label: 'ever reach', percentage: '<5%' }
                           ],
                           deadClickHotspots: [
-                            { x: 50, y: 25, label: 'FAQ accordions', percentage: '24.5%' },
-                            { x: 50, y: 15, label: 'Banner text', percentage: '1.6%' }
+                            { x: 50, y: 15, label: 'Banner text', percentage: '1.6%' },
+                            { x: 50, y: 40, label: 'Body text taps', percentage: '1.2%' }
                           ],
                           ctaMarkers: [
                             { x: 50, y: 8, label: 'Start Learning CTA', percentage: '27.1%' },
@@ -964,7 +1000,7 @@ export default function HotjarAnalysisPage() {
                         }}
                         overlayDescriptions={{
                           scrollDepth: {
-                            desktop: 'Homepage desktop is 9,346px tall — the longest page on the site. Only 9.9% of visitors reach the halfway point. The bottom 50% of content is virtually invisible. Every section below the fold needs to earn its place.',
+                            desktop: 'Homepage desktop is 9,346px tall — one of the longest pages on the site. Only 9.9% of visitors reach the halfway point. The bottom 50% of content is virtually invisible. Every section below the fold needs to earn its place.',
                             mobile: 'Mobile homepage is even longer at 11,466px. Only 28.4% scroll to the midpoint — better than desktop\'s 9.9% because mobile users are accustomed to vertical scrolling. But 70%+ of content is still unseen.'
                           },
                           deadClicks: {
@@ -1397,8 +1433,8 @@ export default function HotjarAnalysisPage() {
                           <MetricValue value="4.6%" context="WORST CTA RATE OF ANY PAGE. Only 1,387 of 30,168 clicks reach a CTA. Course cards get 26.5% of clicks but have no enrollment button." details={['Dead last: #11 out of 11 pages', 'Course cards: 7,996 clicks (26.5%) — no CTA on them', '"Load More": 1,154 clicks (3.8%)', 'Mobile CTA rate: 14.3% (3x better)']}><span className="text-red-400 font-bold">4.6%</span></MetricValue>
                         </div>
                         <div className="flex justify-between text-base py-2">
-                          <MetricTooltip metric="page-height" position="right"><span className="text-gray-400">Page Height (Mobile)</span></MetricTooltip>
-                          <MetricValue value="13,213px" context="LONGEST PAGE IN DATASET. Only 21.4% reach midpoint. Needs pagination or filtering instead of infinite scroll." details={['3.4x the height of Plans & Pricing (3,869px)', 'Desktop: 20.6% reach 50% (also terrible)', 'New site has filters (46 courses) — much improved', 'Target: ≤5,000px with category filtering']}><span className="text-red-400 font-bold">13,213px</span></MetricValue>
+                          <MetricTooltip metric="page-height" position="right"><span className="text-gray-400">Page Height</span></MetricTooltip>
+                          <MetricValue value="13,213px / 18,500px" context="LONGEST PAGE IN DATASET. Desktop: 13,213px (21.4% reach midpoint). Mobile: 18,500px (<3% reach midpoint)." details={['Desktop: 3.4x Plans & Pricing (3,869px)', 'Mobile: 4.8x Plans & Pricing', 'New site has filters (46 courses) — much improved', 'Target: ≤5,000px with category filtering']}><span className="text-red-400 font-bold">13,213px / 18,500px</span></MetricValue>
                         </div>
                       </div>
                     </div>
@@ -1644,7 +1680,7 @@ export default function HotjarAnalysisPage() {
                         },
                         {
                           id: 'SW-2', title: 'Fix Desktop Hover States & Click Affordances', priority: '#2', effort: 'Low-Med', impact: 'High',
-                          problem: '20–39% of ALL desktop clicks hit non-interactive elements. This CSS/design language problem will carry over.',
+                          problem: '18–39% of ALL desktop clicks hit non-interactive elements. This CSS/design language problem will carry over.',
                           fix: 'Audit every page: cursor:pointer + transitions on interactive elements. cursor:default on non-interactive text. Card hover lift effects.',
                           before: 'Cards, table rows, and text all look the same on hover — users can\'t tell what\'s clickable',
                           after: 'Interactive elements have clear hover states (lift, color change, pointer cursor). Non-interactive text stays static.'
@@ -2252,7 +2288,7 @@ export default function HotjarAnalysisPage() {
                     <tbody>
                       {[
                         { metric: 'Homepage desktop scroll to 50%', baseline: '9.9%', target: '>30%' },
-                        { metric: 'Desktop dead click rate (site-wide)', baseline: '20–39%', target: '<10%' },
+                        { metric: 'Desktop dead click rate (site-wide)', baseline: '18–39%', target: '<10%' },
                         { metric: 'Plans & Pricing conversion', baseline: '4.15%', target: '>5%' },
                         { metric: 'Homepage conversion', baseline: '0.86%', target: '>1.5%' },
                         { metric: 'Self-Paced CTA click rate', baseline: '4.6%', target: '>15%' },
@@ -2304,7 +2340,7 @@ export default function HotjarAnalysisPage() {
                       <td className="p-4 font-semibold">Fix desktop dead clicks</td>
                       <td className="p-4">~$1.3M</td>
                       <td className="p-4">
-                        <Tooltip text={`Desktop generates $1.3M with 20-39% dead click rates. Industry best practice: <10% dead clicks. Conservative 10-15% improvement in click-to-CTA rate at $682 AOV = $130K-$195K annual uplift. Estimate: $150K-$200K.`}>
+                        <Tooltip text={`Desktop generates $1.3M with 18-39% dead click rates. Industry best practice: <10% dead clicks. Conservative 10-15% improvement in click-to-CTA rate at $682 AOV = $130K-$195K annual uplift. Estimate: $150K-$200K.`}>
                           <span className="text-green-400 font-bold">+$150K–$200K</span>
                         </Tooltip>
                       </td>
@@ -2405,8 +2441,8 @@ export default function HotjarAnalysisPage() {
                         <div className="text-sm text-gray-400">36.5% dead click rate — 1,513 clicks on static table text. Expandable rows with feature descriptions.</div>
                       </div>
                       <div className="border-l-4 border-green-500 pl-3">
-                        <div className="font-semibold text-white text-sm">PP-2: Fix Desktop Hover States</div>
-                        <div className="text-sm text-gray-400">20–39% of desktop clicks hit non-interactive elements. cursor:pointer + transitions on all clickable elements.</div>
+                        <div className="font-semibold text-white text-sm">PP-2: Protect This Page — Do NOT Make It Longer</div>
+                        <div className="text-sm text-gray-400">3,869px = 4.15% conversion (best on site). Only improve interactivity and mobile readability. No new sections.</div>
                       </div>
                     </div>
                   </div>
@@ -2539,7 +2575,7 @@ export default function HotjarAnalysisPage() {
                     <div className="space-y-3">
                       <div className="border-l-4 border-amber-500 pl-3">
                         <div className="font-semibold text-white text-sm">SC-M1: Mobile Checkout Flow</div>
-                        <div className="text-sm text-gray-400">$180K mobile revenue, 0.30–0.62% conversion. Autofill, fewer steps, trust signals.</div>
+                        <div className="text-sm text-gray-400">Self-Paced mobile: $9K revenue, 0.30% conversion (13 purchases). Simplify checkout: autofill, fewer steps, trust signals.</div>
                       </div>
                       <div className="border-l-4 border-amber-500 pl-3">
                         <div className="font-semibold text-white text-sm">SC-M2: &quot;Included in All Plans&quot; on Every Card</div>
@@ -2559,7 +2595,7 @@ export default function HotjarAnalysisPage() {
                     "Mobile is the research channel — optimize for it. Make comparison easy.",
                     "Short pages convert. 4,000px max. The data is unambiguous.",
                     "Every browseable item needs a CTA. At $682 AOV, every missed click = potential $700 loss.",
-                    "Make it obvious what's clickable. Fix the 20–39% dead click epidemic.",
+                    "Make it obvious what's clickable. Fix the 18–39% dead click epidemic.",
                     "Accordion/FAQ is the #1 engagement pattern. Use it everywhere.",
                     "The comparison table is the most important element. Make it interactive.",
                     "Trust signals everywhere. 4.7 stars, 1,581+ reviews, Intuit partnership.",
