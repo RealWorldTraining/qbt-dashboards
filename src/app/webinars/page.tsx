@@ -250,15 +250,16 @@ function LiveSection() {
 // ─── Historical Section ───────────────────────────────────────────────────────
 
 function HistoricalSection() {
-  const [data, setData]               = useState<HistoryResponse | null>(null);
-  const [loading, setLoading]         = useState(true);
-  const [hostFilter, setHostFilter]   = useState('');
-  const [topicFilter, setTopicFilter] = useState('');
-  const [fromFilter, setFromFilter]   = useState('');
-  const [toFilter, setToFilter]       = useState('');
-  const [drilldown, setDrilldown]     = useState<DrilldownResponse | null>(null);
-  const [drillLoading, setDrillLoad]  = useState(false);
-  const [page, setPage]               = useState(1);
+  const [data, setData]                         = useState<HistoryResponse | null>(null);
+  const [loading, setLoading]                   = useState(true);
+  const [hostFilter, setHostFilter]             = useState('');
+  const [topicFilter, setTopicFilter]           = useState('');
+  const [fromFilter, setFromFilter]             = useState('');
+  const [toFilter, setToFilter]                 = useState('');
+  const [showZeroAttendance, setShowZeroAttendance] = useState(false);
+  const [drilldown, setDrilldown]               = useState<DrilldownResponse | null>(null);
+  const [drillLoading, setDrillLoad]            = useState(false);
+  const [page, setPage]                         = useState(1);
   const PAGE_SIZE = 25;
 
   const fetchHistory = useCallback(async () => {
@@ -298,8 +299,9 @@ function HistoricalSection() {
     }
   };
 
-  const paged = data?.webinars.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) || [];
-  const totalPages = Math.ceil((data?.webinars.length || 0) / PAGE_SIZE);
+  const visibleWebinars = (data?.webinars || []).filter(w => showZeroAttendance || w.attendeeCount > 0);
+  const paged = visibleWebinars.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(visibleWebinars.length / PAGE_SIZE);
 
   return (
     <section>
@@ -339,11 +341,20 @@ function HistoricalSection() {
           className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 text-white"
         />
         <button
-          onClick={() => { setHostFilter(''); setTopicFilter(''); setFromFilter(''); setToFilter(''); }}
+          onClick={() => { setHostFilter(''); setTopicFilter(''); setFromFilter(''); setToFilter(''); setPage(1); }}
           className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-sm transition-colors text-gray-300"
         >
           Clear
         </button>
+        <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer ml-2">
+          <input
+            type="checkbox"
+            checked={showZeroAttendance}
+            onChange={e => { setShowZeroAttendance(e.target.checked); setPage(1); }}
+            className="w-4 h-4 accent-cyan-400 cursor-pointer"
+          />
+          Show classes with zero attendance
+        </label>
       </div>
 
       {/* Summary Cards */}

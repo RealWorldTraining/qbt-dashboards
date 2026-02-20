@@ -50,9 +50,18 @@ let cachedRows: string[][] | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 2 * 60 * 1000;
 
-// Registrant count cache (separate — changes less often)
-let cachedRegistrants: Map<string, number> | null = null;
-let registrantsCacheTimestamp = 0;
+interface ProcessedMeta {
+  topic: string;
+  participantCount: number;
+  registrantsCount: number | null;
+  date: string;
+  hostEmail: string;
+  startTime: string;
+}
+
+// Processed webinar metadata cache (separate — changes less often)
+let cachedProcessed: Map<string, ProcessedMeta> | null = null;
+let processedCacheTimestamp = 0;
 
 async function getAttendanceRows(): Promise<string[][]> {
   const now = Date.now();
@@ -71,30 +80,37 @@ async function getAttendanceRows(): Promise<string[][]> {
   return cachedRows;
 }
 
-async function getRegistrantCounts(): Promise<Map<string, number>> {
+async function getProcessedWebinarMeta(): Promise<Map<string, ProcessedMeta>> {
   const now = Date.now();
-  if (cachedRegistrants && now - registrantsCacheTimestamp < CACHE_TTL) return cachedRegistrants;
+  if (cachedProcessed && now - processedCacheTimestamp < CACHE_TTL) return cachedProcessed;
 
   try {
     const sheets = await getSheetsClient();
     const resp = await sheets.spreadsheets.values.get({
       spreadsheetId: SHEET_ID,
-      range: `Processed Webinars!A:F`,
+      range: `Processed Webinars!A:I`,
     });
     const rows = (resp.data.values || []).slice(1); // skip header
-    const map = new Map<string, number>();
+    const map = new Map<string, ProcessedMeta>();
     for (const row of rows) {
       const id = String(row[0] || '');
-      const count = row[5] !== undefined && row[5] !== '' ? Number(row[5]) : null;
-      if (id && count != null && !isNaN(count) && count > 0) {
-        map.set(id, count);
-      }
+      if (!id) continue;
+      const participantCount = row[3] !== undefined && row[3] !== '' ? Number(row[3]) : 0;
+      const registrantsCount = row[5] !== undefined && row[5] !== '' ? Number(row[5]) : null;
+      map.set(id, {
+        topic:          String(row[1] || ''),
+        participantCount: isNaN(participantCount) ? 0 : participantCount,
+        registrantsCount: (registrantsCount != null && !isNaN(registrantsCount) && registrantsCount > 0) ? registrantsCount : null,
+        date:      String(row[6] || ''),
+        hostEmail: String(row[7] || ''),
+        startTime: String(row[8] || ''),
+      });
     }
-    cachedRegistrants = map;
-    registrantsCacheTimestamp = now;
+    cachedProcessed = map;
+    processedCacheTimestamp = now;
     return map;
   } catch (err) {
-    console.error('Failed to read registrant counts:', err);
+    console.error('Failed to read processed webinar metadata:', err);
     return new Map();
   }
 }
@@ -108,9 +124,9 @@ export async function GET(request: NextRequest) {
     const to        = searchParams.get('to');
     const topic     = searchParams.get('topic');
 
-    const [rows, registrantMap] = await Promise.all([
+    const [rows, processedMap] = await Promise.all([
       getAttendanceRows(),
-      getRegistrantCounts(),
+      getProcessedWebinarMeta(),
     ]);
 
     // Always filter out internal staff
@@ -148,7 +164,7 @@ export async function GET(request: NextRequest) {
       const externalRows = webinarRows.filter(r =>
         !((r[COL.attendeeEmail] || '').toLowerCase().includes('@quickbookstraining.com'))
       );
-      const registrantsCount = registrantMap.get(webinarId) ?? null;
+      const registrantsCount = processedMap.get(webinarId)?.registrantsCount ?? null;
       return NextResponse.json({
         webinarId,
         topic: meta[COL.topic],
@@ -201,11 +217,41 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Merge in zero-attendance webinars from the Processed Webinars tab
+    for (const [id, meta] of processedMap.entries()) {
+      if (webinarMap.has(id)) continue; // has attendance rows — already counted
+      if (meta.participantCount !== 0) continue; // not a zero-attendance webinar
+
+      // Apply the same filters (skip if metadata doesn't match)
+      if (host && meta.hostEmail && !meta.hostEmail.toLowerCase().includes(host.toLowerCase())) continue;
+      if (topic && meta.topic && !meta.topic.toLowerCase().includes(topic.toLowerCase())) continue;
+      if ((from || to) && meta.date) {
+        const parts = meta.date.split('/');
+        if (parts.length === 3) {
+          const iso = `${parts[2].padStart(4, '20')}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+          if (from && iso < from) continue;
+          if (to   && iso > to)   continue;
+        }
+      }
+
+      webinarMap.set(id, {
+        webinarId:          id,
+        topic:              meta.topic,
+        date:               meta.date,
+        startTime:          meta.startTime,
+        hostEmail:          meta.hostEmail,
+        attendeeCount:      0,
+        totalDurationMin:   0,
+        durationsWithValue: 0,
+      });
+    }
+
     // Sort by date desc
     const webinars = Array.from(webinarMap.values())
       .map(w => {
-        const registrantsCount = registrantMap.get(w.webinarId) ?? null;
-        const attendanceRate = (registrantsCount && registrantsCount > 0)
+        const meta = processedMap.get(w.webinarId);
+        const registrantsCount = meta?.registrantsCount ?? null;
+        const attendanceRate = (registrantsCount != null && registrantsCount > 0)
           ? Math.round((w.attendeeCount / registrantsCount) * 100)
           : null;
         return {
