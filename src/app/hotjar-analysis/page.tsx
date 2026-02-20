@@ -139,12 +139,12 @@ export default function HotjarAnalysisPage() {
       {/* Data Notes & Methodology — always visible above content */}
       <div className="max-w-[1600px] mx-auto px-6 pt-8">
         <div className="bg-gray-800/40 rounded-2xl border border-gray-700/50 p-8">
-          <h3 className="text-lg font-bold text-gray-200 mb-5">Data Notes & Methodology</h3>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
+          <h3 className="text-2xl font-bold text-gray-200 mb-6">Data Notes & Methodology</h3>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-5">
               <div>
-                <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">Data Sources</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
+                <h4 className="text-base font-bold text-blue-300 uppercase tracking-wide mb-3">Data Sources</h4>
+                <ul className="space-y-3 text-base text-gray-400 leading-relaxed">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
                     <span><strong className="text-gray-300">GA4:</strong> Sessions, revenue, purchases, conversion rates, engagement time. Nov 2025 – Feb 2026 (319,718 sessions).</span>
@@ -156,8 +156,8 @@ export default function HotjarAnalysisPage() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">What's Measured vs. Estimated</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
+                <h4 className="text-base font-bold text-blue-300 uppercase tracking-wide mb-3">What's Measured vs. Estimated</h4>
+                <ul className="space-y-3 text-base text-gray-400 leading-relaxed">
                   <li className="flex items-start gap-2">
                     <span className="text-green-400 mt-1 flex-shrink-0">-</span>
                     <span><strong className="text-green-300">Measured:</strong> Revenue, sessions, purchases, conversion rates, page heights, midpoint scroll stats, dead click rates, CTA click rates, engagement time.</span>
@@ -169,10 +169,10 @@ export default function HotjarAnalysisPage() {
                 </ul>
               </div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">Key Assumptions</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
+                <h4 className="text-base font-bold text-blue-300 uppercase tracking-wide mb-3">Key Assumptions</h4>
+                <ul className="space-y-3 text-base text-gray-400 leading-relaxed">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
                     <span><strong className="text-gray-300">Cross-device journey:</strong> High mobile new-user rate (70–77%), high desktop returning-user rate (48%), and low mobile conversion (0.30–0.62%) strongly suggest mobile-research-then-desktop-purchase behavior. GA4 cannot directly confirm the same user across devices without user-ID tracking.</span>
@@ -184,8 +184,8 @@ export default function HotjarAnalysisPage() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-sm font-bold text-blue-300 uppercase tracking-wide mb-2">Visual Analysis Precision</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
+                <h4 className="text-base font-bold text-blue-300 uppercase tracking-wide mb-3">Visual Analysis Precision</h4>
+                <ul className="space-y-3 text-base text-gray-400 leading-relaxed">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-400 mt-1 flex-shrink-0">-</span>
                     <span><strong className="text-gray-300">Hotspot positions:</strong> Dead click and CTA marker positions on page screenshots are approximate placements representing behavioral zones, not pixel-exact Hotjar overlay coordinates.</span>
