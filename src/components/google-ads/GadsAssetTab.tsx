@@ -109,7 +109,9 @@ export function GadsAssetTab() {
         const bRate = b.clicks > 0 ? (b.conversions / b.clicks) : 0
         return (aRate - bRate) * mul
       }
-      return (a[sortKey as keyof AssetRow] as number - b[sortKey as keyof AssetRow] as number) * mul
+      const aVal = a[sortKey as keyof AssetRow] as number
+      const bVal = b[sortKey as keyof AssetRow] as number
+      return (aVal - bVal) * mul
     })
 
   const { byPerformanceLabel } = data.summary
