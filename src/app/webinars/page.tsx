@@ -170,7 +170,7 @@ function LiveSection() {
         <div className="grid gap-4">
           {data.webinars.map((w) => {
             const isOpen = expanded.has(w.webinarId);
-            const color = hostColor(w.webinars?.[0]?.email || '');
+            const color = hostColor(w.topic || '');
             return (
               <div
                 key={w.webinarId}
