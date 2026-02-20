@@ -174,22 +174,25 @@ export default function OfficeView() {
                 </div>
 
                 {/* Chair + Avatar */}
-                <div className="mt-1 flex flex-col items-center">
-                  <div className="mb-0.5">
+                <div className="mt-2 flex flex-col items-center">
+                  <div className="relative mb-1">
                     {member.avatar && (member.avatar.startsWith('/') || member.avatar.startsWith('http')) ? (
-                      <img src={member.avatar} alt={member.name} className="w-8 h-8 rounded-full object-cover mx-auto" />
+                      <img src={member.avatar} alt={member.name} className={`w-12 h-12 rounded-full object-cover mx-auto border-2 ${
+                        isActive ? 'border-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.4)]' :
+                        isIdle ? 'border-yellow-500/50' : 'border-gray-700'
+                      }`} />
                     ) : (
-                      <div className="text-2xl">{member.avatar || (member.type === 'human' ? '👤' : '🤖')}</div>
+                      <div className="text-3xl">{member.avatar || (member.type === 'human' ? '👤' : '🤖')}</div>
                     )}
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${
+                      isActive ? 'bg-green-400 animate-pulse' :
+                      isIdle ? 'bg-yellow-400' : 'bg-gray-500'
+                    } ring-2 ring-[#0d0d0d]`} />
                   </div>
                   <div className="text-xs text-gray-300 font-medium text-center truncate w-full">
                     {member.name}
                   </div>
                   <div className="flex items-center gap-1 mt-0.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${
-                      isActive ? 'bg-green-400 animate-pulse' :
-                      isIdle ? 'bg-yellow-400' : 'bg-gray-500'
-                    }`} />
                     <span className="text-[10px] text-gray-500">{member.status}</span>
                   </div>
                 </div>
