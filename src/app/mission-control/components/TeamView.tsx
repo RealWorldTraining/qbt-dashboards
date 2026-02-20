@@ -308,7 +308,7 @@ export default function TeamView() {
               </select>
               <input
                 type="text"
-                placeholder="Avatar emoji (e.g., 👨‍💼)"
+                placeholder="Avatar emoji or image path (e.g., 👨‍💼 or /avatars/name.png)"
                 value={formData.avatar}
                 onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
                 className="px-4 py-3 bg-[#0a0a0a] border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white placeholder-gray-500"
@@ -381,9 +381,17 @@ export default function TeamView() {
                   {/* Avatar + Name + Status */}
                   <div className="flex items-start gap-4 mb-4">
                     <div className={`relative`}>
-                      <div className="text-4xl">
-                        {member.avatar || (member.type === 'human' ? '👤' : '🤖')}
-                      </div>
+                      {member.avatar && (member.avatar.startsWith('/') || member.avatar.startsWith('http')) ? (
+                        <img
+                          src={member.avatar}
+                          alt={member.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-4xl">
+                          {member.avatar || (member.type === 'human' ? '👤' : '🤖')}
+                        </div>
+                      )}
                       <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ${sConfig.dot} ring-2 ${sConfig.ring} ring-offset-1 ring-offset-[#1a1a1a]`} />
                     </div>
                     <div className="flex-1 min-w-0">

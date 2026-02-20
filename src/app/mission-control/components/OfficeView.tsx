@@ -175,8 +175,12 @@ export default function OfficeView() {
 
                 {/* Chair + Avatar */}
                 <div className="mt-1 flex flex-col items-center">
-                  <div className="text-2xl mb-0.5">
-                    {member.avatar || (member.type === 'human' ? '👤' : '🤖')}
+                  <div className="mb-0.5">
+                    {member.avatar && (member.avatar.startsWith('/') || member.avatar.startsWith('http')) ? (
+                      <img src={member.avatar} alt={member.name} className="w-8 h-8 rounded-full object-cover mx-auto" />
+                    ) : (
+                      <div className="text-2xl">{member.avatar || (member.type === 'human' ? '👤' : '🤖')}</div>
+                    )}
                   </div>
                   <div className="text-xs text-gray-300 font-medium text-center truncate w-full">
                     {member.name}
@@ -209,9 +213,13 @@ export default function OfficeView() {
       {selectedMember && (
         <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-6 animate-preview-in">
           <div className="flex items-start gap-4">
-            <div className="text-5xl">
-              {selectedMember.avatar || (selectedMember.type === 'human' ? '👤' : '🤖')}
-            </div>
+            {selectedMember.avatar && (selectedMember.avatar.startsWith('/') || selectedMember.avatar.startsWith('http')) ? (
+              <img src={selectedMember.avatar} alt={selectedMember.name} className="w-14 h-14 rounded-full object-cover" />
+            ) : (
+              <div className="text-5xl">
+                {selectedMember.avatar || (selectedMember.type === 'human' ? '👤' : '🤖')}
+              </div>
+            )}
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <h3 className="text-xl font-bold text-white">{selectedMember.name}</h3>
