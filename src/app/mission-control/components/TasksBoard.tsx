@@ -300,8 +300,8 @@ export default function TasksBoard() {
       </div>
 
       {/* Team Roster + Priority Filter */}
-      <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
+      <div>
+        <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Team</span>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
@@ -332,44 +332,45 @@ export default function TasksBoard() {
             )}
           </div>
         </div>
-        <div className="flex gap-4">
-          {assignees.map(a => {
-            const isSelected = assigneeFilter === a.value;
-            const avatarUrl = getAssigneeAvatar(a.value);
-            const memberTasks = tasks.filter(t => t.assignedTo === a.value && t.status !== 'done');
-            return (
-              <button
-                key={a.value}
-                onClick={() => setAssigneeFilter(isSelected ? null : a.value)}
-                className={`flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl transition-all ${
-                  isSelected
-                    ? 'bg-cyan-600/15 ring-2 ring-cyan-500 scale-105'
-                    : 'hover:bg-gray-800/60'
-                }`}
-              >
-                <div className="relative">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={a.value}
-                      className={`w-12 h-12 rounded-full object-cover transition-all ${
-                        isSelected ? 'ring-2 ring-cyan-400 shadow-[0_0_16px_rgba(6,182,212,0.4)]' : 'ring-1 ring-gray-700'
-                      }`}
-                    />
-                  ) : (
-                    <div className={`w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-xl ${
-                      isSelected ? 'ring-2 ring-cyan-400' : 'ring-1 ring-gray-700'
+        <div className="bg-[#1a1a1a] border border-gray-800 rounded-lg p-5">
+          <div className="flex gap-6 justify-center">
+            {assignees.map(a => {
+              const isSelected = assigneeFilter === a.value;
+              const avatarUrl = getAssigneeAvatar(a.value);
+              const memberTasks = tasks.filter(t => t.assignedTo === a.value && t.status !== 'done');
+              return (
+                <button
+                  key={a.value}
+                  onClick={() => setAssigneeFilter(isSelected ? null : a.value)}
+                  className={`flex flex-col items-center gap-2 px-3 py-2 rounded-xl transition-all ${
+                    isSelected
+                      ? 'bg-cyan-600/15 ring-2 ring-cyan-500 scale-105'
+                      : 'hover:bg-gray-800/60'
+                  }`}
+                >
+                  <div className="relative">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={a.value}
+                        className={`w-20 h-20 rounded-full object-cover transition-all ${
+                          isSelected ? 'ring-3 ring-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'ring-2 ring-gray-700'
+                        }`}
+                      />
+                    ) : (
+                      <div className={`w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center text-3xl ${
+                        isSelected ? 'ring-3 ring-cyan-400' : 'ring-2 ring-gray-700'
                     }`}>
                       👤
                     </div>
                   )}
                   {memberTasks.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    <span className="absolute -top-0.5 -right-0.5 w-6 h-6 bg-cyan-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                       {memberTasks.length}
                     </span>
                   )}
                 </div>
-                <span className={`text-xs font-medium truncate max-w-[72px] ${
+                <span className={`text-sm font-medium truncate max-w-[90px] ${
                   isSelected ? 'text-cyan-400' : 'text-gray-400'
                 }`}>
                   {a.label}
@@ -377,6 +378,7 @@ export default function TasksBoard() {
               </button>
             );
           })}
+          </div>
         </div>
       </div>
 
