@@ -213,9 +213,7 @@ export function GadsAssetTab() {
                     <td className="p-2.5 text-right text-gray-400">{a.impressions.toLocaleString()}</td>
                     <td className="p-2.5 text-right text-gray-400">{a.clicks.toLocaleString()}</td>
                     <td className="p-2.5 text-right text-gray-400">{a.ctr.toFixed(1)}%</td>
-                    <td className="p-2.5 text-right text-gray-400">
-                      {a.conversions % 1 === 0 ? a.conversions.toLocaleString() : a.conversions.toFixed(1)}
-                    </td>
+                    <td className="p-2.5 text-right text-gray-400">{a.conversions.toFixed(1)}</td>
                     <td className="p-2.5 text-right text-gray-400">{convRate.toFixed(1)}%</td>
                     <td className="p-2.5 text-right text-gray-400">${Math.round(a.cost).toLocaleString()}</td>
                   </tr>
