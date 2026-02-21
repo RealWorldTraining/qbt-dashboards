@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 const SPREADSHEET_ID = '1Nh1LRFfI7Ct6p8V34ixZfs51WUepJkQ22EkV7t64eTo';
 const SHEET_NAME = 'Reviews';
-const RANGE = 'A:AB'; // Columns A through AB (includes all data + weight calculations + moderation status)
+const RANGE = 'A:AC'; // Columns A through AC (includes all data + weight calculations + moderation status + course)
 
 // Default question labels for columns H–P.
 // Override any of these at runtime by creating a "Questions" tab in the sheet
@@ -39,6 +39,7 @@ interface Review {
   stars: number;
   review: string;        // column H — kept for backward compat / search
   responses: ReviewResponse[]; // all non-empty answers H–P with their question labels
+  course: string;        // column AC
   finalWeight: number | string;
   context: number;
   specificity: number;
@@ -143,6 +144,7 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
         stars:        parseInt(row[6])  || 0,  // col G
         review:       row[7]  || '',  // col H — kept for search + legacy fallback
         responses,
+        course:       (row[28] || '').toString().trim(),  // col AC
         // ── Quality metrics (corrected column indices) ──────────────────
         finalWeight:  row[20] === 'FILTERED' ? 'FILTERED' : parseFloat(row[20]) || 0, // col U
         context:      parseFloat(row[21]) || 0,  // col V
@@ -170,6 +172,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const service = searchParams.get('service');
     const instructor = searchParams.get('instructor');
+    const course = searchParams.get('course');
     const minStars = searchParams.get('minStars');
     const minWeight = searchParams.get('minWeight');
 
@@ -177,14 +180,20 @@ export async function GET(request: Request) {
 
     // Apply filters
     if (service) {
-      reviews = reviews.filter(r => 
+      reviews = reviews.filter(r =>
         r.service.toLowerCase().includes(service.toLowerCase())
       );
     }
 
     if (instructor) {
-      reviews = reviews.filter(r => 
+      reviews = reviews.filter(r =>
         r.instructor.toLowerCase().includes(instructor.toLowerCase())
+      );
+    }
+
+    if (course) {
+      reviews = reviews.filter(r =>
+        r.course.toLowerCase() === course.toLowerCase()
       );
     }
 
@@ -207,17 +216,20 @@ export async function GET(request: Request) {
       return bWeight - aWeight;
     });
 
-    // Get unique services and instructors for filter dropdowns
-    const uniqueServices = [...new Set(reviews.map(r => r.service))].sort();
-    const uniqueInstructors = [...new Set(reviews.map(r => r.instructor).filter(i => i.trim().length > 0))].sort();
+    // Get unique values for filter dropdowns (from full unfiltered set so dropdowns stay populated)
+    const allReviews = await fetchReviewsFromSheet();
+    const uniqueServices    = [...new Set(allReviews.map(r => r.service))].sort();
+    const uniqueInstructors = [...new Set(allReviews.map(r => r.instructor).filter(i => i.trim().length > 0))].sort();
+    const uniqueCourses     = [...new Set(allReviews.map(r => r.course).filter(c => c.trim().length > 0))].sort();
 
     return NextResponse.json({
       success: true,
       count: reviews.length,
       reviews,
       filters: {
-        services: uniqueServices,
+        services:    uniqueServices,
         instructors: uniqueInstructors,
+        courses:     uniqueCourses,
       },
     });
   } catch (error) {

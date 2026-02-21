@@ -26,6 +26,7 @@ interface Review {
   stars: number
   review: string           // column H, kept for search + legacy fallback
   responses: ReviewResponse[]
+  course: string           // column AC
   finalWeight: number | string
   context: number
   specificity: number
@@ -42,6 +43,7 @@ interface ReviewsResponse {
   filters: {
     services: string[]
     instructors: string[]
+    courses: string[]
   }
 }
 
@@ -50,12 +52,14 @@ export default function ReviewsPage() {
   const [filteredReviews, setFilteredReviews] = useState<Review[]>([])
   const [services, setServices] = useState<string[]>([])
   const [instructors, setInstructors] = useState<string[]>([])
+  const [courses, setCourses] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   // Filter states
   const [selectedService, setSelectedService] = useState<string>("")
   const [selectedInstructor, setSelectedInstructor] = useState<string>("")
+  const [selectedCourse, setSelectedCourse] = useState<string>("")
   const [selectedStars, setSelectedStars] = useState<string>("")
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [sortBy, setSortBy] = useState<string>("date-desc")
@@ -80,7 +84,7 @@ export default function ReviewsPage() {
 
   useEffect(() => {
     applyFilters()
-  }, [reviews, selectedService, selectedInstructor, selectedStars, searchTerm, sortBy])
+  }, [reviews, selectedService, selectedInstructor, selectedCourse, selectedStars, searchTerm, sortBy])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -107,6 +111,7 @@ export default function ReviewsPage() {
         setFilteredReviews(data.reviews)
         setServices(data.filters.services)
         setInstructors(data.filters.instructors)
+        setCourses(data.filters.courses || [])
         calculateStats(data.reviews)
       } else {
         throw new Error('API returned failure')
@@ -127,6 +132,10 @@ export default function ReviewsPage() {
 
     if (selectedInstructor) {
       filtered = filtered.filter(r => r.instructor === selectedInstructor)
+    }
+
+    if (selectedCourse) {
+      filtered = filtered.filter(r => r.course === selectedCourse)
     }
 
     if (selectedStars) {
@@ -206,6 +215,7 @@ export default function ReviewsPage() {
   function resetFilters() {
     setSelectedService("")
     setSelectedInstructor("")
+    setSelectedCourse("")
     setSelectedStars("")
     setSearchTerm("")
     setSortBy("date-desc")
@@ -379,6 +389,23 @@ export default function ReviewsPage() {
                       {instructors.map((instructor) => (
                         <option key={instructor} value={instructor}>
                           {instructor}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Course Filter */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Course</label>
+                    <select
+                      value={selectedCourse}
+                      onChange={(e) => setSelectedCourse(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                    >
+                      <option value="">All Courses</option>
+                      {courses.map((course) => (
+                        <option key={course} value={course}>
+                          {course}
                         </option>
                       ))}
                     </select>
