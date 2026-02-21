@@ -59,14 +59,15 @@ async function fetchQuestionMap(sheets: ReturnType<typeof google.sheets>): Promi
   try {
     const resp = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'Questions!A:B',
+      range: 'Questions!A:C',
     });
     const rows = resp.data.values || [];
     if (rows.length === 0) return DEFAULT_QUESTIONS;
     const map = { ...DEFAULT_QUESTIONS };
     for (const row of rows) {
-      const col = (row[0] || '').toString().trim().toUpperCase();
-      const question = (row[1] || '').toString().trim();
+      // Column B (index 1) = Reviews column letter, Column C (index 2) = question text
+      const col = (row[1] || '').toString().trim().toUpperCase();
+      const question = (row[2] || '').toString().trim();
       if (col && question && col in RESPONSE_COLUMNS) {
         map[col] = question;
       }
@@ -99,7 +100,7 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
 
   const sheets = google.sheets({ version: 'v4', auth });
 
-  // Fetch question labels (sheet-configurable, falls back to defaults)
+  // Fetch question labels fresh each time (separate from review cache — questions change rarely)
   const questionMap = await fetchQuestionMap(sheets);
 
   try {
