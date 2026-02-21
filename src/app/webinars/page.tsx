@@ -75,12 +75,30 @@ interface DrilldownResponse {
 
 interface UpcomingWebinar {
   webinarId: string | number;
+  occurrenceId: string | null;
   topic: string;
   startTime: string;
   duration: number;
   hostEmail: string;
   timezone: string;
   registrantsCount: number | null;
+  isRecurring: boolean;
+}
+
+interface Registrant {
+  name: string;
+  email: string;
+  registrationTime: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
+interface RegistrantModal {
+  webinarId: string | number;
+  occurrenceId: string | null;
+  topic: string;
+  startTime: string;
 }
 
 interface UpcomingResponse {
@@ -122,9 +140,13 @@ function hostColor(email: string): string {
 // ─── Upcoming Section ─────────────────────────────────────────────────────────
 
 function UpcomingSection() {
-  const [data, setData]         = useState<UpcomingResponse | null>(null);
-  const [loading, setLoading]   = useState(true);
+  const [data, setData]           = useState<UpcomingResponse | null>(null);
+  const [loading, setLoading]     = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  const [regModal, setRegModal]   = useState<RegistrantModal | null>(null);
+  const [regList, setRegList]     = useState<Registrant[]>([]);
+  const [regLoading, setRegLoading] = useState(false);
+  const [regError, setRegError]   = useState('');
 
   useEffect(() => {
     const fetchUpcoming = async () => {
@@ -139,10 +161,28 @@ function UpcomingSection() {
       }
     };
     fetchUpcoming();
-    // Refresh every 10 minutes — schedule changes rarely
     const interval = setInterval(fetchUpcoming, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const openRegistrants = async (w: UpcomingWebinar) => {
+    setRegModal({ webinarId: w.webinarId, occurrenceId: w.occurrenceId, topic: w.topic, startTime: w.startTime });
+    setRegList([]);
+    setRegError('');
+    setRegLoading(true);
+    try {
+      const params = new URLSearchParams({ webinarId: String(w.webinarId) });
+      if (w.occurrenceId) params.set('occurrence_id', w.occurrenceId);
+      const resp = await fetch(`/api/webinars-registrants?${params}`);
+      const json = await resp.json();
+      if (json.error) setRegError(json.error);
+      else setRegList(json.registrants || []);
+    } catch (e) {
+      setRegError(String(e));
+    } finally {
+      setRegLoading(false);
+    }
+  };
 
   // Group webinars by calendar date (CST)
   const grouped = (data?.webinars || []).reduce<Record<string, UpcomingWebinar[]>>((acc, w) => {
@@ -174,9 +214,7 @@ function UpcomingSection() {
         </h2>
         <div className="flex items-center gap-3">
           {!loading && (
-            <span className="text-sm text-gray-400">
-              {data?.count ?? 0} scheduled
-            </span>
+            <span className="text-sm text-gray-400">{data?.count ?? 0} scheduled</span>
           )}
           <span className="text-gray-400 text-lg">{collapsed ? '▼' : '▲'}</span>
         </div>
@@ -195,7 +233,6 @@ function UpcomingSection() {
           <div className="space-y-6">
             {Object.entries(grouped).map(([day, webinars]) => (
               <div key={day}>
-                {/* Day header */}
                 <div className="text-xs font-semibold uppercase tracking-widest text-cyan-400 mb-2 px-1">
                   {day}
                 </div>
@@ -208,14 +245,12 @@ function UpcomingSection() {
                     const color = hostColor(w.hostEmail);
                     return (
                       <div
-                        key={`${w.webinarId}-${i}`}
+                        key={`${w.webinarId}-${w.startTime}-${i}`}
                         className="flex items-center gap-4 px-5 py-3 border-t border-white/5 first:border-t-0 hover:bg-white/5 transition-colors"
                         style={{ borderLeft: `3px solid ${color}` }}
                       >
                         {/* Time */}
-                        <div className="w-20 shrink-0 text-sm font-mono text-gray-300">
-                          {timeStr}
-                        </div>
+                        <div className="w-20 shrink-0 text-sm font-mono text-gray-300">{timeStr}</div>
 
                         {/* Topic */}
                         <div className="flex-1 font-medium text-sm">{w.topic || 'Untitled'}</div>
@@ -235,15 +270,21 @@ function UpcomingSection() {
                           </div>
                         )}
 
-                        {/* Registered */}
-                        <div className="text-xs shrink-0 w-24 text-right">
+                        {/* Registered count + button */}
+                        <div className="flex items-center gap-2 shrink-0">
                           {w.registrantsCount != null ? (
-                            <span className="text-cyan-400 font-semibold">
+                            <span className="text-xs text-cyan-400 font-semibold w-24 text-right">
                               {w.registrantsCount.toLocaleString()} registered
                             </span>
                           ) : (
-                            <span className="text-gray-500">—</span>
+                            <span className="text-xs text-gray-500 w-24 text-right">—</span>
                           )}
+                          <button
+                            onClick={() => openRegistrants(w)}
+                            className="text-xs bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-400 px-2 py-1 rounded-lg transition-colors shrink-0"
+                          >
+                            View
+                          </button>
                         </div>
                       </div>
                     );
@@ -253,6 +294,72 @@ function UpcomingSection() {
             ))}
           </div>
         )
+      )}
+
+      {/* Registrant Modal */}
+      {regModal && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          onClick={() => setRegModal(null)}
+        >
+          <div
+            className="bg-[#1a1a2e] rounded-2xl border border-white/20 w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-white/10 flex justify-between items-start">
+              <div>
+                <h3 className="text-xl font-bold">{regModal.topic}</h3>
+                <p className="text-gray-400 text-sm mt-1">
+                  {new Date(regModal.startTime).toLocaleDateString('en-US', {
+                    timeZone: 'America/Chicago', weekday: 'long', month: 'long', day: 'numeric',
+                  })}
+                  {' · '}
+                  {new Date(regModal.startTime).toLocaleTimeString('en-US', {
+                    timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit', hour12: true,
+                  })}
+                </p>
+              </div>
+              <button onClick={() => setRegModal(null)} className="text-gray-400 hover:text-white text-2xl">✕</button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-6">
+              {regLoading ? (
+                <div className="text-center py-8 text-gray-400">Loading registrants...</div>
+              ) : regError ? (
+                <div className="text-red-400 text-sm">{regError}</div>
+              ) : regList.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">No approved registrants found.</div>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-400 mb-4">{regList.length} registered</p>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-cyan-400 text-xs uppercase tracking-wider">
+                        <th className="pb-3 pr-4">Name</th>
+                        <th className="pb-3 pr-4">Location</th>
+                        <th className="pb-3">Registered</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {regList.map((r, i) => (
+                        <tr key={i} className="border-t border-white/5 hover:bg-white/5">
+                          <td className="py-2 pr-4 font-medium">{r.name || '—'}</td>
+                          <td className="py-2 pr-4 text-gray-400">
+                            {[r.city, r.state, r.country].filter(Boolean).join(', ') || '—'}
+                          </td>
+                          <td className="py-2 text-gray-400 text-xs">
+                            {r.registrationTime
+                              ? new Date(r.registrationTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );
