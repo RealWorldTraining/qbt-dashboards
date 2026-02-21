@@ -335,7 +335,6 @@ function UpcomingSection() {
                     <thead>
                       <tr className="text-left text-cyan-400 text-xs uppercase tracking-wider">
                         <th className="pb-3 pr-4">Name</th>
-                        <th className="pb-3 pr-4">Location</th>
                         <th className="pb-3">Registered</th>
                       </tr>
                     </thead>
@@ -343,9 +342,6 @@ function UpcomingSection() {
                       {regList.map((r, i) => (
                         <tr key={i} className="border-t border-white/5 hover:bg-white/5">
                           <td className="py-2 pr-4 font-medium">{r.name || '—'}</td>
-                          <td className="py-2 pr-4 text-gray-400">
-                            {[r.city, r.state, r.country].filter(Boolean).join(', ') || '—'}
-                          </td>
                           <td className="py-2 text-gray-400 text-xs">
                             {r.registrationTime
                               ? new Date(r.registrationTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
