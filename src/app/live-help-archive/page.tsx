@@ -36,6 +36,11 @@ interface ApiResponse {
     busiestDay: string;
     trainerCount: number;
     topTrainer: { name: string; avg: number } | null;
+    abandonmentRate: number | null;
+    avgWaitTime: number | null;
+    avgTimeToAbandon: number | null;
+    abandonedCount: number;
+    queueSessionCount: number;
   };
   charts: {
     dayOfWeek: number[];
@@ -96,6 +101,11 @@ export default function LiveHelpDashboard() {
     busiestDay: '-',
     trainerCount: 0,
     topTrainer: null as { name: string; avg: number } | null,
+    abandonmentRate: null as number | null,
+    avgWaitTime: null as number | null,
+    avgTimeToAbandon: null as number | null,
+    abandonedCount: 0,
+    queueSessionCount: 0,
   });
   const [charts, setCharts] = useState({
     dayOfWeek: [0, 0, 0, 0, 0, 0, 0],
@@ -534,7 +544,7 @@ export default function LiveHelpDashboard() {
           ) : (
             <>
               {/* Key Metrics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-5">
                 <MetricCard label={`Total Sessions ${getPresetLabel(datePreset)}`} value={summary.totalSessions.toLocaleString()} />
                 <MetricCard label={`Avg Duration ${getPresetLabel(datePreset)}`} value={`${summary.avgDuration} min`} subtext="Per session" />
                 <MetricCard 
@@ -548,6 +558,25 @@ export default function LiveHelpDashboard() {
                   value={mostSessionsTrainer?.name || '-'} 
                   subtext={mostSessionsTrainer ? `${mostSessionsTrainer.sessions} sessions` : 'Highest volume'} 
                   highlight
+                />
+              </div>
+
+              {/* Queue Metrics (data available from row 9283 onward) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                <MetricCard
+                  label={`Avg Wait Time ${getPresetLabel(datePreset)}`}
+                  value={summary.avgWaitTime !== null ? `${summary.avgWaitTime} min` : '—'}
+                  subtext={summary.avgWaitTime !== null ? 'Time in queue before help' : 'No queue data for this period'}
+                />
+                <MetricCard
+                  label={`Abandonment Rate ${getPresetLabel(datePreset)}`}
+                  value={summary.abandonmentRate !== null ? `${summary.abandonmentRate}%` : '—'}
+                  subtext={
+                    summary.abandonmentRate !== null
+                      ? `${summary.abandonedCount} abandoned of ${summary.queueSessionCount} queued${summary.avgTimeToAbandon !== null ? ` · Avg ${summary.avgTimeToAbandon} min to abandon` : ''}`
+                      : 'No queue data for this period'
+                  }
+                  highlight={summary.abandonmentRate !== null && summary.abandonmentRate > 20}
                 />
               </div>
 

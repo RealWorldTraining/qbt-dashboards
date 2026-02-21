@@ -21,6 +21,9 @@ interface RawRow {
   trainer: string;
   duration: number | null;
   topic: string;
+  waitTime: number | null;       // col AG — minutes waited before helped/abandoned
+  timeToAbandon: number | null;  // col AH — minutes until abandon (blank if Helped)
+  status: string | null;         // col AI — 'Helped' | 'Abandoned' | null (pre-9283 rows)
 }
 
 interface FetchResult {
@@ -91,6 +94,12 @@ function parseDuration(durationStr: string): number | null {
   return num;
 }
 
+function parseMinutes(s: string | undefined): number | null {
+  if (!s || s.trim() === '') return null;
+  const n = parseFloat(s.trim());
+  return isNaN(n) || n < 0 ? null : n;
+}
+
 async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<FetchResult> {
   const allRows: RawRow[] = [];
   const errors: string[] = [];
@@ -100,7 +109,7 @@ async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<F
     try {
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `'${sheetName}'!A:G`,
+        range: `'${sheetName}'!A:AI`,
       });
       
       const rows = response.data.values || [];
@@ -113,13 +122,17 @@ async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<F
         const trainer = row[3]?.toString().trim();
         if (!trainer || trainer === '' || trainer.toLowerCase() === 'trainer name') continue;
         
+        const statusRaw = row[34]?.toString().trim() || '';
         const rawRow: RawRow = {
-          room: row[0]?.toString().trim() || '',
-          date: parseDate(row[1]?.toString().trim() || ''),
-          attendee: row[2]?.toString().trim() || '',
-          trainer: trainer,
-          duration: parseDuration(row[4]?.toString().trim() || ''),
-          topic: row[6]?.toString().trim() || '',
+          room:          row[0]?.toString().trim() || '',
+          date:          parseDate(row[1]?.toString().trim() || ''),
+          attendee:      row[2]?.toString().trim() || '',
+          trainer:       trainer,
+          duration:      parseDuration(row[4]?.toString().trim() || ''),
+          topic:         row[6]?.toString().trim() || '',
+          waitTime:      parseMinutes(row[32]?.toString()),
+          timeToAbandon: parseMinutes(row[33]?.toString()),
+          status:        statusRaw || null,
         };
         
         allRows.push(rawRow);
@@ -485,6 +498,27 @@ export async function GET(request: NextRequest) {
     
     const helpedSessions = totalSessions - noHelpCount;
     const busiestDay = getBusiestDay(filteredRows);
+
+    // ── New queue metrics (cols AG / AH / AI, data from row 9283 onward) ──────
+    // Only count rows that have status data; pre-9283 rows have status=null
+    const rowsWithStatus = filteredRows.filter(r => r.status === 'Helped' || r.status === 'Abandoned');
+    const abandonedRows  = rowsWithStatus.filter(r => r.status === 'Abandoned');
+
+    const abandonmentRate = rowsWithStatus.length > 0
+      ? Math.round((abandonedRows.length / rowsWithStatus.length) * 1000) / 10
+      : null;
+
+    // Avg wait time — all rows with a non-blank waitTime value
+    const waitTimeRows = filteredRows.filter(r => r.waitTime !== null);
+    const avgWaitTime = waitTimeRows.length > 0
+      ? Math.round((waitTimeRows.reduce((s, r) => s + r.waitTime!, 0) / waitTimeRows.length) * 10) / 10
+      : null;
+
+    // Avg time to abandon — abandoned rows with a non-blank timeToAbandon
+    const abandonTimeRows = abandonedRows.filter(r => r.timeToAbandon !== null);
+    const avgTimeToAbandon = abandonTimeRows.length > 0
+      ? Math.round((abandonTimeRows.reduce((s, r) => s + r.timeToAbandon!, 0) / abandonTimeRows.length) * 10) / 10
+      : null;
     
     // Excluded trainers (case-insensitive)
     const EXCLUDED_TRAINERS = ['x', 'nancy mattar', 'jenna'];
@@ -558,6 +592,11 @@ export async function GET(request: NextRequest) {
         busiestDay,
         trainerCount: trainerData.length,
         topTrainer: topTrainer ? { name: topTrainer.name, avg: topTrainer.avg } : null,
+        abandonmentRate,
+        avgWaitTime,
+        avgTimeToAbandon,
+        abandonedCount:   abandonedRows.length,
+        queueSessionCount: rowsWithStatus.length,
       },
       charts: {
         dayOfWeek: dayOfWeekStats,
