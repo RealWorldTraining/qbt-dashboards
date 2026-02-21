@@ -12,6 +12,11 @@ import { DashboardNav } from "@/components/DashboardNav"
 import { CardSkeleton } from "@/components/ui/skeleton"
 import { Star, TrendingUp, Filter, Search, RefreshCw } from "lucide-react"
 
+interface ReviewResponse {
+  question: string
+  answer: string
+}
+
 interface Review {
   entryDate: string
   firstName: string
@@ -19,7 +24,8 @@ interface Review {
   service: string
   instructor: string
   stars: number
-  review: string
+  review: string           // column H, kept for search + legacy fallback
+  responses: ReviewResponse[]
   finalWeight: number | string
   context: number
   specificity: number
@@ -130,10 +136,11 @@ export default function ReviewsPage() {
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(r => 
-        r.review.toLowerCase().includes(term) ||
+      filtered = filtered.filter(r =>
         r.firstName.toLowerCase().includes(term) ||
-        r.lastName.toLowerCase().includes(term)
+        r.lastName.toLowerCase().includes(term) ||
+        r.review.toLowerCase().includes(term) ||
+        (r.responses || []).some(resp => resp.answer.toLowerCase().includes(term))
       )
     }
 
@@ -437,9 +444,24 @@ export default function ReviewsPage() {
                             {renderStars(review.stars)}
                           </div>
                         </div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          {review.review}
-                        </p>
+                        {review.responses && review.responses.length > 0 ? (
+                          <div className="space-y-3 mt-1">
+                            {review.responses.map((resp, respIdx) => (
+                              <div key={respIdx}>
+                                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 italic mb-0.5">
+                                  {resp.question}
+                                </p>
+                                <p className="text-sm text-gray-700 dark:text-gray-300">
+                                  {resp.answer}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
+                            {review.review}
+                          </p>
+                        )}
                       </div>
                     ))
                   )}

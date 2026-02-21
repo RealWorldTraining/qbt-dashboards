@@ -5,6 +5,31 @@ const SPREADSHEET_ID = '1Nh1LRFfI7Ct6p8V34ixZfs51WUepJkQ22EkV7t64eTo';
 const SHEET_NAME = 'Reviews';
 const RANGE = 'A:AB'; // Columns A through AB (includes all data + weight calculations + moderation status)
 
+// Default question labels for columns H–P.
+// Override any of these at runtime by creating a "Questions" tab in the sheet
+// with column A = letter (H, I, J…) and column B = question text.
+const DEFAULT_QUESTIONS: Record<string, string> = {
+  H: 'What was your favorite part of our training?',
+  I: 'What was the most valuable thing you learned during class?',
+  J: 'What would you tell a friend or colleague about this class and your instructor?',
+  K: 'What was the most valuable thing you learned from the course?',
+  L: 'What would you tell a friend or colleague about this course?',
+  M: 'How did we help you solve a problem today?',
+  N: 'What would you tell a friend or colleague about Live Help and your instructor?',
+  O: 'How did our training help you get certified?',
+  P: 'Why did you decide to become QuickBooks certified?',
+};
+
+// Column letter → 0-based index in the row array
+const RESPONSE_COLUMNS: Record<string, number> = {
+  H: 7, I: 8, J: 9, K: 10, L: 11, M: 12, N: 13, O: 14, P: 15,
+};
+
+interface ReviewResponse {
+  question: string;
+  answer: string;
+}
+
 interface Review {
   entryDate: string;
   firstName: string;
@@ -12,7 +37,8 @@ interface Review {
   service: string;
   instructor: string;
   stars: number;
-  review: string;
+  review: string;        // column H — kept for backward compat / search
+  responses: ReviewResponse[]; // all non-empty answers H–P with their question labels
   finalWeight: number | string;
   context: number;
   specificity: number;
@@ -26,6 +52,30 @@ interface Review {
 let cachedReviews: Review[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_TTL = 10 * 1000; // 10 seconds for testing
+
+// Fetch question overrides from a "Questions" tab if it exists.
+// Falls back to DEFAULT_QUESTIONS if the tab doesn't exist or has no data.
+async function fetchQuestionMap(sheets: ReturnType<typeof google.sheets>): Promise<Record<string, string>> {
+  try {
+    const resp = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: 'Questions!A:B',
+    });
+    const rows = resp.data.values || [];
+    if (rows.length === 0) return DEFAULT_QUESTIONS;
+    const map = { ...DEFAULT_QUESTIONS };
+    for (const row of rows) {
+      const col = (row[0] || '').toString().trim().toUpperCase();
+      const question = (row[1] || '').toString().trim();
+      if (col && question && col in RESPONSE_COLUMNS) {
+        map[col] = question;
+      }
+    }
+    return map;
+  } catch {
+    return DEFAULT_QUESTIONS; // tab doesn't exist yet — use defaults
+  }
+}
 
 async function fetchReviewsFromSheet(): Promise<Review[]> {
   // Check cache first
@@ -49,6 +99,9 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
 
   const sheets = google.sheets({ version: 'v4', auth });
 
+  // Fetch question labels (sheet-configurable, falls back to defaults)
+  const questionMap = await fetchQuestionMap(sheets);
+
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
@@ -63,29 +116,40 @@ async function fetchReviewsFromSheet(): Promise<Review[]> {
 
     // Skip first 2 rows (headers), data starts at row 3
     const reviews: Review[] = rows.slice(2).map((row) => {
-      // Get status from column AB (column 27, 0-indexed)
-      const status = row[27] || ''
-      
+      // Get status from column AB (index 27)
+      const status = row[27] || '';
+
       // Filter out only "Removed" for qbt-dashboards. Show Unreviewed + Reviewed
-      if (status === 'Removed') {
-        return null
-      }
+      if (status === 'Removed') return null;
+
+      // Build responses array: one entry per non-empty answer column H–P
+      const responses: ReviewResponse[] = Object.entries(RESPONSE_COLUMNS)
+        .filter(([, idx]) => {
+          const val = (row[idx] || '').toString().trim();
+          return val.length > 0;
+        })
+        .map(([col, idx]) => ({
+          question: questionMap[col] || col,
+          answer: (row[idx] || '').toString().trim(),
+        }));
 
       return {
-        entryDate: row[0] || '',
-        firstName: row[1] || '',
-        lastName: row[2] || '',
-        service: row[4] || '', // Column E
-        instructor: row[5] || '', // Column F
-        stars: parseInt(row[6]) || 0, // Column G
-        review: row[7] || '', // Column H
-        finalWeight: row[8] === 'FILTERED' ? 'FILTERED' : parseFloat(row[8]) || 0, // Column I
-        context: parseFloat(row[9]) || 0,
-        specificity: parseFloat(row[10]) || 0,
-        actionability: parseFloat(row[11]) || 0,
-        wordCount: parseInt(row[12]) || 0,
-        lengthBonus: parseFloat(row[13]) || 0,
-        baseScore: parseFloat(row[14]) || 0,
+        entryDate:    row[0]  || '',
+        firstName:    row[1]  || '',
+        lastName:     row[2]  || '',
+        service:      row[4]  || '',  // col E
+        instructor:   row[5]  || '',  // col F
+        stars:        parseInt(row[6])  || 0,  // col G
+        review:       row[7]  || '',  // col H — kept for search + legacy fallback
+        responses,
+        // ── Quality metrics (corrected column indices) ──────────────────
+        finalWeight:  row[20] === 'FILTERED' ? 'FILTERED' : parseFloat(row[20]) || 0, // col U
+        context:      parseFloat(row[21]) || 0,  // col V
+        specificity:  parseFloat(row[22]) || 0,  // col W
+        actionability: parseFloat(row[23]) || 0, // col X
+        wordCount:    parseInt(row[24])   || 0,  // col Y
+        lengthBonus:  parseFloat(row[25]) || 0,  // col Z
+        baseScore:    parseFloat(row[26]) || 0,  // col AA
       };
     }).filter(review => review !== null) as Review[];
 
