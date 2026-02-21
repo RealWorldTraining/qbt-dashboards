@@ -5,6 +5,10 @@ import { google } from 'googleapis';
 const SPREADSHEET_ID = '1Rf9sf4xEIBhOJZGfA2wvLEmDUNd0onuHBZfCBFXx7y4';
 const SHEETS_TO_FETCH = ['Log', 'FY2025 Log', 'FY2024 Log'];
 
+// Reviews spreadsheet
+const REVIEWS_SPREADSHEET_ID = '1Nh1LRFfI7Ct6p8V34ixZfs51WUepJkQ22EkV7t64eTo';
+const REVIEWS_TAB = 'Reviews';
+
 interface TrainerStats {
   name: string;
   sessions: number;
@@ -30,6 +34,18 @@ interface FetchResult {
   rows: RawRow[];
   errors: string[];
   sheetCounts: Record<string, number>;
+}
+
+interface ReviewRow {
+  date: Date | null;
+  instructor: string;  // col F
+  rating: number | null; // col G
+}
+
+interface InstructorRating {
+  name: string;
+  avgRating: number;
+  reviewCount: number;
 }
 
 async function getGoogleSheetsClient() {
@@ -98,6 +114,43 @@ function parseMinutes(s: string | undefined): number | null {
   if (!s || s.trim() === '') return null;
   const n = parseFloat(s.trim());
   return isNaN(n) || n < 0 ? null : n;
+}
+
+function parseReviewDate(s: string): Date | null {
+  if (!s) return null;
+  // Format: "2026-02-14 11:30:03" — replace space with T for ISO parse
+  const d = new Date(s.trim().replace(' ', 'T'));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+async function fetchReviewData(sheets: ReturnType<typeof google.sheets>): Promise<ReviewRow[]> {
+  try {
+    // Row 1 = metadata, row 2 = headers, data starts at row 3
+    const resp = await sheets.spreadsheets.values.get({
+      spreadsheetId: REVIEWS_SPREADSHEET_ID,
+      range: `${REVIEWS_TAB}!A3:G`,
+    });
+    const rows = resp.data.values || [];
+    return rows
+      .filter(row => {
+        if (!row || row.length < 5) return false;
+        const reviewType = (row[4] || '').toString().toLowerCase();
+        // Keep only Live 1-on-1 Help reviews
+        return reviewType.includes('live') && reviewType.includes('help');
+      })
+      .map(row => {
+        const ratingRaw = row[6]?.toString().trim();
+        const n = ratingRaw ? parseFloat(ratingRaw) : NaN;
+        return {
+          date:       parseReviewDate(row[0]?.toString() || ''),
+          instructor: (row[5] || '').toString().trim(),
+          rating:     !isNaN(n) && n >= 1 && n <= 5 ? n : null,
+        };
+      });
+  } catch (e) {
+    console.error('Review fetch error:', e instanceof Error ? e.message : e);
+    return [];
+  }
 }
 
 async function fetchAllData(sheets: ReturnType<typeof google.sheets>): Promise<FetchResult> {
@@ -476,10 +529,16 @@ export async function GET(request: NextRequest) {
     }
     
     const sheets = await getGoogleSheetsClient();
-    const fetchResult = await fetchAllData(sheets);
-    
+    const [fetchResult, allReviews] = await Promise.all([
+      fetchAllData(sheets),
+      fetchReviewData(sheets),
+    ]);
+
     // Filter data by date range
     const filteredRows = filterByDateRange(fetchResult.rows, start, end);
+
+    // Filter reviews by same date range
+    const filteredReviews = allReviews.filter(r => r.date && r.date >= start && r.date <= end);
     const trainerStats = aggregateByTrainer(filteredRows);
     
     // Calculate metrics
@@ -519,6 +578,30 @@ export async function GET(request: NextRequest) {
     const avgTimeToAbandon = abandonTimeRows.length > 0
       ? Math.round((abandonTimeRows.reduce((s, r) => s + r.timeToAbandon!, 0) / abandonTimeRows.length) * 10) / 10
       : null;
+
+    // ── Review metrics ────────────────────────────────────────────────────────
+    const ratedReviews = filteredReviews.filter(r => r.rating !== null);
+    const avgRating = ratedReviews.length > 0
+      ? Math.round((ratedReviews.reduce((s, r) => s + r.rating!, 0) / ratedReviews.length) * 10) / 10
+      : null;
+
+    // Per-instructor averages — keyed by lowercased name for joining in the frontend
+    const instructorRatingMap = new Map<string, { total: number; count: number; displayName: string }>();
+    for (const r of ratedReviews) {
+      if (!r.instructor) continue;
+      const key = r.instructor.toLowerCase();
+      if (!instructorRatingMap.has(key)) {
+        instructorRatingMap.set(key, { total: 0, count: 0, displayName: r.instructor });
+      }
+      const entry = instructorRatingMap.get(key)!;
+      entry.total += r.rating!;
+      entry.count++;
+    }
+    const instructorRatings: InstructorRating[] = Array.from(instructorRatingMap.entries()).map(([, v]) => ({
+      name:        v.displayName,
+      avgRating:   Math.round((v.total / v.count) * 10) / 10,
+      reviewCount: v.count,
+    })).sort((a, b) => b.avgRating - a.avgRating);
     
     // Excluded trainers (case-insensitive)
     const EXCLUDED_TRAINERS = ['x', 'nancy mattar', 'jenna'];
@@ -595,8 +678,13 @@ export async function GET(request: NextRequest) {
         abandonmentRate,
         avgWaitTime,
         avgTimeToAbandon,
-        abandonedCount:   abandonedRows.length,
+        abandonedCount:    abandonedRows.length,
         queueSessionCount: rowsWithStatus.length,
+        avgRating,
+        reviewCount:       ratedReviews.length,
+      },
+      reviews: {
+        instructorRatings,
       },
       charts: {
         dayOfWeek: dayOfWeekStats,

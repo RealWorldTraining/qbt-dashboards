@@ -26,6 +26,12 @@ interface TrainerComparison {
   diff: number;
 }
 
+interface InstructorRating {
+  name: string;
+  avgRating: number;
+  reviewCount: number;
+}
+
 interface ApiResponse {
   trainerData: TrainerData[];
   summary: {
@@ -41,6 +47,11 @@ interface ApiResponse {
     avgTimeToAbandon: number | null;
     abandonedCount: number;
     queueSessionCount: number;
+    avgRating: number | null;
+    reviewCount: number;
+  };
+  reviews: {
+    instructorRatings: InstructorRating[];
   };
   charts: {
     dayOfWeek: number[];
@@ -106,7 +117,10 @@ export default function LiveHelpDashboard() {
     avgTimeToAbandon: null as number | null,
     abandonedCount: 0,
     queueSessionCount: 0,
+    avgRating: null as number | null,
+    reviewCount: 0,
   });
+  const [instructorRatings, setInstructorRatings] = useState<InstructorRating[]>([]);
   const [charts, setCharts] = useState({
     dayOfWeek: [0, 0, 0, 0, 0, 0, 0],
     dayOfWeekByYear: {} as Record<string, number[]>,
@@ -154,6 +168,7 @@ export default function LiveHelpDashboard() {
       setTrainerData(result.trainerData);
       setSummary(result.summary);
       setCharts(result.charts);
+      setInstructorRatings(result.reviews?.instructorRatings || []);
       
       const startDate = new Date(result.dateRange.start);
       const endDate = new Date(result.dateRange.end);
@@ -428,6 +443,16 @@ export default function LiveHelpDashboard() {
     }
   };
 
+  // Match a trainer name to their review rating (case-insensitive, partial match)
+  const getInstructorRating = (trainerName: string): InstructorRating | null => {
+    const key = trainerName.toLowerCase();
+    return instructorRatings.find(r =>
+      r.name.toLowerCase() === key ||
+      r.name.toLowerCase().includes(key) ||
+      key.includes(r.name.toLowerCase())
+    ) || null;
+  };
+
   const SortIcon = ({ columnKey }: { columnKey: SortKey }) => {
     if (sortKey !== columnKey) return <span className="ml-1 text-gray-600">↕</span>;
     return <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
@@ -543,8 +568,8 @@ export default function LiveHelpDashboard() {
             </div>
           ) : (
             <>
-              {/* Key Metrics — all six in one row */}
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-5 mb-8">
+              {/* Key Metrics — all seven in one row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-5 mb-8">
                 <MetricCard label={`Total Sessions ${getPresetLabel(datePreset)}`} value={summary.totalSessions.toLocaleString()} />
                 <MetricCard label={`Avg Duration ${getPresetLabel(datePreset)}`} value={`${summary.avgDuration} min`} subtext="Per session" />
                 <MetricCard 
@@ -573,6 +598,12 @@ export default function LiveHelpDashboard() {
                       : 'No queue data for period'
                   }
                   highlight={summary.abandonmentRate !== null && summary.abandonmentRate > 20}
+                />
+                <MetricCard
+                  label={`Avg Rating ${getPresetLabel(datePreset)}`}
+                  value={summary.avgRating !== null ? `${summary.avgRating} ★` : '—'}
+                  subtext={summary.reviewCount > 0 ? `${summary.reviewCount} live help review${summary.reviewCount !== 1 ? 's' : ''}` : 'No reviews for period'}
+                  highlight={summary.avgRating !== null && summary.avgRating >= 4.5}
                 />
               </div>
 
@@ -633,29 +664,45 @@ export default function LiveHelpDashboard() {
                       <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => handleSort('quick')}>
                         Quick (&lt;5m) <SortIcon columnKey="quick" />
                       </th>
-                      <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors rounded-r-lg" onClick={() => handleSort('long')}>
+                      <th className="p-3 bg-cyan-500/10 cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => handleSort('long')}>
                         Long (&gt;20m) <SortIcon columnKey="long" />
+                      </th>
+                      <th className="p-3 bg-cyan-500/10 rounded-r-lg text-right">
+                        Avg Rating
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedData.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-gray-400">
+                        <td colSpan={7} className="p-8 text-center text-gray-400">
                           No data for selected time period
                         </td>
                       </tr>
                     ) : (
-                      sortedData.map((t) => (
-                        <tr key={t.name} className="border-b border-white/5 hover:bg-white/5">
-                          <td className="p-3 font-semibold">{t.name}</td>
-                          <td className="p-3">{t.sessions.toLocaleString()}</td>
-                          <td className="p-3">{t.avg} min</td>
-                          <td className="p-3">{t.median} min</td>
-                          <td className="p-3">{t.quick.toLocaleString()} ({t.quickPct}%)</td>
-                          <td className="p-3">{t.long.toLocaleString()}</td>
-                        </tr>
-                      ))
+                      sortedData.map((t) => {
+                        const rating = getInstructorRating(t.name);
+                        return (
+                          <tr key={t.name} className="border-b border-white/5 hover:bg-white/5">
+                            <td className="p-3 font-semibold">{t.name}</td>
+                            <td className="p-3">{t.sessions.toLocaleString()}</td>
+                            <td className="p-3">{t.avg} min</td>
+                            <td className="p-3">{t.median} min</td>
+                            <td className="p-3">{t.quick.toLocaleString()} ({t.quickPct}%)</td>
+                            <td className="p-3">{t.long.toLocaleString()}</td>
+                            <td className="p-3 text-right">
+                              {rating ? (
+                                <span className="text-yellow-400 font-semibold">
+                                  {rating.avgRating} ★
+                                  <span className="text-gray-500 font-normal text-xs ml-1">({rating.reviewCount})</span>
+                                </span>
+                              ) : (
+                                <span className="text-gray-600">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
