@@ -277,10 +277,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Merge in zero-attendance webinars from the Processed Webinars tab
+    // Merge in zero-external-attendance webinars from the Processed Webinars tab.
+    // We check webinarMap (built from the Attendance tab) rather than participantCount,
+    // because participantCount includes internal @quickbookstraining.com staff — a
+    // webinar where only staff joined would have participantCount > 0 but 0 external rows.
     for (const [id, meta] of processedMap.entries()) {
-      if (webinarMap.has(id)) continue; // has attendance rows — already counted
-      if (meta.participantCount !== 0) continue; // not a zero-attendance webinar
+      if (webinarMap.has(id)) continue; // already has external attendance rows
 
       // Apply the same filters (skip if metadata doesn't match)
       if (host && meta.hostEmail && !meta.hostEmail.toLowerCase().includes(host.toLowerCase())) continue;
