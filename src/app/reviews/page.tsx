@@ -212,6 +212,23 @@ export default function ReviewsPage() {
     })
   }
 
+  // Course dropdown should be disabled for service types that have no associated courses
+  const courseDisabled = ((): boolean => {
+    if (!selectedService) return false
+    const s = selectedService.toLowerCase()
+    return (
+      s.includes('certif') ||
+      s.includes('not sure') ||
+      s.includes('other') ||
+      (s.includes('live') && s.includes('help'))
+    )
+  })()
+
+  // Auto-clear course when a non-course service is selected
+  useEffect(() => {
+    if (courseDisabled) setSelectedCourse('')
+  }, [courseDisabled])
+
   function resetFilters() {
     setSelectedService("")
     setSelectedInstructor("")
@@ -396,11 +413,18 @@ export default function ReviewsPage() {
 
                   {/* Course Filter */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Course</label>
+                    <label className={`block text-sm font-medium mb-2 ${courseDisabled ? 'text-gray-400 dark:text-gray-600' : ''}`}>
+                      Course
+                    </label>
                     <select
                       value={selectedCourse}
                       onChange={(e) => setSelectedCourse(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-sm"
+                      disabled={courseDisabled}
+                      className={`w-full px-3 py-2 border rounded-md text-sm transition-opacity
+                        ${courseDisabled
+                          ? 'bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50 border-gray-200'
+                          : 'bg-white dark:bg-gray-800'
+                        }`}
                     >
                       <option value="">All Courses</option>
                       {courses.map((course) => (
