@@ -543,8 +543,8 @@ export default function LiveHelpDashboard() {
             </div>
           ) : (
             <>
-              {/* Key Metrics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-5">
+              {/* Key Metrics — all six in one row */}
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-5 mb-8">
                 <MetricCard label={`Total Sessions ${getPresetLabel(datePreset)}`} value={summary.totalSessions.toLocaleString()} />
                 <MetricCard label={`Avg Duration ${getPresetLabel(datePreset)}`} value={`${summary.avgDuration} min`} subtext="Per session" />
                 <MetricCard 
@@ -559,22 +559,18 @@ export default function LiveHelpDashboard() {
                   subtext={mostSessionsTrainer ? `${mostSessionsTrainer.sessions} sessions` : 'Highest volume'} 
                   highlight
                 />
-              </div>
-
-              {/* Queue Metrics (data available from row 9283 onward) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                 <MetricCard
                   label={`Avg Wait Time ${getPresetLabel(datePreset)}`}
                   value={summary.avgWaitTime !== null ? `${summary.avgWaitTime} min` : '—'}
-                  subtext={summary.avgWaitTime !== null ? 'Time in queue before help' : 'No queue data for this period'}
+                  subtext={summary.avgWaitTime !== null ? 'Time in queue before help' : 'No queue data for period'}
                 />
                 <MetricCard
                   label={`Abandonment Rate ${getPresetLabel(datePreset)}`}
                   value={summary.abandonmentRate !== null ? `${summary.abandonmentRate}%` : '—'}
                   subtext={
                     summary.abandonmentRate !== null
-                      ? `${summary.abandonedCount} abandoned of ${summary.queueSessionCount} queued${summary.avgTimeToAbandon !== null ? ` · Avg ${summary.avgTimeToAbandon} min to abandon` : ''}`
-                      : 'No queue data for this period'
+                      ? `${summary.abandonedCount} of ${summary.queueSessionCount} queued${summary.avgTimeToAbandon !== null ? ` · ${summary.avgTimeToAbandon} min avg` : ''}`
+                      : 'No queue data for period'
                   }
                   highlight={summary.abandonmentRate !== null && summary.abandonmentRate > 20}
                 />
