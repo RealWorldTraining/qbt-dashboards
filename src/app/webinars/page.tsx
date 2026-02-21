@@ -73,6 +73,24 @@ interface DrilldownResponse {
   attendees: DrilldownAttendee[];
 }
 
+interface UpcomingWebinar {
+  webinarId: string | number;
+  topic: string;
+  startTime: string;
+  duration: number;
+  hostEmail: string;
+  timezone: string;
+  registrantsCount: number | null;
+}
+
+interface UpcomingResponse {
+  days: number;
+  count: number;
+  webinars: UpcomingWebinar[];
+  fetchedAt: string;
+  error?: string;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function timeAgo(isoString: string): string {
@@ -99,6 +117,145 @@ function hostColor(email: string): string {
   if (email.includes('qboclass'))      return '#00ff88';
   if (email.includes('intuitwebinar')) return '#ff6b6b';
   return '#00d9ff';
+}
+
+// ─── Upcoming Section ─────────────────────────────────────────────────────────
+
+function UpcomingSection() {
+  const [data, setData]         = useState<UpcomingResponse | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const fetchUpcoming = async () => {
+      try {
+        const resp = await fetch('/api/webinars-upcoming');
+        const json: UpcomingResponse = await resp.json();
+        setData(json);
+      } catch (e) {
+        console.error('Upcoming fetch error:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUpcoming();
+    // Refresh every 10 minutes — schedule changes rarely
+    const interval = setInterval(fetchUpcoming, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Group webinars by calendar date (CST)
+  const grouped = (data?.webinars || []).reduce<Record<string, UpcomingWebinar[]>>((acc, w) => {
+    const day = new Date(w.startTime).toLocaleDateString('en-US', {
+      timeZone: 'America/Chicago',
+      weekday: 'long', month: 'long', day: 'numeric',
+    });
+    (acc[day] = acc[day] || []).push(w);
+    return acc;
+  }, {});
+
+  const hasWebinars = data && data.count > 0;
+
+  return (
+    <section className="mb-10">
+      {/* Header row */}
+      <div
+        className="flex items-center justify-between mb-5 cursor-pointer select-none"
+        onClick={() => setCollapsed(c => !c)}
+      >
+        <h2 className="text-2xl font-bold flex items-center gap-3">
+          <span className="text-xl">📅</span>
+          Upcoming Classes
+          {!loading && data && (
+            <span className="text-sm font-normal text-gray-400 ml-1">
+              — next {data.days} days
+            </span>
+          )}
+        </h2>
+        <div className="flex items-center gap-3">
+          {!loading && (
+            <span className="text-sm text-gray-400">
+              {data?.count ?? 0} scheduled
+            </span>
+          )}
+          <span className="text-gray-400 text-lg">{collapsed ? '▼' : '▲'}</span>
+        </div>
+      </div>
+
+      {!collapsed && (
+        loading ? (
+          <div className="text-center py-8 text-gray-400">Loading upcoming classes...</div>
+        ) : !hasWebinars ? (
+          <div className="bg-white/5 rounded-2xl p-8 border border-white/10 text-center text-gray-400">
+            <div className="text-4xl mb-3">📭</div>
+            <div className="text-lg font-semibold">No classes scheduled in the next {data?.days ?? 10} days</div>
+            {data?.error && <div className="text-red-400 text-sm mt-2">{data.error}</div>}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {Object.entries(grouped).map(([day, webinars]) => (
+              <div key={day}>
+                {/* Day header */}
+                <div className="text-xs font-semibold uppercase tracking-widest text-cyan-400 mb-2 px-1">
+                  {day}
+                </div>
+                <div className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
+                  {webinars.map((w, i) => {
+                    const timeStr = new Date(w.startTime).toLocaleTimeString('en-US', {
+                      timeZone: 'America/Chicago',
+                      hour: 'numeric', minute: '2-digit', hour12: true,
+                    });
+                    const color = hostColor(w.hostEmail);
+                    return (
+                      <div
+                        key={`${w.webinarId}-${i}`}
+                        className="flex items-center gap-4 px-5 py-3 border-t border-white/5 first:border-t-0 hover:bg-white/5 transition-colors"
+                        style={{ borderLeft: `3px solid ${color}` }}
+                      >
+                        {/* Time */}
+                        <div className="w-20 shrink-0 text-sm font-mono text-gray-300">
+                          {timeStr}
+                        </div>
+
+                        {/* Topic */}
+                        <div className="flex-1 font-medium text-sm">{w.topic || 'Untitled'}</div>
+
+                        {/* Host badge */}
+                        <span
+                          className="text-xs font-semibold px-2 py-1 rounded-full shrink-0"
+                          style={{ backgroundColor: `${color}22`, color }}
+                        >
+                          {hostLabel(w.hostEmail)}
+                        </span>
+
+                        {/* Duration */}
+                        {w.duration > 0 && (
+                          <div className="text-xs text-gray-400 shrink-0 w-16 text-right">
+                            {w.duration} min
+                          </div>
+                        )}
+
+                        {/* Registered */}
+                        <div className="text-xs shrink-0 w-24 text-right">
+                          {w.registrantsCount != null ? (
+                            <span className="text-cyan-400 font-semibold">
+                              {w.registrantsCount.toLocaleString()} registered
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">—</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      )}
+    </section>
+  );
 }
 
 // ─── Live Section ─────────────────────────────────────────────────────────────
@@ -560,6 +717,7 @@ export default function WebinarsDashboard() {
         </header>
 
         <LiveSection />
+        <UpcomingSection />
         <HistoricalSection />
 
         <footer className="text-center text-gray-500 text-sm mt-12 pb-8">
