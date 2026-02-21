@@ -524,7 +524,7 @@ export default function LiveHelpDashboard() {
       <Script src="https://cdn.jsdelivr.net/npm/chart.js" onLoad={() => {
         chartsInitialized.current = true;
         if (summary.totalSessions > 0) {
-          updateCharts({ trainerData, summary, charts, dateRange: { start: '', end: '', preset: datePreset } });
+          updateCharts({ trainerData, summary, charts, dateRange: { start: '', end: '', preset: datePreset }, reviews: { instructorRatings: [] } });
         }
       }} />
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white">
