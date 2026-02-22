@@ -6,7 +6,7 @@
  * Returns: { answer: string, relevantIds: string[] }
  *
  * Uses Claude Haiku (fast + cheap) to do semantic/natural-language matching.
- * Falls back to empty relevantIds (caller handles gracefully).
+ * Falls back gracefully on parse errors.
  */
 
 import { NextResponse } from 'next/server'
@@ -49,21 +49,25 @@ export async function POST(request: Request) {
 
     // Build a compact event list for the prompt
     const eventSummary = events.map(e =>
-      `ID: ${e.id} | ${e.date} | [${e.category}] ${e.title} - ${e.description}`
+      `ID: ${e.id} | Date: ${e.date} | Category: ${e.category} | Title: ${e.title} | Details: ${e.description}`
     ).join('\n')
 
-    const prompt = `You are a search assistant for a website development log. A user wants to find relevant events from this log.
+    const prompt = `You are a helpful assistant for a website development log. A user is searching for information about when certain work was done on the QuickBooks Training website.
 
-Given the events below and the user's query, return a JSON object with:
-- "answer": A 1-2 sentence plain English response to the query (what you found, when it happened, etc.)
-- "relevantIds": An array of event IDs most relevant to the query, ordered by relevance (most relevant first). Only include genuinely relevant events. Return an empty array if nothing matches.
+Answer the query in plain, friendly English - like you are explaining it to a business executive, not a developer. Be specific about dates. Do not use technical jargon. Keep the answer to 2-3 sentences maximum.
 
-EVENTS:
+Also identify which event IDs from the log are most relevant to the query.
+
+Return your response as a JSON object with exactly two fields:
+- "answer": your plain English answer (2-3 sentences, readable for a non-technical executive, mention specific dates)
+- "relevantIds": array of event IDs most relevant to the query, ordered by relevance, empty array if nothing matches
+
+LOG EVENTS:
 ${eventSummary}
 
 USER QUERY: ${query}
 
-Respond with ONLY valid JSON, no markdown, no explanation outside the JSON.`
+Important: Return raw JSON only. No markdown. No backticks. No code fences. Just the JSON object.`
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -85,20 +89,23 @@ Respond with ONLY valid JSON, no markdown, no explanation outside the JSON.`
     }
 
     const anthropicData = await anthropicRes.json()
-    const rawText = anthropicData.content?.[0]?.text ?? '{}'
+    let rawText: string = anthropicData.content?.[0]?.text ?? '{}'
+
+    // Strip markdown code fences Claude sometimes adds despite instructions
+    rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
 
     // Parse Claude's JSON response
     let parsed: AnthropicResponse
     try {
       parsed = JSON.parse(rawText)
     } catch {
-      // If Claude returned non-JSON, wrap it
+      // Last resort: if still not valid JSON, treat the text as a plain answer
       parsed = { answer: rawText, relevantIds: [] }
     }
 
     return NextResponse.json({
       answer: parsed.answer ?? '',
-      relevantIds: parsed.relevantIds ?? [],
+      relevantIds: Array.isArray(parsed.relevantIds) ? parsed.relevantIds : [],
     })
 
   } catch (err: unknown) {
