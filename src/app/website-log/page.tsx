@@ -31,31 +31,30 @@ interface ChangelogData {
 
 // â”€â”€â”€ Style Maps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const CATEGORY_STYLES: Record<string, string> = {
-  'SEO':            'bg-indigo-50 text-indigo-800 border-indigo-200',
-  'Feature':        'bg-emerald-50 text-emerald-800 border-emerald-200',
-  'Infrastructure': 'bg-orange-50 text-orange-800 border-orange-200',
-  'Bug Fix':        'bg-rose-50 text-rose-800 border-rose-200',
-  'Design':         'bg-purple-50 text-purple-800 border-purple-200',
-  'Content':        'bg-amber-50 text-amber-800 border-amber-200',
-  'Performance':    'bg-cyan-50 text-cyan-800 border-cyan-200',
-  'Integration':    'bg-blue-50 text-blue-800 border-blue-200',
+const CATEGORY_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
+  'SEO':            { bg: 'bg-indigo-500/20',  text: 'text-indigo-300',  dot: 'bg-indigo-400' },
+  'Feature':        { bg: 'bg-emerald-500/20', text: 'text-emerald-300', dot: 'bg-emerald-400' },
+  'Infrastructure': { bg: 'bg-orange-500/20',  text: 'text-orange-300',  dot: 'bg-orange-400' },
+  'Bug Fix':        { bg: 'bg-rose-500/20',    text: 'text-rose-300',    dot: 'bg-rose-400' },
+  'Design':         { bg: 'bg-purple-500/20',  text: 'text-purple-300',  dot: 'bg-purple-400' },
+  'Content':        { bg: 'bg-amber-500/20',   text: 'text-amber-300',   dot: 'bg-amber-400' },
+  'Performance':    { bg: 'bg-cyan-500/20',    text: 'text-cyan-300',    dot: 'bg-cyan-400' },
+  'Integration':    { bg: 'bg-blue-500/20',    text: 'text-blue-300',    dot: 'bg-blue-400' },
 }
-const CATEGORY_STYLE_DEFAULT = 'bg-gray-50 text-gray-700 border-gray-200'
+const CATEGORY_DEFAULT = { bg: 'bg-white/10', text: 'text-gray-300', dot: 'bg-gray-400' }
 
 const IMPACT = {
-  high:   { dot: 'bg-red-500',   label: 'High',   badge: 'text-red-600 bg-red-50 border-red-200' },
-  medium: { dot: 'bg-amber-400', label: 'Medium', badge: 'text-amber-700 bg-amber-50 border-amber-200' },
-  low:    { dot: 'bg-green-500', label: 'Low',    badge: 'text-green-700 bg-green-50 border-green-200' },
+  high:   { dot: 'bg-red-400',    label: 'High',   text: 'text-red-400',    border: 'border-red-500/40' },
+  medium: { dot: 'bg-amber-400',  label: 'Medium', text: 'text-amber-400',  border: 'border-amber-500/40' },
+  low:    { dot: 'bg-green-400',  label: 'Low',    text: 'text-green-400',  border: 'border-green-500/40' },
 }
 
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function formatDisplayDate(dateStr: string) {
-  // Parse as local date (avoid UTC shift)
   const [y, m, d] = dateStr.split('-').map(Number)
   return new Date(y, m - 1, d).toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   })
 }
 
@@ -65,12 +64,9 @@ function formatLastUpdated(iso: string) {
       month: 'long', day: 'numeric', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     })
-  } catch {
-    return iso
-  }
+  } catch { return iso }
 }
 
-// Group events by date, preserving order
 function groupByDate(events: LogEvent[]): { date: string; events: LogEvent[] }[] {
   const map = new Map<string, LogEvent[]>()
   for (const e of events) {
@@ -80,23 +76,35 @@ function groupByDate(events: LogEvent[]): { date: string; events: LogEvent[] }[]
   return Array.from(map.entries()).map(([date, events]) => ({ date, events }))
 }
 
-// â”€â”€â”€ Filter chip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function Chip({
-  label, active, color, dot, onClick,
+function StatCard({ value, label, sub }: { value: string | number; label: string; sub?: string }) {
+  return (
+    <div className="bg-white/5 rounded-2xl p-5 border border-white/10 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cyan-500/10 transition-all">
+      <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent">
+        {value}
+      </div>
+      {sub && <div className="text-xs text-gray-500 mt-1">{sub}</div>}
+    </div>
+  )
+}
+
+function FilterChip({
+  label, active, dot, onClick,
 }: {
-  label: string; active: boolean; color?: string; dot?: string; onClick: () => void
+  label: string; active: boolean; dot?: string; onClick: () => void
 }) {
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border transition-all ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
         active
-          ? 'bg-gray-900 text-white border-gray-900 shadow-sm'
-          : `bg-white border-gray-300 text-gray-600 hover:border-gray-500 ${color ?? ''}`
+          ? 'bg-cyan-500/30 text-cyan-200 border-cyan-500/60'
+          : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:text-white'
       }`}
     >
-      {dot && <span className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-white' : dot}`} />}
+      {dot && <span className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-cyan-300' : dot}`} />}
       {label}
     </button>
   )
@@ -134,14 +142,14 @@ export default function WebsiteLogPage() {
 
   const grouped = useMemo(() => groupByDate(filtered), [filtered])
 
-  // â”€â”€ Loading / Error states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 text-sm">Loading development logâ€¦</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#16213e] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-400 text-sm">Loading development logâ€¦</p>
         </div>
       </div>
     )
@@ -149,11 +157,11 @@ export default function WebsiteLogPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl border border-red-200 p-8 text-center max-w-md">
-          <div className="text-3xl mb-3">âš ï¸</div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">Could not load log</h2>
-          <p className="text-sm text-red-600">{error}</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#16213e] flex items-center justify-center">
+        <div className="bg-white/5 rounded-2xl border border-red-500/30 p-10 text-center max-w-md">
+          <div className="text-4xl mb-3">âš ï¸</div>
+          <h2 className="text-lg font-semibold text-white mb-2">Could not load log</h2>
+          <p className="text-sm text-red-400">{error}</p>
         </div>
       </div>
     )
@@ -165,149 +173,141 @@ export default function WebsiteLogPage() {
     low:    data.events.filter(e => e.impact === 'low').length,
   }
 
-  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] to-[#16213e] text-white">
+      <div className="max-w-5xl mx-auto p-6">
 
-      {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-3xl select-none">ðŸŒ</span>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                  Website Development Log
-                </h1>
-              </div>
-              <p className="text-gray-500 text-base mt-1 ml-[52px]">{data.description}</p>
-            </div>
-            <div className="text-right text-sm text-gray-400 flex-shrink-0 ml-[52px] sm:ml-0">
-              <div className="font-semibold text-gray-700 text-base">{data.project}</div>
-              <div className="mt-0.5">Last updated {formatLastUpdated(data.lastUpdated)}</div>
-            </div>
-          </div>
+        {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <header className="text-center py-8 border-b border-white/10 mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-green-400 bg-clip-text text-transparent mb-2 flex items-center justify-center gap-3">
+            ðŸŒ Website Development Log
+          </h1>
+          <p className="text-gray-400 text-sm">{data.project} Â· {data.description}</p>
+          <p className="text-gray-600 text-xs mt-1">Last updated {formatLastUpdated(data.lastUpdated)}</p>
+        </header>
 
-          {/* Stats bar */}
-          <div className="flex flex-wrap gap-3 mt-7">
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
-              <span className="text-xl font-bold text-gray-900">{data.events.length}</span>
-              <span className="text-sm text-gray-500">total events</span>
-            </div>
-            {(['high', 'medium', 'low'] as const).map(impact => (
-              <div key={impact} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2">
-                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${IMPACT[impact].dot}`} />
-                <span className="text-xl font-bold text-gray-900">{impactCounts[impact]}</span>
-                <span className="text-sm text-gray-500 capitalize">{impact} impact</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* â”€â”€ Filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="max-w-5xl mx-auto px-6 pt-5 pb-2">
-        <div className="flex flex-wrap gap-2 items-center">
-
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide mr-1">Category</span>
-          <Chip
-            label="All"
-            active={!activeCategory}
-            onClick={() => setActiveCategory(null)}
+        {/* â”€â”€ Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <StatCard value={data.events.length} label="Total Events" />
+          <StatCard
+            value={impactCounts.high}
+            label="High Impact"
+            sub="Major milestones"
           />
-          {categories.map(cat => (
-            <Chip
-              key={cat}
-              label={cat}
-              active={activeCategory === cat}
-              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-            />
-          ))}
-
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide ml-4 mr-1">Impact</span>
-          {(['high', 'medium', 'low'] as const).map(impact => (
-            <Chip
-              key={impact}
-              label={IMPACT[impact].label}
-              active={activeImpact === impact}
-              dot={IMPACT[impact].dot}
-              onClick={() => setActiveImpact(activeImpact === impact ? null : impact)}
-            />
-          ))}
-
-          {(activeCategory || activeImpact) && (
-            <button
-              onClick={() => { setActiveCategory(null); setActiveImpact(null) }}
-              className="ml-2 text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2"
-            >
-              Clear filters
-            </button>
-          )}
+          <StatCard
+            value={impactCounts.medium}
+            label="Medium Impact"
+            sub="Notable improvements"
+          />
+          <StatCard
+            value={impactCounts.low}
+            label="Low Impact"
+            sub="Minor updates"
+          />
         </div>
 
-        <p className="text-xs text-gray-400 mt-3">
-          Showing <strong className="text-gray-600">{filtered.length}</strong> of {data.events.length} events
-        </p>
-      </div>
+        {/* â”€â”€ Filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="bg-white/5 rounded-2xl border border-white/10 p-5 mb-8">
+          <div className="flex flex-wrap gap-2 items-center mb-3">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest mr-1">Category</span>
+            <FilterChip label="All" active={!activeCategory} onClick={() => setActiveCategory(null)} />
+            {categories.map(cat => {
+              const style = CATEGORY_STYLES[cat] ?? CATEGORY_DEFAULT
+              return (
+                <FilterChip
+                  key={cat}
+                  label={cat}
+                  active={activeCategory === cat}
+                  dot={style.dot}
+                  onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                />
+              )
+            })}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest mr-1">Impact</span>
+            <FilterChip label="All" active={!activeImpact} onClick={() => setActiveImpact(null)} />
+            {(['high', 'medium', 'low'] as const).map(impact => (
+              <FilterChip
+                key={impact}
+                label={IMPACT[impact].label}
+                active={activeImpact === impact}
+                dot={IMPACT[impact].dot}
+                onClick={() => setActiveImpact(activeImpact === impact ? null : impact)}
+              />
+            ))}
+            {(activeCategory || activeImpact) && (
+              <button
+                onClick={() => { setActiveCategory(null); setActiveImpact(null) }}
+                className="ml-2 text-xs text-gray-500 hover:text-gray-300 underline underline-offset-2 transition-colors"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-gray-600 mt-3">
+            Showing <span className="text-gray-400 font-semibold">{filtered.length}</span> of {data.events.length} events
+          </p>
+        </div>
 
-      {/* â”€â”€ Timeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="max-w-5xl mx-auto px-6 pt-4 pb-20">
+        {/* â”€â”€ Timeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {grouped.length === 0 ? (
-          <div className="text-center text-gray-400 py-20 text-sm">
+          <div className="text-center text-gray-500 py-20 text-sm">
             No events match the selected filters.
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-10">
             {grouped.map(({ date, events }) => (
               <div key={date}>
 
-                {/* Date divider */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-px flex-1 bg-gray-200" />
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                {/* Date header */}
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="h-px flex-1 bg-white/10" />
+                  <span className="text-xs font-semibold text-cyan-400/70 uppercase tracking-widest whitespace-nowrap">
                     {formatDisplayDate(date)}
                   </span>
-                  <div className="h-px flex-1 bg-gray-200" />
+                  <div className="h-px flex-1 bg-white/10" />
                 </div>
 
-                {/* Events for this date */}
-                <div className="space-y-3">
+                {/* Event cards */}
+                <div className="space-y-4">
                   {events.map(event => {
-                    const catStyle = CATEGORY_STYLES[event.category] ?? CATEGORY_STYLE_DEFAULT
+                    const catStyle = CATEGORY_STYLES[event.category] ?? CATEGORY_DEFAULT
                     const impact = IMPACT[event.impact] ?? IMPACT.medium
 
                     return (
                       <div
                         key={event.id}
-                        className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow"
+                        className={`bg-white/5 rounded-2xl border ${impact.border} p-6 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-cyan-500/10 transition-all`}
                       >
-                        {/* Top row: title + badges */}
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
-                          <h3 className="text-base font-semibold text-gray-900 leading-snug flex-1 pr-2">
+                        {/* Top row */}
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                          <h3 className="text-base font-semibold text-white leading-snug flex-1 pr-2">
                             {event.title}
                           </h3>
                           <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                             {/* Impact badge */}
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${impact.badge}`}>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/5 border border-white/10 ${impact.text}`}>
                               <span className={`w-1.5 h-1.5 rounded-full ${impact.dot}`} />
                               {impact.label} Impact
                             </span>
                             {/* Category badge */}
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${catStyle}`}>
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${catStyle.bg} ${catStyle.text}`}>
                               {event.category}
                             </span>
                           </div>
                         </div>
 
                         {/* Description */}
-                        <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                        <p className="text-sm text-gray-400 leading-relaxed mb-4">
                           {event.description}
                         </p>
 
-                        {/* Footer: time + author + links */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100">
-                          <div className="flex items-center gap-3 text-xs text-gray-400">
+                        {/* Footer */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-white/10">
+                          <div className="flex items-center gap-3 text-xs text-gray-600">
                             <span>ðŸ• {event.time} {event.timezone}</span>
                             <span>Â·</span>
                             <span>ðŸ‘¤ {event.author}</span>
@@ -320,7 +320,7 @@ export default function WebsiteLogPage() {
                                   href={link.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline underline-offset-2"
+                                  className="text-xs text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
                                 >
                                   {link.label} â†’
                                 </a>
@@ -336,6 +336,13 @@ export default function WebsiteLogPage() {
             ))}
           </div>
         )}
+
+        {/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <footer className="text-center text-gray-600 text-xs mt-16 pb-8">
+          Source of truth: <span className="text-gray-500">RealWorldTraining/qbtraining-site â†’ website-changelog.json</span>
+          &nbsp;Â· Updates within 5 minutes of a new entry
+        </footer>
+
       </div>
     </div>
   )
