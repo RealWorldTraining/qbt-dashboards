@@ -17,7 +17,7 @@ export const revalidate = 300 // re-fetch every 5 minutes
 
 export async function GET() {
   try {
-    const token = process.env.GITHUB_TOKEN
+    const token = process.env.GITHUB_CHANGELOG_TOKEN
     const headers: Record<string, string> = {
       Accept: 'application/vnd.github.v3+json',
       ...(token ? { Authorization: `token ${token}` } : {}),
