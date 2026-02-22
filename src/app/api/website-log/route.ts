@@ -25,7 +25,7 @@ export async function GET() {
 
     const res = await fetch(GITHUB_CONTENTS_URL, {
       headers,
-      next: { revalidate: 300 },
+      cache: 'no-store',
     })
 
     if (!res.ok) {
